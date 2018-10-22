@@ -1,0 +1,300 @@
+@import 'tacit/defs';
+
+$border-radius: 0.2em;
+$margin-base: 0.5em;
+$margin-side: 0.5em;
+
+.flex-grid {
+  display: flex;
+}
+
+.flex-grid .col {
+  flex: 1;
+  padding: 0.5em;
+
+}
+
+.white-button {
+  background: $white;
+  color: darken($gray, 35);
+  border: 1px solid $gray;
+  border-radius: .2em;
+  padding: 0.3em 0.8em;
+
+  &[disabled] {
+    background: $white;
+    color: darken($gray, 5);
+    cursor: not-allowed;
+  }
+  &:hover {
+    background: darken($white, 5);
+    color: $black;
+  }
+}
+
+fieldset {
+  margin-bottom: 0;
+}
+
+article {
+
+}
+
+label.button {
+  display: inline-block;
+  border: 1px solid $gray;
+  margin-right: -1px;
+  &:first-child {
+    border-radius: $border-radius 0 0 $border-radius;
+  }
+  &:last-child {
+    border-radius: 0 $border-radius 0 0;
+    margin: 0;
+  }
+}
+
+input.button {
+  display: none;
+
+}
+
+.button + span {
+  display: inline-block;
+  background: darken($white, 0);
+  border-radius: .0em;
+  color: $black;
+  cursor: pointer;
+  padding: .25em 0.7em;
+  text-align: center;
+
+  &:hover {
+    background: darken($white, 5);
+    color: $black;
+  }
+
+  &[disabled] {
+    background: darken($white, 0);
+    color: darken($gray, 10);
+    cursor: not-allowed;
+  }
+
+}
+
+.layout-elem {
+  margin-bottom: $margin-base;
+  position: relative;
+}
+
+.array-add-button {
+  border: 1px solid $gray;
+  margin-top: -1px;
+  border-top-left-radius: 0;
+  align-self: flex-start;
+}
+
+.array-empty {
+  //margin-left: $margin-side;
+  margin: $margin-base 0;
+}
+
+.layout-array {
+  // padding: 0.0em $margin-side 0.0em $margin-side;
+  //border: 1px solid $gray;
+  border-top: 0;
+}
+
+.layout-array-property {
+  //padding: $margin-base $margin-side 0.0em $margin-side;
+  padding: 0;
+  //border: 1px solid $gray;
+  border-top: 0;
+  margin-bottom: 2*$margin-base;
+}
+
+.layout-array-group {
+  padding: $margin-base $margin-side 0.0em $margin-side;
+  border: 1px solid $gray;
+  border-top: 0;
+  margin-top: -$margin-base;
+}
+
+.layout-group-fields {
+  // margin-top: -1px;
+  border-top: 1px solid $white;
+  position: relative;
+  margin: -1px -0.5em 0 -0.5em;
+  padding: 0 $margin-side;
+}
+
+.group-properties {
+  position: relative;
+  margin-top: -$margin-base;
+  padding: 0.1em $margin-side 0.4em $margin-side;
+  background: darken($white, 3);
+  border: 1px solid $gray;
+  border-top: 0;
+}
+
+.group-properties .layout-elem {
+  margin-right: $margin-side;
+  margin-bottom: 0.1em;
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+.button:checked + span {
+  background: $blue;
+  color: $white;
+
+  //&:hover {
+  //  background: darken($blue, 10);
+  //  color: darken($white, 5);
+  //}
+}
+
+.object-xtend {
+  margin-bottom: 0;
+}
+
+.FObject-cls, .FField-cls, .FGroup-cls {
+  margin: 0.2em 0;
+  padding: ($margin-base - 0.2em) $margin-side;
+}
+
+.FObject-cls {
+  background-color: rgba(0, 120, 201, 0.15);
+}
+
+.FField-cls {
+  background-color: rgba(4, 197, 10, 0.15);
+}
+
+.FGroup-cls {
+  background-color: rgba(234, 149, 5, 0.15);
+}
+
+.object-xtend-array {
+  padding: 0.0em $margin-side 0.0em $margin-side;
+  background-color: rgba(0, 120, 201, 0.15);
+}
+
+.FField-cls .layout-elem, .FForm-cls .layout-elem {
+  margin-bottom: 0;
+  position: relative;
+  margin-right: $margin-side;
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+.field-properties {
+  position: relative;
+  //margin-top: -$margin-base;
+  margin-bottom: $margin-base;
+  padding: 0.1em $margin-side $margin-base $margin-side;
+  background: rgba(240, 240, 240, 0.70);
+  border: 1px solid $gray;
+  border-top: 0;
+}
+
+.field-properties .layout-elem {
+  margin-bottom: $margin-base;
+  margin-right: $margin-side;
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+.object-xtend .layout-elem {
+  margin-bottom: 0;
+  //! z-index: 1;
+  position: relative;
+  margin-right: $margin-side;
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+.object-xtend .fform-layout-block {
+  margin-bottom: 0.1em;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.property-array-item-menu {
+  display: flex;
+  flex: 0 1;
+  flex-Direction: row;
+  margin-left: $margin-side;
+  align-self: flex-start;
+}
+
+.property-array-item-menu button {
+  margin-right: -1px;
+  border-radius: .0em;
+
+  &:first-child {
+    border-radius: $border-radius 0 0 $border-radius;
+  }
+  &:last-child {
+    border-radius: 0 $border-radius 0 0;
+    margin: 0;
+  }
+}
+
+.array-add-button {
+  margin: 0 0 0.5em 0;
+  border-radius: $border-radius;
+}
+
+.checkbox-boolean {
+  margin-top: 1.8em;
+}
+
+legend {
+  font-size: 1.2em;
+  // padding-top: .4em;
+  display: block;
+}
+
+.collapse-props-button {
+  // margin-right: -1px;
+  border-radius: $border-radius 0 0 0;
+  align-self: flex-start;
+}
+
+.field-properties .collapse-props-button {
+  margin-right: -1px;
+  border-radius: $border-radius 0 0 0;
+  align-self: flex-start;
+}
+
+.fform-inline-title-block {
+  margin-top: 0.3em;
+  margin-right: 0.4em;
+}
+
+.array-item {
+  margin-left: 0;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.array-item-menu {
+  padding-left: 1.0em;
+}
+
+.array-item-body {
+  flex-grow: 1;
+}
+
+.hidden {
+  display: none;
+}
+
+.ffview-label{
+  display: inline-flex;
+  margin-right: 1.5em;
+}

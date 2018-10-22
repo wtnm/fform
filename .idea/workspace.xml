@@ -1,0 +1,1563 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="" />
+    <ignored path="$PROJECT_DIR$/.tmp/" />
+    <ignored path="$PROJECT_DIR$/temp/" />
+    <ignored path="$PROJECT_DIR$/tmp/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CreatePatchCommitExecutor">
+    <option name="PATCH_PATH" value="" />
+  </component>
+  <component name="FUSProjectUsageTrigger">
+    <session id="-466528698">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="13" />
+          <entry key="project.open.time.10" value="1" />
+          <entry key="project.open.time.11" value="2" />
+          <entry key="project.open.time.8" value="4" />
+          <entry key="project.open.time.9" value="4" />
+          <entry key="project.opened" value="13" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.js.language.service.starts">
+        <counts>
+          <entry key="TypeScriptServerServiceImpl" value="8" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.open">
+        <counts>
+          <entry key="js" value="3" />
+          <entry key="json" value="1" />
+          <entry key="scss" value="1" />
+          <entry key="tsx" value="2" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="JSON" value="1" />
+          <entry key="JavaScript" value="3" />
+          <entry key="SCSS" value="1" />
+          <entry key="TypeScript JSX" value="2" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="json" value="2" />
+          <entry key="scss" value="23" />
+          <entry key="tsx" value="225" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="JSON" value="2" />
+          <entry key="SCSS" value="23" />
+          <entry key="TypeScript JSX" value="225" />
+        </counts>
+      </usages-collector>
+    </session>
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="JRRForm" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/constructor.tsx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="615">
+              <caret line="41" column="1" selection-start-line="41" selection-start-column="1" selection-end-line="41" selection-end-column="1" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/FFEditor.tsx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="10680">
+              <caret line="712" column="4" selection-start-line="712" selection-start-column="4" selection-end-line="712" selection-end-column="4" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/FFView.tsx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="420">
+              <caret line="28" column="20" lean-forward="true" selection-start-line="28" selection-start-column="20" selection-end-line="28" selection-end-column="20" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/core/core.tsx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="14340">
+              <caret line="956" column="64" selection-start-line="956" selection-start-column="54" selection-end-line="956" selection-end-column="64" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/constructorLib.tsx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <caret column="42" selection-start-column="42" selection-end-column="42" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="360">
+              <caret line="24" column="47" selection-start-line="24" selection-start-column="47" selection-end-line="24" selection-end-column="47" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/styles.scss">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="4470">
+              <caret line="298" column="21" selection-start-line="298" selection-start-column="21" selection-end-line="298" selection-end-column="21" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="8265">
+              <caret line="551" column="81" selection-start-line="551" selection-start-column="76" selection-end-line="551" selection-end-column="81" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="12375">
+              <caret line="825" selection-start-line="825" selection-end-line="825" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="HTML File" />
+        <option value="TypeScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>extend</find>
+      <find>reducer</find>
+      <find>dispath</find>
+      <find>_handleChange</find>
+      <find>addListener</find>
+      <find>getFieldBlocks</find>
+      <find>execActions</find>
+      <find>actionExecActions</find>
+      <find>actionNameReplaceState</find>
+      <find>options</find>
+      <find>mergeOptions</find>
+      <find>execute</find>
+      <find>rawVa</find>
+      <find>values</find>
+      <find>rawValuesOnChange</find>
+      <find>aluesOnChange</find>
+      <find>onChange</find>
+      <find>rawV</find>
+      <find>rawValues</find>
+      <find>basicObjects</find>
+      <find>ArrayInput</find>
+      <find>hidden</find>
+      <find>objects</find>
+      <find>editFormObjects</find>
+      <find>fieldPropsSchema</find>
+      <find>FFView</find>
+      <find>row</find>
+      <find>flex</find>
+      <find>flexFlow</find>
+      <find>arra</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>GroupBlocks</replace>
+      <replace>Layouts</replace>
+      <replace>SetRawValuesType</replace>
+      <replace>field</replace>
+      <replace>FField</replace>
+      <replace>fField</replace>
+      <replace>pFForm</replace>
+      <replace>pFField</replace>
+      <replace>passPFField</replace>
+      <replace>null</replace>
+      <replace>undefined</replace>
+      <replace>fRefs</replace>
+      <replace>stateBranch</replace>
+      <replace>enumOptions</replace>
+      <replace>path + '/@</replace>
+      <replace>//! z-index</replace>
+      <replace>execute: 1</replace>
+      <replace>fieldCacheOff</replace>
+      <replace>external</replace>
+      <replace>=&gt;</replace>
+      <replace>__EXTERNAL__</replace>
+      <replace>Array.isArray</replace>
+      <replace>let testObject</replace>
+      <replace>testObject</replace>
+      <replace>commonFuncs.isEqual</replace>
+      <replace>commonFuncs.mergeState</replace>
+      <replace>stateFuncs.object2PathValues</replace>
+      <replace>commonFuncs.merge</replace>
+      <replace>apiFuncs.getRawValuesChanges</replace>
+      <replace>parseInt</replace>
+    </replaceStrings>
+    <dirStrings>
+      <dir>C:\workspace\nodejs\FForm\src\tacit</dir>
+    </dirStrings>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/src/reactstrap.tsx" />
+        <option value="$PROJECT_DIR$/src/tacit/_headings.scss" />
+        <option value="$PROJECT_DIR$/src/tacit/_responsive.scss" />
+        <option value="$PROJECT_DIR$/src/tacit/_tables.scss" />
+        <option value="$PROJECT_DIR$/src/checkbox.tsx" />
+        <option value="$PROJECT_DIR$/src/tacit/_defs.scss" />
+        <option value="$PROJECT_DIR$/src/tacit/_grid.scss" />
+        <option value="$PROJECT_DIR$/src/core.scss" />
+        <option value="$PROJECT_DIR$/props-loader.js" />
+        <option value="$PROJECT_DIR$/node_modules/react-input-autosize/lib/AutosizeInput.js" />
+        <option value="$PROJECT_DIR$/src/tacit/_forms.scss" />
+        <option value="$PROJECT_DIR$/webpack.config.js" />
+        <option value="chrome-extension://jlgkpaicikihijadgifklkbpdajbkhjo/js/jquery-2.1.4.min.js" />
+        <option value="vm:101" />
+        <option value="vm:116" />
+        <option value="vm:131" />
+        <option value="vm:220" />
+        <option value="vm:226" />
+        <option value="$PROJECT_DIR$/__tests__/schema.js" />
+        <option value="$PROJECT_DIR$/__tests__/schema3.js" />
+        <option value="chrome-extension://cfhdojbkjhnklbpkdaibdccddilifddb/elemHideEmulation.js" />
+        <option value="extensions::messaging" />
+        <option value="$PROJECT_DIR$/src/exoPromise.ts" />
+        <option value="chrome-extension://cfhdojbkjhnklbpkdaibdccddilifddb/include.preload.js" />
+        <option value="$PROJECT_DIR$/src/dataTypes.d.ts" />
+        <option value="$PROJECT_DIR$/src/schemaTypes.d.ts" />
+        <option value="$PROJECT_DIR$/src/fnTypes.d.ts" />
+        <option value="$PROJECT_DIR$/webpack.constuctor.config.js" />
+        <option value="$PROJECT_DIR$/src/construcotrLib.tsx" />
+        <option value="$PROJECT_DIR$/src/test.html" />
+        <option value="$PROJECT_DIR$/src/core.tsx" />
+        <option value="$PROJECT_DIR$/src/core/lib.ts" />
+        <option value="$PROJECT_DIR$/src/core/lib.tsx" />
+        <option value="$PROJECT_DIR$/src/core/shemaLib.tsx" />
+        <option value="$PROJECT_DIR$/src/core/commonlib.tsx" />
+        <option value="$PROJECT_DIR$/__tests__/testCommon.js" />
+        <option value="$PROJECT_DIR$/__tests__/testConstructor.js" />
+        <option value="$PROJECT_DIR$/src/core/stateLib.tsx" />
+        <option value="$PROJECT_DIR$/src/core/commonLib.tsx" />
+        <option value="$PROJECT_DIR$/src/core/README.md" />
+        <option value="$PROJECT_DIR$/src/core/api.tsx" />
+        <option value="$PROJECT_DIR$/__tests__/testForm.js" />
+        <option value="$PROJECT_DIR$/src/core/fnTypes.d.ts" />
+        <option value="$PROJECT_DIR$/src/editForm.tsx" />
+        <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/src/cView.tsx" />
+        <option value="$PROJECT_DIR$/src/core/core.tsx" />
+        <option value="$PROJECT_DIR$/src/constructor.tsx" />
+        <option value="$PROJECT_DIR$/src/constructorLib.tsx" />
+        <option value="$PROJECT_DIR$/src/styles.scss" />
+        <option value="$PROJECT_DIR$/src/FFView.tsx" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER">
+    <package-json value="$PROJECT_DIR$/package.json" />
+  </component>
+  <component name="JsFlowSettings">
+    <service-enabled>false</service-enabled>
+    <exe-path />
+    <annotation-enable>false</annotation-enable>
+    <other-services-enabled>false</other-services-enabled>
+    <auto-save>true</auto-save>
+  </component>
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="NodeModulesDirectoryManager">
+    <handled-path value="$PROJECT_DIR$/node_modules" />
+  </component>
+  <component name="NodePackageJsonFileManager">
+    <packageJsonPaths>
+      <path value="$PROJECT_DIR$/package.json" />
+      <path value="$PROJECT_DIR$/src/core/is-my-json-valid/package.json" />
+      <path value="$PROJECT_DIR$/src/old/react-select-master/package.json" />
+    </packageJsonPaths>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="width" value="1022" />
+    <option name="height" value="726" />
+  </component>
+  <component name="ProjectInspectionProfilesVisibleTreeState">
+    <entry key="Project Default">
+      <profile-state>
+        <expanded-state>
+          <State>
+            <id />
+          </State>
+          <State>
+            <id>CSS</id>
+          </State>
+          <State>
+            <id>Code style issuesJavaScript</id>
+          </State>
+          <State>
+            <id>CoffeeScript</id>
+          </State>
+          <State>
+            <id>Control flow issuesJavaScript</id>
+          </State>
+          <State>
+            <id>Cucumber</id>
+          </State>
+          <State>
+            <id>ECMAScript 6 migration aidsJavaScript</id>
+          </State>
+          <State>
+            <id>Error handlingJavaScript</id>
+          </State>
+          <State>
+            <id>GeneralCoffeeScript</id>
+          </State>
+          <State>
+            <id>GeneralJavaScript</id>
+          </State>
+          <State>
+            <id>JavaScript</id>
+          </State>
+          <State>
+            <id>JavaScript function metricsJavaScript</id>
+          </State>
+          <State>
+            <id>JavaScript validity issuesJavaScript</id>
+          </State>
+          <State>
+            <id>Node.jsJavaScript</id>
+          </State>
+          <State>
+            <id>Potentially confusing code constructsJavaScript</id>
+          </State>
+          <State>
+            <id>Probable bugsCoffeeScript</id>
+          </State>
+          <State>
+            <id>Probable bugsJavaScript</id>
+          </State>
+          <State>
+            <id>RELAX NG</id>
+          </State>
+          <State>
+            <id>XML</id>
+          </State>
+          <State>
+            <id>XSLT</id>
+          </State>
+        </expanded-state>
+        <selected-state>
+          <State>
+            <id>JSUnusedAssignment</id>
+          </State>
+        </selected-state>
+      </profile-state>
+    </entry>
+  </component>
+  <component name="ProjectStartupLocalConfiguration">
+    <configurations>
+      <configuration id="npm.compile:constructor:dev" name="compile:constructor:dev" />
+    </configurations>
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="FForm" type="b2602c69:ProjectViewProjectNode" />
+              <item name="FForm" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="FForm" type="b2602c69:ProjectViewProjectNode" />
+              <item name="FForm" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultHtmlFileTemplate" value="HTML File" />
+    <property name="HbShouldOpenHtmlAsHb" value="" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="javascript.nodejs.core.library.configured.version" value="7.3.0" />
+    <property name="js-jscs-nodeInterpreter" value="C:\Program Files\nodejs\node.exe" />
+    <property name="js.eslint.eslintPackage" value="" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/core/commonLib.tsx" />
+    <property name="node.js.detected.package.prettier" value="true" />
+    <property name="node.js.path.for.package.prettier" value="project" />
+    <property name="node.js.selected.package.prettier" value="" />
+    <property name="nodejs.mocha.mocha_node_package_dir" value="$USER_HOME$/AppData/Roaming/npm/node_modules/mocha" />
+    <property name="nodejs_interpreter_path" value="C:/Program Files/nodejs/node" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="web.server" />
+    <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
+    <property name="typescript-compiler-editor-notification" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\workspace\nodejs\FForm\src" />
+      <recent name="C:\workspace\nodejs\FForm\src\formObjects" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="JavaScript Debug.Form">
+    <configuration default="true" type="NodeJSRemoteDebug" factoryName="Node.js Remote Debug">
+      <node-js-remote-debug />
+      <method />
+    </configuration>
+    <configuration default="true" type="docker-deploy" factoryName="Docker Deployment">
+      <method />
+    </configuration>
+    <configuration name="Form" type="JavascriptDebugType" factoryName="JavaScript Debug" engineId="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" uri="http://localhost:63342/FForm/index.html">
+      <method v="2" />
+    </configuration>
+    <configuration name="Unnamed" type="JavascriptDebugType" factoryName="JavaScript Debug" engineId="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" uri="http://localhost:63342/FForm/src/test.html">
+      <method v="2" />
+    </configuration>
+    <configuration name="minifyProps" type="NodeJSConfigurationType" factoryName="Node.js" path-to-js-file="props-loader.js" working-dir="$PROJECT_DIR$">
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="js.build_tools.grunt" factoryName="Grunt.js">
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="js.build_tools.gulp" factoryName="Gulp.js">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <gulpfile />
+      <tasks />
+      <arguments />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="Unnamed" type="js.build_tools.npm" factoryName="npm">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts />
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="compile:FForm" type="js.build_tools.npm" factoryName="npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="compile:FForm" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="compile:FForm:dev" type="js.build_tools.npm" factoryName="npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="compile:FForm:dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="compile:constructor:dev" type="js.build_tools.npm" factoryName="npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="compile:constructor:dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="docs" type="js.build_tools.npm" factoryName="npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="docs" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="docs:markdown" type="js.build_tools.npm" factoryName="npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="docs:markdown" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="meteor-app-runner" factoryName="Meteor">
+      <option name="exePath" value="$USER_HOME$/AppData/Local/.meteor/meteor.bat" />
+      <option name="startBrowserSettings">
+        <browser url="http://localhost:3000" />
+      </option>
+      <meteor-runner-state>
+        <startBrowserSettings>
+          <browser url="http://localhost:3000" />
+        </startBrowserSettings>
+      </meteor-runner-state>
+      <method v="2" />
+    </configuration>
+    <configuration name="testConstructor" type="mocha-javascript-test-runner" factoryName="Mocha">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <working-directory>$PROJECT_DIR$</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <envs>
+        <env name="TS_NODE_DISABLE_WARNINGS" value="1" />
+        <env name="NODE_ENV" value="test" />
+      </envs>
+      <ui>bdd</ui>
+      <extra-mocha-options>--compilers &quot;ts:ts-node/register,tsx:ts-node/register&quot; --require ignore-styles</extra-mocha-options>
+      <test-kind>TEST_FILE</test-kind>
+      <test-file>$PROJECT_DIR$/__tests__/testConstructor.js</test-file>
+      <method v="2" />
+    </configuration>
+    <configuration name="testCore" type="mocha-javascript-test-runner" factoryName="Mocha">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <working-directory>$PROJECT_DIR$</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <envs>
+        <env name="TS_NODE_DISABLE_WARNINGS" value="1" />
+        <env name="NODE_ENV" value="test" />
+      </envs>
+      <ui>bdd</ui>
+      <extra-mocha-options>--compilers &quot;ts:ts-node/register,tsx:ts-node/register&quot;</extra-mocha-options>
+      <test-kind>TEST_FILE</test-kind>
+      <test-file>$PROJECT_DIR$/__tests__/testForm.js</test-file>
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="JavaScript Debug.Unnamed" />
+      <item itemvalue="JavaScript Debug.Form" />
+      <item itemvalue="Mocha.testCore" />
+      <item itemvalue="Mocha.testConstructor" />
+      <item itemvalue="Node.js.minifyProps" />
+      <item itemvalue="npm.Unnamed" />
+      <item itemvalue="npm.compile:constructor:dev" />
+      <item itemvalue="npm.compile:FForm" />
+      <item itemvalue="npm.compile:FForm:dev" />
+      <item itemvalue="npm.docs" />
+      <item itemvalue="npm.docs:markdown" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.compile:constructor:dev" />
+        <item itemvalue="npm.docs" />
+        <item itemvalue="npm.docs:markdown" />
+        <item itemvalue="npm.compile:FForm" />
+        <item itemvalue="npm.compile:FForm:dev" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="StructureViewFactory">
+    <option name="AUTOSCROLL_FROM_SOURCE" value="true" />
+    <option name="ACTIVE_ACTIONS" value=",HIDE_INHERITED,SHOW_FIELDS,HIDE_INHERITED_FROM_OBJECT" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="" />
+      <created>1482841658237</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1482841658237</updated>
+      <workItem from="1482841659448" duration="281000" />
+      <workItem from="1482841954531" duration="2480000" />
+      <workItem from="1482845302261" duration="3837000" />
+      <workItem from="1482849154681" duration="16209000" />
+      <workItem from="1482921181536" duration="12637000" />
+      <workItem from="1482956828451" duration="441000" />
+      <workItem from="1482957294195" duration="694000" />
+      <workItem from="1482958036189" duration="1049000" />
+      <workItem from="1482959098582" duration="51000" />
+      <workItem from="1482959162267" duration="2753000" />
+      <workItem from="1483010115279" duration="33136000" />
+      <workItem from="1483092297661" duration="19714000" />
+      <workItem from="1483138472808" duration="7000" />
+      <workItem from="1483138556707" duration="1301000" />
+      <workItem from="1483186917967" duration="327000" />
+      <workItem from="1483187291126" duration="14493000" />
+      <workItem from="1483267168773" duration="20544000" />
+      <workItem from="1483352264703" duration="18753000" />
+      <workItem from="1483386041847" duration="4153000" />
+      <workItem from="1483403978232" duration="20000" />
+      <workItem from="1483438575274" duration="20910000" />
+      <workItem from="1483482991811" duration="79000" />
+      <workItem from="1483522676839" duration="2089000" />
+      <workItem from="1483532812191" duration="21691000" />
+      <workItem from="1483576274117" duration="1224000" />
+      <workItem from="1483617739041" duration="13908000" />
+      <workItem from="1483661945001" duration="899000" />
+      <workItem from="1483698094695" duration="16005000" />
+      <workItem from="1483785488708" duration="18101000" />
+      <workItem from="1483831474937" duration="840000" />
+      <workItem from="1483874337916" duration="12550000" />
+      <workItem from="1483905496815" duration="774000" />
+      <workItem from="1483908409047" duration="254000" />
+      <workItem from="1483908934370" duration="3446000" />
+      <workItem from="1483921825752" duration="706000" />
+      <workItem from="1483962528896" duration="23000" />
+      <workItem from="1483964248475" duration="594000" />
+      <workItem from="1483977022803" duration="3038000" />
+      <workItem from="1484307738402" duration="8164000" />
+      <workItem from="1484336145730" duration="599000" />
+      <workItem from="1484354361799" duration="1402000" />
+      <workItem from="1484396135728" duration="596000" />
+      <workItem from="1484483977870" duration="14395000" />
+      <workItem from="1484517255248" duration="2050000" />
+      <workItem from="1484565666934" duration="6936000" />
+      <workItem from="1484654020791" duration="17279000" />
+      <workItem from="1484747937845" duration="10963000" />
+      <workItem from="1484841322440" duration="6235000" />
+      <workItem from="1484854940676" duration="9314000" />
+      <workItem from="1484912720414" duration="16355000" />
+      <workItem from="1485016746844" duration="5103000" />
+      <workItem from="1485091367630" duration="4686000" />
+      <workItem from="1485114000024" duration="6743000" />
+      <workItem from="1485178133792" duration="1188000" />
+      <workItem from="1485259056752" duration="4358000" />
+      <workItem from="1485288156540" duration="866000" />
+      <workItem from="1485293378163" duration="3817000" />
+      <workItem from="1485354899081" duration="14219000" />
+      <workItem from="1485432756797" duration="594000" />
+      <workItem from="1485443319876" duration="11775000" />
+      <workItem from="1485520188160" duration="11724000" />
+      <workItem from="1485612951054" duration="10728000" />
+      <workItem from="1485699637698" duration="3992000" />
+      <workItem from="1485714393164" duration="6185000" />
+      <workItem from="1485799088144" duration="6419000" />
+      <workItem from="1485871206467" duration="15265000" />
+      <workItem from="1485975926960" duration="934000" />
+      <workItem from="1485981791264" duration="5941000" />
+      <workItem from="1486046573157" duration="9409000" />
+      <workItem from="1486130214273" duration="595000" />
+      <workItem from="1486147363021" duration="9321000" />
+      <workItem from="1486174226011" duration="578000" />
+      <workItem from="1486212153098" duration="11671000" />
+      <workItem from="1486319993051" duration="1033000" />
+      <workItem from="1486321510589" duration="4911000" />
+      <workItem from="1486388353546" duration="4751000" />
+      <workItem from="1486427676786" duration="1100000" />
+      <workItem from="1486478604191" duration="649000" />
+      <workItem from="1486482668570" duration="9917000" />
+      <workItem from="1486563157712" duration="10108000" />
+      <workItem from="1486591545022" duration="3791000" />
+      <workItem from="1486608886511" duration="845000" />
+      <workItem from="1486610222013" duration="930000" />
+      <workItem from="1486646344916" duration="3398000" />
+      <workItem from="1486669024437" duration="13465000" />
+      <workItem from="1486735762130" duration="10254000" />
+      <workItem from="1486830815912" duration="10371000" />
+      <workItem from="1486908221274" duration="7066000" />
+      <workItem from="1486928228280" duration="9620000" />
+      <workItem from="1486951529107" duration="925000" />
+      <workItem from="1487005226577" duration="1000" />
+      <workItem from="1487014914266" duration="9077000" />
+      <workItem from="1487046179114" duration="293000" />
+      <workItem from="1487082260489" duration="21907000" />
+      <workItem from="1487172122380" duration="31564000" />
+      <workItem from="1487215290663" duration="1928000" />
+      <workItem from="1487217246915" duration="22000" />
+      <workItem from="1487252438394" duration="20668000" />
+      <workItem from="1487345688113" duration="22764000" />
+      <workItem from="1487430215150" duration="23582000" />
+      <workItem from="1487526161102" duration="14662000" />
+      <workItem from="1487617742963" duration="1806000" />
+      <workItem from="1487648061424" duration="12000" />
+      <workItem from="1487687705963" duration="12555000" />
+      <workItem from="1487773948571" duration="19000" />
+      <workItem from="1487784219513" duration="16517000" />
+      <workItem from="1487863683088" duration="14576000" />
+      <workItem from="1487951248778" duration="23897000" />
+      <workItem from="1488035773712" duration="10775000" />
+      <workItem from="1488129431034" duration="4801000" />
+      <workItem from="1488140287527" duration="8462000" />
+      <workItem from="1488165499048" duration="2138000" />
+      <workItem from="1488172741484" duration="1267000" />
+      <workItem from="1488212649684" duration="1628000" />
+      <workItem from="1488223495016" duration="16082000" />
+      <workItem from="1488253621733" duration="1046000" />
+      <workItem from="1488311328642" duration="13423000" />
+      <workItem from="1488340370614" duration="665000" />
+      <workItem from="1488375919205" duration="21760000" />
+      <workItem from="1488433465592" duration="788000" />
+      <workItem from="1488464194656" duration="21085000" />
+      <workItem from="1488516582295" duration="937000" />
+      <workItem from="1488571163308" duration="10216000" />
+      <workItem from="1488601331884" duration="1713000" />
+      <workItem from="1488605055673" duration="349000" />
+      <workItem from="1488644808042" duration="10267000" />
+      <workItem from="1488731152897" duration="3657000" />
+      <workItem from="1488744449563" duration="13450000" />
+      <workItem from="1488833584256" duration="10144000" />
+      <workItem from="1488907700445" duration="647000" />
+      <workItem from="1488920624978" duration="11529000" />
+      <workItem from="1488992039528" duration="9093000" />
+      <workItem from="1489079230299" duration="13154000" />
+      <workItem from="1489168616032" duration="9958000" />
+      <workItem from="1489267975905" duration="6155000" />
+      <workItem from="1489297352308" duration="54000" />
+      <workItem from="1489343124942" duration="6295000" />
+      <workItem from="1489411021977" duration="4321000" />
+      <workItem from="1489515558921" duration="18000" />
+      <workItem from="1489524897979" duration="8261000" />
+      <workItem from="1489592956357" duration="19369000" />
+      <workItem from="1489685083541" duration="19497000" />
+      <workItem from="1489746437403" duration="29372000" />
+      <workItem from="1489805901349" duration="27000" />
+      <workItem from="1489806026977" duration="315000" />
+      <workItem from="1489855377006" duration="595000" />
+      <workItem from="1489890830055" duration="579000" />
+      <workItem from="1489974047224" duration="1323000" />
+      <workItem from="1490038456240" duration="1279000" />
+      <workItem from="1490041291984" duration="3673000" />
+      <workItem from="1490114486437" duration="11688000" />
+      <workItem from="1490198723181" duration="15434000" />
+      <workItem from="1490286203323" duration="11034000" />
+      <workItem from="1490323355814" duration="815000" />
+      <workItem from="1490368951226" duration="10046000" />
+      <workItem from="1490402375132" duration="4254000" />
+      <workItem from="1490457682447" duration="16470000" />
+      <workItem from="1490496551584" duration="1217000" />
+      <workItem from="1490544204914" duration="16867000" />
+      <workItem from="1490631347028" duration="3427000" />
+      <workItem from="1490803286301" duration="599000" />
+      <workItem from="1490903044150" duration="2378000" />
+      <workItem from="1490994736575" duration="2264000" />
+      <workItem from="1491091870516" duration="625000" />
+      <workItem from="1491510979511" duration="7641000" />
+      <workItem from="1491546068369" duration="215000" />
+      <workItem from="1491583451487" duration="7699000" />
+      <workItem from="1491622530946" duration="1403000" />
+      <workItem from="1491665426435" duration="3901000" />
+      <workItem from="1491758819884" duration="9862000" />
+      <workItem from="1491848583921" duration="11800000" />
+      <workItem from="1491936487830" duration="598000" />
+      <workItem from="1491956329587" duration="5222000" />
+      <workItem from="1492018834477" duration="2696000" />
+      <workItem from="1492109888149" duration="28000" />
+      <workItem from="1492110015558" duration="3066000" />
+      <workItem from="1492203927797" duration="1589000" />
+      <workItem from="1492287522534" duration="595000" />
+      <workItem from="1492452352749" duration="596000" />
+      <workItem from="1492546176400" duration="598000" />
+      <workItem from="1492631886525" duration="5286000" />
+      <workItem from="1492715929799" duration="4706000" />
+      <workItem from="1492808594333" duration="3271000" />
+      <workItem from="1492917033581" duration="595000" />
+      <workItem from="1493170926308" duration="667000" />
+      <workItem from="1493614221558" duration="15000" />
+      <workItem from="1493614270514" duration="602000" />
+      <workItem from="1493616382103" duration="602000" />
+      <workItem from="1493694027254" duration="596000" />
+      <workItem from="1493817095433" duration="37000" />
+      <workItem from="1493963447164" duration="1199000" />
+      <workItem from="1494126752556" duration="12833000" />
+      <workItem from="1494205252941" duration="760000" />
+      <workItem from="1494208185557" duration="5239000" />
+      <workItem from="1494323891617" duration="799000" />
+      <workItem from="1494382014001" duration="5857000" />
+      <workItem from="1494470129970" duration="1540000" />
+      <workItem from="1494583003937" duration="2445000" />
+      <workItem from="1494643374765" duration="192000" />
+      <workItem from="1494664472618" duration="2251000" />
+      <workItem from="1494748322984" duration="599000" />
+      <workItem from="1494755989809" duration="594000" />
+      <workItem from="1494813927789" duration="599000" />
+      <workItem from="1494845606371" duration="1050000" />
+      <workItem from="1494848272188" duration="4209000" />
+      <workItem from="1494934983590" duration="591000" />
+      <workItem from="1495023212048" duration="1305000" />
+      <workItem from="1495033531711" duration="746000" />
+      <workItem from="1495098422673" duration="696000" />
+      <workItem from="1495105996996" duration="3091000" />
+      <workItem from="1495152746584" duration="4000" />
+      <workItem from="1495157147703" duration="596000" />
+      <workItem from="1495169300456" duration="8552000" />
+      <workItem from="1495258372983" duration="1197000" />
+      <workItem from="1495524566932" duration="735000" />
+      <workItem from="1495538993854" duration="3844000" />
+      <workItem from="1495606069368" duration="3508000" />
+      <workItem from="1495695421586" duration="1828000" />
+      <workItem from="1495765164311" duration="599000" />
+      <workItem from="1495796193834" duration="3583000" />
+      <workItem from="1495854199308" duration="2741000" />
+      <workItem from="1495868021279" duration="4539000" />
+      <workItem from="1495878319046" duration="8199000" />
+      <workItem from="1495940847292" duration="3529000" />
+      <workItem from="1496045711442" duration="4769000" />
+      <workItem from="1496116395025" duration="3065000" />
+      <workItem from="1496139961628" duration="594000" />
+      <workItem from="1496150630087" duration="1873000" />
+      <workItem from="1496225026371" duration="5504000" />
+      <workItem from="1496287166875" duration="5346000" />
+      <workItem from="1496331415001" duration="734000" />
+      <workItem from="1496374430595" duration="593000" />
+      <workItem from="1496479605496" duration="2294000" />
+      <workItem from="1496483480676" duration="1248000" />
+      <workItem from="1496488232255" duration="8949000" />
+      <workItem from="1496502522535" duration="750000" />
+      <workItem from="1496550676126" duration="12138000" />
+      <workItem from="1496581478275" duration="2124000" />
+      <workItem from="1496634328214" duration="3889000" />
+      <workItem from="1496667207386" duration="3566000" />
+      <workItem from="1496678862661" duration="684000" />
+      <workItem from="1496722049187" duration="8372000" />
+      <workItem from="1496747860859" duration="1454000" />
+      <workItem from="1496749520486" duration="2974000" />
+      <workItem from="1496801923796" duration="5227000" />
+      <workItem from="1496901053745" duration="3319000" />
+      <workItem from="1497004323022" duration="611000" />
+      <workItem from="1497006455434" duration="599000" />
+      <workItem from="1497439515011" duration="1947000" />
+      <workItem from="1497520854923" duration="3245000" />
+      <workItem from="1497874039552" duration="1946000" />
+      <workItem from="1498043758622" duration="599000" />
+      <workItem from="1498131554157" duration="2343000" />
+      <workItem from="1498195313562" duration="1197000" />
+      <workItem from="1498283406385" duration="610000" />
+      <workItem from="1498286746388" duration="611000" />
+      <workItem from="1498373419048" duration="3475000" />
+      <workItem from="1498417913601" duration="15000" />
+      <workItem from="1498462542103" duration="8284000" />
+      <workItem from="1498545753070" duration="11061000" />
+      <workItem from="1498632835020" duration="10885000" />
+      <workItem from="1498720932242" duration="2559000" />
+      <workItem from="1498894610741" duration="4000" />
+      <workItem from="1499155338086" duration="6609000" />
+      <workItem from="1499432816638" duration="660000" />
+      <workItem from="1499502841410" duration="599000" />
+      <workItem from="1499597105075" duration="23617000" />
+      <workItem from="1499929153394" duration="17391000" />
+      <workItem from="1500066780125" duration="269000" />
+      <workItem from="1500067493156" duration="2979000" />
+      <workItem from="1500241989582" duration="2890000" />
+      <workItem from="1500407868506" duration="264000" />
+      <workItem from="1500408190458" duration="4619000" />
+      <workItem from="1500561928873" duration="27615000" />
+      <workItem from="1500997989874" duration="8783000" />
+      <workItem from="1501060093243" duration="23638000" />
+      <workItem from="1501258968775" duration="4315000" />
+      <workItem from="1501332708432" duration="15617000" />
+      <workItem from="1501498678143" duration="14972000" />
+      <workItem from="1501581471112" duration="33157000" />
+      <workItem from="1502023204252" duration="487000" />
+      <workItem from="1502023753303" duration="9961000" />
+      <workItem from="1502095074836" duration="3026000" />
+      <workItem from="1502140502930" duration="8356000" />
+      <workItem from="1502153129733" duration="39000" />
+      <workItem from="1502186745884" duration="20415000" />
+      <workItem from="1502276312647" duration="10282000" />
+      <workItem from="1502301610111" duration="610000" />
+      <workItem from="1502371296821" duration="595000" />
+      <workItem from="1502394409926" duration="11000" />
+      <workItem from="1502395877481" duration="2137000" />
+      <workItem from="1502564771180" duration="598000" />
+      <workItem from="1502634856895" duration="20400000" />
+      <workItem from="1502818456969" duration="1879000" />
+      <workItem from="1502891975577" duration="5863000" />
+      <workItem from="1503066957205" duration="599000" />
+      <workItem from="1503157451707" duration="10343000" />
+      <workItem from="1503245516095" duration="15271000" />
+      <workItem from="1503329839942" duration="16191000" />
+      <workItem from="1503459160570" duration="1025000" />
+      <workItem from="1503469783657" duration="1780000" />
+      <workItem from="1503515144730" duration="6813000" />
+      <workItem from="1503622860803" duration="24000" />
+      <workItem from="1503622928366" duration="3814000" />
+      <workItem from="1503629267136" duration="3372000" />
+      <workItem from="1503699504524" duration="24113000" />
+      <workItem from="1504070352834" duration="14118000" />
+      <workItem from="1504228621934" duration="604000" />
+      <workItem from="1504230449764" duration="7254000" />
+      <workItem from="1504326469544" duration="10171000" />
+      <workItem from="1504387101004" duration="16870000" />
+      <workItem from="1504480272894" duration="739000" />
+      <workItem from="1504494215247" duration="7733000" />
+      <workItem from="1504566556652" duration="23812000" />
+      <workItem from="1504746674559" duration="1209000" />
+      <workItem from="1504832406056" duration="599000" />
+      <workItem from="1504919329490" duration="25219000" />
+      <workItem from="1505016060782" duration="10368000" />
+      <workItem from="1505100483668" duration="12498000" />
+      <workItem from="1505262438152" duration="4395000" />
+      <workItem from="1505362361091" duration="603000" />
+      <workItem from="1505367659166" duration="30000" />
+      <workItem from="1505380884330" duration="6316000" />
+      <workItem from="1505459121997" duration="1767000" />
+      <workItem from="1505475821109" duration="14496000" />
+      <workItem from="1505725700392" duration="612000" />
+      <workItem from="1506348910492" duration="614000" />
+      <workItem from="1506518153933" duration="3574000" />
+      <workItem from="1507029304020" duration="2270000" />
+      <workItem from="1507202931212" duration="599000" />
+      <workItem from="1507493101469" duration="598000" />
+      <workItem from="1507748060332" duration="1707000" />
+      <workItem from="1508568547071" duration="27000" />
+      <workItem from="1508568611636" duration="596000" />
+      <workItem from="1508646592958" duration="595000" />
+      <workItem from="1508729783023" duration="3592000" />
+      <workItem from="1508799050327" duration="599000" />
+      <workItem from="1508837034777" duration="1189000" />
+      <workItem from="1508996614766" duration="595000" />
+      <workItem from="1509159547394" duration="595000" />
+      <workItem from="1509249616153" duration="1199000" />
+      <workItem from="1509518336136" duration="599000" />
+      <workItem from="1510124574725" duration="2393000" />
+      <workItem from="1510392991566" duration="597000" />
+      <workItem from="1510737728941" duration="1214000" />
+      <workItem from="1510913690311" duration="606000" />
+      <workItem from="1510945144252" duration="2005000" />
+      <workItem from="1511089432604" duration="4137000" />
+      <workItem from="1511273055333" duration="11246000" />
+      <workItem from="1511545091384" duration="7741000" />
+      <workItem from="1511632948891" duration="4196000" />
+      <workItem from="1511721937787" duration="598000" />
+      <workItem from="1511783942975" duration="598000" />
+      <workItem from="1511878398780" duration="713000" />
+      <workItem from="1511880984012" duration="2723000" />
+      <workItem from="1511956496840" duration="2774000" />
+      <workItem from="1512059976734" duration="598000" />
+      <workItem from="1512182509155" duration="596000" />
+      <workItem from="1512247706104" duration="595000" />
+      <workItem from="1512250833793" duration="2045000" />
+      <workItem from="1512589616057" duration="599000" />
+      <workItem from="1512612838132" duration="3829000" />
+      <workItem from="1512934275497" duration="599000" />
+      <workItem from="1513196423604" duration="610000" />
+      <workItem from="1513198463331" duration="598000" />
+      <workItem from="1513646699070" duration="599000" />
+      <workItem from="1513918827294" duration="1808000" />
+      <workItem from="1514264434816" duration="1198000" />
+      <workItem from="1514612640734" duration="62000" />
+      <workItem from="1514612741449" duration="6013000" />
+      <workItem from="1515296992734" duration="1199000" />
+      <workItem from="1515397811316" duration="1258000" />
+      <workItem from="1515664997712" duration="1198000" />
+      <workItem from="1515746347151" duration="4930000" />
+      <workItem from="1515813374980" duration="1198000" />
+      <workItem from="1515929063151" duration="1221000" />
+      <workItem from="1516081886910" duration="599000" />
+      <workItem from="1516281501399" duration="14000" />
+      <workItem from="1516281643836" duration="2446000" />
+      <workItem from="1516714160534" duration="598000" />
+      <workItem from="1517409902552" duration="13000" />
+      <workItem from="1517409960690" duration="1262000" />
+      <workItem from="1517498599930" duration="676000" />
+      <workItem from="1518890537602" duration="441000" />
+      <workItem from="1518894027368" duration="29000" />
+      <workItem from="1519067064356" duration="684000" />
+      <workItem from="1520412615985" duration="42000" />
+      <workItem from="1520412703336" duration="599000" />
+      <workItem from="1521352184600" duration="12000" />
+      <workItem from="1522419097120" duration="12000" />
+      <workItem from="1523012248563" duration="18718000" />
+      <workItem from="1523218036332" duration="3376000" />
+      <workItem from="1523228263459" duration="18000" />
+      <workItem from="1523270027557" duration="558000" />
+      <workItem from="1523280227474" duration="155000" />
+      <workItem from="1523280451522" duration="14495000" />
+      <workItem from="1523375049627" duration="4698000" />
+      <workItem from="1523446077080" duration="2565000" />
+      <workItem from="1523476510194" duration="2476000" />
+      <workItem from="1523529641105" duration="15209000" />
+      <workItem from="1523713995097" duration="10799000" />
+      <workItem from="1523749372809" duration="8024000" />
+      <workItem from="1523789579800" duration="13082000" />
+      <workItem from="1523929566348" duration="5228000" />
+      <workItem from="1524070286914" duration="6163000" />
+      <workItem from="1524233116237" duration="19044000" />
+      <workItem from="1524539925594" duration="4684000" />
+      <workItem from="1524582331724" duration="8361000" />
+      <workItem from="1524675944198" duration="4248000" />
+      <workItem from="1524798623007" duration="4743000" />
+      <workItem from="1525155575261" duration="1374000" />
+      <workItem from="1525237913684" duration="599000" />
+      <workItem from="1525588135777" duration="10640000" />
+      <workItem from="1525613424068" duration="1343000" />
+      <workItem from="1525656842077" duration="14024000" />
+      <workItem from="1525744650082" duration="8669000" />
+      <workItem from="1525755899423" duration="12221000" />
+      <workItem from="1525788242038" duration="906000" />
+      <workItem from="1526815588872" duration="596000" />
+      <workItem from="1526816690726" duration="113000" />
+      <workItem from="1526927532790" duration="867000" />
+      <workItem from="1526928751405" duration="44000" />
+      <workItem from="1526928882724" duration="564000" />
+      <workItem from="1527011946305" duration="2422000" />
+      <workItem from="1527337363989" duration="4590000" />
+      <workItem from="1527353907522" duration="1523000" />
+      <workItem from="1527424578136" duration="1030000" />
+      <workItem from="1527602128235" duration="1198000" />
+      <workItem from="1528220603326" duration="1198000" />
+      <workItem from="1529617615639" duration="122000" />
+      <workItem from="1529617755762" duration="19000" />
+      <workItem from="1535467537181" duration="51000" />
+      <workItem from="1535805750482" duration="13000" />
+      <workItem from="1535806086531" duration="991000" />
+      <workItem from="1535808223325" duration="55000" />
+      <workItem from="1535808447206" duration="508000" />
+      <workItem from="1535809865695" duration="219000" />
+      <workItem from="1535810170460" duration="1013000" />
+      <workItem from="1535815658598" duration="19000" />
+      <workItem from="1536944437015" duration="788000" />
+      <workItem from="1538746110191" duration="3409000" />
+      <workItem from="1538928131980" duration="183000" />
+      <workItem from="1538928347160" duration="571000" />
+      <workItem from="1538930682359" duration="202000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TestHistory">
+    <history-entry file="testCore - 2018.05.08 at 17h 05m 34s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2018.05.08 at 17h 09m 08s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2018.05.08 at 17h 09m 51s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2018.05.08 at 17h 10m 18s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2018.05.08 at 17h 10m 40s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2018.05.08 at 17h 12m 08s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2018.05.08 at 17h 15m 39s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2018.05.08 at 17h 16m 10s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2018.05.08 at 17h 18m 04s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2018.05.21 at 21h 55m 03s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="2342879000" />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info id="DB Browser" order="0" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.36989248" visible="true" weight="0.09057399" />
+      <window_info id="Structure" order="2" sideWeight="0.6301075" side_tool="true" visible="true" weight="0.15376514" />
+      <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
+      <window_info id="npm" order="4" sideWeight="0.41616163" side_tool="true" weight="0.10795155" />
+      <window_info anchor="bottom" id="TODO" order="0" weight="0.32937366" />
+      <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.511396" side_tool="true" weight="0.28338763" />
+      <window_info anchor="bottom" id="Version Control" order="2" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Terminal" order="3" sideWeight="0.49238577" weight="0.32721382" />
+      <window_info anchor="bottom" id="DB Execution Console" order="4" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48860398" weight="0.28293738" />
+      <window_info anchor="bottom" id="TypeScript" order="6" weight="0.24730022" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4885396" weight="0.3034557" />
+      <window_info anchor="bottom" id="Find" order="9" weight="0.32790446" />
+      <window_info anchor="right" x="0" y="0" width="434" height="856" id="Documentation" order="0" side_tool="true" weight="0.32960597" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.ts" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>mock://C:\workspace\nodejs\JRRForm\__tests__\testJRRForm.js</url>
+          <line>5</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>mock://C:\workspace\nodejs\JRRForm\__tests__\testJRRForm.js</url>
+          <line>7</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+      </breakpoints>
+      <breakpoints-dialog>
+        <breakpoints-dialog />
+      </breakpoints-dialog>
+      <default-breakpoints>
+        <breakpoint enabled="true" type="javascript-exception">
+          <properties uncaughtOnly="true" />
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
+    <watches-manager>
+      <configuration name="JavascriptDebugType">
+        <watch expression="state" />
+        <watch expression="dataObj" />
+        <watch expression="value" />
+      </configuration>
+      <configuration name="NodeJSConfigurationType">
+        <watch expression="vars" />
+        <watch expression="stringsProps" />
+        <watch expression="props" />
+        <watch expression="strings[392]" language="JavaScript" />
+      </configuration>
+      <configuration name="mocha-javascript-test-runner">
+        <watch expression="store.getState()" language="JavaScript" />
+      </configuration>
+    </watches-manager>
+  </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="breakpointCondition">
+      <expression>
+        <expression-string>res=='string'</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>result.Main.type == 'number'</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>result.Main.$onChange</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>path[3]==['0']</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>methodName == 'onClick' &amp;&amp; methods.length</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>methodName == 'onClick'</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+    <expressions id="watch">
+      <expression>
+        <expression-string>store.getState()</expression-string>
+        <language-id>JavaScript</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>formReducer()</expression-string>
+        <language-id>JavaScript</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>dmObj[0]</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>getSchemaPart(fieldPropsSchema)</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>getSchemaPart(fieldPropsSchema, ['properties'])</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>f(NaN)===f1(NaN)</expression-string>
+        <language-id>HTML</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>f(24)===f1(24)</expression-string>
+        <language-id>HTML</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>f(24)==f1(24)</expression-string>
+        <language-id>HTML</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>f1(24)</expression-string>
+        <language-id>HTML</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>f(24)</expression-string>
+        <language-id>HTML</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/props-loader.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1680">
+          <caret line="112" column="53" selection-start-line="112" selection-start-column="53" selection-end-line="112" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/react-input-autosize/lib/AutosizeInput.js" />
+    <entry file="file://$PROJECT_DIR$/src/tacit/_defs.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="495">
+          <caret line="48" column="1" selection-start-line="48" selection-start-column="1" selection-end-line="48" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tacit/_tables.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="300">
+          <caret line="31" column="19" selection-start-line="31" selection-start-column="19" selection-end-line="31" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tacit/_responsive.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="30" column="14" selection-start-line="30" selection-start-column="14" selection-end-line="30" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tacit/_grid.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="26" column="24" selection-start-line="26" selection-start-column="14" selection-end-line="26" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tacit/_forms.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="429">
+          <caret line="98" column="13" selection-start-line="98" selection-start-column="13" selection-end-line="98" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/checkbox.tsx" />
+    <entry file="file://$PROJECT_DIR$/src/react-select-master/lib/Async.js" />
+    <entry file="file://$PROJECT_DIR$/src/exoPromise.ts" />
+    <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.es6.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="202">
+          <caret line="238" column="4" selection-start-line="238" selection-start-column="4" selection-end-line="238" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/expect/lib/Expectation.js" />
+    <entry file="file://$USER_HOME$/AppData/Roaming/npm/node_modules/mocha/lib/runnable.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5085">
+          <caret line="339" column="4" selection-start-line="339" selection-start-column="4" selection-end-line="339" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__tests__/schema3.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="19" column="12" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/expect/lib/assert.js" />
+    <entry file="file://$PROJECT_DIR$/webpack.config.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="266">
+          <caret line="58" column="11" lean-forward="true" selection-start-line="58" selection-start-column="11" selection-end-line="58" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/tacit/main.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="45">
+          <caret line="3" column="2" selection-start-line="3" selection-start-column="2" selection-end-line="3" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/dataTypes.d.ts" />
+    <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts" />
+    <entry file="file://$PROJECT_DIR$/src/is-my-json-valid/index.js" />
+    <entry file="file://$PROJECT_DIR$/node_modules/@types/react-select/index.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="15" column="25" selection-start-line="15" selection-start-column="9" selection-end-line="15" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/react-select/dist/react-select.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="105">
+          <caret line="7" selection-start-line="7" selection-end-line="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__tests__/testJRRForm.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="30" selection-start-line="5" selection-start-column="30" selection-end-line="5" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core.scss" />
+    <entry file="file://$PROJECT_DIR$/webpack.constuctor.config.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="349">
+          <caret line="45" column="4" lean-forward="true" selection-start-line="45" selection-start-column="4" selection-end-line="45" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__tests__/schema.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="750">
+          <caret line="50" column="26" selection-start-line="50" selection-start-column="26" selection-end-line="50" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/fnTypes.d.ts" />
+    <entry file="file://$PROJECT_DIR$/src/test.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="270">
+          <caret line="18" column="18" selection-start-line="18" selection-start-column="18" selection-end-line="18" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/javascript/nodejs/7.3.0/core-modules/bootstrap_node.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="92">
+          <caret line="507" column="11" lean-forward="true" selection-start-line="507" selection-start-column="11" selection-end-line="507" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/javascript/nodejs/7.3.0/core-modules/module.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="449" column="4" selection-start-line="449" selection-start-column="4" selection-end-line="449" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core.tsx" />
+    <entry file="file://$PROJECT_DIR$/__tests__/testCommon.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1601">
+          <caret line="107" column="5" selection-start-line="107" selection-start-column="5" selection-end-line="107" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__tests__/testConstructor.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" selection-start-line="4" selection-end-line="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/exoPromise.ts" />
+    <entry file="file://$PROJECT_DIR$/node_modules/redux/lib/combineReducers.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="228">
+          <caret line="52" column="28" selection-start-line="52" selection-start-column="28" selection-end-line="52" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="13200">
+          <caret line="882" selection-start-line="882" selection-end-line="882" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" column="14" selection-start-line="15" selection-start-column="14" selection-end-line="15" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/fnTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="570">
+          <caret line="38" column="2" selection-start-line="38" selection-start-column="2" selection-end-line="38" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="240">
+          <caret line="16" column="7" selection-start-line="16" selection-start-column="7" selection-end-line="16" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/commonLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1485">
+          <caret line="99" column="11" selection-start-line="99" selection-start-column="11" selection-end-line="99" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dist/constructor.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="564">
+          <caret line="75" column="9" selection-start-line="75" selection-start-column="9" selection-end-line="75" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/constructor.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="615">
+          <caret line="41" column="1" selection-start-line="41" selection-start-column="1" selection-end-line="41" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/FFEditor.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="10680">
+          <caret line="712" column="4" selection-start-line="712" selection-start-column="4" selection-end-line="712" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/core.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="14340">
+          <caret line="956" column="64" selection-start-line="956" selection-start-column="54" selection-end-line="956" selection-end-column="64" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="24" column="47" selection-start-line="24" selection-start-column="47" selection-end-line="24" selection-end-column="47" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/styles.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4470">
+          <caret line="298" column="21" selection-start-line="298" selection-start-column="21" selection-end-line="298" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="8265">
+          <caret line="551" column="81" selection-start-line="551" selection-start-column="76" selection-end-line="551" selection-end-column="81" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="12375">
+          <caret line="825" selection-start-line="825" selection-end-line="825" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/old/react-select-master/test/Value-test.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/FFView.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="420">
+          <caret line="28" column="20" lean-forward="true" selection-start-line="28" selection-start-column="20" selection-end-line="28" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/constructorLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="42" selection-start-column="42" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="ScopeChooserConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>

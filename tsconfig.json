@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "pretty": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "strictNullChecks": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false,
+    "jsx": "react"
+  },
+  "exclude": [
+        "node_modules",
+        ".git",
+		".happypack",
+		"tools",
+		"docs",
+		"config",
+		"build"
+    ]
+}

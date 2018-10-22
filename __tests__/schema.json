@@ -1,0 +1,147 @@
+{
+  "type": "object",
+  "properties": {
+    "objLevel_1": {
+      "title": "object level 1",
+      "type": "object",
+      "properties": {
+        "favMovie2": {
+          "title": "Do you have a favourite colour?",
+          "type": "string"
+        },
+        "objLevel_2": {
+          "title": "object level 2",
+          "type": "object",
+          "properties": {
+            "array_1": {
+              "title": "array level 1",
+              "type": "array",
+              "x": {
+                "flatten": true,
+                "validators": ["array 1 validators"]
+              },
+              "items": {
+                "title": "array level 2",
+                "type": "array",
+                "x": {
+                  "flatten": true,
+                  "validators": ["array 2 validators"]
+                },
+                "items": {
+                  "title": "array object level 1",
+                  "type": "object",
+                  "properties": {
+                    "bazinga": {
+                      "title": "Do you have a favourite colour?",
+                      "type": "string",
+                      "default": "bazinga"
+                    },
+                    "bazingaCinema": {
+                      "title": "array object level 2",
+                      "type": "object",
+                      "required": [
+                        "favCinema",
+                        "favBook"
+                      ],
+                      "properties": {
+                        "favCinema": {
+                          "title": "Do you have a favourite movie?",
+                          "type": "string",
+                          "default": "favCinema"
+                        },
+                        "favBook": {
+                          "title": "Do you have a favourite book?",
+                          "type": "string",
+                          "x": {
+                            "validators": 1
+                          }
+                        }
+                      },
+                      "x": {
+                        "flatten": true,
+                        "validators": 3
+                      }
+                    }
+                  },
+                  "x": {
+                    "flatten": "color_",
+                    "validators": 2
+                  }
+                }
+              }
+            }
+          },
+          "x": {
+            "flatten": true
+          }
+        }
+      },
+      "x": {
+        "flatten": true,
+        "validators": ["objLevel_1 validators"]
+      }
+    },
+    "favMovie": {
+      "title": "Do you have a favourite colour?",
+      "type": "string"
+    },
+    "color": {
+      "title": "Favourite colour",
+      "type": "object",
+      "properties": {
+        "favColor": {
+          "title": "Do you have a favourite colour?",
+          "type": "string"
+        },
+        "cinema": {
+          "type": "object",
+          "required": [
+            "favCinema",
+            "favBook"
+          ],
+          "properties": {
+            "favCinema": {
+              "title": "Do you have a favourite movie?",
+              "type": "string"
+            },
+            "favBook": {
+              "title": "Do you have a favourite book?",
+              "type": "string"
+            }
+          },
+          "x": {
+            "flatten": "cinema_"
+          }
+        }
+      },
+      "x": {
+        "flatten": "color_"
+      }
+    },
+    "movies": {
+      "type": "object",
+      "properties": {
+        "favMovie": {
+          "title": "Do you have a favourite movie?",
+          "type": "string"
+        },
+        "cinema": {
+          "type": "object",
+          "properties": {
+            "favCinema": {
+              "title": "Do you have a favourite movie?",
+              "type": "string"
+            },
+            "favBook": {
+              "title": "Do you have a favourite book?",
+              "type": "string"
+            }
+          },
+          "x": {
+            "flatten": "mc_"
+          }
+        }
+      }
+    }
+  }
+}
