@@ -9,7 +9,7 @@ import {
 } from './core/core';
 
 import {getValsFromSchema} from './core/api'
-import {not, getIn,  memoize, merge, push2array} from './core/commonLib'
+import {not, getIn, memoize, merge, push2array} from './core/commonLib'
 import {UpdateItems, getValue, getBindedValue, makePathItem} from './core/stateLib'
 
 import {formValues2JSON, formObj2JSON, isFFieldSchema, isFGroupSchema, isFObjectSchema} from './constructorLib';
@@ -19,8 +19,6 @@ import {Creatable} from 'react-select';
 
 const Select = require('react-select').default;
 import {isArray, isObject} from "util";
-
-
 
 
 const objKeys = Object.keys;
@@ -103,9 +101,9 @@ class loadableSelectWidget extends React.Component<any, any> {
   render() {
     const self = this;
     const props = this.props;
-    const {pFField, loadOption, onChange, ...rest} = props;
+    const {pFField, loadOption, onChange, value=[], ...rest} = props;
     return (<div className='fform-body-block'>
-      <Select {...rest} options={self.options} onChange={self._onChange} onOpen={self._loadOptions}/>
+      <Select value={value.map((value: string) => {return {value, label: value}})} {...rest} options={self.options} onChange={self._onChange} onMenuOpen={self._loadOptions}/>
     </div>)
   }
 }
@@ -150,7 +148,7 @@ class moveToSelectWidget extends React.Component<any, any> {
     const props = this.props;
     const {pFField, ...rest} = props;
     return (<div className='fform-body-block'>
-      <Select {...rest} value='' options={self.options} onChange={self._onChange} onOpen={self._loadOptions} closeOnSelect={true} clearable={false}/>
+      <Select {...rest} value='' options={self.options} onChange={self._onChange} onMenuOpen={self._loadOptions} closeMenuOnSelect={true} isClearable={false}/>
     </div>)
   }
 }
@@ -188,7 +186,7 @@ let editFormObjects = basicObjects.extend({
       GroupBlocks: {className: 'fform-layout-block layout-elem preset-select'},
       Main: {
         widget: SelectPresetsWidget,
-        multi: true,
+        isMulti: true,
         onChange: function (values: any) {
           let vals = values.map((item: any) => item.value);
           this.pFForm.api.set(this.field.props.path + '/@/values/current', vals, {execute: 1});
@@ -407,9 +405,9 @@ const objectXtendDefinition = {
             Main: {
               widget: loadableSelectWidget,
               passPFField: 'pFField',
-              closeOnSelect: true,
-              clearable: true,
-              multi: true,
+              closeMenuOnSelect: true,
+              isClearable: true,
+              isMulti: true,
               className: 'preset-select',
               propsMap: {value: 'values/current'},
               // onChange: function (values: any) {
@@ -1408,7 +1406,6 @@ const FFormSchema = {
     }
   }
 };
-
 
 
 export {fieldPropsSchema, JSONSchema, FFormSchema, editFormObjects};

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="before package update">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="packages update">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/FFEditor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/FFEditor.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -40,7 +41,7 @@
           <entry key="json" value="2" />
           <entry key="scss" value="1" />
           <entry key="ts" value="1" />
-          <entry key="tsx" value="7" />
+          <entry key="tsx" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
@@ -49,25 +50,25 @@
           <entry key="JavaScript" value="7" />
           <entry key="SCSS" value="1" />
           <entry key="TypeScript" value="1" />
-          <entry key="TypeScript JSX" value="7" />
+          <entry key="TypeScript JSX" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="js" value="22" />
+          <entry key="js" value="70" />
           <entry key="json" value="5" />
           <entry key="scss" value="23" />
-          <entry key="tsx" value="234" />
-          <entry key="txt" value="21" />
+          <entry key="tsx" value="276" />
+          <entry key="txt" value="27" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="JSON" value="5" />
-          <entry key="JavaScript" value="22" />
-          <entry key="PLAIN_TEXT" value="21" />
+          <entry key="JavaScript" value="70" />
+          <entry key="PLAIN_TEXT" value="27" />
           <entry key="SCSS" value="23" />
-          <entry key="TypeScript JSX" value="234" />
+          <entry key="TypeScript JSX" value="276" />
         </counts>
       </usages-collector>
     </session>
@@ -77,11 +78,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/FFEditor.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" column="3" selection-start-line="15" selection-start-column="3" selection-end-line="15" selection-end-column="3" />
+            <state relative-caret-position="301">
+              <caret line="107" column="3" lean-forward="true" selection-start-line="107" selection-start-column="3" selection-end-line="107" selection-end-column="3" />
             </state>
           </provider>
         </entry>
@@ -89,8 +90,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/FFView.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="18" column="20" lean-forward="true" selection-start-line="18" selection-start-column="20" selection-end-line="18" selection-end-column="20" />
+            <state relative-caret-position="155">
+              <caret line="14" column="5" lean-forward="true" selection-start-line="14" selection-start-column="5" selection-end-line="14" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -98,26 +99,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="172" column="41" lean-forward="true" selection-start-line="172" selection-start-column="41" selection-end-line="172" selection-end-column="41" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/node_modules/webpack-cli/bin/cli.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="212">
-              <caret line="243" selection-start-line="243" selection-end-line="243" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webpack.config.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="350">
-              <caret line="45" selection-start-line="45" selection-end-line="45" />
+            <state relative-caret-position="276">
+              <caret line="176" column="30" lean-forward="true" selection-start-line="176" selection-start-column="30" selection-end-line="176" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -132,19 +115,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
+        <entry file="file://$PROJECT_DIR$/src/constructorLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="vcs://C:/workspace/nodejs/FForm/src/core/stateLib.tsx">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="18" column="25" lean-forward="true" selection-start-line="18" selection-start-column="25" selection-end-line="18" selection-end-column="25" />
+            <state relative-caret-position="15">
+              <caret line="16" column="111" selection-start-line="16" selection-start-column="111" selection-end-line="16" selection-end-column="111" />
             </state>
           </provider>
         </entry>
@@ -154,15 +128,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="345">
               <caret line="44" column="28" lean-forward="true" selection-start-line="44" selection-start-column="28" selection-end-line="44" selection-end-column="28" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/node_modules/ts-loader/dist/index.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1172">
-              <caret line="106" column="35" selection-start-line="106" selection-start-column="35" selection-end-line="106" selection-end-column="35" />
             </state>
           </provider>
         </entry>
@@ -179,13 +144,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>reducer</find>
-      <find>dispath</find>
-      <find>_handleChange</find>
-      <find>addListener</find>
-      <find>getFieldBlocks</find>
-      <find>execActions</find>
-      <find>actionExecActions</find>
       <find>actionNameReplaceState</find>
       <find>options</find>
       <find>mergeOptions</find>
@@ -209,6 +167,13 @@
       <find>flexFlow</find>
       <find>arra</find>
       <find>UglifyJsPlugin</find>
+      <find>react-se</find>
+      <find>Creatable</find>
+      <find>SelectPresetsWidget</find>
+      <find>multi</find>
+      <find>loadableSelectWidget</find>
+      <find>isMul</find>
+      <find>isMulti</find>
     </findStrings>
     <replaceStrings>
       <replace>GroupBlocks</replace>
@@ -300,9 +265,9 @@
         <option value="$PROJECT_DIR$/webpack.config.js" />
         <option value="$PROJECT_DIR$/webpack.constuctor.config.js" />
         <option value="$PROJECT_DIR$/package.json" />
-        <option value="$PROJECT_DIR$/src/FFEditor.tsx" />
         <option value="$PROJECT_DIR$/src/FFView.tsx" />
         <option value="$PROJECT_DIR$/src/core/stateLib.tsx" />
+        <option value="$PROJECT_DIR$/src/FFEditor.tsx" />
       </list>
     </option>
   </component>
@@ -1093,7 +1058,7 @@
       <workItem from="1538928347160" duration="571000" />
       <workItem from="1538930682359" duration="202000" />
       <workItem from="1540770934770" duration="128000" />
-      <workItem from="1542772074698" duration="4426000" />
+      <workItem from="1542772074698" duration="7752000" />
     </task>
     <task id="LOCAL-00001" summary="before package update">
       <created>1542772477945</created>
@@ -1109,7 +1074,14 @@
       <option name="project" value="LOCAL" />
       <updated>1542776822935</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="packages update">
+      <created>1542777401243</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1542777401243</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1145,7 +1117,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2347433000" />
+    <option name="totallyTimeSpent" value="2350759000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1158,6 +1130,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" />
       <window_info content_ui="combo" id="Project" order="1" sideWeight="0.64362854" visible="true" weight="0.1569247" />
@@ -1165,14 +1138,14 @@
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.41616163" side_tool="true" weight="0.10795155" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32937366" />
-      <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.511396" side_tool="true" weight="0.28338763" />
-      <window_info anchor="bottom" id="Version Control" order="2" weight="0.32937366" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="3" sideWeight="0.49238577" visible="true" weight="0.32721382" />
+      <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.5062674" side_tool="true" weight="0.32937366" />
+      <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4937326" weight="0.32937366" />
+      <window_info anchor="bottom" id="Terminal" order="3" sideWeight="0.49238577" weight="0.32721382" />
       <window_info anchor="bottom" id="DB Execution Console" order="4" />
       <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48860398" weight="0.28293738" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.24730022" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4885396" weight="0.3034557" />
+      <window_info active="true" anchor="bottom" id="Debug" order="8" sideWeight="0.4885396" visible="true" weight="0.3034557" />
       <window_info anchor="bottom" id="Find" order="9" weight="0.32790446" />
       <window_info anchor="right" x="0" y="0" width="434" height="856" id="Documentation" order="0" side_tool="true" weight="0.32960597" />
     </layout>
@@ -1198,7 +1171,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="before package update" />
-    <option name="LAST_COMMIT_MESSAGE" value="before package update" />
+    <MESSAGE value="packages update" />
+    <option name="LAST_COMMIT_MESSAGE" value="packages update" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1225,9 +1199,11 @@
     </breakpoint-manager>
     <watches-manager>
       <configuration name="JavascriptDebugType">
-        <watch expression="state" />
-        <watch expression="dataObj" />
-        <watch expression="value" />
+        <watch expression="options.map((item) =&gt; item.value)" language="TypeScript JSX" />
+        <watch expression="self.props.pFField.pFForm.api.get(self.props.pFField.path + '/@/values/current')" language="TypeScript JSX" />
+        <watch expression="pFField.pFForm.api.get(pFField.path+'/@')" language="TypeScript JSX" />
+        <watch expression="pFField.pFForm.api.getState()" language="TypeScript JSX" />
+        <watch expression="self.options" />
       </configuration>
       <configuration name="NodeJSConfigurationType">
         <watch expression="vars" />
@@ -1275,53 +1251,53 @@
     </expressions>
     <expressions id="watch">
       <expression>
-        <expression-string>store.getState()</expression-string>
-        <language-id>JavaScript</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>formReducer()</expression-string>
-        <language-id>JavaScript</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>dmObj[0]</expression-string>
+        <expression-string>pFField.pFForm.api.get(pFField.path+'/@')</expression-string>
         <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>getSchemaPart(fieldPropsSchema)</expression-string>
+        <expression-string>pFField.pFForm.api.getState()</expression-string>
         <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>getSchemaPart(fieldPropsSchema, ['properties'])</expression-string>
+        <expression-string>pFField.pFForm.api.get(pFField.path)</expression-string>
         <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>f(NaN)===f1(NaN)</expression-string>
-        <language-id>HTML</language-id>
+        <expression-string>pFField.pFForm.api.get(pFField.path+'@')</expression-string>
+        <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>f(24)===f1(24)</expression-string>
-        <language-id>HTML</language-id>
+        <expression-string>pFField.api.get(pFField.path)</expression-string>
+        <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>f(24)==f1(24)</expression-string>
-        <language-id>HTML</language-id>
+        <expression-string>pFField.path</expression-string>
+        <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>f1(24)</expression-string>
-        <language-id>HTML</language-id>
+        <expression-string>this.props.pFField.path</expression-string>
+        <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>f(24)</expression-string>
-        <language-id>HTML</language-id>
+        <expression-string>self.props.pFField.pFForm.api.get(self.props.pFField.path + '/@/values/current')</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>pFForm.api.get(path + '/@/values/current')</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>options.map((item) =&gt; item.value)</expression-string>
+        <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
     </expressions>
@@ -1531,45 +1507,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/constructorLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="16" column="111" selection-start-line="16" selection-start-column="111" selection-end-line="16" selection-end-column="111" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/webpack-cli/bin/cli.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="212">
-          <caret line="243" selection-start-line="243" selection-end-line="243" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/ts-loader/dist/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1172">
-          <caret line="106" column="35" selection-start-line="106" selection-start-column="35" selection-end-line="106" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/webpack.config.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="350">
           <caret line="45" selection-start-line="45" selection-end-line="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/webpack.constuctor.config.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="235">
-          <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="44" column="28" lean-forward="true" selection-start-line="44" selection-start-column="28" selection-end-line="44" selection-end-column="28" />
         </state>
       </provider>
     </entry>
@@ -1580,31 +1521,66 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/FFEditor.tsx">
+    <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="3" selection-start-line="15" selection-start-column="3" selection-end-line="15" selection-end-column="3" />
+        <state relative-caret-position="240">
+          <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/FFView.tsx">
+    <entry file="file://$PROJECT_DIR$/node_modules/ts-loader/dist/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="18" column="20" lean-forward="true" selection-start-line="18" selection-start-column="20" selection-end-line="18" selection-end-column="20" />
+        <state relative-caret-position="1172">
+          <caret line="106" column="35" selection-start-line="106" selection-start-column="35" selection-end-line="106" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="44" column="28" lean-forward="true" selection-start-line="44" selection-start-column="28" selection-end-line="44" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/webpack-cli/bin/cli.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="212">
+          <caret line="243" selection-start-line="243" selection-end-line="243" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="172" column="41" lean-forward="true" selection-start-line="172" selection-start-column="41" selection-end-line="172" selection-end-column="41" />
+        <state relative-caret-position="276">
+          <caret line="176" column="30" lean-forward="true" selection-start-line="176" selection-start-column="30" selection-end-line="176" selection-end-column="30" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
+    <entry file="file://$PROJECT_DIR$/src/FFView.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="16" lean-forward="true" selection-start-line="16" selection-end-line="16" />
+        <state relative-caret-position="155">
+          <caret line="14" column="5" lean-forward="true" selection-start-line="14" selection-start-column="5" selection-end-line="14" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/constructorLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15">
+          <caret line="16" column="111" selection-start-line="16" selection-start-column="111" selection-end-line="16" selection-end-column="111" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webpack.constuctor.config.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="235">
+          <caret line="27" column="13" selection-start-line="27" selection-start-column="13" selection-end-line="27" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/FFEditor.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="301">
+          <caret line="107" column="3" lean-forward="true" selection-start-line="107" selection-start-column="3" selection-end-line="107" selection-end-column="3" />
         </state>
       </provider>
     </entry>
