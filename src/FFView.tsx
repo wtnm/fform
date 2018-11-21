@@ -17,7 +17,7 @@ class FFView extends React.PureComponent<any, any> {
 
   render() {
     let self = this;
-    const {value = self.FFViewValue, onChange = self.onSelectChange.bind(self), ...rest}: { value: number, onChange: any } = self.props;
+    const {value = self.FFViewValue, onChange = self.onSelectChange.bind(self), ...rest}: any = self.props;
     return (<div>
       <ArrayInput enumOptions={[{value: 0, label: 'form'}, {value: 1, label: 'JSON'}, {value: 2, label: 'js'}]}
                   inputProps={{className: 'ffview-input'}}

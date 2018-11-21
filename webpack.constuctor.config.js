@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Visualizer = require('webpack-visualizer-plugin');
 const {resolve} = require('path');
 const {getIfUtils, removeEmpty} = require('webpack-config-utils');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 
 const {ifProduction, ifNotProduction, ifNotTest} = getIfUtils(process.env.NODE_ENV || 'development');
@@ -23,13 +24,13 @@ module.exports = {
     library: 'constructor',
   },
   module: {
-    loaders: [
-      {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        loaders: ['babel-loader']
-      },
-// ./props-loader!
+
+    rules: [{
+      test: /\.(js|jsx)$/, // include .js files
+      //enforce: "pre", // preload the jshint loader
+      exclude: /node_modules/, // exclude any and all files in the node_modules folder
+      loader: "babel-loader"
+    },
       {
         test: /\.(ts|tsx)$/,
         loader: `${process.env.NODE_ENV === 'production' ? './props-loader!babel-loader!' : ''}ts-loader`
@@ -42,7 +43,19 @@ module.exports = {
         test: /\.css$/,
         loader: `style-loader!css-loader?importLoaders=1!postcss-loader`,
       }
+
     ],
+
+//
+//     loaders: [
+//       {
+//         test: /\.(js|jsx)$/,
+//         exclude: /node_modules/,
+//         loaders: ['babel-loader']
+//       },
+// // ./props-loader!
+//
+//     ],
   },
 
   resolve: {
@@ -56,19 +69,31 @@ module.exports = {
       }
     }),
     ifProduction(new webpack.optimize.OccurrenceOrderPlugin(true)),
-    ifProduction(new webpack.optimize.UglifyJsPlugin({
-      sourceMap: process.env.NODE_ENV !== 'production',
-      compress: {
-        screw_ie8: true,
-        warnings: false,
-      },
-      mangle: {
-        screw_ie8: true,
-      },
-      output: {
-        comments: false,
-        screw_ie8: true,
-      },
-    })),
+    ifProduction(new UglifyJsPlugin(
+      {
+        cache: true,
+        parallel: true,
+        uglifyOptions: {
+          compress: false,
+          ecma: 6,
+          mangle: true
+        },
+        sourceMap: process.env.NODE_ENV !== 'production'
+      }
+      // {
+      //   sourceMap: process.env.NODE_ENV !== 'production',
+      //   compress: {
+      //     screw_ie8: true,
+      //     warnings: false,
+      //   },
+      //   mangle: {
+      //     screw_ie8: true,
+      //   },
+      //   output: {
+      //     comments: false,
+      //     screw_ie8: true,
+      //   },
+      // }
+    )),
   ]),
 };

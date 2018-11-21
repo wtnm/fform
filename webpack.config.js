@@ -55,7 +55,7 @@ module.exports = {
       }
     }),
     ifProduction(new webpack.optimize.OccurrenceOrderPlugin(true)),
-    ifProduction(new webpack.optimize.UglifyJsPlugin({
+    ifProduction(new webpack.optimize.minimize({
       sourceMap: process.env.NODE_ENV !== 'production',
       compress: {
         screw_ie8: true,

@@ -1,9 +1,9 @@
 import {getByKey, getIn, isEqual, isMergeable, isObject, makeSlice, memoize, merge, objKeysNSymb, push2array} from "./commonLib";
 import  {objKeys, isArr, isUndefined}  from "./commonLib";
 
-const SymbolData = Symbol.for('FFormData');
-const SymbolBranch = Symbol.for('FFormBranch');
-const SymbolReset = Symbol.for('FFormReset');
+const SymbolData: any = Symbol.for('FFormData');
+const SymbolBranch: any = Symbol.for('FFormBranch');
+const SymbolReset: any = Symbol.for('FFormReset');
 const SymbolDelete = undefined; // Symbol.for('FFormDelete'); // 
 const RawValuesKeys = ['current', 'inital', 'default'];
 

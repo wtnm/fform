@@ -13,7 +13,7 @@ import {not, getIn,  memoize, merge, push2array} from './core/commonLib'
 import {UpdateItems, getValue, getBindedValue, makePathItem} from './core/stateLib'
 
 import {formValues2JSON, formObj2JSON, isFFieldSchema, isFGroupSchema, isFObjectSchema} from './constructorLib';
-import 'react-select/dist/react-select.css';
+// import 'react-select/dist/react-select.css';
 
 import {Creatable} from 'react-select';
 
