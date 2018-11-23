@@ -19,43 +19,36 @@ type MessageLevelType = {
 
 
 interface BasicData {
-  path: Path;
-  name: string;
-  schema: JsonSchema;
-  color?: 'danger' | 'warning' | 'success' | '';
-  schemaPart: JsonSchema;
+  value?: any;
+  params?: ParamsTypeField
+  fData: {
+    inital?: any;
+    'default'?: any;
+    title: string;  // true if ALL children true
+    type: string; // true if ALL children true
+    required: boolean; // false if ALL children false
+  };
+  array?:{
+    length: number;
+    canAdd: boolean;
+    canUp: boolean;
+    canDown: boolean;
+    canDel: boolean;
+  }
   arrayItem?: {
     canUp?: boolean;
     canDown?: boolean;
     canDel?: boolean;
   }
   status: {
+    color?: 'danger' | 'warning' | 'success' | '';
     valid: boolean;  // true if ALL children true, null if ANY children null, otherwise false
     pristine: boolean;  // true if ALL children true
     touched: boolean; // true if ALL children true
     pending: boolean; // false if ALL children false
   }
   messages?: { [key: number]: MessagesDataType };
-  funcs?: {
-    parse?(this: FieldData): (val: mixed, name: string) => mixed;
-    format?(this: FieldData): (val: mixed, name: string) => mixed;
-  }
-}
-
-interface FieldData extends BasicData {
-  values: ValuesType;
-  params?: ParamsTypeField
-  events?: {
-    onFocus: () => {};
-    onBlur: () => {};
-    onChange: () => {};
-  }
-}
-
-type ValuesType = {
-  current?: mixed;
-  inital?: mixed;
-  'default'?: mixed;
+  controls: controlType;
 }
 
 interface MessagesDataType {
@@ -65,6 +58,22 @@ interface MessagesDataType {
   type?: MessageType;
 }
 
+interface ParamsTypeField {
+  liveValidate?: boolean;
+  autofocus?: boolean;
+  placeholder?: string;
+}
+
+type controlType = {
+  readonly?: boolean;
+  readonlyBind?: boolean;
+  disabled?: boolean;
+  disabledBind?: boolean; // bind value if not undefined and ignores "disabled" value
+  hidden?: boolean;
+  hiddenBind?: boolean; // bind value if not undefined and ignores "show" value
+  omit?: boolean;
+  omitBind?: boolean;
+}
 
 type MessageType = 'danger' | 'warning' | 'success' | 'info' | 'notice' | '';
 
@@ -83,22 +92,9 @@ type DataMapType = [string, string, MapFunction] | [string, string]
 // type MapTypeShort = [string, MapFunction | undefined]
 type MapFunction = (value: any) => any;
 
-interface ObjectData extends BasicData {
-  params?: ParamsType;
-}
-
-interface ArrayData extends ObjectData {
-  length: number;
-  arrayStartIndex: number;
-}
-
-interface FormData extends ObjectData {
+interface FormData extends BasicData {
   active: Array<string | number>;
-  changes: any;
-}
-
-interface ParamsType {
-  liveValidate?: boolean;
+  formValue: any;
 }
 
 interface ControlsType {
@@ -112,12 +108,7 @@ interface ControlsType {
   omitBind?: boolean;
 }
 
-interface ParamsTypeField extends ParamsType {
-  required?: boolean;
-  autofocus?: boolean;
-  placeholder?: mixed;
-}
 
-type makeDataObjectResult = { data: FieldData | ObjectData | ArrayData, dataMap: StateType }
+type makeDataObjectResult = { data: BasicData, dataMap: StateType }
 
 type ObjectDataStorageForSchema = { [key: string]: any } & { [symbol: string]: { isArray: boolean, length: number, addable: boolean } }

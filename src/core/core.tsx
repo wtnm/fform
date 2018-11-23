@@ -10,10 +10,10 @@ import {
   isReplaceable,
   makeStateFromSchema,
   path2string,
-  RawValuesKeys,
+  _rawValuesKeys,
   string2path,
-  SymbolData,
-  SymbolDelete,
+  SymData,
+  SymDelete,
   UpdateItems,
   utils,
   val2path,
@@ -22,8 +22,8 @@ import {apiCreator, formReducer, getFRVal, Hooks} from './api'
 
 const JSONSchemaValidator = require('./is-my-json-valid');
 
-const _path2rawValues = [SymbolData, 'rawValues'];
-const _path2currentValue = [SymbolData, 'rawValues', 'current'];
+const _path2rawValues = [SymData, 'rawValues'];
+const _path2currentValue = [SymData, 'rawValues', 'current'];
 
 
 function applyMixins(derivedCtor: any, baseCtors: any[]) {
@@ -72,7 +72,7 @@ class FFormCore {
     self._jValidator = self._jValidator.bind(self);
     self.keyMap = getKeyMapFromSchema(props.schema);
     let formValues: any = {};
-    RawValuesKeys.forEach(type => props[type] && (formValues[type] = opts.flatValues ? self.keyMap.unflatten(props[type]) : props[type]));
+    _rawValuesKeys.forEach(type => props[type] && (formValues[type] = opts.flatValues ? self.keyMap.unflatten(props[type]) : props[type]));
     let state = self._getState();
     if (!state) {
       const result = makeStateFromSchema(props.schema, formValues);
@@ -154,7 +154,7 @@ class FFormCore {
 /////////////////////////////////////////////
 //  Main class
 /////////////////////////////////////////////
-class FForm extends PureComponent<any, any> {
+class FForm extends Component<any, any> {
   _unsubscribe: any;
   _currentState: any;
   //_onChange: any;
@@ -255,9 +255,9 @@ class FForm extends PureComponent<any, any> {
       if (newProps.state !== self.core.api.getState()) self.core.api.replaceState(newProps.state, {execute: 1});
     } else if (newProps.rawValues) {
       if (!isEqual(newProps.rawValues, self.core.api.getValues())) self.core.api.setValues(newProps.rawValues, {execute: 1});
-    } else if (newProps.values) {
+    } else if (newProps.values !== undefined) {
       if (newProps.values !== self.core.api.getValues({valueType: 'current'})) self.core.api.setValues(newProps.values, {valueType: 'current', execute: 1});
-    }
+    } 
 
     let newExtData = newProps.extData || {};
     objKeys(newExtData).forEach(key => (self.core.api.get(key) !== newExtData[key]) && self.core.api.set(key, newExtData[key], {replace: true, execute: 1}));
@@ -323,7 +323,7 @@ class SectionField extends PureComponent<any, any> { // need to be class, as we 
 function setFField(pFForm: any, path: string, ref: any, fieldName?: string, keyField?: string) {
   let stateBranch = pFForm.api.get(path);
   if (fieldName) stateBranch = stateBranch[fieldName];
-  return <FField ref={ref} key={keyField ? getIn(stateBranch, SymbolData, string2path(keyField, ['values', 'current'])) || fieldName : fieldName}
+  return <FField ref={ref} key={keyField ? getIn(stateBranch, SymData, string2path(keyField, ['values', 'current'])) || fieldName : fieldName}
                  pFForm={pFForm} path={path + (fieldName ? '/' + fieldName : '')} stateBranch={stateBranch}/>;
 }
 
@@ -340,7 +340,7 @@ function replaceWidgetNamesWithFunctions(presetArrays: any, objects: any) {
   return presetArrays
 }
 
-class Section extends PureComponent<any, any> {
+class Section extends Component<any, any> {
   layoutsObject: any[] = [];
   layoutsArray: any[] = [];
   ArrayItem: any;
@@ -466,7 +466,7 @@ class Section extends PureComponent<any, any> {
 
     self.layoutsObject = makeLayouts(objectKeys, x.fields || []);  // we get inital layoutsObject and every key, that was used in makeLayouts call removed from keys 
     objectKeys.forEach(fieldName => self.layoutsObject.push(makeFieldObject(fieldName)));  // so here we have only keys was not used and we add them to layoutsObject
-    objKeys(self.dataMaps).forEach((key: string) => self.dataProps[key] = mapProps(self.dataMaps[key], stateBranch[SymbolData], pFField.self.bindObject));
+    objKeys(self.dataMaps).forEach((key: string) => self.dataProps[key] = mapProps(self.dataMaps[key], stateBranch[SymData], pFField.self.bindObject));
 
     self._makeArrayItems(self.props);
 
@@ -514,9 +514,9 @@ class Section extends PureComponent<any, any> {
       if (self.isArray && newProps.length <= self.arrayStartIndex && self.props.length != newProps.length) self.shouldBuild = true;
       self._getObjectKeys(stateBranch, newProps).forEach(field => (stateBranch[field] !== prevStateBranch[field]) && self.wids['field_' + field] && self.wids['field_' + field]['forceUpdate']());
       if (self._makeArrayItems(newProps)) result = true;
-      if (stateBranch[SymbolData] !== prevStateBranch[SymbolData]) {  // update dataProps
+      if (stateBranch[SymData] !== prevStateBranch[SymData]) {  // update dataProps
         const dataProps = {};
-        objKeys(self.dataMaps).forEach((key: string) => dataProps[key] = mapProps(self.dataMaps[key], stateBranch[SymbolData], newProps.pFField.self.bindObject));
+        objKeys(self.dataMaps).forEach((key: string) => dataProps[key] = mapProps(self.dataMaps[key], stateBranch[SymData], newProps.pFField.self.bindObject));
         let {state: newDataProps, changes} = mergeState(self.dataProps, dataProps);
         self.dataProps = newDataProps;
         if (changes) objKeys(changes).forEach(key => self.wids[key] && self.wids[key]['forceUpdate']());
@@ -574,7 +574,7 @@ function getFieldBlocks(presetsString: string | string[], objects: any = {}, x: 
         prevMethod = methods[i]
       }
       result = merge(result, makeSlice(methodName, methods.pop()));
-      result = merge(result, makeSlice('$' + methodName, SymbolDelete), {del: true});
+      result = merge(result, makeSlice('$' + methodName, SymDelete), {del: true});
     });
     objKeys(result).forEach(key => {
       if (key[0] !== '_' && isObject(result[key])) {
@@ -612,7 +612,7 @@ function getFieldBlocks(presetsString: string | string[], objects: any = {}, x: 
 }
 
 
-class FField extends PureComponent<any, any> {
+class FField extends Component<any, any> {
   _dataProps: any = {};
   _builderData: any = {};
   _liveValidate: boolean;
@@ -639,7 +639,7 @@ class FField extends PureComponent<any, any> {
     super(props, context);
     const self = this;
     self._build();
-    self._setDataProps(props.stateBranch[SymbolData]);
+    self._setDataProps(props.stateBranch[SymData]);
     self._setId();
   }
 
@@ -665,7 +665,7 @@ class FField extends PureComponent<any, any> {
     if (fieldCache) {
       if (self.cachedUpd) clearTimeout(self.cachedUpd);
       self.cachedUpd = setTimeout(self._updateCachedValue.bind(self), fieldCache);
-      const data = merge(self.props.stateBranch[SymbolData], {values: self.cached});
+      const data = merge(self.props.stateBranch[SymData], {values: self.cached});
       const dataProps = self._dataProps;
       self._setDataProps(data);
       if (dataProps != self._dataProps) self.forceUpdate();
@@ -746,7 +746,7 @@ class FField extends PureComponent<any, any> {
 
   _setId() {
     const self = this;
-    const id = getIn(self.props.stateBranch, SymbolData, 'uniqId');
+    const id = getIn(self.props.stateBranch, SymData, 'uniqId');
     let path = self.props.path;
     if (id && path != '#') {
       path = path.split('/');
@@ -774,8 +774,8 @@ class FField extends PureComponent<any, any> {
     const self = this;
     const oldProps = self.props;
     let equal = isEqual(oldProps, newProps, {skipKeys: ['path']});
-    const data = newProps.stateBranch[SymbolData];
-    if (oldProps.stateBranch[SymbolData] !== data) self._setDataProps(data);
+    const data = newProps.stateBranch[SymData];
+    if (oldProps.stateBranch[SymData] !== data) self._setDataProps(data);
     if (oldProps.path !== newProps.path) {
       const oldId = self.id;
       self._setId();
@@ -794,7 +794,7 @@ class FField extends PureComponent<any, any> {
   }
 }
 
-function mapProps(map: PropsMapType, data: FieldData, bindObject: any) {
+function mapProps(map: PropsMapType, data: BasicData, bindObject: any) {
   if (!map) return {};
   let result = {};
   let keys = objKeys(map).filter(key => map[key]);

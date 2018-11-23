@@ -1,12 +1,6 @@
 import * as React from 'react';
 import {render} from 'react-dom';
-import {
-  FForm,
-  FFormCore,
-  selectorMap,
-  basicObjects,
-  getFieldBlocks,
-} from './core/core';
+import {FForm, FFormCore, selectorMap, basicObjects, getFieldBlocks,} from './core/core';
 
 import {getValsFromSchema} from './core/api'
 import {not, getIn, memoize, merge, push2array} from './core/commonLib'
@@ -101,9 +95,9 @@ class loadableSelectWidget extends React.Component<any, any> {
   render() {
     const self = this;
     const props = this.props;
-    const {pFField, loadOption, onChange, value=[], ...rest} = props;
+    const {pFField, loadOption, onChange, value = [], ...rest} = props;
     return (<div className='fform-body-block'>
-      <Select value={value.map((value: string) => {return {value, label: value}})} {...rest} options={self.options} onChange={self._onChange} onMenuOpen={self._loadOptions}/>
+      <Select value={ value.map((value: string) => {return {value, label: value}})} {...rest} options={self.options} onChange={self._onChange} onMenuOpen={self._loadOptions}/>
     </div>)
   }
 }
@@ -418,6 +412,7 @@ const objectXtendDefinition = {
             },
             GroupBlocks: {style: {flex: '10 1'}}
           },
+          values: {}
         }
       },
       valueArray: {
@@ -503,7 +498,8 @@ class ObjectEditor extends React.Component<any, any> {
       ...rest
     }: { [key: string]: any } = props;
     const self = this;
-    return <FForm className="object-xtend" widget="div" core={self.objectXtendCore} objects={_objects} values={values} onChange={self._onChange} {...rest}/>;
+    let block_vals = values || self.objectXtendCore.api.getEmptyVals('inital');
+    return <FForm className="object-xtend" widget="div" core={self.objectXtendCore} objects={_objects} values={block_vals} onChange={self._onChange} {...rest}/>;
   }
 }
 
@@ -619,7 +615,7 @@ class PresetBlockEditor extends React.Component<any, any> {
     return (<div>
       <FForm widget="div" core={self.switcherCore} objects={_objects} values={propSelected} onChange={self._onSwitchChange} {...switcherProps}/>
       {propSelected && propSelected.blocks &&
-      <ObjectEditor id={props.id} _objects={_objects} values={values[propSelected.blocks]}
+      <ObjectEditor id={props.id} _objects={_objects} values={values && values[propSelected.blocks]}
                     {...objectEditorProps} onChange={self._onEditorChange}/>}
     </div>)
   }
@@ -671,6 +667,7 @@ function presetValuesHandler(presetsValue: string[] = []) {
   const {state, from, to, utils}: { state: StateType, from: PathItem, to: UpdateItem, utils: any } = this;
   let curValue = utils.get(state, to.fullPath);
   // let curValue = utils.get(state, to.toString() + '/current');
+  if(!isArray(presetsValue)) presetsValue=[];
   let result: UpdateItem[] = [];
   let presets = presetsValue.join(',');
   // console.log('curValue', curValue);
@@ -717,6 +714,8 @@ const fieldPropsSchema = {
         values: {},
         dataMap: [
           ['./@/values/current/fieldType', '../xProps/preset/@/fieldType'],
+          ['./@/values/current/fieldType', '../xProps/preset/@/values/current', () => []],
+          ['./@/values/current/fieldType', '../xProps/custom/@/values/current', presetValuesHandler],
           ['./@/values/current/fieldType', '../jsonProps/', setVisiblePropsHandler]
         ]
       }
@@ -983,6 +982,7 @@ const fieldPropsSchema = {
         custom: {
           type: "object",
           title: 'custom',
+          'default': {},
           x: {
             custom: {
               Main: {
@@ -995,7 +995,7 @@ const fieldPropsSchema = {
                 }
               },
             },
-            values: {},
+            //values: {},
             propSelected: '',
           }
         },

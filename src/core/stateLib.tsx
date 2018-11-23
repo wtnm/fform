@@ -1,11 +1,12 @@
 import {getByKey, getIn, isEqual, isMergeable, isObject, makeSlice, memoize, merge, objKeysNSymb, push2array} from "./commonLib";
 import  {objKeys, isArr, isUndefined}  from "./commonLib";
 
-const SymbolData: any = Symbol.for('FFormData');
-const SymbolBranch: any = Symbol.for('FFormBranch');
-const SymbolReset: any = Symbol.for('FFormReset');
-const SymbolDelete = undefined; // Symbol.for('FFormDelete'); // 
-const RawValuesKeys = ['current', 'inital', 'default'];
+const SymData: any = Symbol.for('FFormData');
+const SymBranch: any = Symbol.for('FFormBranch');
+const SymReset: any = Symbol.for('FFormReset');
+const SymClear: any = Symbol.for('FFormClear');
+const SymDelete = undefined; // Symbol.for('FFormDelete'); // 
+const _rawValuesKeys = ['current', 'inital', 'default'];
 
 
 class UpdateItems {  // used for passing UpdateItems instead of value in dataMap hook
@@ -134,7 +135,6 @@ const makeDataStorage = memoize(function (schemaPart: JsonSchema, required: bool
   result.schemaData.type = isArr(schemaPart.type) ? schemaPart.type[0] : schemaPart.type;
   if (schemaPart.type != 'object' && schemaPart.type != 'array') {
     if (isUndefined(result.values)) result.values = {current: schemaPart.default, inital: undefined, 'default': schemaPart.default};
-    //if (!isArr(schemaPart.required)) result.schemaData.required = required || (schemaPart.required === true);
     result.schemaData.required = required || !!schemaPart.required;
   }
   if (schemaPart.type == 'array') {
@@ -156,7 +156,7 @@ function makeDataMap(dataMap: DataMapType[], path: Path) {
       let toFull: any = makePathItem(item[1], path);
       to = './' + makeRelativePath(from.path, toFull.path).join('/') + (toFull.keyPath ? '/@/' + path2string(toFull.keyPath) : '');
     } else to = item[1];
-    return makeSlice(from.path, SymbolData, 'dataMap', from.keyPath ? path2string(from.keyPath) : SymbolBranch, to, item[2]) // SymbolBranch means to map full branch
+    return makeSlice(from.path, SymData, 'dataMap', from.keyPath ? path2string(from.keyPath) : SymBranch, to, item[2]) // SymBranch means to map full branch
   }))
 }
 
@@ -182,9 +182,9 @@ function makeStateBranch(schema: JsonSchema, path: Path = ['#']) { //: { state: 
   let defaultValues: any;
 
   if (dataMap) dataMapObjects.push(makeDataMap(dataMap, path));
-  result[SymbolData] = makeDataStorage(schemaPart, isReqiured, isArrayItem);
-  if (isArrayItem) result[SymbolData] = merge(result[SymbolData], {uniqId: getUniqId()});
-  if (result[SymbolData].values) defaultValues = getParentArrayValue(schema, path) || schemaPart.default || result[SymbolData].values.default;
+  result[SymData] = makeDataStorage(schemaPart, isReqiured, isArrayItem);
+  if (isArrayItem) result[SymData] = merge(result[SymData], {uniqId: getUniqId()});
+  if (result[SymData].values) defaultValues = getParentArrayValue(schema, path) || schemaPart.default || result[SymData].values.default;
   else if (schemaPart.type == 'array') defaultValues = schemaPart.default || [];
   else if (schemaPart.type == 'object') {
     defaultValues = {};
@@ -222,17 +222,17 @@ function getKeyMapFromSchema(schema: JsonSchema): any {
     }
 
     let schemaPart = getSchemaPart(schema, track);
-    let keyMaps = getByKey(schema, [SymbolData, 'keyMaps'], new Map());
+    let keyMaps = getByKey(schema, [SymData, 'keyMaps'], new Map());
     if (keyMaps.get(schemaPart)) return keyMaps.get(schemaPart);
     if (schemaPart.type != 'object') return;
     let result = {};
     let fields = objKeys(schemaPart.properties || {});
-    let keyMap = getByKey(result, [SymbolData, 'keyMap'], {key2path: {}, path2key: {}});
+    let keyMap = getByKey(result, [SymData, 'keyMap'], {key2path: {}, path2key: {}});
     if (schemaPart.x && schemaPart.x.flatten) keyMap.prefix = schemaPart.x.flatten !== true && schemaPart.x.flatten || '';
 
     fields.forEach(field => {
       let keyResult = getKeyMap(schema, track.concat(field));
-      let objKeyMap = getIn(keyResult, [SymbolData, 'keyMap']) || {};
+      let objKeyMap = getIn(keyResult, [SymData, 'keyMap']) || {};
       if (!isUndefined(objKeyMap.prefix)) {  // if objKeyMap.prefix is exists it means that child is object
         objKeys(objKeyMap.key2path).forEach((key: any) => {
           checkIfHaveKey(objKeyMap.prefix + key);
@@ -253,7 +253,7 @@ function getKeyMapFromSchema(schema: JsonSchema): any {
     if (typeof keyPath == 'string') keyPath = string2path(keyPath);
     let result: Path = [];
     keyPath.forEach((key) => {
-      let path = getIn(getKeyMap(schema, result), [SymbolData, 'keyMap', 'key2path', key]);
+      let path = getIn(getKeyMap(schema, result), [SymData, 'keyMap', 'key2path', key]);
       result = push2array(result, path ? path : key);
     });
     return result;
@@ -264,7 +264,7 @@ function getKeyMapFromSchema(schema: JsonSchema): any {
     let i = 0;
     while (i < path.length) {
       let key = path[i];
-      let path2key = getIn(getKeyMap(schema, path.slice(0, i)), [SymbolData, 'keyMap', 'path2key']);
+      let path2key = getIn(getKeyMap(schema, path.slice(0, i)), [SymData, 'keyMap', 'path2key']);
       if (path2key) {
         let j = 0;
         while (1) {
@@ -300,7 +300,7 @@ function getKeyMapFromSchema(schema: JsonSchema): any {
         keys = objKeys(value);
         keys.forEach(key => recurse(value[key], track.concat(key)))
       }
-      if (!(keys && keys.length) && getIn(getKeyMap(schema, (fnDirect == key2path ? key2path(track) : track)), [SymbolData, 'keyMap', 'prefix']) === undefined) {
+      if (!(keys && keys.length) && getIn(getKeyMap(schema, (fnDirect == key2path ? key2path(track) : track)), [SymData, 'keyMap', 'prefix']) === undefined) {
         let tmp = result;
         let path = fnDirect(track);
         for (let i = 0; i < path.length - 1; i++) {
@@ -319,22 +319,22 @@ function getKeyMapFromSchema(schema: JsonSchema): any {
 
 function getAsObject(state: StateType, keyPath: Path, fn?: (val: any) => any, keyObject?: StateType) {
   if (!fn) fn = x => x;
-  let type = state[SymbolData].schemaData.type;
-  if ((type == 'object' || type == 'array') && !state[SymbolData].values) {
+  let type = state[SymData].schemaData.type;
+  if ((type == 'object' || type == 'array') && !state[SymData].values) {
     let result: any = type == 'array' ? [] : {};
     let keys: Array<string> = objKeys(keyObject && objKeys(keyObject).length > 0 ? keyObject : state);
     if (type == 'array') {
       let idx = 0;
       let arrKeys = [];
-      if (keyPath[1] == 'values' && keyPath[2]) idx = getIn(state, [SymbolData, 'array', 'lengths', keyPath[2]]) || 0;
-      else idx = getValue(getIn(state, [SymbolData, 'array', 'lengths']) || {}) || 0;
-      const lengthChange = keyObject && getIn(keyObject, [SymbolData, 'array', 'lengths']);
+      if (keyPath[1] == 'values' && keyPath[2]) idx = getIn(state, [SymData, 'array', 'lengths', keyPath[2]]) || 0;
+      else idx = getValue(getIn(state, [SymData, 'array', 'lengths']) || {}) || 0;
+      const lengthChange = keyObject && getIn(keyObject, [SymData, 'array', 'lengths']);
       for (let i = 0; i < idx; i++) if (lengthChange || ~keys.indexOf(i.toString())) arrKeys.push(i.toString());
       keys = arrKeys;
       result.length = idx;
     }
     keys.forEach((key) => {
-      if (state[key]) result[key] = getBindedValue(getIn(state[key], [SymbolData, 'controls']), 'omit') ? Symbol.for('FFormDelete') : getAsObject(state[key], keyPath, fn, keyObject ? keyObject[key] : undefined)
+      if (state[key]) result[key] = getBindedValue(getIn(state[key], [SymData, 'controls']), 'omit') ? Symbol.for('FFormDelete') : getAsObject(state[key], keyPath, fn, keyObject ? keyObject[key] : undefined)
     });
     return result;
   } else return fn(getIn(state, keyPath))
@@ -365,10 +365,10 @@ function makePathItem(path: Path | string, relativePath: Path | undefined = unde
   Object.defineProperty(pathItem, "toString", {enumerable: false});
   Object.defineProperty(pathItem, "fullPath", {
     get: function (): Path {
-      return this.keyPath ? this.path.concat(SymbolData, this.keyPath) : this.path;
+      return this.keyPath ? this.path.concat(SymData, this.keyPath) : this.path;
     },
     set: function (path: Path) {
-      let a = path.indexOf(SymbolData);
+      let a = path.indexOf(SymData);
       if (a == -1) {
         this.path = path.slice();
         delete this.keyPath
@@ -454,7 +454,7 @@ function string2path(str: string, relativePath: Path | undefined = undefined, de
   for (let i = 0; i < res.length; i++) {
     let val = res[i];
     if (val === '..') result.pop();
-    else if (val !== '' && val !== '.') result.push(val === delimiter ? SymbolData : val);
+    else if (val !== '' && val !== '.') result.push(val === delimiter ? SymData : val);
   }
   return result
 }
@@ -513,11 +513,11 @@ function get(state: any, ...pathes: Array<symbol | string | Path>) {
 // }
 
 
-function getValue(values: ValuesType, type: 'current' | 'inital' | 'default' = 'current'): any {
+function getValue(values: any, type: 'current' | 'inital' | 'default' = 'current'): any {
   // const types = ['current', 'inital', 'default'];
-  for (let i = RawValuesKeys.indexOf(type); i < RawValuesKeys.length; i++) {
-    // if (values.hasOwnProperty(RawValuesKeys[i]) && values[RawValuesKeys[i]] !== SymbolDelete) return values[RawValuesKeys[i]];
-    if (values[RawValuesKeys[i]] !== undefined) return values[RawValuesKeys[i]];
+  for (let i = _rawValuesKeys.indexOf(type); i < _rawValuesKeys.length; i++) {
+    // if (values.hasOwnProperty(_rawValuesKeys[i]) && values[_rawValuesKeys[i]] !== SymDelete) return values[_rawValuesKeys[i]];
+    if (values[_rawValuesKeys[i]] !== undefined) return values[_rawValuesKeys[i]];
   }
   return undefined;
 }
@@ -549,4 +549,4 @@ export {
   makeArrayOfPathItem,
 }
 
-export {SymbolData, SymbolBranch, SymbolReset, SymbolDelete, RawValuesKeys, utils}
+export {SymData, SymBranch, SymReset, SymClear, SymDelete, _rawValuesKeys, utils}

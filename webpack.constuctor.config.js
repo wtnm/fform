@@ -9,6 +9,9 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const {ifProduction, ifNotProduction, ifNotTest} = getIfUtils(process.env.NODE_ENV || 'development');
 
 module.exports = {
+  stats: {
+    colors: true
+  },
   devtool: 'source-map',
 
   // context: resolve('./src'),

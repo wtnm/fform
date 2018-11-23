@@ -12,9 +12,9 @@ import {
   makePathItem, makeStateBranch,
   makeStateFromSchema, makeUpdateItem,
   object2PathValues,
-  path2string, RawValuesKeys, string2path, SymbolBranch,
-  SymbolData, SymbolDelete,
-  SymbolReset,
+  path2string, _rawValuesKeys, string2path, SymBranch,
+  SymData, SymDelete,
+  SymReset, SymClear,
   UpdateItems, utils,
   val2path
 } from "./stateLib";
@@ -118,7 +118,7 @@ function getValueFromUpdateItemIfExists(keyPath: Path, item: UpdateItem) {
 // recalc array and set pristine
 Hooks('', 'beforeMerge', (state: StateType, item: UpdateItem, utils: utilsApiType, schema: JsonSchema, data: StateType) => {
   // function recurseSetData(stateItems: any, newState: StateType, track: Path) {
-  //   stateItems[path2string(track)] = makeDataItem(newState[SymbolData]);
+  //   stateItems[path2string(track)] = makeDataItem(newState[SymData]);
   //   objKeys(newState).forEach(key => recurseSetData(stateItems, newState[key], track.concat(key)))
   // }
 
@@ -130,11 +130,12 @@ Hooks('', 'beforeMerge', (state: StateType, item: UpdateItem, utils: utilsApiTyp
   let newValues = getValueFromUpdateItemIfExists(['values'], item);
 
   if (newValues) { // calculate pristine value
-    const dataItem = getIn(state, item.path)[SymbolData];
+    const dataItem = getIn(state, item.path)[SymData];
     if (dataItem.values) {
       newValues = merge(dataItem.values, newValues);
-      if (newValues.current === SymbolReset) {
-        newValues = merge(newValues, {'current': getValue(newValues, 'inital')});
+      let curValue = newValues.current;
+      if (curValue === SymReset || curValue === SymClear) {
+        newValues = merge(newValues, {'current': getValue(newValues, curValue === SymReset ? 'inital' : 'default')});
         after.push(makeUpdateItem(item.path, ['values', 'current'], newValues.current));
       }
       after.push(makeUpdateItem(item.path, ['status', 'pristine'], isEqual(getValue(newValues), getValue(newValues, 'inital'))));
@@ -170,9 +171,9 @@ Hooks('', 'afterMerge', (state: StateType, changesArray: StateType[], utils: uti
   function countRecalc(state: StateType, changes: StateType, track: Path = ['#']) {
     if (state === undefined) return;
     objKeys(changes).forEach(key => countRecalc(state[key], changes[key], track.concat(key)));
-    const dataItemChanges = changes[SymbolData];
+    const dataItemChanges = changes[SymData];
     if (!dataItemChanges) return;
-    const dataItem = state[SymbolData];
+    const dataItem = state[SymData];
     if (!dataItem) return;
     let status: string[] = [];
     let path = track.concat();
@@ -203,14 +204,14 @@ Hooks('', 'afterMerge', (state: StateType, changesArray: StateType[], utils: uti
       if (obj) {
         objKeys(obj).forEach((key) => {
           const {path, keyPath, checkValue} = obj[key];
-          const lengths = keyPath[1] == 'pristine' && getIn(state, path.concat(SymbolData, 'array', 'lengths'));
+          const lengths = keyPath[1] == 'pristine' && getIn(state, path.concat(SymData, 'array', 'lengths'));
           let result;
           if (lengths && lengths.current !== getValue(lengths, 'inital')) result = false;
           else {
             const keys = getKeysAccording2schema(state, path);  // get all keys to check
             result = checkValue;
             for (let j = 0; j < keys.length; j++) {
-              if (getBindedValue(getIn(state, path.concat(keys[j], SymbolData, 'controls')), 'omit')) continue; // skip value if omit key is true
+              if (getBindedValue(getIn(state, path.concat(keys[j], SymData, 'controls')), 'omit')) continue; // skip value if omit key is true
               let pathString = path2string(path.concat(keys[j]), keyPath);
               let value = newVals.hasOwnProperty(pathString) ? newVals[pathString] : utils.get(state, pathString);
               if (value === !checkValue) {
@@ -229,7 +230,7 @@ Hooks('', 'afterMerge', (state: StateType, changesArray: StateType[], utils: uti
 });
 
 function getKeysAccording2schema(state: StateType, path: Path) {
-  const data = getIn(state, path)[SymbolData];
+  const data = getIn(state, path)[SymData];
   let keys: string[] = [];
   if (data.schemaData.type == 'array') for (let j = 0; j < getValue(data.array.lengths); j++) keys.push(j.toString());
   else keys = objKeys(getIn(state, path));
@@ -246,45 +247,45 @@ function getKeysAccording2schema(state: StateType, path: Path) {
 function getRawValuesChanges(prevState: StateType = {}, nextState: StateType, opts: { SymbolDelete?: any } = {}) {
 // gather changed values from state, undefined values are not removed
   const forceCheck = {};
-  const data = nextState[SymbolData];
+  const data = nextState[SymData];
   // if (!data) return {replace: false};
-  if (prevState[SymbolData] !== nextState[SymbolData]) {
+  if (prevState[SymData] !== nextState[SymData]) {
     if (data.values) {
       if (data.schemaData.type == 'object' || data.schemaData.type == 'array') return {replace: true, values: data.values};
       return {replace: false, values: data.values};
     } else {
-      if (data.array) RawValuesKeys.forEach(val => {
-        let a = getIn(prevState, SymbolData, 'array', 'lengths', val) || 0;
-        let b = getIn(nextState, SymbolData, 'array', 'lengths', val) || 0;
+      if (data.array) _rawValuesKeys.forEach(val => {
+        let a = getIn(prevState, SymData, 'array', 'lengths', val) || 0;
+        let b = getIn(nextState, SymData, 'array', 'lengths', val) || 0;
         for (let i = a; i < b; i++) forceCheck[i] = true  // we need to force check arrayItems on length increase, because it is possible that (prevState[key] === nextState[key])
       })
     }
   }
   const result = {};
-  RawValuesKeys.forEach(val => result[val] = data.array ? [] : {});
+  _rawValuesKeys.forEach(val => result[val] = data.array ? [] : {});
   const replace = {};
   objKeys(nextState).forEach(key => {
     if (nextState[key] && (prevState[key] !== nextState[key] || forceCheck[key])) {
       const childResult = getRawValuesChanges(prevState[key], nextState[key], opts);
       let childValues = childResult['values'];
       if (childResult['replace']) replace[key] = childResult['replace'];
-      let omit = getBindedValue(getIn(nextState[key], SymbolData, 'controls'), 'omit');
-      RawValuesKeys.forEach(val => result[val] && (result[val][key] = omit ? opts.SymbolDelete : childValues[val]));
+      let omit = getBindedValue(getIn(nextState[key], SymData, 'controls'), 'omit');
+      _rawValuesKeys.forEach(val => result[val] && (result[val][key] = omit ? opts.SymbolDelete : childValues[val]));
     }
   });
-  if (data.array) RawValuesKeys.forEach(val => (result[val].length = Math.max(data.array.lengths[val] || 0, 0)));
+  if (data.array) _rawValuesKeys.forEach(val => (result[val].length = Math.max(data.array.lengths[val] || 0, 0)));
   if (objKeys(replace).length) return {replace, values: result};
   return {replace: false, values: result};
 }
 
-function haveValues(schemaPart: JsonSchema) {
+function ownValues(schemaPart: JsonSchema) {
   return (schemaPart.type != 'object' && schemaPart.type != 'array') || (schemaPart.x && schemaPart.x.values);
 }
 
 function recursivelyResetValue(items: UpdateItem[], schema: any, keyPath: Path, value: any, track: Path = ['#']) {
   const schemaPart = getSchemaPart(schema, track);
-  const haveVals = haveValues(schemaPart);
-  if (haveVals) items.push({path: track, keyPath, value});
+  const haveVals = ownValues(schemaPart);
+  if (haveVals) items.push({path: track, keyPath, value});  // SymReset and SymClear replaced with proper value in hooks
   else if (schemaPart.type === 'object') objKeys(schemaPart.properties || {}).forEach(key => recursivelyResetValue(items, schema, keyPath, value, track.concat(key)));
   else if (schemaPart.type === 'array') items.push({path: track, keyPath: ['array', 'lengths', keyPath[1]], value: 0});
 }
@@ -292,18 +293,17 @@ function recursivelyResetValue(items: UpdateItem[], schema: any, keyPath: Path, 
 function recursivelySetItems(items: UpdateItem[], schema: any, state: StateType, keyPath: Path, vals: any, track: Path = ['#'], forceSetLength: boolean = false) {
   let schemaPart;
   try {schemaPart = getSchemaPart(schema, track)} catch (e) {return}
-  const haveVals = haveValues(schemaPart);  // if dataObjects has prop "values" it means that it has no children
-  if (haveVals) { // if object have own values then update them
-    //if (haveValues !== true) items.push({path: track, keyPath, value: undefined});  // add this item only for type == 'object' || type == 'array'
-    items.push({path: track, keyPath, value: vals, opts: haveVals !== true ? {replace: makeSlice(track, SymbolData, keyPath, true)} : undefined}); // then set new value (set "replace" to true for track if values set for object or array)
+  const ownVals = ownValues(schemaPart);  // if dataObjects has prop "values" it means that it has no children
+  if (ownVals) { // if object have own values then update them
+    items.push({path: track, keyPath, value: vals, opts: ownVals !== true ? {replace: makeSlice(track, SymData, keyPath, true)} : undefined}); // then set new value (set "replace" to true for track if values set for object or array)
   } else {
-    if (isMergeable(vals)) {
+    if (isMergeable(vals)) {  // if we receive object or array then apply their values
       if (schemaPart.type == 'array' && vals.length !== undefined) {
         items.push({path: track, keyPath: ['array', 'lengths', keyPath[1]], value: vals.length});
         if (forceSetLength) setArrayLength(items, schema, state, track, makeSlice(keyPath[1], vals.length));
       }
       objKeys(vals).forEach(key => recursivelySetItems(items, schema, state, keyPath, vals[key], track.concat(key)));
-    } else recursivelyResetValue(items, schema, keyPath, vals, track);
+    } else recursivelyResetValue(items, schema, keyPath, vals, track);  // otherwise we received undefined or SymReset or SymClear, so recusively reset values
   }
 }
 
@@ -311,7 +311,7 @@ function setArrayLength(items: UpdateItem[], schema: any, state: StateType, path
   //let newLengthsValue = getValueFromUpdateItemIfExists(['array', 'lengths'], item);
   const schemaPart = getSchemaPart(schema, path);
   const branch = getIn(state, path);
-  const lengthFull = branch ? branch[SymbolData].array.lengths : basicLengths;
+  const lengthFull = branch ? branch[SymData].array.lengths : basicLengths;
   let newLengthFull = merge(lengthFull, newLengthsValue);
   // if (newLengthFull.current === undefined) newLengthFull = merge(newLengthFull, {'current': getValue(newLengthFull, 'inital')});
   // objKeys(newLengthsValue).forEach(key => items.push(makeUpdateItem(path, ['array', 'lengths', key], newLengthFull[key])));
@@ -328,7 +328,7 @@ function setArrayLength(items: UpdateItem[], schema: any, state: StateType, path
     if (newElem.defaultValues) recursivelySetItems(items, schema, state, ['values', 'current'], newElem.defaultValues, elemPath, true);
     if (newElem.dataMap) items.push(makeUpdateItem([], newElem.dataMap));
   }
-  for (let i = end; i < start; i++) items.push({path: path.concat(i), value: SymbolDelete});
+  for (let i = end; i < start; i++) items.push({path: path.concat(i), value: SymDelete});
 
   const arrayStartIndex = arrayStart(schemaPart); //; dataItem.array.arrayStartIndex;
   const newLength = getValue(newLengthFull);
@@ -346,7 +346,7 @@ function setArrayLength(items: UpdateItem[], schema: any, state: StateType, path
 
 function setStateChanges(startState: StateType, action: SetItemsType) {// resultObject: PathValueResultType, stuff: actionStuffType, options = {}) {
   function makeSliceFromUpdateItem(item: UpdateItem) {
-    return delIn(item.keyPath ? makeSlice(item.path, SymbolData, item.keyPath, item.value) : makeSlice(item.path, item.value), [SymbolData, 'rawValues']);
+    return delIn(item.keyPath ? makeSlice(item.path, SymData, item.keyPath, item.value) : makeSlice(item.path, item.value), [SymData, 'rawValues']);
   }
 
   function mergeProcedure(prevState: StateType, newState: StateType) {
@@ -368,7 +368,7 @@ function setStateChanges(startState: StateType, action: SetItemsType) {// result
       if (item.keyPath[1] == 'array') {  // array operation
         if (item.keyPath[2] == 'add') {
           let num = item.keyPath[3] || 1;
-          let lengthOld = Math.max(0, (getIn(state, item.path, SymbolData, 'array', 'lengths', 'current') || 0));
+          let lengthOld = Math.max(0, (getIn(state, item.path, SymData, 'array', 'lengths', 'current') || 0));
           result.push({path: item.path, keyPath: ['array', 'lengths', 'current'], value: lengthOld + num});
           if (!item.value) {
 
@@ -387,8 +387,8 @@ function setStateChanges(startState: StateType, action: SetItemsType) {// result
         let opVal = item.value || 0;
         const from = parseInt(path.pop());
         let to = from;
-        const min = get(state, path, SymbolData, 'array', 'arrayStartIndex'); // api.get(path.concat(SymbolData, 'array', 'arrayStartIndex'));
-        const lengthFull = get(state, path, SymbolData, 'array', 'lengths'); //api.get(path.concat(SymbolData, 'array', 'lengths'));
+        const min = get(state, path, SymData, 'array', 'arrayStartIndex'); // api.get(path.concat(SymData, 'array', 'arrayStartIndex'));
+        const lengthFull = get(state, path, SymData, 'array', 'lengths'); //api.get(path.concat(SymData, 'array', 'lengths'));
         const max = getValue(lengthFull) - 1;
         if (op == 'up') to--;
         if (op == 'down') to++;
@@ -403,7 +403,7 @@ function setStateChanges(startState: StateType, action: SetItemsType) {// result
         const fullValues = {};
         valuesNames.forEach(key => { // save inital and default values for moved array items
           fullValues[key] = [];
-          let arr = getIn(state[SymbolData]['rawValues'][key], path);
+          let arr = getIn(state[SymData]['rawValues'][key], path);
           if (!arr) return;
           for (let i = Math.min(from, to); i <= Math.max(from, to); i++) arr.hasOwnProperty(i) && (fullValues[key][i] = arr[i]);
           fullValues[key].length = arr.length;
@@ -413,11 +413,11 @@ function setStateChanges(startState: StateType, action: SetItemsType) {// result
         let arrayItems = {};
         for (let i = Math.min(from, to); i <= Math.max(from, to); i++) {
           stateObject[i] = getIn(state, path.concat(i));
-          arrayItems[i] = stateObject[i][SymbolData].arrayItem; //delIn(stateObject[i][SymbolData].arrayItem, ['uniqId']); // save arrayItem values, except "uniqId"
+          arrayItems[i] = stateObject[i][SymData].arrayItem; //delIn(stateObject[i][SymData].arrayItem, ['uniqId']); // save arrayItem values, except "uniqId"
         }
         stateObject = moveArrayElems(stateObject, from, to);
         objKeys(arrayItems).forEach(i => {
-          stateObject[i] = merge(stateObject[i], makeSlice(SymbolData, 'arrayItem', arrayItems[i]))
+          stateObject[i] = merge(stateObject[i], makeSlice(SymData, 'arrayItem', arrayItems[i]))
         }); // restore arrayItem values
 
         if (op == 'del') stateObject[to] = undefined;
@@ -483,18 +483,18 @@ function setStateChanges(startState: StateType, action: SetItemsType) {// result
   }
 
   const {stuff, items, mergeOptions: defaultMergeOpts = {}} = action;
-  const schemaDataObj = stuff.schema[SymbolData];
+  const schemaDataObj = stuff.schema[SymData];
   const allChanges: StateType[] = [];
   let replaceRawValues: any;
   // Object.assign(options, );
 
   let mergeResult, changes: any, state = startState, data = {};
   let options4changes = merge(defaultMergeOpts, {diff: true});
-  let afterMergeProcedureState = startState;
+  let afterMergeProcedureState = startState; // modified by applyHooksProcedure
   const {afterMerge, beforeMerge} = stuff.hooks;
 
   // console.time('applyHooksProcedure beforeMap');
-  if (!applyHooksProcedure(items, 'beforeMap')) return startState;
+  if (!applyHooksProcedure(items, 'beforeMap')) return startState;  
   // console.timeEnd('applyHooksProcedure beforeMap'); 
 
   let apllyItems = applyMap(state, allChanges, stuff);
@@ -510,17 +510,17 @@ function applyMap(state: StateType, changesArray: StateType[], stuff: any): Upda
   let result: UpdateItem[] = [];
 
   function recurse(statePart: StateType, changes: StateType, track: Path = ['#']) {
-    if (getIn(statePart, [SymbolData, 'dataMap'])) {
-      let dataObj = statePart[SymbolData];
+    if (getIn(statePart, [SymData, 'dataMap'])) {
+      let dataObj = statePart[SymData];
       const trackString = path2string(track);
       objKeysNSymb(dataObj['dataMap']).forEach((keyPathFrom: any) => {
         let mapTo = dataObj['dataMap'][keyPathFrom];
-        let value = keyPathFrom === SymbolBranch ? statePart : getIn(dataObj, string2path(keyPathFrom)); // SymbolBranch means that we want to map branch, if we want to map dataObject keyPathFrom = ''
-        let from = makePathItem(keyPathFrom === SymbolBranch ? track : path2string(track) + '/@/' + keyPathFrom);
+        let value = keyPathFrom === SymBranch ? statePart : getIn(dataObj, string2path(keyPathFrom)); // SymBranch means that we want to map branch, if we want to map dataObject keyPathFrom = ''
+        let from = makePathItem(keyPathFrom === SymBranch ? track : path2string(track) + '/@/' + keyPathFrom);
         objKeys(mapTo).forEach(key => {
           let valueFn = mapTo[key];
           let to = makePathItem(key, track);
-          if (keyPathFrom === SymbolBranch && to.keyPath) delete to.keyPath; // don't alow to map branch into data object 
+          if (keyPathFrom === SymBranch && to.keyPath) delete to.keyPath; // don't alow to map branch into data object 
           //(to as UpdateItem).value = valueFn ? valueFn.bind({state, from, to, utils})(value) : value;
           //result.push((to as UpdateItem));
           let res = value;
@@ -584,7 +584,7 @@ function getUpdatedRawValues(rawValues: any, prevState: StateType, nextState: St
   if (replaceRawValues && objKeys(replaceRawValues).length < 3) replaceRawValues = restoreStructure(Object.assign({}, rawValues, replaceRawValues), getEmptyRawValsForSchema(schema));
   let newRawValues = merge(replaceRawValues ? replaceRawValues : rawValues, rawValuesChanges, {replace: rawValuesReplaceable(schema), arrays: 'merge'});
   const inital = getValue(newRawValues, 'inital');
-  if (apiOpts.keepEqualRawValues && nextState[SymbolData].status.pristine && newRawValues.current !== inital) {
+  if (apiOpts.keepEqualRawValues && nextState[SymData].status.pristine && newRawValues.current !== inital) {
     const schemaPart = getSchemaPart(schema, []);
     // if rawValues.current is object then it will be replaced only if deep equal with rawValues.inital (schemaPart.additionalProperties ignored and used only in validation)
     if (schemaPart.type == 'object' && isEqual(newRawValues.current, inital, {deep: true})) { // {skipKeys: objKeys(schemaPart.properties)})) {
@@ -631,7 +631,7 @@ function makeValidation(state: any, dispath: any, action: any): Promise<void> {
   }
 
   function recurseValidation(curValues: StateType, modifiedValues: StateType, track: Path = []) {
-    const data = getIn(state, track.concat([SymbolData]));
+    const data = getIn(state, track.concat([SymData]));
     //console.log('recurseValidation track', track);
     //console.log('objKeys(modifiedValues)', modifiedValues);
     if (!data) return;
@@ -673,7 +673,7 @@ function makeValidation(state: any, dispath: any, action: any): Promise<void> {
 
   function clearDefaultMessages(modifiedValues: StateType, track: Path = []) {
 
-    const data = getIn(state, track.concat([SymbolData]));
+    const data = getIn(state, track.concat([SymData]));
     if (!data) return;
     if (data.schemaData.type == 'object' || data.schemaData.type == 'array')
       modifiedValues && objKeys(modifiedValues).forEach(key => clearDefaultMessages(modifiedValues[key], track.concat(key)));
@@ -681,12 +681,12 @@ function makeValidation(state: any, dispath: any, action: any): Promise<void> {
   }
 
   let {stuff, force, opts, promises} = action;
-  const schemaDataObj = stuff.schema[SymbolData];
+  const schemaDataObj = stuff.schema[SymData];
   const {JSONValidator, schema, getState} = stuff;
 
   // const state = getState();
-  const currentValues = state[SymbolData]['rawValues'].current; // getRawValues().current;
-  // const newValues = state[SymbolData]['rawValues'].current;
+  const currentValues = state[SymData]['rawValues'].current; // getRawValues().current;
+  // const newValues = state[SymData]['rawValues'].current;
   let validStatus = {};
   let pendingStatus = {};
   let colorStatus = {};
@@ -714,7 +714,7 @@ function makeValidation(state: any, dispath: any, action: any): Promise<void> {
     validStatus = {};
     validationUpdates = [];
     Promise.all(vPromises).then((results) => {
-      let newValues = getState()[SymbolData]['rawValues'].current; //getRawValues().current;
+      let newValues = getState()[SymData]['rawValues'].current; //getRawValues().current;
       for (let i = 0; i < vPromises.length; i++) {
         if (!results[i]) continue;
         let {curValues, path} = vPromises[i].vData;
@@ -738,26 +738,25 @@ function execActions(dispath: any) {
   let {getState, schema} = stuff;
   let state = getState();
   let prevState = state;
-  let rawValues = getIn(prevState, SymbolData, 'rawValues') || {};
+  let rawValues = getIn(prevState, SymData, 'rawValues') || {};
   let prevRawValues = rawValues;
   // console.log(actions);
   for (let i = 0; i < actions.length; i++) {
     let action = actions[i];
-    if (action.state) { // replace state, rawValues too, expecting state to be validated, don't use it for inital set
+    if (action.state) { // replace state and rawValues, expecting state to be validated, don't use it for inital set
       state = action.state;
-      rawValues = getIn(prevState, SymbolData, 'rawValues');
+      rawValues = getIn(prevState, SymData, 'rawValues');
       if (!rawValues) rawValues = getUpdatedRawValues(rawValues, prevState, state, stuff); // inital rawValues build, validaion needed
       else prevRawValues = rawValues; // if raw values already present then skip validation
     } else {
       if (action.items) state = setStateChanges(state, {items: action.items, stuff, type: actionName4setItems}); // dispath(actionUpdateState(action.items, stuff));
-      //else if (action.rawValues) state = setStateChanges(state, {items: makeItems4rawValues(rawValues, action.rawValues, schema, state), stuff, type: actionName4setItems}); // dispath(actionUpdateState(makeItems4rawValues(rawValues, action.rawValues, schema), stuff));
       else if (action.rawValues) state = setStateChanges(state, {items: [{path: [], keyPath: ['api', 'setRawValues'], value: {prevRaw: rawValues, newRaw: action.rawValues}}], stuff, type: actionName4setItems}); // dispath(actionUpdateState(makeItems4rawValues(rawValues, action.rawValues, schema), stuff));
       rawValues = getUpdatedRawValues(rawValues, prevState, state, stuff, action.rawValues);
     }
     prevState = state;
   }
 
-  if (prevRawValues !== rawValues) state = merge(state, makeSlice(SymbolData, 'rawValues', rawValues), {replace: makeSlice(SymbolData, 'rawValues', true)});
+  if (prevRawValues !== rawValues) state = merge(state, makeSlice(SymData, 'rawValues', rawValues), {replace: makeSlice(SymData, 'rawValues', true)});
 
   if (opts.noValidation) {
     promises.resolve();
@@ -801,7 +800,7 @@ function formReducer(name?: string): any {
   };
 
   // reducersFunction[actionNameSetRawValues] = (state: any, action: SetRawValuesType): any => {
-  //   return merge(state, makeSlice(SymbolData, 'rawValues', action.rawValues), {replace: makeSlice(SymbolData, 'rawValues', true)});
+  //   return merge(state, makeSlice(SymData, 'rawValues', action.rawValues), {replace: makeSlice(SymData, 'rawValues', true)});
   // };
 
   return (state: any = {}, action: ActionType) => {
@@ -945,7 +944,7 @@ function apiCreator(schema: JsonSchema, name: string, dispath: any, getState: ()
   };
 
   api.getValues = (opts: APIOptsType & { valueType?: 'current' | 'inital' | 'default', flatten?: boolean } = {}): any => {
-    let rawValues = (opts.getState || getState)()[SymbolData]['rawValues'];
+    let rawValues = (opts.getState || getState)()[SymData]['rawValues'];
     if (opts.valueType) return opts.flatten ? keyMap.flatten(rawValues[opts.valueType]) : rawValues[opts.valueType];
     if (!opts.flatten) return rawValues;
     let res = {};
@@ -963,6 +962,8 @@ function apiCreator(schema: JsonSchema, name: string, dispath: any, getState: ()
     batchedActions.push({rawValues: properRawValues});
     return setExecution([], opts);
   };
+
+  api.getEmptyVals = (valueType: 'current' | 'inital' | 'default' = 'current') => getEmptyRawValsForSchema(schema)[valueType];
 
   api.getActive = () => api.get([[], ['active']]);
 

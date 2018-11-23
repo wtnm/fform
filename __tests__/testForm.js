@@ -1,3 +1,12 @@
+// set env variable to the `tsconfig.json` path before loading mocha (default: './tsconfig.json')
+process.env.TS_NODE_PROJECT = './tsconfig.json';
+
+// Optional: set env variable to enable `tsconfig-paths` integration
+// process.env.TS_CONFIG_PATHS = true;
+
+// register mocha wrapper
+require('ts-mocha');
+
 const expect = require('expect');
 const formFuncs = require('../src/core/core.tsx');
 const commonFuncs = require('../src/core/commonLib.tsx');
@@ -8,6 +17,7 @@ const thunk = require('redux-thunk').default;
 // const djv = require('djv');
 
 const SymbolData = Symbol.for('FFormData');
+const SymbolReset = Symbol.for('FFormReset'); // TODO: Reset tests
 const RawValuesKeys = ['current', 'inital', 'default'];
 
 

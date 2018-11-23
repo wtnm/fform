@@ -71,7 +71,7 @@ function applyMixins(derivedCtor, baseCtors) {
 //   return result
 // }
 // function getDataItem(stateItems: StateType, state: StateType, path: Path) {
-//   if (!stateItems[path2string(path)]) stateItems[path2string(path)] = makeDataItem(getIn(state, path.concat(SymbolData)));
+//   if (!stateItems[path2string(path)]) stateItems[path2string(path)] = makeDataItem(getIn(state, path.concat(SymData)));
 //   return stateItems[path2string(path)];
 // }
 function hookManager() {
@@ -117,15 +117,15 @@ exports.addHook = Hooks;
 // recalc array
 Hooks('', 'beforeMerge', function (state, item, utils, schema, data) {
     // function recurseSetData(stateItems: any, newState: StateType, track: Path) {
-    //   stateItems[path2string(track)] = makeDataItem(newState[SymbolData]);
+    //   stateItems[path2string(track)] = makeDataItem(newState[SymData]);
     //   objKeys(newState).forEach(key => recurseSetData(stateItems, newState[key], track.concat(key)))
     // }
     if (!item.keyPath) return [];
     var result = [];
     if (item.keyPath[0] == 'array' && item.keyPath[1] == 'lengths') {
         var dataItem = getIn(state, item.path)[SymbolData]; // getDataItem(stateItems, state, item.path);
-        // const schema = state[SymbolData].schema;
-        var lengthFull = dataItem.array.lengths; // || getIn(state, path.concat(SymbolData, 'length')) || {};
+        // const schema = state[SymData].schema;
+        var lengthFull = dataItem.array.lengths; // || getIn(state, path.concat(SymData, 'length')) || {};
         var newLengthFull = merge(lengthFull, makeSlice(item.keyPath[2], item.value));
         var start = getMaxValue(lengthFull) || 0;
         var end = getMaxValue(newLengthFull) || 0;
@@ -190,7 +190,7 @@ Hooks('', 'beforeMerge', function (state, item, utils, schema, data) {
     //   }
     //
     //   if (item.keyPath[0] == 'controls' && item.keyPath[1] == 'omit') {  // recalc all status when omit is changed
-    //     let keys = objKeys(getIn(state, item.path.concat(SymbolData, 'status')));
+    //     let keys = objKeys(getIn(state, item.path.concat(SymData, 'status')));
     //
     //     if (item.value) {
     //       let path = item.path.slice(0, -1);
@@ -316,7 +316,7 @@ function getKeysAccording2schema(state, path) {
     // if (withOmited) return keys;
     // let res: string[] = [];
     // for (let j = 0; j < keys.length; j++) {
-    //   if (getBindedValue(getIn(state, path.concat(keys[j], SymbolData, 'controls')), 'omit')) continue; // skip recalc if omit key is true
+    //   if (getBindedValue(getIn(state, path.concat(keys[j], SymData, 'controls')), 'omit')) continue; // skip recalc if omit key is true
     //   res.push(keys[j])
     // }
     // return res;
@@ -771,7 +771,7 @@ var Section = function (_react_1$Component2) {
                 if (!self.focusField) self.focusField = '0';
                 // self.isArray = true;
                 // self.arrayAddable = !(schemaPart.additionalItems === false);
-                length = props.length; // getValue(getSingle(path.concat(SymbolData, 'length'))) || 0;
+                length = props.length; // getValue(getSingle(path.concat(SymData, 'length'))) || 0;
                 arrayStartIndex = getSingle(path.concat(SymbolData, 'array', 'arrayStartIndex'));
                 if (length < arrayStartIndex) self.layouts = [];
                 for (var i = 0; i < arrayStartIndex; i++) {
@@ -1965,7 +1965,7 @@ function makeValidation(dispath) {
     var validationMessages = {};
     var validationUpdates = [];
     var promises = [];
-    var modifiedValues = force === true ? newValues : force || state[SymbolData]['currentValueChanges']; // getAsObject(newState, [SymbolData, 'values'], getValue, newState[SymbolData].changes);
+    var modifiedValues = force === true ? newValues : force || state[SymbolData]['currentValueChanges']; // getAsObject(newState, [SymData, 'values'], getValue, newState[SymData].changes);
     if (!modifiedValues) return Promise.resolve(); // no changes, no validation
     clearDefaultMessages(modifiedValues);
     var errs = JSONValidator(newValues);
@@ -2261,7 +2261,7 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
     //   if (typeof keyPath == 'string') keyPath = string2path(keyPath);
     //   let result: Path = [];
     //   keyPath.forEach((key) => {
-    //     let keyMap = getIn(getState(), result.concat(SymbolData, 'keyMap'));
+    //     let keyMap = getIn(getState(), result.concat(SymData, 'keyMap'));
     //     if (keyMap && keyMap.key2path[key]) {
     //       result = result.concat(keyMap.key2path[key])
     //     } else result.push(key)
@@ -2274,7 +2274,7 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
     //   let i = 0;
     //   while (i < path.length) {
     //     let key = path[i];
-    //     let keyMap = getIn(getState(), path.slice(0, i).concat(SymbolData, 'keyMap'));
+    //     let keyMap = getIn(getState(), path.slice(0, i).concat(SymData, 'keyMap'));
     //     let path2key = keyMap && keyMap.path2key;
     //     if (path2key) {
     //       let j = 0;
@@ -3020,12 +3020,12 @@ exports.string2path = string2path;
 //   }
 //
 //   get fullPath(): Path {
-//     return this.keyPath ? this.path.concat(SymbolData, this.keyPath) : this.path;
+//     return this.keyPath ? this.path.concat(SymData, this.keyPath) : this.path;
 //   }
 //
 //   set fullPath(path: Path) {
 //     if (typeof path == 'string') path = string2path(path, relativePath, delimiter);
-//     let a = path.indexOf(SymbolData);
+//     let a = path.indexOf(SymData);
 //     if (a == -1) {
 //       this.path = path.slice();
 //       delete this.keyPath
@@ -3352,7 +3352,7 @@ function getValue(values) {
 
     var types = ['current', 'inital', 'default'];
     for (var i = types.indexOf(type); i < 3; i++) {
-        // if (values.hasOwnProperty(types[i]) && values[types[i]] !== SymbolDelete) return values[types[i]];
+        // if (values.hasOwnProperty(types[i]) && values[types[i]] !== SymDelete) return values[types[i]];
         if (values[types[i]] !== undefined) return values[types[i]];
     }
     return undefined;

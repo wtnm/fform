@@ -347,7 +347,7 @@ let formValuesWithInnerGroups = {
     ]
   }
 };
-
+//node C:\workspace\nodejs\FForm\node_modules\ts-mocha\bin\ts-mocha --require ignore-styles C:\workspace\nodejs\FForm\__tests__\testConstructor.js
 let formValuesWithFieldsPros = {
   "type": "array",
   "fieldProps": {

@@ -67,7 +67,8 @@ interface JsonSchema {
 }
 
 interface xType {
-  values?: any;
+  // values?:any;
+  value?: any;
   preset?: string;
   flatten?: boolean | string; // prefix if string
   validators?: any[];
@@ -75,23 +76,12 @@ interface xType {
   custom?: { [key: string]: CustomizeType };
   keyField?: string,
   fields?: FieldsType;
-  params?: {
-    autofocus?: boolean;
-    placeholder?: string;
-    liveValidate?: boolean; // live validation (i.e. _onChange, not onBlur)
-  }
-  controls?: {
-    readonly?: boolean;
-    readonlyBind?: boolean;
-    disabled?: boolean;
-    disabledBind?: boolean; // bind value if not undefined and ignores "disabled" value
-    hidden?: boolean;
-    hiddenBind?: boolean; // bind value if not undefined and ignores "show" value
-    omit?: boolean;
-    omitBind?: boolean;
-  }
+  params?: ParamsTypeField;
+  controls: controlType;
   // arrayOptions?: {[key: string]: string};
 }
+
+
 
 type JsonSchemaTypes = 'string' | 'number' | 'object' | 'array' | 'boolean' | 'null';
 
@@ -113,14 +103,19 @@ interface formObjectsType {
     itemMenu?: CustomizeType;
   }
 }
+
 type PropsMapType = { [key: string]: false | string | [string, MapFunction] }
 
 interface CustomizeType {
   widget?: any,
   propsMap?: PropsMapType;
+
   [key: string]: any;
 }
 
 type FieldsType = Array<string | GroupType>;
 
-interface GroupType extends CustomizeType { fields?: FieldsType, passPFField?: true | string}
+interface GroupType extends CustomizeType {
+  fields?: FieldsType,
+  passPFField?: true | string
+}

@@ -123,7 +123,7 @@ Hooks( /__string#_336__ ,  /__string#_337__ , function (state, item, utils, sche
     if (!item /__prop#_886__ ) return [];
     var result = [];
     if (item /__prop#_887__ [0] ==  /__string#_338__  && item /__prop#_888__ [1] ==  /__string#_339__ ) {
-        var dataItem = getIn(state, item /__prop#_889__ )[SymbolData]; 
+        var dataItem = getIn(state, item /__prop#_889__ )[SymData]; 
         
         var lengthFull = dataItem /__prop#_890__ .lengths; 
         var newLengthFull = merge(lengthFull, makeSlice(item /__prop#_891__ [2], item /__prop#_892__ ));
@@ -173,7 +173,7 @@ Hooks( /__string#_346__ ,  /__string#_347__ , function (state, item, utils, sche
         recursivelySetChanges(getIn(state, item /__prop#_923__ ), item /__prop#_924__ .slice(1), item /__prop#_925__ );
     }
     if (item /__prop#_926__ [0] ==  /__string#_349__ ) {
-        var dataItem = getIn(state, item /__prop#_927__ )[SymbolData];
+        var dataItem = getIn(state, item /__prop#_927__ )[SymData];
         if (dataItem /__prop#_928__ ) after /__prop#_929__ (makeUpdateItem(item /__prop#_930__ , [ /__string#_350__ ,  /__string#_351__ ], getValue(dataItem /__prop#_931__ ) === getValue(dataItem /__prop#_932__ ,  /__string#_352__ )));
     }
     
@@ -242,9 +242,9 @@ Hooks( /__string#_353__ ,  /__string#_354__ , function (state, changesArray, uti
         objKeys(changes) /__prop#_934__ (function (key) {
             return countRecalc(state[key], changes[key], track /__prop#_935__ (key));
         });
-        var dataItemChanges = changes[SymbolData];
+        var dataItemChanges = changes[SymData];
         if (!dataItemChanges) return;
-        var dataItem = state[SymbolData];
+        var dataItem = state[SymData];
         if (!dataItem) return;
         var status = [];
         var path = track /__prop#_936__ ();
@@ -285,7 +285,7 @@ Hooks( /__string#_353__ ,  /__string#_354__ , function (state, changesArray, uti
                         var keys = getKeysAccording2schema(state, path);
                         var result = checkValue;
                         for (var j = 0; j < keys /__prop#_958__ ; j++) {
-                            if (getBindedValue(getIn(state, path /__prop#_959__ (keys[j], SymbolData,  /__string#_360__ )),  /__string#_361__ )) continue; 
+                            if (getBindedValue(getIn(state, path /__prop#_959__ (keys[j], SymData,  /__string#_360__ )),  /__string#_361__ )) continue; 
                             var pathString = path2string(path /__prop#_960__ (keys[j]), keyPath);
                             var value = newVals /__prop#_961__ (pathString) ? newVals[pathString] : utils /__prop#_962__ (state, pathString);
                             if (value === !checkValue) {
@@ -307,7 +307,7 @@ Hooks( /__string#_353__ ,  /__string#_354__ , function (state, changesArray, uti
     return addChangeData;
 });
 function getKeysAccording2schema(state, path) {
-    var data = getIn(state, path)[SymbolData];
+    var data = getIn(state, path)[SymData];
     var keys = [];
     if (data /__prop#_965__ .type ==  /__string#_362__ ) for (var j = 0; j < getValue(data /__prop#_966__ .lengths); j++) {
         keys /__prop#_967__ (j /__prop#_968__ ());
@@ -339,7 +339,7 @@ var apiMixin = function () {
             self /__prop#_970__  = utils;
             if (!self /__prop#_971__ ) self /__prop#_972__  = formReducer();
             self /__prop#_973__  = __assign({}, props /__prop#_974__ ); 
-            self /__prop#_975__ [SymbolData] = {}; 
+            self /__prop#_975__ [SymData] = {}; 
             self /__prop#_976__  = JSONSchemaValidator(self /__prop#_977__ , { greedy: true });
             self /__prop#_978__  = self /__prop#_979__ .bind(self);
             self /__prop#_980__  = getKeyMapFromSchema(self /__prop#_981__ );
@@ -352,7 +352,7 @@ var apiMixin = function () {
             if (!state) {
                 var result = makeStateFromSchema(self /__prop#_987__ , formValues);
                 state = merge(result /__prop#_988__ , result /__prop#_989__ , { symbol: true });
-                state[SymbolData] /__stringProp#_20__  = 0;
+                state[SymData] /__stringProp#_20__  = 0;
             }
             return state;
         }
@@ -764,7 +764,7 @@ var Section = function (_react_1$Component2) {
                 
                 
                 length = props /__prop#_1219__ ; 
-                arrayStartIndex = getSingle(path /__prop#_1220__ (SymbolData,  /__string#_383__ ,  /__string#_384__ ));
+                arrayStartIndex = getSingle(path /__prop#_1220__ (SymData,  /__string#_383__ ,  /__string#_384__ ));
                 if (length < arrayStartIndex) self /__prop#_1221__  = [];
                 for (var i = 0; i < arrayStartIndex; i++) {
                     keys /__prop#_1222__ (i /__prop#_1223__ ());
@@ -779,7 +779,7 @@ var Section = function (_react_1$Component2) {
                     return self /__prop#_1232__ .push(SectionField(field));
                 });
                 objKeys(self /__prop#_1233__ ) /__prop#_1234__ (function (key) {
-                    return self /__prop#_1235__ [key] = mapProps(self /__prop#_1236__ [key], getSingle(path /__prop#_1237__ (SymbolData)), methodBindObject);
+                    return self /__prop#_1235__ [key] = mapProps(self /__prop#_1236__ [key], getSingle(path /__prop#_1237__ (SymData)), methodBindObject);
                 });
                 self /__prop#_1238__  = arrayStartIndex - self /__prop#_1239__ .length;
             }
@@ -799,21 +799,21 @@ var Section = function (_react_1$Component2) {
             var getSingle = newProps /__prop#_1252__ .registry /__prop#_1253__ .getSingle;
             var path = newProps /__prop#_1254__ .path;
 
-            if (getSingle(push2array([SymbolData,  /__string#_386__ ], path, SymbolData,  /__string#_387__ ,  /__string#_388__ )) !== undefined) {
+            if (getSingle(push2array([SymData,  /__string#_386__ ], path, SymbolData,  /__string#_387__ ,  /__string#_388__ )) !== undefined) {
                 self /__prop#_1255__  = true;
                 result = true;
             }
             if (self /__prop#_1256__ .dataTree != newProps /__prop#_1257__ ) {
-                var modifiedFields = getSingle(push2array([SymbolData,  /__string#_389__ ], path));
+                var modifiedFields = getSingle(push2array([SymData,  /__string#_389__ ], path));
                 if (modifiedFields) {
                     objKeys(modifiedFields) /__prop#_1258__ (function (field) {
                         return self /__prop#_1259__ [field] && self /__prop#_1260__ [field] /__stringProp#_27__ ();
                     });
-                    if (modifiedFields[SymbolData]) {
+                    if (modifiedFields[SymData]) {
                         (function () {
                             var dataProps = {};
                             objKeys(self /__prop#_1261__ ) /__prop#_1262__ (function (key) {
-                                return dataProps[key] = mapProps(self /__prop#_1263__ [key], newProps /__prop#_1264__ [SymbolData], newProps /__prop#_1265__ .field /__prop#_1266__ );
+                                return dataProps[key] = mapProps(self /__prop#_1263__ [key], newProps /__prop#_1264__ [SymData], newProps /__prop#_1265__ .field /__prop#_1266__ );
                             });
                             var tmp = mergeState(self /__prop#_1267__ , dataProps);
                             self /__prop#_1268__  = tmp /__prop#_1269__ ;
@@ -962,7 +962,7 @@ function getFieldProps(presets) {
     presetArray = replaceWidgetNamesWithFunctions(presetArray, methodBindObject /__prop#_1347__ .objects);
     var result = name ==  /__string#_404__  ? __assign({}, methodBindObject /__prop#_1348__ ) : {};
     result = chainMethods(merge /__prop#_1349__ (result, presetArray, { del: true }));
-    result[SymbolData] = {
+    result[SymData] = {
         all: presetArray,
         getPropBefore: getPropBefore(presetArray),
         getWidgetBefore: getWidgetBefore(getArrayOfPropsFromArrayOfObjects(presetArray,  /__string#_405__ )),
@@ -1047,8 +1047,8 @@ var Field = function (_react_1$Component3) {
             var objects = registry /__prop#_1393__ ;
             var presets = objects /__prop#_1394__ ;
             var presetName = x /__prop#_1395__  || getPresetName(schemaPart, type);
-            var pathValue = path /__prop#_1396__ (SymbolData,  /__string#_411__ ,  /__string#_412__ );
-            var pathTouched = path /__prop#_1397__ (SymbolData,  /__string#_413__ ,  /__string#_414__ );
+            var pathValue = path /__prop#_1396__ (SymData,  /__string#_411__ ,  /__string#_412__ );
+            var pathTouched = path /__prop#_1397__ (SymData,  /__string#_413__ ,  /__string#_414__ );
             var pathString =  /__string#_415__  + path /__prop#_1398__ ( /__string#_416__ );
             var funcs = {};
             funcs /__prop#_1399__  = function (value) {
@@ -1084,8 +1084,8 @@ var Field = function (_react_1$Component3) {
                 schemaProps[block] = rest;
                 self /__prop#_1426__ [block] = propsMap;
                 widgets[block] = widget;
-                preset[block] = rest[SymbolData];
-                delete rest[SymbolData];
+                preset[block] = rest[SymData];
+                delete rest[SymData];
                 schemaProps[block] /__prop#_1427__  = idPath /__prop#_1428__ ( /__string#_420__ );
                 if (rest /__prop#_1429__ ) schemaProps[block][rest /__prop#_1430__ ] = self /__prop#_1431__ .bind(self);
             });
@@ -1120,7 +1120,7 @@ var Field = function (_react_1$Component3) {
             if (self /__prop#_1435__ ) this /__prop#_1436__ ();
             self /__prop#_1437__  = false;
             var api = self /__prop#_1438__ .registry /__prop#_1439__ ;
-            var data = api /__prop#_1440__ (self /__prop#_1441__ .path /__prop#_1442__ (SymbolData)); 
+            var data = api /__prop#_1440__ (self /__prop#_1441__ .path /__prop#_1442__ (SymData)); 
             var enumOptions = self /__prop#_1443__  || data /__prop#_1444__ ; 
             self /__prop#_1445__  = data /__prop#_1446__  && data /__prop#_1447__ ._liveValidate;
             var dataProps = {};
@@ -1887,7 +1887,7 @@ function makeValidation(dispath) {
     function recurseValidation(curValues, modifiedValues) {
         var track = arguments /__prop#_1789__  > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
-        var data = getIn(state, track /__prop#_1790__ ([SymbolData]));
+        var data = getIn(state, track /__prop#_1790__ ([SymData]));
         if (!data) return;
         var schemaPart = getSchemaPart(schema, track);
         if (schemaPart /__prop#_1791__  ==  /__string#_649__  || schemaPart /__prop#_1792__  ==  /__string#_650__ ) modifiedValues && objKeys(modifiedValues) /__prop#_1793__ (function (key) {
@@ -1930,7 +1930,7 @@ function makeValidation(dispath) {
     function clearDefaultMessages(modifiedValues) {
         var track = arguments /__prop#_1812__  > 1 && arguments[1] !== undefined ? arguments[1] : [];
 
-        var data = getIn(state, track /__prop#_1813__ ([SymbolData]));
+        var data = getIn(state, track /__prop#_1813__ ([SymData]));
         if (!data) return;
         if (data /__prop#_1814__ .type ==  /__string#_658__  || data /__prop#_1815__ .type ==  /__string#_659__ ) modifiedValues && objKeys(modifiedValues) /__prop#_1816__ (function (key) {
             return clearDefaultMessages(modifiedValues[key], track /__prop#_1817__ (key));
@@ -1950,14 +1950,14 @@ function makeValidation(dispath) {
     
     var state = getState();
     if (oldState == state) return Promise /__prop#_1823__ (); 
-    var newValues = state[SymbolData] /__stringProp#_54__ ;
+    var newValues = state[SymData] /__stringProp#_54__ ;
     var validStatus = {};
     var pendingStatus = {};
     var colorStatus = {};
     var validationMessages = {};
     var validationUpdates = [];
     var promises = [];
-    var modifiedValues = force === true ? newValues : force || state[SymbolData] /__stringProp#_55__ ; 
+    var modifiedValues = force === true ? newValues : force || state[SymData] /__stringProp#_55__ ; 
     if (!modifiedValues) return Promise /__prop#_1824__ (); 
     clearDefaultMessages(modifiedValues);
     var errs = JSONValidator(newValues);
@@ -1968,14 +1968,14 @@ function makeValidation(dispath) {
     
     sendMessages2State();
     
-    getState()[SymbolData] /__prop#_1826__  = merge(state[SymbolData] /__prop#_1827__ , getState()[SymbolData] /__prop#_1828__ , { symbol: true }); 
+    getState()[SymData] /__prop#_1826__  = merge(state[SymData] /__prop#_1827__ , getState()[SymData] /__prop#_1828__ , { symbol: true }); 
     if (promises /__prop#_1829__ ) {
         
         validationMessages = {};
         validStatus = {};
         validationUpdates = [];
         return Promise /__prop#_1830__ (promises) /__prop#_1831__ (function (results) {
-            var newValues = getState()[SymbolData] /__stringProp#_56__ ;
+            var newValues = getState()[SymData] /__stringProp#_56__ ;
             for (var i = 0; i < promises /__prop#_1832__ ; i++) {
                 if (!results[i]) continue;
                 var _promises$i$vData = promises[i] /__prop#_1833__ ,
@@ -2010,10 +2010,10 @@ function formReducer(name) {
     var reducersFunction = {};
     function setStateChanges(startState, action) {
         function makeSliceFromUpdateItem(item) {
-            if (item /__prop#_1840__ ) return makeSlice(item /__prop#_1841__ , SymbolData, item /__prop#_1842__ , item /__prop#_1843__ );else return makeSlice(item /__prop#_1844__ , item /__prop#_1845__ );
+            if (item /__prop#_1840__ ) return makeSlice(item /__prop#_1841__ , SymData, item /__prop#_1842__ , item /__prop#_1843__ );else return makeSlice(item /__prop#_1844__ , item /__prop#_1845__ );
         }
         function setCurrentValue(state, changes) {
-            return mergeState(state[SymbolData] /__stringProp#_57__ , getAsObject(state, [SymbolData,  /__string#_660__ ], getValue, changes), { arrays:  /__string#_661__ , del: true, SymbolDelete: Symbol /__prop#_1846__ ( /__string#_662__ ) });
+            return mergeState(state[SymData] /__stringProp#_57__ , getAsObject(state, [SymData,  /__string#_660__ ], getValue, changes), { arrays:  /__string#_661__ , del: true, SymbolDelete: Symbol /__prop#_1846__ ( /__string#_662__ ) });
         }
         function mergeProcedure(prevState, newState) {
             mergeResult = mergeState(prevState, newState, options4changes);
@@ -2107,16 +2107,16 @@ function formReducer(name) {
         
         if (state != startState) {
             if (allChanges /__prop#_1874__  > 1) mergeProcedure(startState, state);else changes = allChanges[0];
-            state[SymbolData] = Object /__prop#_1875__ ({}, state[SymbolData]); 
+            state[SymData] = Object /__prop#_1875__ ({}, state[SymData]); 
             var cur = setCurrentValue(state, changes);
-            state[SymbolData] /__stringProp#_58__  = cur /__prop#_1876__ ;
-            state[SymbolData] /__stringProp#_59__  = cur /__prop#_1877__ ;
-            state[SymbolData] /__stringProp#_60__ ++;
+            state[SymData] /__stringProp#_58__  = cur /__prop#_1876__ ;
+            state[SymData] /__stringProp#_59__  = cur /__prop#_1877__ ;
+            state[SymData] /__stringProp#_60__ ++;
             if (state == changes) {
                 changes = Object /__prop#_1878__ ({}, state);
-                changes[SymbolData] = Object /__prop#_1879__ ({}, state[SymbolData]);
+                changes[SymData] = Object /__prop#_1879__ ({}, state[SymData]);
             }
-            state[SymbolData] /__stringProp#_61__  = changes;
+            state[SymData] /__stringProp#_61__  = changes;
         }
         
         return state;
@@ -2126,17 +2126,17 @@ function formReducer(name) {
         function recurse(state, changes) {
             var track = arguments /__prop#_1880__  > 2 && arguments[2] !== undefined ? arguments[2] :  /__stringProp#_62__ ;
 
-            if (getIn(state, [SymbolData,  /__string#_670__ ])) {
+            if (getIn(state, [SymData,  /__string#_670__ ])) {
                 (function () {
-                    var dataObj = state[SymbolData];
+                    var dataObj = state[SymData];
                     var trackString = path2string(track);
                     objKeysNSymb(dataObj /__stringProp#_63__ ) /__prop#_1881__ (function (keyPathFrom) {
                         var mapTo = dataObj /__stringProp#_64__ [keyPathFrom];
-                        var value = keyPathFrom == SymbolData ? state : getIn(dataObj, string2path(keyPathFrom));
+                        var value = keyPathFrom == SymData ? state : getIn(dataObj, string2path(keyPathFrom));
                         objKeys(mapTo) /__prop#_1882__ (function (key) {
                             var valueFn = mapTo[key];
                             var to = makePathItem(key, track);
-                            if (keyPathFrom == SymbolData && to /__prop#_1883__ ) delete to /__prop#_1884__ ; 
+                            if (keyPathFrom == SymData && to /__prop#_1883__ ) delete to /__prop#_1884__ ; 
                             to /__prop#_1885__  = valueFn ? valueFn /__prop#_1886__ ({ state: state, path: track, utils: utils })(value) : value;
                             if (to /__prop#_1887__  && isObject(value)) {
                                 object2PathValues(value) /__prop#_1888__ (function (pathValue) {
@@ -2354,7 +2354,7 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
         return dispathAction(actionSetItems(items, stuff, validate));
     };
     api /__prop#_1931__  = function (keyPath, unflatten, fn) {
-        var value = getAsObject(getState(), push2array([SymbolData], typeof keyPath ==  /__string#_674__  ? string2path(keyPath) : keyPath), fn);
+        var value = getAsObject(getState(), push2array([SymData], typeof keyPath ==  /__string#_674__  ? string2path(keyPath) : keyPath), fn);
         return unflatten ? value : keyMap /__prop#_1932__ (value);
     };
     api /__prop#_1933__  = function (vals, keyPath) {
@@ -2379,7 +2379,7 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
         return dispathAction(actionSetItems(items, stuff, validate));
     };
     api /__prop#_1947__  = function (unflatten) {
-        return unflatten ? getState()[SymbolData] /__stringProp#_68__  : keyMap /__prop#_1948__ (getState()[SymbolData] /__stringProp#_69__ );
+        return unflatten ? getState()[SymData] /__stringProp#_68__  : keyMap /__prop#_1948__ (getState()[SymData] /__stringProp#_69__ );
     };
     api /__prop#_1949__  = function (vals) {
         var validate = arguments /__prop#_1950__  > 1 && arguments[1] !== undefined ? arguments[1] : !batching;
@@ -2399,14 +2399,14 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
         var op = arguments /__prop#_1960__  > 1 && arguments[1] !== undefined ? arguments[1] :  /__string#_685__ ;
 
         path = typeof path ==  /__string#_686__  ? string2path(path) : path;
-        if (op ==  /__string#_687__ ) return api /__prop#_1961__ (path /__prop#_1962__ (SymbolData,  /__string#_688__ ,  /__string#_689__ ,  /__string#_690__ ), getValue(api /__prop#_1963__ (path /__prop#_1964__ (SymbolData,  /__string#_691__ ,  /__string#_692__ ))) + 1);
+        if (op ==  /__string#_687__ ) return api /__prop#_1961__ (path /__prop#_1962__ (SymData,  /__string#_688__ ,  /__string#_689__ ,  /__string#_690__ ), getValue(api /__prop#_1963__ (path /__prop#_1964__ (SymData,  /__string#_691__ ,  /__string#_692__ ))) + 1);
     };
     api /__prop#_1965__  = function (path, op, value) {
         path = typeof path ==  /__string#_693__  ? string2path(path) : path /__prop#_1966__ ();
         var from = parseIntFn(path /__prop#_1967__ ());
         var to = from;
-        var min = api /__prop#_1968__ (path /__prop#_1969__ (SymbolData,  /__string#_694__ ,  /__string#_695__ ));
-        var lengthFull = api /__prop#_1970__ (path /__prop#_1971__ (SymbolData,  /__string#_696__ ,  /__string#_697__ ));
+        var min = api /__prop#_1968__ (path /__prop#_1969__ (SymData,  /__string#_694__ ,  /__string#_695__ ));
+        var lengthFull = api /__prop#_1970__ (path /__prop#_1971__ (SymData,  /__string#_696__ ,  /__string#_697__ ));
         var max = getValue(lengthFull) - 1;
         if (op ==  /__string#_698__ ) to--;
         if (op ==  /__string#_699__ ) to++;
@@ -2432,12 +2432,12 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
         for (var i = Math /__prop#_1976__ (from, to); i <= Math /__prop#_1977__ (from, to); i++) {
             delStateObject[i] = SymbolDelete;
             stateObject[i] = getIn(state, path /__prop#_1978__ (i));
-            arrayItems[i] = stateObject[i][SymbolData] /__prop#_1979__ ;
+            arrayItems[i] = stateObject[i][SymData] /__prop#_1979__ ;
             mergeObject[i] = arrayValues /__stringProp#_72__ [i];
         }
         stateObject = moveArrayElems(stateObject, from, to);
         objKeys(arrayItems) /__prop#_1980__ (function (i) {
-            stateObject[i][SymbolData] /__prop#_1981__  = arrayItems[i];
+            stateObject[i][SymData] /__prop#_1981__  = arrayItems[i];
         });
         mergeObject = moveArrayElems(mergeObject, from, to);
         api /__prop#_1982__ ();
@@ -2450,7 +2450,7 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
         promise = api /__prop#_1985__ (path, stateObject);
         
         
-        op ==  /__string#_709__  && api /__prop#_1986__ (path /__prop#_1987__ (SymbolData,  /__string#_710__ ,  /__string#_711__ ,  /__string#_712__ ), max);
+        op ==  /__string#_709__  && api /__prop#_1986__ (path /__prop#_1987__ (SymData,  /__string#_710__ ,  /__string#_711__ ,  /__string#_712__ ), max);
         valuesNames /__prop#_1988__ (function (name) {
             return !isUndefined(arrayValues[name]) && api /__prop#_1989__ (makeSlice(path, arrayValues[name]), [ /__string#_713__ , name]);
         });
@@ -2562,7 +2562,7 @@ function getSchemaPart(schema, path) {
         }
     }
     if (!schemaPart /__prop#_2040__ ) return schemaPart;
-    var refMap = getByKey(schema, [SymbolData,  /__string#_729__ , schemaPart /__prop#_2041__ ], new Map());
+    var refMap = getByKey(schema, [SymData,  /__string#_729__ , schemaPart /__prop#_2041__ ], new Map());
     if (!refMap /__prop#_2042__ (schemaPart)) {
         var _$refSchema = getSchemaByRef(schema, schemaPart /__prop#_2043__ );
 
@@ -2609,7 +2609,7 @@ function makeDataObject(schema, values, path) {
         return merge /__prop#_2062__ ({}, dataMap /__prop#_2063__ (function (item) {
             var from = makePathItem(item[0], path);
             var to = item[1];
-            return makeSlice(from /__prop#_2064__ , SymbolData,  /__string#_732__ , from /__prop#_2065__  ? path2string(from /__prop#_2066__ ) : SymbolData, to, item[2]);
+            return makeSlice(from /__prop#_2064__ , SymData,  /__string#_732__ , from /__prop#_2065__  ? path2string(from /__prop#_2066__ ) : SymData, to, item[2]);
         }), { symbol: true });
     }
     var bindObject = { schema: schema, utils: utils };
@@ -2672,7 +2672,7 @@ function makeStateFromSchema(schema) {
     var dataMapObjects = [];
     var dataObj = makeDataObject(schema, values, currentPath);
     var schemaPart = getSchemaPart(schema, currentPath);
-    result[SymbolData] = dataObj /__prop#_2110__ ;
+    result[SymData] = dataObj /__prop#_2110__ ;
     dataMapObjects /__prop#_2111__ (dataObj /__prop#_2112__ );
     var keys = [];
     if (schemaPart /__prop#_2113__  ==  /__string#_744__ ) {
@@ -2688,7 +2688,7 @@ function makeStateFromSchema(schema) {
             });
             for (var i = 0; i < getMaxValue(lengthFull); i++) {
                 keys /__prop#_2125__ (i /__prop#_2126__ ());
-            }result[SymbolData] /__prop#_2127__  = {
+            }result[SymData] /__prop#_2127__  = {
                 lengths: lengthFull,
                 arrayStartIndex: getArrayStartIndex(schemaPart),
                 canAdd: !(schemaPart /__prop#_2128__  === false) && getValue(lengthFull) < (schemaPart /__prop#_2129__  || Infinity)
@@ -2703,9 +2703,9 @@ function makeStateFromSchema(schema) {
         result[field] = dataObj /__prop#_2136__ ;
         if (schemaPart /__prop#_2137__  ==  /__string#_750__ ) {
             var num = parseIntFn(field);
-            var arrayItem = getByKey(result[field][SymbolData],  /__string#_751__ );
-            var arrayStartIndex = result[SymbolData] /__prop#_2138__ .arrayStartIndex;
-            var length = getValue(result[SymbolData] /__prop#_2139__ .lengths);
+            var arrayItem = getByKey(result[field][SymData],  /__string#_751__ );
+            var arrayStartIndex = result[SymData] /__prop#_2138__ .arrayStartIndex;
+            var length = getValue(result[SymData] /__prop#_2139__ .lengths);
             if (num >= arrayStartIndex) {
                 arrayItem /__prop#_2140__  = arrayStartIndex < num;
                 arrayItem /__prop#_2141__  = arrayStartIndex <= num && num < length - 1;
@@ -2738,16 +2738,16 @@ function getKeyMapFromSchema(schema) {
             return result;
         }
         var schemaPart = getSchemaPart(schema, track);
-        var keyMaps = getByKey(schema, [SymbolData,  /__string#_753__ ], new Map());
+        var keyMaps = getByKey(schema, [SymData,  /__string#_753__ ], new Map());
         if (keyMaps /__prop#_2152__ (schemaPart)) return keyMaps /__prop#_2153__ (schemaPart);
         if (schemaPart /__prop#_2154__  !=  /__string#_754__ ) return;
         var result = {};
         var fields = objKeys(schemaPart /__prop#_2155__  || {});
-        var keyMap = getByKey(result, [SymbolData,  /__string#_755__ ], { key2path: {}, path2key: {} });
+        var keyMap = getByKey(result, [SymData,  /__string#_755__ ], { key2path: {}, path2key: {} });
         if (schemaPart /__prop#_2156__  && schemaPart /__prop#_2157__ .flatten) keyMap /__prop#_2158__  = schemaPart /__prop#_2159__ .flatten !== true && schemaPart /__prop#_2160__ .flatten ||  /__string#_756__ ;
         fields /__prop#_2161__ (function (field) {
             var keyResult = getKeyMap(schema, track /__prop#_2162__ (field));
-            var objKeyMap = getIn(keyResult, [SymbolData,  /__string#_757__ ]) || {};
+            var objKeyMap = getIn(keyResult, [SymData,  /__string#_757__ ]) || {};
             if (!isUndefined(objKeyMap /__prop#_2163__ )) {
                 objKeys(objKeyMap /__prop#_2164__ ) /__prop#_2165__ (function (key) {
                     checkIfHaveKey(objKeyMap /__prop#_2166__  + key);
@@ -2767,7 +2767,7 @@ function getKeyMapFromSchema(schema) {
         if (typeof keyPath ==  /__string#_758__ ) keyPath = string2path(keyPath);
         var result = [];
         keyPath /__prop#_2178__ (function (key) {
-            var path = getIn(getKeyMap(schema, result), [SymbolData,  /__string#_759__ ,  /__string#_760__ , key]);
+            var path = getIn(getKeyMap(schema, result), [SymData,  /__string#_759__ ,  /__string#_760__ , key]);
             result = push2array(result, path ? path : key);
         });
         return result;
@@ -2777,7 +2777,7 @@ function getKeyMapFromSchema(schema) {
         var i = 0;
         while (i < path /__prop#_2179__ ) {
             var key = path[i];
-            var _path2key = getIn(getKeyMap(schema, path /__prop#_2180__ (0, i)), [SymbolData,  /__string#_761__ ,  /__string#_762__ ]);
+            var _path2key = getIn(getKeyMap(schema, path /__prop#_2180__ (0, i)), [SymData,  /__string#_761__ ,  /__string#_762__ ]);
             if (_path2key) {
                 var j = 0;
                 while (1) {
@@ -2814,7 +2814,7 @@ function getKeyMapFromSchema(schema) {
                     return recurse(value[key], track /__prop#_2184__ (key));
                 });
             }
-            if (!(keys && keys /__prop#_2185__ ) && getIn(getKeyMap(schema, fnDirect == key2path ? key2path(track) : track), [SymbolData,  /__string#_764__ ,  /__string#_765__ ]) === undefined) {
+            if (!(keys && keys /__prop#_2185__ ) && getIn(getKeyMap(schema, fnDirect == key2path ? key2path(track) : track), [SymData,  /__string#_764__ ,  /__string#_765__ ]) === undefined) {
                 var tmp = result;
                 var _path2 = fnDirect(track);
                 for (var i = 0; i < _path2 /__prop#_2186__  - 1; i++) {
@@ -2998,7 +2998,7 @@ function string2path(str) {
     res = tmp;
     
     var a = res /__prop#_2256__ (delimiter);
-    if (~a) res[a] = SymbolData;
+    if (~a) res[a] = SymData;
     return res;
 }
 exports /__prop#_2257__  = string2path;
@@ -3053,10 +3053,10 @@ function makePathItem(path) {
     Object /__prop#_2270__ (pathItem,  /__string#_311__ , { enumerable: false });
     Object /__prop#_2271__ (pathItem,  /__string#_312__ , {
         get: function get() {
-            return this /__prop#_2272__  ? this /__prop#_2273__ .concat(SymbolData, this /__prop#_2274__ ) : this /__prop#_2275__ ;
+            return this /__prop#_2272__  ? this /__prop#_2273__ .concat(SymData, this /__prop#_2274__ ) : this /__prop#_2275__ ;
         },
         set: function set(path) {
-            var a = path /__prop#_2276__ (SymbolData);
+            var a = path /__prop#_2276__ (SymData);
             if (a == -1) {
                 this /__prop#_2277__  = path /__prop#_2278__ ();
                 delete this /__prop#_2279__ ;
@@ -3204,7 +3204,7 @@ function getAsObject(store, keyPath, fn, keyObject) {
     if (!fn) fn = function fn(x) {
         return x;
     };
-    var type = store[SymbolData] /__prop#_2340__ .type;
+    var type = store[SymData] /__prop#_2340__ .type;
     if (type ==  /__string#_801__  || type ==  /__string#_802__ ) {
         var _ret12 = function () {
             var result = type ==  /__string#_803__  ? [] : {};
@@ -3213,14 +3213,14 @@ function getAsObject(store, keyPath, fn, keyObject) {
                 var idx = 0;
                 var arrKeys = [];
                 if (keyPath[1] ==  /__string#_805__  && keyPath[2]) idx = getIn(store, [SymbolData,  /__string#_806__ ,  /__string#_807__ , keyPath[2]]) || 0;else idx = getValue(getIn(store, [SymbolData,  /__string#_808__ ,  /__string#_809__ ]) || {}) || 0;
-                var lengthChange = keyObject && getIn(keyObject, [SymbolData,  /__string#_810__ ,  /__string#_811__ ]);
+                var lengthChange = keyObject && getIn(keyObject, [SymData,  /__string#_810__ ,  /__string#_811__ ]);
                 for (var i = 0; i < idx; i++) {
                     if (lengthChange || ~keys /__prop#_2342__ (i /__prop#_2343__ ())) arrKeys /__prop#_2344__ (i /__prop#_2345__ ());
                 }keys = arrKeys;
                 result /__prop#_2346__  = idx;
             }
             keys /__prop#_2347__ (function (key) {
-                if (store[key]) result[key] = getBindedValue(getIn(store[key], [SymbolData,  /__string#_812__ ]),  /__string#_813__ ) ? Symbol /__prop#_2348__ ( /__string#_814__ ) : getAsObject(store[key], keyPath, fn, keyObject ? keyObject[key] : undefined);
+                if (store[key]) result[key] = getBindedValue(getIn(store[key], [SymData,  /__string#_812__ ]),  /__string#_813__ ) ? Symbol /__prop#_2348__ ( /__string#_814__ ) : getAsObject(store[key], keyPath, fn, keyObject ? keyObject[key] : undefined);
             });
             return {
                 v: result
