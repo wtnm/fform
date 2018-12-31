@@ -1447,7 +1447,7 @@ module.exports = self.fetch.bind(self);
       isBuffer = require('is-buffer'),
       bin = require('charenc').bin,
 
-  // The core
+  // The api
   md5 = function (message, options) {
     // Convert to byte array
     if (message.constructor == String)
@@ -2282,7 +2282,7 @@ var Gravatar = function (_React$Component) {
         className = className + ' ' + this.props.className;
       }
 
-      // Clone this.props and then delete Component specific props so we can
+      // Clone this._props and then delete Component specific _props so we can
       // spread the rest into the img.
 
       var rest = _objectWithoutProperties(this.props, []);
@@ -4184,7 +4184,7 @@ var CollectionView = function (_Component) {
      * @private
      * This method updates scrollLeft/scrollTop in state for the following conditions:
      * 1) Empty content (0 rows or columns)
-     * 2) New scroll props overriding the current state
+     * 2) New scroll _props overriding the current state
      * 3) Cells-count or cells-size has changed, making previous scroll offsets invalid
      */
 
@@ -6370,7 +6370,7 @@ var Grid = function (_Component) {
     /**
      * @private
      * This method updates scrollLeft/scrollTop in state for the following conditions:
-     * 1) New scroll-to-cell props have been set
+     * 1) New scroll-to-cell _props have been set
      */
 
   }, {
@@ -6482,7 +6482,7 @@ var Grid = function (_Component) {
      * @private
      * This method updates scrollLeft/scrollTop in state for the following conditions:
      * 1) Empty content (0 rows or columns)
-     * 2) New scroll props overriding the current state
+     * 2) New scroll _props overriding the current state
      * 3) Cells-count or cells-size has changed, making previous scroll offsets invalid
      */
 
@@ -8255,7 +8255,7 @@ function scanForUnloadedRanges(_ref3) {
 }
 
 /**
- * Since RV components use shallowCompare we need to force a render (even though props haven't changed).
+ * Since RV components use shallowCompare we need to force a render (even though _props haven't changed).
  * However InfiniteLoader may wrap a Grid or it may wrap a FlexTable or VirtualScroll.
  * In the first case the built-in React forceUpdate() method is sufficient to force a re-render,
  * But in the latter cases we need to use the RV-specific forceUpdateGrid() method.
@@ -9422,7 +9422,7 @@ module.exports = {
 var shallowEqual = require('fbjs/lib/shallowEqual');
 
 /**
- * Does a shallow comparison for props and state.
+ * Does a shallow comparison for _props and state.
  * See ReactComponentWithPureRenderMixin
  * See also https://facebook.github.io/react/docs/shallow-compare.html
  */

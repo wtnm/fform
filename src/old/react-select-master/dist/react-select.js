@@ -35,7 +35,7 @@ var _utilsStripDiacritics2 = _interopRequireDefault(_utilsStripDiacritics);
 var propTypes = {
 	autoload: _react2['default'].PropTypes.bool.isRequired, // automatically call the `loadOptions` prop on-mount; defaults to true
 	cache: _react2['default'].PropTypes.any, // object to use to cache results; set to null/false to disable caching
-	children: _react2['default'].PropTypes.func.isRequired, // Child function responsible for creating the inner Select component; (props: Object): PropTypes.element
+	children: _react2['default'].PropTypes.func.isRequired, // Child function responsible for creating the inner Select component; (_props: Object): PropTypes.element
 	ignoreAccents: _react2['default'].PropTypes.bool, // strip diacritics when filtering; defaults to true
 	ignoreCase: _react2['default'].PropTypes.bool, // perform case-insensitive filtering; defaults to true
 	loadingPlaceholder: _react2['default'].PropTypes.oneOfType([// replaces the placeholder while options are loading
@@ -359,7 +359,7 @@ var Creatable = _react2['default'].createClass({
 	propTypes: {
 		// Child function responsible for creating the inner Select component
 		// This component can be used to compose HOCs (eg Creatable and Async)
-		// (props: Object): PropTypes.element
+		// (_props: Object): PropTypes.element
 		children: _react2['default'].PropTypes.func,
 
 		// See Select.propTypes.filterOptions
@@ -1414,7 +1414,7 @@ var Select = _react2['default'].createClass({
 	/**
   * Retrieve a value from the given options and valueKey
   * @param	{String|Number|Array}	value	- the selected value(s)
-  * @param	{Object}		props	- the Select component's props (or nextProps)
+  * @param	{Object}		props	- the Select component's _props (or nextProps)
   */
 	expandValue: function expandValue(value, props) {
 		var valueType = typeof value;

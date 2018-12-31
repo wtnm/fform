@@ -1,6 +1,6 @@
 import * as React from "react";
 // import {PropTypes} from "react"
-// import {basicObjects} from './core';
+// import {basicObjects} from './api';
 
 const FormGroup = require('reactstrap/lib/FormGroup');
 

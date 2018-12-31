@@ -9,7 +9,7 @@ const Creatable = React.createClass({
 	propTypes: {
 		// Child function responsible for creating the inner Select component
 		// This component can be used to compose HOCs (eg Creatable and Async)
-		// (props: Object): PropTypes.element
+		// (_props: Object): PropTypes.element
 		children: React.PropTypes.func,
 
 		// See Select.propTypes.filterOptions

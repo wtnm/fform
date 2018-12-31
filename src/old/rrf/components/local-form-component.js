@@ -31,7 +31,7 @@ LocalForm.propTypes = {
     getState: PropTypes.func,
   }),
 
-  // provided props
+  // provided _props
   initialState: PropTypes.any,
   model: PropTypes.string.isRequired,
 };

@@ -16,8 +16,8 @@ interface FormApi {
   // getAsSlice: (path: PathSlice) => any;
   // setAsSlice: (path: PathSlice, value: any) => void;
 
-  getValues: (opts?: { valueType?: 'current' | 'inital' | 'default', flatten?: boolean }) => void;
-  setValues: (vals: any, opts?: APIOptsType & { valueType?: 'current' | 'inital' | 'default', flatten?: boolean }) => Promise<void>;
+  getValues: (opts?: { valueType?: 'inital' | 'default', flatten?: boolean }) => void;
+  setValues: (vals: any, opts?: APIOptsType & { inital?: boolean, flatten?: boolean }) => Promise<void>;
 
   // setFocus: (path: Path) => void;
 
@@ -31,38 +31,33 @@ interface FormApi {
 }
 
 interface FFormProps {
-  core: any;
   objects: { [key: string]: any };
+  widget?: any;
+  
+  core: any;  
+  state?: any;
+  value?: any;
+  inital?: any;
+  extData?: { [key: string]: any };
+  fieldCache?: boolean | number;  
+  flatten?: boolean;
+  noValidate?: boolean;
+  
+  parent?:any;
+  
   onSubmit?: (value: any, fform?: any) => boolean;
   onChange?: (value: any, fform?: any) => void;
-  values?: any;
-  rawValues?: { current?: any, inital?: any, 'default'?: any };
-  state?: any;
-  widget?: any;
-  extData?: { [key: string]: any };
-  fieldCache?: boolean;
+  onStateChange?: (state: any, fform?: any) => void;
 }
 
 /** Parameters to creates a FFormCore */
 interface FFormCoreProps {
-  /** schema that will be used to create state */
-  schema: any;
-  /** name that will be used to access data in redux storage */
-  name?: string;
-  current?: any;
-  inital?: any;
-  'default'?: any;
+  schema: any;  /** schema that will be used to create state */
+  name?: string;  /** name that will be used to access data in redux storage */
   store?: any,   // redux
   getState?: () => any  // external
   setState?: (state: any) => void // external
-  opts?: APICreateOptsType
-}
-
-type APICreateOptsType = { flatValues?: boolean, skipInitValidate?: boolean, keepEqualRawValues?: boolean }
-
-
-interface FormValues {
-
+  
 }
 
 
@@ -74,7 +69,7 @@ interface DeepmergeOptionsArgument {
 
 interface MergeStateOptionsArgument {
   noSymbol?: boolean;
-  del?: boolean;  // remove props with SymDelete
+  del?: boolean;  // remove _props with SymDelete
   diff?: boolean;
   arrays?: 'replace' | 'merge' | 'concat'; // 'mergeWithoutLength'
   replace?: replaceType; // force replace for mergeable object instead of merge, should be and object with true value for the keys that must be replaced, can be recursive for deep objects
@@ -95,23 +90,15 @@ interface IsEqualOptions {
 
 interface ActionType {
   type: string;
-  stuff: actionStuffType,
+  core: any,
   mergeOptions?: any;
 }
 
-type actionStuffType = {
-  hooks: HooksObjectType;
-  getState: () => StateType;
-  getRawValues: () => { current: any, inital: any, 'default': any };
-  JSONValidator: any;
-  schema: JsonSchema;
-  name?: string;
-  keyMap: any;
-}
+
 
 interface SetItemsType extends ActionType {
   type: 'FFORM_SET_ITEMS';
-  items: UpdateItem[];
+  items: NormalizedUpdateType[];
 }
 
 interface ForceValidationType extends ActionType {
@@ -127,10 +114,10 @@ interface SetRawValuesType extends ActionType {
 type APIOptsType = {
   execute?: boolean | number;
   force?: boolean;
-  returnItems?: boolean;
-  // async?: boolean | 'syncValidation';
   noValidation?: boolean;
-  getState?: any;
+  //returnItems?: boolean;
+  // async?: boolean | 'syncValidation';
+  //getState?: any;
 }
 
 interface apiPromises extends Promise<any> {
@@ -160,16 +147,16 @@ interface object2PathValuesOptions {
   arrayAsValue?: boolean;
 }
 
-type StateType = { [key: string]: any };
-type MergeHook = (state: StateType, item: UpdateItem, utils: utilsApiType, schema: JsonSchema, data: StateType, hookType: string) =>
+
+type MergeHook = (state: StateType, item: NormalizedUpdateType, utils: utilsApiType, schema: JsonSchema, data: StateType, hookType: string) =>
   false
-  | UpdateItem[]
-  | { before?: UpdateItem[], after?: UpdateItem[], skip?: boolean };
-type UpdateHook = (state: StateType, changesArray: StateType[], utils: utilsApiType, schema: JsonSchema, data: StateType, hookType: string) => false | UpdateItem[]
+  | NormalizedUpdateType[]
+  | { before?: NormalizedUpdateType[], after?: NormalizedUpdateType[], skip?: boolean };
+type UpdateHook = (state: StateType, changesArray: StateType[], utils: utilsApiType, schema: JsonSchema, data: StateType, hookType: string) => false | NormalizedUpdateType[]
 type HooksType = MergeHook | UpdateHook;
 
 // type MergeHookResultObject =  {result: boolean, changes?: MergeHookChanges}
-// type MergeHookChanges = {beforeThis?: UpdateItem[], afterThis?: UpdateItem[], beforeAll?: UpdateItem[], afterAll?: UpdateItem[]}
+// type MergeHookChanges = {beforeThis?: NormalizedUpdateType[], afterThis?: NormalizedUpdateType[], beforeAll?: NormalizedUpdateType[], afterAll?: NormalizedUpdateType[]}
 
 
 // type HooksObjectType = {beforeMerge: MergeHook[], beforeUpdate: UpdateHook[]}

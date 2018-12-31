@@ -83,7 +83,7 @@ function hookManager() {
     var add = function add(name, hookName, hook) {
         if (name == '') {
             // if (!globalHooks[hookName]) globalHooks[hookName] = [];
-            // let globalHooksArray = getByKey(globalHooks, hookName, []);
+            // let globalHooksArray = getOrCreate(globalHooks, hookName, []);
             objKeys(Hooks).forEach(function (key) {
                 return setHook(key, hookName, hook);
             });
@@ -182,7 +182,7 @@ Hooks('', 'beforeMerge', function (state, item, utils, schema, data) {
     //     if (dataItem[item.keyPath[0]]) dataItem[item.keyPath[0]][item.keyPath[1]] = item.value;
     //     if (dataItem.values) {
     //       let statusValue = getValue(dataItem.values) === getValue(dataItem.values, 'inital');
-    //       let checkItem: UpdateItem = {path: item.path, keyPath: ['status', 'pristine'], value: statusValue};
+    //       let checkItem: NormalizedUpdateType = {path: item.path, keyPath: ['status', 'pristine'], value: statusValue};
     //       statusCheck.push(checkItem);
     //       afterThis.push(checkItem);
     //       dataItem.status.pristine = statusValue;
@@ -204,7 +204,7 @@ Hooks('', 'beforeMerge', function (state, item, utils, schema, data) {
     //   if (statusCheck.length || item.keyPath[0] == 'status') {
     //     const dataItem = getDataItem(stateItems, state, item.path);
     //     let path = item.path.slice();
-    //     const items2check: Array<UpdateItem & {keyPath: Path}> = [];
+    //     const items2check: Array<NormalizedUpdateType & {keyPath: Path}> = [];
     //     if (statusCheck.length) push2array(items2check, statusCheck);
     //     else items2check.push(item as any);
     //
@@ -218,7 +218,7 @@ Hooks('', 'beforeMerge', function (state, item, utils, schema, data) {
     //         const dataItem = getDataItem(stateItems, state, path);
     //         if (dataItem.status[item2check.keyPath[1]] != item2check.value) {
     //           if (item2check.value == SymbolRecalc || item2check.value == checkValue) {
-    //             getByKey(getByKey(data, SymbolRecalc, []), [path.length, path2string(path, item2check.keyPath)], {
+    //             getOrCreate(getOrCreate(data, SymbolRecalc, []), [path.length, path2string(path, item2check.keyPath)], {
     //               path: path.slice(),
     //               keyPath: item2check.keyPath,
     //               checkValue
@@ -430,7 +430,7 @@ var Form = function (_react_1$PureComponen) {
      shchema: PropTypes.object.isRequired,
      name: PropTypes.string,
      store: PropTypes.object,
-     dispath: PropTypes.func,
+     dispatch: PropTypes.func,
      values: PropTypes.object,
      initalValues: PropTypes.object,
      defaultValues: PropTypes.object,
@@ -499,8 +499,8 @@ var Form = function (_react_1$PureComponen) {
             self.iface = iface;
             if (self.iface == 'redux') {
                 var store = void 0;
-                if (self.store) store = self.store;else if (self.context.store) store = self.store = self.context.store;else throw new Error('In redux mode store must be provided either in context or in props.store');
-                self.dispath = store.dispath;
+                if (self.store) store = self.store;else if (self.context.store) store = self.store = self.context.store;else throw new Error('In redux mode store must be provided either in context or in _props.store');
+                self.dispatch = store.dispatch;
                 if (self.unsubscribe) self.unsubscribe();
                 self.unsubscribe = store.subscribe(self._handleChange);
             } else {
@@ -508,7 +508,7 @@ var Form = function (_react_1$PureComponen) {
                     self.unsubscribe();
                     delete self.unsubscribe;
                 }
-                self.dispath = self._dispath.bind(self);
+                self.dispatch = self._dispath.bind(self);
             }
             self.api = apiCreator(self.dispath, self.getState.bind(self), self.setState.bind(self), self.keyMap, Hooks.get(self.props.name), self.jValidator, self.schema);
         }
@@ -651,7 +651,7 @@ var Section = function (_react_1$Component2) {
             var self = this;
             if (!path.length) {
                 self.layouts = [];
-                self.shouldBuild = true;
+                self._rebuild = true;
                 self.forceUpdate();
             } else {
                 var _field = path[0];
@@ -698,7 +698,7 @@ var Section = function (_react_1$Component2) {
                         var cnt = widCount;
                         widCount++;
                         layout.push(React.createElement(SectionWidget, __assign({ wid: cnt, getDataProps: getDataProps, widget: widget, key: 'group_' + field }, schemaProps['Group'], restGroup), makeLayout(keys, groupFields, groupGroups))); // for _dataProps['Group'] changes should make rebuild
-                        if (propsMap || groupPropsMap) self.dataMaps[cnt] = merge(propsMap || {}, groupPropsMap || {});
+                        if (propsMap || groupPropsMap) self._dataMaps[cnt] = merge(propsMap || {}, groupPropsMap || {});
                         groupKeys.splice(groupKeys.indexOf(field), 1);
                     } else if (isObject(field)) {
                         var _propsMap = field.propsMap,
@@ -710,7 +710,7 @@ var Section = function (_react_1$Component2) {
                         var opts = {};
                         if (passOptions) opts[passOptions === true ? 'options' : passOptions] = fieldOptions;
                         layout.push(React.createElement(SectionWidget, __assign({}, opts, { key: 'widget_' + widCount, wid: widCount, getDataProps: getDataProps, ref: setWidRef(widCount) }, restField)));
-                        if (_propsMap) self.dataMaps[widCount] = _propsMap;
+                        if (_propsMap) self._dataMaps[widCount] = _propsMap;
                         widCount++;
                     }
                 });
@@ -741,7 +741,7 @@ var Section = function (_react_1$Component2) {
             var methodBindObject = field.methodBindObject;
             // let schemaPart = getSchemaPart(registry.schema, path);
             if (!schemaPart) return null;
-            self.focusField = props.focusField;
+            self._focusField = props._focusField;
             var setRef = function setRef(field) {
                 return function (item) {
                     return self.fields[field] = item;
@@ -749,7 +749,7 @@ var Section = function (_react_1$Component2) {
             };
             var setWidRef = function setWidRef(key) {
                 return function (item) {
-                    return self.wids[key] = item;
+                    return self._widgets[key] = item;
                 };
             };
             var getDataProps = function getDataProps() {
@@ -768,7 +768,7 @@ var Section = function (_react_1$Component2) {
             var arrayStartIndex = 0;
             var length = 0;
             if (schemaPart.type == 'array') {
-                if (!self.focusField) self.focusField = '0';
+                if (!self.focusField) self._focusField = '0';
                 // self.isArray = true;
                 // self.arrayAddable = !(schemaPart.additionalItems === false);
                 length = props.length; // getValue(getSingle(path.concat(SymData, 'length'))) || 0;
@@ -780,20 +780,20 @@ var Section = function (_react_1$Component2) {
             } else {
                 keys = objKeys(schemaPart.properties);
             }
-            if (!self.focusField && keys[0]) self.focusField = keys[0];
+            if (!self.focusField && keys[0]) self._focusField = keys[0];
             if (self.layouts.length == 0) {
                 self.layouts = makeLayout(keys, x.fields || [], x.groups || []);
                 keys.forEach(function (field) {
                     return self.layouts.push(SectionField(field));
                 });
-                objKeys(self.dataMaps).forEach(function (key) {
-                    return self.dataProps[key] = mapProps(self.dataMaps[key], getSingle(path.concat(SymbolData)), methodBindObject);
+                objKeys(self._dataMaps).forEach(function (key) {
+                    return self.dataProps[key] = mapProps(self._dataMaps[key], getSingle(path.concat(SymbolData)), methodBindObject);
                 });
                 self.arrayDelta = arrayStartIndex - self.layouts.length;
             }
             if (schemaPart.type == 'array') {
                 var from = Math.max(arrayStartIndex, Math.min(self.layouts.length + self.arrayDelta, length));
-                self.layouts.splice(from - self.arrayDelta, self.layouts.length - from); // = self.layoutsObject.slice(0, from);
+                self.layouts.splice(from - self.arrayDelta, self.layouts.length - from); // = self._objectLayouts.slice(0, from);
                 for (var _i3 = from; _i3 < length; _i3++) {
                     self.layouts[_i3 - self.arrayDelta] = SectionField(_i3.toString());
                 }
@@ -808,7 +808,7 @@ var Section = function (_react_1$Component2) {
             var path = newProps.fieldOptions.path;
 
             if (getSingle(push2array([SymbolData, 'changes'], path, SymbolData, 'array', 'lengths')) !== undefined) {
-                self.shouldBuild = true;
+                self._rebuild = true;
                 result = true;
             }
             if (self.props.dataTree != newProps.dataTree) {
@@ -820,13 +820,13 @@ var Section = function (_react_1$Component2) {
                     if (modifiedFields[SymbolData]) {
                         (function () {
                             var dataProps = {};
-                            objKeys(self.dataMaps).forEach(function (key) {
-                                return dataProps[key] = mapProps(self.dataMaps[key], newProps.dataTree[SymbolData], newProps.fieldOptions.field.methodBindObject);
+                            objKeys(self._dataMaps).forEach(function (key) {
+                                return dataProps[key] = mapProps(self._dataMaps[key], newProps.dataTree[SymbolData], newProps.fieldOptions.field.methodBindObject);
                             });
                             var tmp = mergeState(self.dataProps, dataProps);
-                            self.dataProps = tmp.state;
+                            self._dataProps = tmp.state;
                             if (tmp.changes) objKeys(tmp.changes).forEach(function (key) {
-                                return self.wids[key] && self.wids[key]['forceUpdate']();
+                                return self._widgets[key] && self._widgets[key]['forceUpdate']();
                             });
                         })();
                     }
@@ -850,10 +850,10 @@ var Section = function (_react_1$Component2) {
                 onBlur = _a.onBlur,
                 dataTree = _a.dataTree,
                 refName = _a.refName,
-                focusField = _a.focusField,
-                rest = __rest(_a, ["useTag", "funcs", "length", "_enumOptions", "fieldOptions", "onChange", "onFocus", "onBlur", "dataTree", "refName", "focusField"]);
+                focusField = _a._focusField,
+                rest = __rest(_a, ["useTag", "funcs", "length", "_enumOptions", "fieldOptions", "onChange", "onFocus", "onBlur", "dataTree", "refName", "_focusField"]);
             if (self.shouldBuild) self._build(self.props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-            self.shouldBuild = false;
+            self._rebuild = false;
             return React.createElement(UseTag, __assign({}, rest), self.layouts);
         }
     }]);
@@ -1128,14 +1128,14 @@ var Field = function (_react_1$Component3) {
             if (self.forceRebuild) this._build();
             self.forceRebuild = false;
             var api = self.fieldOptions.registry.api;
-            var data = api.getSingle(self.props.path.concat(SymbolData)); // self.props.data; //
+            var data = api.getSingle(self.props.path.concat(SymbolData)); // self._props.data; //
             var enumOptions = self.enumOptions || data.enum; //&& self._makeDynEnum(data);
             self.liveValidate = data.params && data.params._liveValidate;
             var dataProps = {};
             self.blocks.forEach(function (block) {
                 return dataProps[block] = mapProps(self.mapProps[block], data, self.methodBindObject);
             });
-            self.dataProps = merge(self.dataProps, dataProps);
+            self._dataProps = merge(self.dataProps, dataProps);
             var _a = self.builderProps,
                 BuilderWidget = _a.widget,
                 builderPropsMap = _a.propsMap,
@@ -1199,8 +1199,8 @@ function DefaultBuilder(props) {
     if (ArrayItem && dataProps['Main'].itemData) field = React.createElement(ArrayItem, __assign({ hidden: hidden }, schemaProps['ArrayItem'], dataProps['ArrayItem'], { fieldOptions: fieldOptions }), field);
     return field;
 }
-// function LayoutBlock(props: any): any {
-//   let {style, flexFlow, flex, alignItems, display, hidden, useTag: UseTag = 'div', children, id, ...rest} = props;
+// function LayoutBlock(_props: any): any {
+//   let {style, flexFlow, flex, alignItems, display, hidden, useTag: UseTag = 'div', children, id, ...rest} = _props;
 //   if (hidden) rest.style = merge(rest.style || {}, {display: 'none'});
 //   return (
 //     <UseTag style={style} {...rest}>
@@ -1255,7 +1255,7 @@ var AutosizeBlock = function (_React$Component) {
 
     return AutosizeBlock;
 }(React.Component);
-// props.fieldOptions.field.mainRef
+// _props.fieldOptions.field.mainRef
 
 
 function TitleBlock(props) {
@@ -1288,7 +1288,7 @@ function BaseInput(props) {
     var ref = rest[refName];
     if (refName) delete rest[refName];
     if (typeof UseTag == 'string') refObj.ref = ref;else refObj[refName] = ref;
-    var commonProps = { name: props.id, label: title || props.id.split('/').slice(-1)[0] }; //, onFocus: onFocus.bind(props), _onChange: _onChange.bind(props), onBlur: onBlur.bind(props)};
+    var commonProps = { name: props.id, label: title || props.id.split('/').slice(-1)[0] }; //, onFocus: onFocus.bind(_props), _onChange: _onChange.bind(_props), onBlur: onBlur.bind(_props)};
     var valueObj = {};
     if (type === 'checkbox') valueObj.checked = isUndefined(value) ? false : value;else if (type === 'tristate') valueObj.checked = value;else valueObj.value = isUndefined(value) ? "" : value;
     if (type === 'textarea') return React.createElement(UseTag, __assign({}, rest, refObj, commonProps), valueObj.value);
@@ -1952,10 +1952,10 @@ function makeValidation(dispath) {
         getState = stuff.getState;
 
     var oldState = getState();
-    // console.time('validation dispath 1');
+    // console.time('validation dispatch 1');
     if (force) oldState = null; // force validate without changing
     else dispath(this);
-    // console.timeEnd('validation dispath 1');
+    // console.timeEnd('validation dispatch 1');
     var state = getState();
     if (oldState == state) return Promise.resolve(); // no changes, no validation
     var newValues = state[SymbolData]['currentValue'];
@@ -2168,8 +2168,8 @@ function formReducer(name) {
         });
         return result;
     }
-    // function applyUpdateHooks(stateObject: StateObjectType, additionalData: StateType, hooks: UpdateHook[], hookType: string): UpdateItem[] | false {
-    //   let result: UpdateItem[] = [];
+    // function applyUpdateHooks(stateObject: StateObjectType, additionalData: StateType, hooks: UpdateHook[], hookType: string): NormalizedUpdateType[] | false {
+    //   let result: NormalizedUpdateType[] = [];
     //   if (hooks) {
     //     for (let i = 0; i < hooks.length; i++) {
     //       let res = hooks[i](stateObject, utils, additionalData, hookType);
@@ -2180,7 +2180,7 @@ function formReducer(name) {
     //   return result
     // }
     //
-    // function applyMergeHooks(mainItem: UpdateItem, state: StateType, data: StateType, hooks: MergeHook[], hookType: string): ApplyMergeHooksResultObject | false {
+    // function applyMergeHooks(mainItem: NormalizedUpdateType, state: StateType, data: StateType, hooks: MergeHook[], hookType: string): ApplyMergeHooksResultObject | false {
     //   const changesHookNames = ['beforeThis', 'afterThis', 'beforeAll', 'afterAll'];
     //   const changesHooks = {};
     //   changesHookNames.forEach(name => changesHooks[name] = []);
@@ -2189,23 +2189,23 @@ function formReducer(name) {
     //   for (let i = 0; i < hooks.length; i++) {
     //     let res = hooks[i](mainItem, state, data, utils, hookType);
     //     if (!res) return false;
-    //     if (isArr(res)) res = {result: true, changes: {afterThis: res}};
+    //     if (isArray(res)) res = {result: true, changes: {afterThis: res}};
     //     if (res.changes) {
     //       for (let j = 0; j < changesHookNames.length; j++) {
     //         let name = changesHookNames[j];
-    //         if (res.changes[name]) res.changes[name].forEach((item: UpdateItem) => changesHooks[name].push(item));
+    //         if (res.changes[name]) res.changes[name].forEach((item: NormalizedUpdateType) => changesHooks[name].push(item));
     //       }
     //     }
     //     if (!res.result) result = false;
     //   }
-    //   changesHooks['beforeThis'].forEach((item: UpdateItem) => changes.push(item));
+    //   changesHooks['beforeThis'].forEach((item: NormalizedUpdateType) => changes.push(item));
     //   if (result) changes.push(mainItem);
-    //   changesHooks['afterThis'].forEach((item: UpdateItem) => changes.push(item));
+    //   changesHooks['afterThis'].forEach((item: NormalizedUpdateType) => changes.push(item));
     //   return {changes, beforeAll: changesHooks['beforeAll'], afterAll: changesHooks['afterAll']}
     // }
     //
-    // function processItems(state: StateType, items: UpdateItem[], stuff: any, data: StateType = {}, hookType = 'beforeMap') {
-    //   let result: UpdateItem[] = [];
+    // function processItems(state: StateType, items: NormalizedUpdateType[], stuff: any, data: StateType = {}, hookType = 'beforeMap') {
+    //   let result: NormalizedUpdateType[] = [];
     //   // let data = {};
     //   let beforeAllChanges: any[] = [];
     //   let afterAllChanges: any[] = [];
@@ -2436,7 +2436,7 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
         });
         arrayValues['current'] = getIn(api.getValues(true), path);
         // console.log('getValues', arrayValues['current']);
-        // if (!isArr(array)) return;
+        // if (!isArray(array)) return;
         for (var i = Math.min(from, to); i <= Math.max(from, to); i++) {
             delStateObject[i] = SymbolDelete;
             stateObject[i] = getIn(state, path.concat(i));
@@ -3373,7 +3373,7 @@ function replaceDeep(obj, value) {
 //   if (path.length == 0) return value;
 //   let keys: any = path[0];
 //   if (typeof keys === 'function') keys = keys(path, track);
-//   if (!isArr(keys)) keys = [keys];
+//   if (!isArray(keys)) keys = [keys];
 //   let result = {};
 //   keys.forEach((key: string | number) => {
 //     let newTrack = track.slice();
@@ -3388,7 +3388,7 @@ function replaceDeep(obj, value) {
 //   else {
 //     let keys: any = path[0];
 //     if (typeof keys === 'function') keys = keys(store, path, track);
-//     if (!isArr(keys)) keys = [keys];
+//     if (!isArray(keys)) keys = [keys];
 //     let result = {};
 //     keys.forEach((key: string | number) => {
 //       let newTrack = track.slice();
@@ -3440,7 +3440,7 @@ function replaceDeep(obj, value) {
 //   function recursivelySetValues(cur: any, prop = '') {
 //     if (Object(cur) !== cur) {
 //       result[prop] = cur;
-//     } else if (isArr(cur)) {
+//     } else if (isArray(cur)) {
 //       if (!cur.length) result[prop] = [];
 //
 //       cur.forEach((item, i) => {
@@ -3468,8 +3468,8 @@ function replaceDeep(obj, value) {
 // function del(state: any, symbol = false) { // remove undefined values and empty objects or arrays
 //   let result: any, isArray: boolean;
 //   if (state === undefined) result = undefined;
-//   else if (isArr(state) || isObject(state)) {
-//     isArray = isArr(state);
+//   else if (isArray(state) || isObject(state)) {
+//     isArray = isArray(state);
 //     result = isArray ? [] : {};
 //     const fn = symbol ? objKeys : objKeysNSymb;
 //     fn(state).forEach(key => {
@@ -3505,7 +3505,7 @@ function replaceDeep(obj, value) {
  const merge: any = function () {
 
  function emptyTarget(val: any) {
- return isArr(val) ? [] : {}
+ return isArray(val) ? [] : {}
  }
 
  function cloneIfNecessary(value: any, optionsArgument?: DeepmergeOptionsArgument) {
@@ -3546,12 +3546,12 @@ function replaceDeep(obj, value) {
  }
 
  const deepmerge: any = function (target: any, source: any, optionsArgument?: DeepmergeOptionsArgument) {
- const array = isArr(source);
+ const array = isArray(source);
  const options = optionsArgument || {arrayMerge: defaultArrayMerge};
  const arrayMerge = options.arrayMerge || defaultArrayMerge;
 
  if (array) {
- return isArr(target) ? arrayMerge(target, source, optionsArgument) : cloneIfNecessary(source, optionsArgument)
+ return isArray(target) ? arrayMerge(target, source, optionsArgument) : cloneIfNecessary(source, optionsArgument)
  } else {
  return mergeObject(target, source, optionsArgument)
  }

@@ -727,7 +727,7 @@ describe('Select', () => {
 				expect(onChange, 'was called with', [{ value: 1, label: 'One' }]);
 			});
 
-			it('supports updating the values via props', () => {
+			it('supports updating the values via _props', () => {
 
 				wrapper.setPropsForChild({
 					value: [3, 4]
@@ -995,7 +995,7 @@ describe('Select', () => {
 				expect(onChange, 'was called with', [{ value: false, label: 'No' }]);
 			});
 
-			it('supports updating the values via props', () => {
+			it('supports updating the values via _props', () => {
 
 				wrapper.setPropsForChild({
 					value: [false]
@@ -2019,7 +2019,7 @@ describe('Select', () => {
 
 	});
 
-	describe('with props', () => {
+	describe('with _props', () => {
 
 		describe('className', () => {
 
@@ -2396,7 +2396,7 @@ describe('Select', () => {
 			});
 
 			describe('toggling disabled=false/disabled=true', () => {
-				// ReactDOM.render is used instead of createControl in order for the React component to update props
+				// ReactDOM.render is used instead of createControl in order for the React component to update _props
 				// See for more info: http://stackoverflow.com/questions/30614454/how-to-test-a-prop-update-on-react-component
 
 				let node, component;
@@ -3107,7 +3107,7 @@ describe('Select', () => {
 				expect(inputRenderer, 'was called times', 1);
 			});
 
-			it('calls the renderer with props', () => {
+			it('calls the renderer with _props', () => {
 				expect(inputRenderer, 'was called with', { value: '', className: 'Select-input' });
 			});
 		});
@@ -3281,15 +3281,15 @@ describe('Select', () => {
 					'to have text', 'Choose Option Placeholder test');
 			});
 
-			it('allows changing the placeholder via props', () => {
+			it('allows changing the placeholder via _props', () => {
 
 				wrapper.setPropsForChild({
-					placeholder: 'New placeholder from props'
+					placeholder: 'New placeholder from _props'
 				});
 
 				expect(ReactDOM.findDOMNode(instance), 'queried for', '.Select-placeholder',
 					'to have items satisfying',
-					'to have text', 'New placeholder from props');
+					'to have text', 'New placeholder from _props');
 			});
 
 			it('allows setting the placeholder to the selected value', () => {
@@ -3298,7 +3298,7 @@ describe('Select', () => {
 				 *  implementation uses the placeholder to display the selected value,
 				 *  it seems prudent to check that this obscure case still works
 				 *
-				 *  We set the value via props, then change the placeholder to the
+				 *  We set the value via _props, then change the placeholder to the
 				 *  same as the display label for the chosen option, then reset
 				 *  the value (to null).
 				 *

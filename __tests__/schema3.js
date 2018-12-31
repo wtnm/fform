@@ -10,7 +10,7 @@ export default {
         "items": {
           "title": "array 1 level 2 object",
           "type": "object",
-          x: {values: {}}
+          "ff_props": {"managed": true}
         }
       }
     },
@@ -27,7 +27,7 @@ export default {
           },
           more_value: {
             type: 'object',
-            x: {flatten: true},
+            "ff_props": {flatten: true},
             "properties": {
               inner: {
                 type: 'string',

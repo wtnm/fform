@@ -4,7 +4,7 @@ var $ = require('./helpers');
 
 var find = require('./find-reference');
 
-var deepExtend = require('../../core').merge;
+var deepExtend = require('../../api').merge;
 
 function copy(_, obj, refs, parent, resolve) {
   var target =  Array.isArray(obj) ? [] : {};

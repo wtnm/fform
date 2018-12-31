@@ -1924,7 +1924,7 @@ function prefixKey(prefix, key) {
 var prefixes = ['Webkit', 'ms', 'Moz', 'O'];
 
 // Using Object.keys here, or else the vanilla for-in loop makes IE8 go into an
-// infinite loop, because it iterates over the newly added props too.
+// infinite loop, because it iterates over the newly added _props too.
 Object.keys(isUnitlessNumber).forEach(function (prop) {
   prefixes.forEach(function (prefix) {
     isUnitlessNumber[prefixKey(prefix, prop)] = isUnitlessNumber[prop];
@@ -4799,7 +4799,7 @@ var HTMLDOMPropertyConfig = {
     // keyboard hints.
     autoCapitalize: 0,
     autoCorrect: 0,
-    // autoSave allows WebKit/Blink to persist values of input fields on page reloads
+    // autoSave allows WebKit/Blink to persist values of input _fields on page reloads
     autoSave: 0,
     // color is for Safari mask-icon link
     color: 0,
@@ -4814,7 +4814,7 @@ var HTMLDOMPropertyConfig = {
     itemID: 0,
     itemRef: 0,
     // results show looking glass icon and recent searches on input
-    // search fields in WebKit/Blink
+    // search _fields in WebKit/Blink
     results: 0,
     // IE-only attribute that specifies security restrictions on an iframe
     // as an alternative to the sandbox attribute on IE<10
@@ -5109,7 +5109,7 @@ var DEFAULT_POOLER = oneArgumentPooler;
 
 /**
  * Augments `CopyConstructor` to be a poolable class, augmenting only the class
- * itself (statically) not adding any prototypical fields. Any CopyConstructor
+ * itself (statically) not adding any prototypical _fields. Any CopyConstructor
  * you give this may have a `poolSize` property, and will look for a
  * prototypical `destructor` on instances.
  *
@@ -5795,7 +5795,7 @@ function measureLifeCyclePerf(fn, debugID, timerType) {
  *       - shouldComponentUpdate
  *         - componentWillUpdate
  *           - render
- *           - [children's constructors or receive props phases]
+ *           - [children's constructors or receive _props phases]
  *         - componentDidUpdate
  *
  *     - componentWillUnmount
@@ -5914,12 +5914,12 @@ var ReactCompositeComponent = {
       var propsMutated = inst.props !== publicProps;
       var componentName = Component.displayName || Component.name || 'Component';
 
-      "production" !== 'production' ? warning(inst.props === undefined || !propsMutated, '%s(...): When calling super() in `%s`, make sure to pass ' + 'up the same props that your component\'s constructor was passed.', componentName, componentName) : void 0;
+      "production" !== 'production' ? warning(inst.props === undefined || !propsMutated, '%s(...): When calling super() in `%s`, make sure to pass ' + 'up the same _props that your component\'s constructor was passed.', componentName, componentName) : void 0;
     }
 
     // These should be set up in the constructor, but as a convenience for
     // simpler class abstractions, we set them up after the fact.
-    inst.props = publicProps;
+    inst._props = publicProps;
     inst.context = publicContext;
     inst.refs = emptyObject;
     inst.updater = updateQueue;
@@ -6122,16 +6122,16 @@ var ReactCompositeComponent = {
       this._instance = null;
     }
 
-    // Reset pending fields
+    // Reset pending _fields
     // Even if this component is scheduled for another update in ReactUpdates,
-    // it would still be ignored because these fields are reset.
+    // it would still be ignored because these _fields are reset.
     this._pendingStateQueue = null;
     this._pendingReplaceState = false;
     this._pendingForceUpdate = false;
     this._pendingCallbacks = null;
     this._pendingElement = null;
 
-    // These fields do not really need to be reset since this object is no
+    // These _fields do not really need to be reset since this object is no
     // longer accessible.
     this._context = null;
     this._rootNodeID = 0;
@@ -6142,9 +6142,9 @@ var ReactCompositeComponent = {
     // leaks a reference to the public instance.
     ReactInstanceMap.remove(inst);
 
-    // Some existing components rely on inst.props even after they've been
+    // Some existing components rely on inst._props even after they've been
     // destroyed (in event handlers).
-    // TODO: inst.props = null;
+    // TODO: inst._props = null;
     // TODO: inst.state = null;
     // TODO: inst.context = null;
   },
@@ -6298,7 +6298,7 @@ var ReactCompositeComponent = {
     var prevProps = prevParentElement.props;
     var nextProps = nextParentElement.props;
 
-    // Not a simple state update but a props update
+    // Not a simple state update but a _props update
     if (prevParentElement !== nextParentElement) {
       willReceive = true;
     }
@@ -6342,14 +6342,14 @@ var ReactCompositeComponent = {
     this._updateBatchNumber = null;
     if (shouldUpdate) {
       this._pendingForceUpdate = false;
-      // Will set `this.props`, `this.state` and `this.context`.
+      // Will set `this._props`, `this.state` and `this.context`.
       this._performComponentUpdate(nextParentElement, nextProps, nextState, nextContext, transaction, nextUnmaskedContext);
     } else {
       // If it's determined that a component should not update, we still want
-      // to set props and state but we shortcut the rest of the update.
+      // to set _props and state but we shortcut the rest of the update.
       this._currentElement = nextParentElement;
       this._context = nextUnmaskedContext;
-      inst.props = nextProps;
+      inst._props = nextProps;
       inst.state = nextState;
       inst.context = nextContext;
     }
@@ -6380,7 +6380,7 @@ var ReactCompositeComponent = {
   },
 
   /**
-   * Merges new props and state, notifies delegate methods of update and
+   * Merges new _props and state, notifies delegate methods of update and
    * performs update.
    *
    * @param {ReactElement} nextElement Next element
@@ -6418,7 +6418,7 @@ var ReactCompositeComponent = {
 
     this._currentElement = nextElement;
     this._context = unmaskedContext;
-    inst.props = nextProps;
+    inst._props = nextProps;
     inst.state = nextState;
     inst.context = nextContext;
 
@@ -6854,8 +6854,8 @@ function assertValidProps(component, props) {
     !(props.children == null && props.dangerouslySetInnerHTML == null) ? "production" !== 'production' ? invariant(false, '%s is a void element tag and must neither have `children` nor use `dangerouslySetInnerHTML`.%s', component._tag, component._currentElement._owner ? ' Check the render method of ' + component._currentElement._owner.getName() + '.' : '') : _prodInvariant('137', component._tag, component._currentElement._owner ? ' Check the render method of ' + component._currentElement._owner.getName() + '.' : '') : void 0;
   }
   if (props.dangerouslySetInnerHTML != null) {
-    !(props.children == null) ? "production" !== 'production' ? invariant(false, 'Can only set one of `children` or `props.dangerouslySetInnerHTML`.') : _prodInvariant('60') : void 0;
-    !(typeof props.dangerouslySetInnerHTML === 'object' && HTML in props.dangerouslySetInnerHTML) ? "production" !== 'production' ? invariant(false, '`props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. Please visit https://fb.me/react-invariant-dangerously-set-inner-html for more information.') : _prodInvariant('61') : void 0;
+    !(props.children == null) ? "production" !== 'production' ? invariant(false, 'Can only set one of `children` or `_props.dangerouslySetInnerHTML`.') : _prodInvariant('60') : void 0;
+    !(typeof props.dangerouslySetInnerHTML === 'object' && HTML in props.dangerouslySetInnerHTML) ? "production" !== 'production' ? invariant(false, '`_props.dangerouslySetInnerHTML` must be in the form `{__html: ...}`. Please visit https://fb.me/react-invariant-dangerously-set-inner-html for more information.') : _prodInvariant('61') : void 0;
   }
   if ("production" !== 'production') {
     "production" !== 'production' ? warning(props.innerHTML == null, 'Directly setting property `innerHTML` is not permitted. ' + 'For more information, lookup documentation on `dangerouslySetInnerHTML`.') : void 0;
@@ -7212,7 +7212,7 @@ ReactDOMComponent.Mixin = {
         } else if (props.is) {
           el = ownerDocument.createElement(this._currentElement.type, props.is);
         } else {
-          // Separate else branch instead of using `props.is || undefined` above becuase of a Firefox bug.
+          // Separate else branch instead of using `_props.is || undefined` above becuase of a Firefox bug.
           // See discussion in https://github.com/facebook/react/pull/6896
           // and discussion in https://bugzilla.mozilla.org/show_bug.cgi?id=1276240
           el = ownerDocument.createElement(this._currentElement.type);
@@ -7469,7 +7469,7 @@ ReactDOMComponent.Mixin = {
 
     switch (this._tag) {
       case 'input':
-        // Update the wrapper around inputs *after* updating props. This has to
+        // Update the wrapper around inputs *after* updating _props. This has to
         // happen after `_updateDOMProperties`. Otherwise HTML5 input validations
         // raise warnings and prevent the new value from being assigned.
         ReactDOMInput.updateWrapper(this);
@@ -7492,7 +7492,7 @@ ReactDOMComponent.Mixin = {
    *
    * TODO: Benchmark whether checking for changed values in memory actually
    *       improves performance (especially statically positioned elements).
-   * TODO: Benchmark the effects of putting this at the top since 99% of props
+   * TODO: Benchmark the effects of putting this at the top since 99% of _props
    *       do not change for a given reconciliation.
    * TODO: Benchmark areas that can be improved with caching.
    *
@@ -8116,13 +8116,13 @@ function isControlled(props) {
 
 /**
  * Implements an <input> host component that allows setting these optional
- * props: `checked`, `value`, `defaultChecked`, and `defaultValue`.
+ * _props: `checked`, `value`, `defaultChecked`, and `defaultValue`.
  *
  * If `checked` or `value` are not supplied (or null/undefined), user actions
  * that affect the checked state or value will trigger updates to the element.
  *
  * If they are supplied (and not null/undefined), the rendered element will not
- * trigger updates to the element. Instead, the props must change in order for
+ * trigger updates to the element. Instead, the _props must change in order for
  * the rendered element to be updated.
  *
  * The rendered element will be initialized as unchecked (or `defaultChecked`)
@@ -8172,11 +8172,11 @@ var ReactDOMInput = {
         didWarnCheckedLink = true;
       }
       if (props.checked !== undefined && props.defaultChecked !== undefined && !didWarnCheckedDefaultChecked) {
-        "production" !== 'production' ? warning(false, '%s contains an input of type %s with both checked and defaultChecked props. ' + 'Input elements must be either controlled or uncontrolled ' + '(specify either the checked prop, or the defaultChecked prop, but not ' + 'both). Decide between using a controlled or uncontrolled input ' + 'element and remove one of these props. More info: ' + 'https://fb.me/react-controlled-components', owner && owner.getName() || 'A component', props.type) : void 0;
+        "production" !== 'production' ? warning(false, '%s contains an input of type %s with both checked and defaultChecked _props. ' + 'Input elements must be either controlled or uncontrolled ' + '(specify either the checked prop, or the defaultChecked prop, but not ' + 'both). Decide between using a controlled or uncontrolled input ' + 'element and remove one of these _props. More info: ' + 'https://fb.me/react-controlled-components', owner && owner.getName() || 'A component', props.type) : void 0;
         didWarnCheckedDefaultChecked = true;
       }
       if (props.value !== undefined && props.defaultValue !== undefined && !didWarnValueDefaultValue) {
-        "production" !== 'production' ? warning(false, '%s contains an input of type %s with both value and defaultValue props. ' + 'Input elements must be either controlled or uncontrolled ' + '(specify either the value prop, or the defaultValue prop, but not ' + 'both). Decide between using a controlled or uncontrolled input ' + 'element and remove one of these props. More info: ' + 'https://fb.me/react-controlled-components', owner && owner.getName() || 'A component', props.type) : void 0;
+        "production" !== 'production' ? warning(false, '%s contains an input of type %s with both value and defaultValue _props. ' + 'Input elements must be either controlled or uncontrolled ' + '(specify either the value prop, or the defaultValue prop, but not ' + 'both). Decide between using a controlled or uncontrolled input ' + 'element and remove one of these _props. More info: ' + 'https://fb.me/react-controlled-components', owner && owner.getName() || 'A component', props.type) : void 0;
         didWarnValueDefaultValue = true;
       }
     }
@@ -8211,7 +8211,7 @@ var ReactDOMInput = {
       }
     }
 
-    // TODO: Shouldn't this be getChecked(props)?
+    // TODO: Shouldn't this be getChecked(_props)?
     var checked = props.checked;
     if (checked != null) {
       DOMPropertyOperations.setValueForProperty(ReactDOMComponentTree.getNodeFromInstance(inst), 'checked', checked || false);
@@ -8413,7 +8413,7 @@ function warnInvalidARIAProps(debugID, element) {
   if (invalidProps.length === 1) {
     "production" !== 'production' ? warning(false, 'Invalid aria prop %s on <%s> tag. ' + 'For details, see https://fb.me/invalid-aria-prop%s', unknownPropString, element.type, ReactComponentTreeHook.getStackAddendumByID(debugID)) : void 0;
   } else if (invalidProps.length > 1) {
-    "production" !== 'production' ? warning(false, 'Invalid aria props %s on <%s> tag. ' + 'For details, see https://fb.me/invalid-aria-prop%s', unknownPropString, element.type, ReactComponentTreeHook.getStackAddendumByID(debugID)) : void 0;
+    "production" !== 'production' ? warning(false, 'Invalid aria _props %s on <%s> tag. ' + 'For details, see https://fb.me/invalid-aria-prop%s', unknownPropString, element.type, ReactComponentTreeHook.getStackAddendumByID(debugID)) : void 0;
   }
 }
 
@@ -8534,7 +8534,7 @@ var ReactDOMOption = {
   mountWrapper: function (inst, props, hostParent) {
     // TODO (yungsters): Remove support for `selected` in <option>.
     if ("production" !== 'production') {
-      "production" !== 'production' ? warning(props.selected == null, 'Use the `defaultValue` or `value` props on <select> instead of ' + 'setting `selected` on <option>.') : void 0;
+      "production" !== 'production' ? warning(props.selected == null, 'Use the `defaultValue` or `value` _props on <select> instead of ' + 'setting `selected` on <option>.') : void 0;
     }
 
     // Look up whether this option is 'selected'
@@ -8552,7 +8552,7 @@ var ReactDOMOption = {
     }
 
     // If the value is null (e.g., no specified value or after initial mount)
-    // or missing (e.g., for <datalist>), we don't change props.selected
+    // or missing (e.g., for <datalist>), we don't change _props.selected
     var selected = null;
     if (selectValue != null) {
       var value;
@@ -8723,7 +8723,7 @@ function updateOptions(inst, multiple, propValue) {
 
 /**
  * Implements a <select> host component that allows optionally setting the
- * props `value` and `defaultValue`. If `multiple` is false, the prop must be a
+ * _props `value` and `defaultValue`. If `multiple` is false, the prop must be a
  * stringable. If `multiple` is true, the prop must be an array of stringables.
  *
  * If `value` is not supplied (or null/undefined), user actions that change the
@@ -8759,7 +8759,7 @@ var ReactDOMSelect = {
     };
 
     if (props.value !== undefined && props.defaultValue !== undefined && !didWarnValueDefaultValue) {
-      "production" !== 'production' ? warning(false, 'Select elements must be either controlled or uncontrolled ' + '(specify either the value prop, or the defaultValue prop, but not ' + 'both). Decide between using a controlled or uncontrolled select ' + 'element and remove one of these props. More info: ' + 'https://fb.me/react-controlled-components') : void 0;
+      "production" !== 'production' ? warning(false, 'Select elements must be either controlled or uncontrolled ' + '(specify either the value prop, or the defaultValue prop, but not ' + 'both). Decide between using a controlled or uncontrolled select ' + 'element and remove one of these _props. More info: ' + 'https://fb.me/react-controlled-components') : void 0;
       didWarnValueDefaultValue = true;
     }
   },
@@ -9143,7 +9143,7 @@ _assign(ReactDOMTextComponent.prototype, {
       this._currentElement = nextText;
       var nextStringText = '' + nextText;
       if (nextStringText !== this._stringText) {
-        // TODO: Save this as pending props and use performUpdateIfNecessary
+        // TODO: Save this as pending _props and use performUpdateIfNecessary
         // and/or updateComponent to do the actual update for consistency with
         // other component types?
         this._stringText = nextStringText;
@@ -9259,7 +9259,7 @@ var ReactDOMTextarea = {
         didWarnValueLink = true;
       }
       if (props.value !== undefined && props.defaultValue !== undefined && !didWarnValDefaultVal) {
-        "production" !== 'production' ? warning(false, 'Textarea elements must be either controlled or uncontrolled ' + '(specify either the value prop, or the defaultValue prop, but not ' + 'both). Decide between using a controlled or uncontrolled textarea ' + 'and remove one of these props. More info: ' + 'https://fb.me/react-controlled-components') : void 0;
+        "production" !== 'production' ? warning(false, 'Textarea elements must be either controlled or uncontrolled ' + '(specify either the value prop, or the defaultValue prop, but not ' + 'both). Decide between using a controlled or uncontrolled textarea ' + 'and remove one of these _props. More info: ' + 'https://fb.me/react-controlled-components') : void 0;
         didWarnValDefaultVal = true;
       }
     }
@@ -9274,7 +9274,7 @@ var ReactDOMTextarea = {
       var children = props.children;
       if (children != null) {
         if ("production" !== 'production') {
-          "production" !== 'production' ? warning(false, 'Use the `defaultValue` or `value` props instead of setting ' + 'children on <textarea>.') : void 0;
+          "production" !== 'production' ? warning(false, 'Use the `defaultValue` or `value` _props instead of setting ' + 'children on <textarea>.') : void 0;
         }
         !(defaultValue == null) ? "production" !== 'production' ? invariant(false, 'If you supply `defaultValue` on a <textarea>, do not pass children.') : _prodInvariant('92') : void 0;
         if (Array.isArray(children)) {
@@ -9544,8 +9544,8 @@ if ("production" !== 'production') {
       return true;
     } else {
       // We were unable to guess which prop the user intended.
-      // It is likely that the user was just blindly spreading/forwarding props
-      // Components should be careful to only render valid props/attributes.
+      // It is likely that the user was just blindly spreading/forwarding _props
+      // Components should be careful to only render valid _props/attributes.
       // Warning will be invoked in warnUnknownProperties to allow grouping.
       return false;
     }
@@ -9568,7 +9568,7 @@ var warnUnknownProperties = function (debugID, element) {
   if (unknownProps.length === 1) {
     "production" !== 'production' ? warning(false, 'Unknown prop %s on <%s> tag. Remove this prop from the element. ' + 'For details, see https://fb.me/react-unknown-prop%s', unknownPropString, element.type, ReactComponentTreeHook.getStackAddendumByID(debugID)) : void 0;
   } else if (unknownProps.length > 1) {
-    "production" !== 'production' ? warning(false, 'Unknown props %s on <%s> tag. Remove these props from the element. ' + 'For details, see https://fb.me/react-unknown-prop%s', unknownPropString, element.type, ReactComponentTreeHook.getStackAddendumByID(debugID)) : void 0;
+    "production" !== 'production' ? warning(false, 'Unknown _props %s on <%s> tag. Remove these _props from the element. ' + 'For details, see https://fb.me/react-unknown-prop%s', unknownPropString, element.type, ReactComponentTreeHook.getStackAddendumByID(debugID)) : void 0;
   }
 };
 
@@ -10471,7 +10471,7 @@ var ReactHostComponentInjection = {
     genericComponentClass = componentClass;
   },
   // This accepts a text component class that takes the text string to be
-  // rendered as props.
+  // rendered as _props.
   injectTextComponentClass: function (componentClass) {
     textComponentClass = componentClass;
   }
@@ -11143,7 +11143,7 @@ var ReactMount = {
   },
 
   /**
-   * Take a component that's already mounted into the DOM and replace its props
+   * Take a component that's already mounted into the DOM and replace its _props
    * @param {ReactComponent} prevComponent component instance already in the DOM
    * @param {ReactElement} nextElement component instance to render
    * @param {DOMElement} container container to render into
@@ -11172,7 +11172,7 @@ var ReactMount = {
     // Various parts of our code (such as ReactCompositeComponent's
     // _renderValidatedComponent) assume that calls to render aren't nested;
     // verify that that's the case.
-    "production" !== 'production' ? warning(ReactCurrentOwner.current == null, '_renderNewRootComponent(): Render methods should be a pure function ' + 'of props and state; triggering nested component updates from ' + 'render is not allowed. If necessary, trigger nested updates in ' + 'componentDidUpdate. Check the render method of %s.', ReactCurrentOwner.current && ReactCurrentOwner.current.getName() || 'ReactCompositeComponent') : void 0;
+    "production" !== 'production' ? warning(ReactCurrentOwner.current == null, '_renderNewRootComponent(): Render methods should be a pure function ' + 'of _props and state; triggering nested component updates from ' + 'render is not allowed. If necessary, trigger nested updates in ' + 'componentDidUpdate. Check the render method of %s.', ReactCurrentOwner.current && ReactCurrentOwner.current.getName() || 'ReactCompositeComponent') : void 0;
 
     !isValidContainer(container) ? "production" !== 'production' ? invariant(false, '_registerComponent(...): Target container is not a DOM element.') : _prodInvariant('37') : void 0;
 
@@ -11301,7 +11301,7 @@ var ReactMount = {
     // _renderValidatedComponent) assume that calls to render aren't nested;
     // verify that that's the case. (Strictly speaking, unmounting won't cause a
     // render but we still don't expect to be in a render call here.)
-    "production" !== 'production' ? warning(ReactCurrentOwner.current == null, 'unmountComponentAtNode(): Render methods should be a pure function ' + 'of props and state; triggering nested component updates from render ' + 'is not allowed. If necessary, trigger nested updates in ' + 'componentDidUpdate. Check the render method of %s.', ReactCurrentOwner.current && ReactCurrentOwner.current.getName() || 'ReactCompositeComponent') : void 0;
+    "production" !== 'production' ? warning(ReactCurrentOwner.current == null, 'unmountComponentAtNode(): Render methods should be a pure function ' + 'of _props and state; triggering nested component updates from render ' + 'is not allowed. If necessary, trigger nested updates in ' + 'componentDidUpdate. Check the render method of %s.', ReactCurrentOwner.current && ReactCurrentOwner.current.getName() || 'ReactCompositeComponent') : void 0;
 
     !isValidContainer(container) ? "production" !== 'production' ? invariant(false, 'unmountComponentAtNode(...): Target container is not a DOM element.') : _prodInvariant('40') : void 0;
 
@@ -11367,7 +11367,7 @@ var ReactMount = {
         var diffIndex = firstDifferenceIndex(normalizedMarkup, rootMarkup);
         var difference = ' (client) ' + normalizedMarkup.substring(diffIndex - 20, diffIndex + 20) + '\n (server) ' + rootMarkup.substring(diffIndex - 20, diffIndex + 20);
 
-        !(container.nodeType !== DOC_NODE_TYPE) ? "production" !== 'production' ? invariant(false, 'You\'re trying to render a component to the document using server rendering but the checksum was invalid. This usually means you rendered a different component type or props on the client from the one on the server, or your render() methods are impure. React cannot handle this case due to cross-browser quirks by rendering at the document root. You should look for environment dependent code in your components and ensure the props are the same client and server side:\n%s', difference) : _prodInvariant('42', difference) : void 0;
+        !(container.nodeType !== DOC_NODE_TYPE) ? "production" !== 'production' ? invariant(false, 'You\'re trying to render a component to the document using server rendering but the checksum was invalid. This usually means you rendered a different component type or _props on the client from the one on the server, or your render() methods are impure. React cannot handle this case due to cross-browser quirks by rendering at the document root. You should look for environment dependent code in your components and ensure the _props are the same client and server side:\n%s', difference) : _prodInvariant('42', difference) : void 0;
 
         if ("production" !== 'production') {
           "production" !== 'production' ? warning(false, 'React attempted to reuse markup in a container but the ' + 'checksum was invalid. This generally means that you are ' + 'using server rendering and the markup generated on the ' + 'server was not what the client was expecting. React injected ' + 'new markup to compensate which works but you have lost many ' + 'of the benefits of server rendering. Instead, figure out ' + 'why the markup being generated is different on the client ' + 'or server:\n%s', difference) : void 0;
@@ -12423,7 +12423,7 @@ ReactRef.shouldUpdateRefs = function (prevElement, nextElement) {
   // If either the owner or a `ref` has changed, make sure the newest owner
   // has stored a reference to `this`, and the previous owner (if different)
   // has forgotten the reference to `this`. We use the element instead
-  // of the public this.props because the post processing cannot determine
+  // of the public this._props because the post processing cannot determine
   // a ref. The ref conceptually lives on the element.
 
   // TODO: Should this even be possible? The owner cannot change because
@@ -12745,7 +12745,7 @@ function getInternalInstanceReadyForUpdate(publicInstance, callerName) {
   }
 
   if ("production" !== 'production') {
-    "production" !== 'production' ? warning(ReactCurrentOwner.current == null, '%s(...): Cannot update during an existing state transition (such as ' + 'within `render` or another component\'s constructor). Render methods ' + 'should be a pure function of props and state; constructor ' + 'side-effects are an anti-pattern, but can be moved to ' + '`componentWillMount`.', callerName) : void 0;
+    "production" !== 'production' ? warning(ReactCurrentOwner.current == null, '%s(...): Cannot update during an existing state transition (such as ' + 'within `render` or another component\'s constructor). Render methods ' + 'should be a pure function of _props and state; constructor ' + 'side-effects are an anti-pattern, but can be moved to ' + '`componentWillMount`.', callerName) : void 0;
   }
 
   return internalInstance;
@@ -12768,7 +12768,7 @@ var ReactUpdateQueue = {
     if ("production" !== 'production') {
       var owner = ReactCurrentOwner.current;
       if (owner !== null) {
-        "production" !== 'production' ? warning(owner._warnedAboutRefsInRender, '%s is accessing isMounted inside its render() function. ' + 'render() should be a pure function of props and state. It should ' + 'never access something that requires stale data from the previous ' + 'render, such as refs. Move this logic to componentDidMount and ' + 'componentDidUpdate instead.', owner.getName() || 'A component') : void 0;
+        "production" !== 'production' ? warning(owner._warnedAboutRefsInRender, '%s is accessing isMounted inside its render() function. ' + 'render() should be a pure function of _props and state. It should ' + 'never access something that requires stale data from the previous ' + 'render, such as refs. Move this logic to componentDidMount and ' + 'componentDidUpdate instead.', owner.getName() || 'A component') : void 0;
         owner._warnedAboutRefsInRender = true;
       }
     }
@@ -13605,7 +13605,7 @@ function constructSelectEvent(nativeEvent, nativeEventTarget) {
  * - contentEditable
  *
  * This differs from native browser implementations in the following ways:
- * - Fires on contentEditable fields as well as inputs.
+ * - Fires on contentEditable _fields as well as inputs.
  * - Fires for collapsed selection.
  * - Fires after user input.
  */
@@ -15458,7 +15458,7 @@ function findDOMNode(componentOrElement) {
   if ("production" !== 'production') {
     var owner = ReactCurrentOwner.current;
     if (owner !== null) {
-      "production" !== 'production' ? warning(owner._warnedAboutRefsInRender, '%s is accessing findDOMNode inside its render(). ' + 'render() should be a pure function of props and state. It should ' + 'never access something that requires stale data from the previous ' + 'render, such as refs. Move this logic to componentDidMount and ' + 'componentDidUpdate instead.', owner.getName() || 'A component') : void 0;
+      "production" !== 'production' ? warning(owner._warnedAboutRefsInRender, '%s is accessing findDOMNode inside its render(). ' + 'render() should be a pure function of _props and state. It should ' + 'never access something that requires stale data from the previous ' + 'render, such as refs. Move this logic to componentDidMount and ' + 'componentDidUpdate instead.', owner.getName() || 'A component') : void 0;
       owner._warnedAboutRefsInRender = true;
     }
   }
@@ -15539,7 +15539,7 @@ function flattenSingleChildIntoContext(traverseContext, child, name, selfDebugID
 }
 
 /**
- * Flattens children that are typically specified as `props.children`. Any null
+ * Flattens children that are typically specified as `_props.children`. Any null
  * children will not be included in the resulting object.
  * @return {!object} flattened children keyed by name.
  */
@@ -16228,7 +16228,7 @@ function instantiateReactComponent(node, shouldHaveDebugID) {
     "production" !== 'production' ? warning(typeof instance.mountComponent === 'function' && typeof instance.receiveComponent === 'function' && typeof instance.getHostNode === 'function' && typeof instance.unmountComponent === 'function', 'Only React Components can be mounted.') : void 0;
   }
 
-  // These two fields are used by the DOM and ART diffing algorithms
+  // These two _fields are used by the DOM and ART diffing algorithms
   // respectively. Instead of using expandos on components, we should be
   // storing the state needed by the diffing algorithms elsewhere.
   instance._mountIndex = 0;
@@ -16239,7 +16239,7 @@ function instantiateReactComponent(node, shouldHaveDebugID) {
   }
 
   // Internal instances should fully constructed at this point, so they should
-  // not get any new fields added to them at this point.
+  // not get any new _fields added to them at this point.
   if ("production" !== 'production') {
     if (Object.preventExtensions) {
       Object.preventExtensions(instance);
@@ -16786,11 +16786,11 @@ function traverseAllChildrenImpl(children, nameSoFar, callback, traverseContext)
 }
 
 /**
- * Traverses children that are typically specified as `props.children`, but
+ * Traverses children that are typically specified as `_props.children`, but
  * might also be specified through attributes:
  *
- * - `traverseAllChildren(this.props.children, ...)`
- * - `traverseAllChildren(this.props.leftPanelChildren, ...)`
+ * - `traverseAllChildren(this._props.children, ...)`
+ * - `traverseAllChildren(this._props.leftPanelChildren, ...)`
  *
  * The `traverseContext` is an optional argument that is passed through the
  * entire traversal. It can be used to store accumulations or anything else that
@@ -17340,7 +17340,7 @@ function forEachSingleChild(bookKeeping, child, name) {
 }
 
 /**
- * Iterates through children that are typically specified as `props.children`.
+ * Iterates through children that are typically specified as `_props.children`.
  *
  * See https://facebook.github.io/react/docs/top-level-api.html#react.children.foreach
  *
@@ -17417,7 +17417,7 @@ function mapIntoWithKeyPrefixInternal(children, array, prefix, func, context) {
 }
 
 /**
- * Maps children that are typically specified as `props.children`.
+ * Maps children that are typically specified as `_props.children`.
  *
  * See https://facebook.github.io/react/docs/top-level-api.html#react.children.map
  *
@@ -17444,7 +17444,7 @@ function forEachSingleChildDummy(traverseContext, child, name) {
 
 /**
  * Count the number of children that are typically specified as
- * `props.children`.
+ * `_props.children`.
  *
  * See https://facebook.github.io/react/docs/top-level-api.html#react.children.count
  *
@@ -17456,7 +17456,7 @@ function countChildren(children, context) {
 }
 
 /**
- * Flatten a children object (typically specified as `props.children`) and
+ * Flatten a children object (typically specified as `_props.children`) and
  * return an array with appropriately re-keyed children.
  *
  * See https://facebook.github.io/react/docs/top-level-api.html#react.children.toarray
@@ -17585,7 +17585,7 @@ var ReactClassInterface = {
 
   /**
    * Invoked when the component is mounted. Values in the mapping will be set on
-   * `this.props` if that prop is not specified (i.e. using an `in` check).
+   * `this._props` if that prop is not specified (i.e. using an `in` check).
    *
    * This method is invoked before `getInitialState` and therefore cannot rely
    * on `this.state` or use `this.setState`.
@@ -17618,14 +17618,14 @@ var ReactClassInterface = {
   getChildContext: 'DEFINE_MANY_MERGED',
 
   /**
-   * Uses props from `this.props` and state from `this.state` to render the
+   * Uses _props from `this._props` and state from `this.state` to render the
    * structure of the component.
    *
    * No guarantees are made about when or how often this method is invoked, so
    * it must not have side effects.
    *
    *   render: function() {
-   *     var name = this.props.name;
+   *     var name = this._props.name;
    *     return <div>Hello, {name}!</div>;
    *   }
    *
@@ -17659,14 +17659,14 @@ var ReactClassInterface = {
   componentDidMount: 'DEFINE_MANY',
 
   /**
-   * Invoked before the component receives new props.
+   * Invoked before the component receives new _props.
    *
    * Use this as an opportunity to react to a prop transition by updating the
-   * state using `this.setState`. Current props are accessed via `this.props`.
+   * state using `this.setState`. Current _props are accessed via `this._props`.
    *
    *   componentWillReceiveProps: function(nextProps, nextContext) {
    *     this.setState({
-   *       likesIncreasing: nextProps.likeCount > this.props.likeCount
+   *       likesIncreasing: nextProps.likeCount > this._props.likeCount
    *     });
    *   }
    *
@@ -17681,14 +17681,14 @@ var ReactClassInterface = {
 
   /**
    * Invoked while deciding if the component should be updated as a result of
-   * receiving new props, state and/or context.
+   * receiving new _props, state and/or context.
    *
    * Use this as an opportunity to `return false` when you're certain that the
-   * transition to the new props/state/context will not require a component
+   * transition to the new _props/state/context will not require a component
    * update.
    *
    *   shouldComponentUpdate: function(nextProps, nextState, nextContext) {
-   *     return !equal(nextProps, this.props) ||
+   *     return !equal(nextProps, this._props) ||
    *       !equal(nextState, this.state) ||
    *       !equal(nextContext, this.context);
    *   }
@@ -17703,7 +17703,7 @@ var ReactClassInterface = {
 
   /**
    * Invoked when the component is about to update due to a transition from
-   * `this.props`, `this.state` and `this.context` to `nextProps`, `nextState`
+   * `this._props`, `this.state` and `this.context` to `nextProps`, `nextState`
    * and `nextContext`.
    *
    * Use this as an opportunity to perform preparation before an update occurs.
@@ -18118,7 +18118,7 @@ var ReactClass = {
         bindAutoBindMethods(this);
       }
 
-      this.props = props;
+      this._props = props;
       this.context = context;
       this.refs = emptyObject;
       this.updater = updater || ReactNoopUpdateQueue;
@@ -18243,9 +18243,9 @@ ReactComponent.prototype.isReactComponent = {};
  *
  * When a function is provided to setState, it will be called at some point in
  * the future (not synchronously). It will be called with the up to date
- * component arguments (state, props, context). These values can be different
+ * component arguments (state, _props, context). These values can be different
  * from this.* because your function may be called after receiveProps but before
- * shouldComponentUpdate, and this new state, props, and context will not yet be
+ * shouldComponentUpdate, and this new state, _props, and context will not yet be
  * assigned to this.
  *
  * @param {object|function} partialState Next partial state or function to
@@ -18272,11 +18272,10 @@ ReactComponent.prototype.setState = function (partialState, callback) {
  * This will not invoke `shouldComponentUpdate`, but it will invoke
  * `componentWillUpdate` and `componentDidUpdate`.
  *
- * @param {?function} callback Called after update is complete.
  * @final
  * @protected
  */
-ReactComponent.prototype.forceUpdate = function (callback) {
+ReactComponent.prototype.forceUpdate = function () {
   this.updater.enqueueForceUpdate(this);
   if (callback) {
     this.updater.enqueueCallback(this, callback, 'forceUpdate');
@@ -18906,7 +18905,7 @@ function defineKeyPropWarningGetter(props, displayName) {
   var warnAboutAccessingKey = function () {
     if (!specialPropKeyWarningShown) {
       specialPropKeyWarningShown = true;
-      "production" !== 'production' ? warning(false, '%s: `key` is not a prop. Trying to access it will result ' + 'in `undefined` being returned. If you need to access the same ' + 'value within the child component, you should pass it as a different ' + 'prop. (https://fb.me/react-special-props)', displayName) : void 0;
+      "production" !== 'production' ? warning(false, '%s: `key` is not a prop. Trying to access it will result ' + 'in `undefined` being returned. If you need to access the same ' + 'value within the child component, you should pass it as a different ' + 'prop. (https://fb.me/react-special-_props)', displayName) : void 0;
     }
   };
   warnAboutAccessingKey.isReactWarning = true;
@@ -18920,7 +18919,7 @@ function defineRefPropWarningGetter(props, displayName) {
   var warnAboutAccessingRef = function () {
     if (!specialPropRefWarningShown) {
       specialPropRefWarningShown = true;
-      "production" !== 'production' ? warning(false, '%s: `ref` is not a prop. Trying to access it will result ' + 'in `undefined` being returned. If you need to access the same ' + 'value within the child component, you should pass it as a different ' + 'prop. (https://fb.me/react-special-props)', displayName) : void 0;
+      "production" !== 'production' ? warning(false, '%s: `ref` is not a prop. Trying to access it will result ' + 'in `undefined` being returned. If you need to access the same ' + 'value within the child component, you should pass it as a different ' + 'prop. (https://fb.me/react-special-_props)', displayName) : void 0;
     }
   };
   warnAboutAccessingRef.isReactWarning = true;
@@ -19037,7 +19036,7 @@ ReactElement.createElement = function (type, config, children) {
 
     self = config.__self === undefined ? null : config.__self;
     source = config.__source === undefined ? null : config.__source;
-    // Remaining properties are added to a new props object
+    // Remaining properties are added to a new _props object
     for (propName in config) {
       if (hasOwnProperty.call(config, propName) && !RESERVED_PROPS.hasOwnProperty(propName)) {
         props[propName] = config[propName];
@@ -19046,7 +19045,7 @@ ReactElement.createElement = function (type, config, children) {
   }
 
   // Children can be more than one argument, and those are transferred onto
-  // the newly allocated props object.
+  // the newly allocated _props object.
   var childrenLength = arguments.length - 2;
   if (childrenLength === 1) {
     props.children = children;
@@ -19063,7 +19062,7 @@ ReactElement.createElement = function (type, config, children) {
     props.children = childArray;
   }
 
-  // Resolve default props
+  // Resolve default _props
   if (type && type.defaultProps) {
     var defaultProps = type.defaultProps;
     for (propName in defaultProps) {
@@ -19116,7 +19115,7 @@ ReactElement.cloneAndReplaceKey = function (oldElement, newKey) {
 ReactElement.cloneElement = function (element, config, children) {
   var propName;
 
-  // Original props are copied
+  // Original _props are copied
   var props = _assign({}, element.props);
 
   // Reserved names are extracted
@@ -19142,7 +19141,7 @@ ReactElement.cloneElement = function (element, config, children) {
       key = '' + config.key;
     }
 
-    // Remaining properties override existing props
+    // Remaining properties override existing _props
     var defaultProps;
     if (element.type && element.type.defaultProps) {
       defaultProps = element.type.defaultProps;
@@ -19150,7 +19149,7 @@ ReactElement.cloneElement = function (element, config, children) {
     for (propName in config) {
       if (hasOwnProperty.call(config, propName) && !RESERVED_PROPS.hasOwnProperty(propName)) {
         if (config[propName] === undefined && defaultProps !== undefined) {
-          // Resolve default props
+          // Resolve default _props
           props[propName] = defaultProps[propName];
         } else {
           props[propName] = config[propName];
@@ -19160,7 +19159,7 @@ ReactElement.cloneElement = function (element, config, children) {
   }
 
   // Children can be more than one argument, and those are transferred onto
-  // the newly allocated props object.
+  // the newly allocated _props object.
   var childrenLength = arguments.length - 2;
   if (childrenLength === 1) {
     props.children = children;
@@ -19202,7 +19201,7 @@ arguments[4][76][0].apply(exports,arguments)
 
 /**
  * ReactElementValidator provides a wrapper around a element factory
- * which validates the props passed to the element. This is intended to be
+ * which validates the _props passed to the element. This is intended to be
  * used only in DEV and could be replaced by a static type checker for languages
  * that support it.
  */
@@ -19328,7 +19327,7 @@ function validateChildKeys(node, parentType) {
 }
 
 /**
- * Given an element, validate that its props follow the propTypes definition,
+ * Given an element, validate that its _props follow the propTypes definition,
  * provided by the type.
  *
  * @param {ReactElement} element
@@ -19543,7 +19542,7 @@ var getIteratorFn = require('./getIteratorFn');
 var warning = require('fbjs/lib/warning');
 
 /**
- * Collection of methods that allow declaration and validation of props that are
+ * Collection of methods that allow declaration and validation of _props that are
  * supplied to React components. Example usage:
  *
  *   var Props = require('ReactPropTypes');
@@ -19572,8 +19571,8 @@ var warning = require('fbjs/lib/warning');
  *  var MyLink = React.createClass({
  *    propTypes: {
  *      // An optional string or URI prop named "href".
- *      href: function(props, propName, componentName) {
- *        var propValue = props[propName];
+ *      href: function(_props, propName, componentName) {
+ *        var propValue = _props[propName];
  *        if (propValue != null && typeof propValue !== 'string' &&
  *            !(propValue instanceof URI)) {
  *          return new Error(
@@ -20310,11 +20309,11 @@ function traverseAllChildrenImpl(children, nameSoFar, callback, traverseContext)
 }
 
 /**
- * Traverses children that are typically specified as `props.children`, but
+ * Traverses children that are typically specified as `_props.children`, but
  * might also be specified through attributes:
  *
- * - `traverseAllChildren(this.props.children, ...)`
- * - `traverseAllChildren(this.props.leftPanelChildren, ...)`
+ * - `traverseAllChildren(this._props.children, ...)`
+ * - `traverseAllChildren(this._props.leftPanelChildren, ...)`
  *
  * The `traverseContext` is an optional argument that is passed through the
  * entire traversal. It can be used to store accumulations or anything else that
@@ -20495,7 +20494,7 @@ var AutosizeInput = React.createClass({
 		var inputProps = _extends({}, this.props);
 		inputProps.className = this.props.inputClassName;
 		inputProps.style = inputStyle;
-		// ensure props meant for `AutosizeInput` don't end up on the `input`
+		// ensure _props meant for `AutosizeInput` don't end up on the `input`
 		delete inputProps.inputClassName;
 		delete inputProps.inputStyle;
 		delete inputProps.minWidth;

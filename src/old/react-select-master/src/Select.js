@@ -582,7 +582,7 @@ const Select = React.createClass({
 	/**
 	 * Retrieve a value from the given options and valueKey
 	 * @param	{String|Number|Array}	value	- the selected value(s)
-	 * @param	{Object}		props	- the Select component's props (or nextProps)
+	 * @param	{Object}		props	- the Select component's _props (or nextProps)
 	 */
 	expandValue (value, props) {
 		const valueType = typeof value;

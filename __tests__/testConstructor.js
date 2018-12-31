@@ -98,8 +98,8 @@ let formValuesWithCustomObject = {
             "useTag": "label",
             "requireSymbol": "*",
             "propsMap": {
-              "required": "schemaData/required",
-              "title": "schemaData/title"
+              "required": "fData/required",
+              "title": "fData/title"
             }
           }
         },
@@ -127,8 +127,8 @@ let formValuesWithCustomObject = {
               "value": "values/current",
               "autoFocus": "params/autofocus",
               "placeholder": "params/placeholder",
-              "required": "schemaData/required",
-              "title": "schemaData/title",
+              "required": "fData/required",
+              "title": "fData/title",
               "readOnly": [
                 "controls",
                 null
@@ -502,8 +502,8 @@ let formValuesWithFieldsPros = {
             "useTag": "label",
             "requireSymbol": "*",
             "propsMap": {
-              "required": "schemaData/required",
-              "title": "schemaData/title"
+              "required": "fData/required",
+              "title": "fData/title"
             }
           }
         },
@@ -531,8 +531,8 @@ let formValuesWithFieldsPros = {
               "value": "values/current",
               "autoFocus": "params/autofocus",
               "placeholder": "params/placeholder",
-              "required": "schemaData/required",
-              "title": "schemaData/title",
+              "required": "fData/required",
+              "title": "fData/title",
               "readOnly": [
                 "controls",
                 null

@@ -25,7 +25,7 @@ function updateSubField(subField, newSubState) {
 export default function updateSubFields(state, localPath, newState) {
   const field = get(state, localPath);
 
-  // only forms can have fields -
+  // only forms can have _fields -
   // skip if field is not a form
   if (!field || !field.$form) return state;
 

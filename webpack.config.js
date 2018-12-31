@@ -13,7 +13,7 @@ module.exports = {
   // context: resolve('./src'),
 
   entry: {
-    app: './src/core.tsx'
+    app: './src/api.tsx'
   },
   watch: process.env.NODE_ENV !== 'production',
   output: {
@@ -36,10 +36,10 @@ module.exports = {
         exclude: /node_modules/,
         loaders: ['babel-loader']
       },
-// ./props-loader!
+// ./_props-loader!
       {
         test: /\.(ts|tsx)$/,
-        loader: `${process.env.NODE_ENV === 'production' ? './props-loader!babel-loader!' : ''}ts-loader`
+        loader: `${process.env.NODE_ENV === 'production' ? './_props-loader!babel-loader!' : ''}ts-loader`
       },
     ],
   },

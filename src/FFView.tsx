@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {basicObjects} from './core/core';
+import {basicObjects} from './core/components';
 
 const ArrayInput = (basicObjects as any).widgets['ArrayInput'];
 

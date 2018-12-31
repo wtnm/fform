@@ -1,6 +1,6 @@
 const objKeys = Object.keys;
-const isArr = Array.isArray;
-const isUndefined = (value: any) => typeof value === 'undefined';
+const isArray = Array.isArray;
+const isUndefined = (value: any): value is undefined => typeof value === 'undefined';
 
 
 const _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol"
@@ -68,7 +68,7 @@ function asNumber(value: any) {
 
 function push2array(array: any[], ...vals: any[]): any {
   for (let i = 0; i < vals.length; i++) {
-    if (isArr(vals[i])) array.push(...vals[i]);
+    if (isArray(vals[i])) array.push(...vals[i]);
     else array.push(vals[i])
   }
   return array
@@ -82,31 +82,62 @@ function moveArrayElems(arr: any, from: number, to: number): Array<any> {
     to = (to % length + length) % length;
   }
   let elem = arr[from];
-  for (let i = from; i < to; i++) arr[i] = arr [i + 1]
-  for (let i = from; i > to; i--) arr[i] = arr [i - 1]
+  for (let i = from; i < to; i++) arr[i] = arr [i + 1];
+  for (let i = from; i > to; i--) arr[i] = arr [i - 1];
   arr[to] = elem;
   return arr
 }
 
 function makeSlice(...pathValues: any[]): StateType {
-  const result = {};
-  let obj = result;
-  const lastI = pathValues.length - 2;
-  if (!lastI && isArr(pathValues[0]) && !pathValues[0].length) return pathValues[1];
-  for (let i = 0; i < pathValues.length - 1; i++) {
-    let path = pathValues[i];
-    if (!isArr(path)) path = [path];
-    for (let j = 0; j < path.length; j++) {
-      if (path[j] == '#') continue;
-      obj[path[j]] = (i == lastI && j == path.length - 1) ? pathValues[pathValues.length - 1] : {};
-      obj = obj[path[j]];
-    }
-  }
-  return result;
+  let path: any[] = [];
+  for (let i = 0; i < pathValues.length - 1; i++) push2array(path, pathValues[i]);
+  const value = pathValues[pathValues.length - 1];
+  if (!path.length) return value;
+  return setIn({}, value, path);
 }
 
-function delIn(state: StateType, path: Path) {
-  if (path[0] == '#') path = path.slice(1);
+function hasIn(state: any, ...pathes: any[]) {
+  if (pathes.length > 0) {
+    for (let i = 0; i < pathes.length; i++) {
+      let path = isArray(pathes[i]) ? pathes[i] : [pathes[i]];
+      for (let j = 0; j < path.length; j++) {
+        if (isUndefined(path[j])) continue;
+        try {
+          if (!state.hasOwnProperty(path[j])) return false;
+        } catch (e) {return false;}
+        state = state[path[j]]
+      }
+    }
+  }
+  return true
+}
+
+function setIn(state: any, value: any, ...pathes: any[]) {
+  let result = state;
+  let key;
+  if (pathes.length > 0) {
+    for (let i = 0; i < pathes.length; i++) {
+      let path = isArray(pathes[i]) ? pathes[i] : [pathes[i]];
+      for (let j = 0; j < path.length; j++) {
+        if (isUndefined(path[j])) continue;
+        if (!isUndefined(key)) {
+          if (!isMergeable(result[key])) result[key] = {};
+          result = result[key];
+        }
+        key = path[j];
+
+        // prev = result;
+        // result = result[key];
+      }
+    }
+  }
+  if (!isUndefined(key)) result[key] = value;
+  else return value;
+  return state;
+}
+
+function delIn(state: any, path: Path) {
+  // if (path[0] == '#') path = path.slice(1);
   if (!path.length) return state;
   const keys = typeof path[0] == 'string' ? path[0].split(',') : [path[0]];
   const newPath = path.slice(1);
@@ -134,11 +165,11 @@ function getIn(state: any, ...paths: any[]): any {
   for (let i = 0; i < paths.length; i++) {
     let track = paths[i];
     if (typeof track === 'function') track = track(res);
-    if (!isArr(track)) track = [track];
-    for (let j = (i == 0 && track[0] === '#' ? 1 : 0); j < track.length; j++) {
-      if (res === undefined) return res;
-      let l_path = track[j];
-      res = res[l_path];
+    if (!isArray(track)) track = [track];
+    for (let j = 0; j < track.length; j++) {
+      if (isUndefined(res)) return res;
+      if (isUndefined(track[j])) continue;
+      res = res[track[j]];
     }
   }
   return res;
@@ -148,7 +179,7 @@ function getIn(state: any, ...paths: any[]): any {
 function mergeState(state: any, source: any, options: MergeStateOptionsArgument = {}): MergeStateResult {
   const fn = options.noSymbol ? objKeys : objKeysNSymb;
   // let arrayMergeFn: any = false;
-  const {SymbolDelete, del, diff, replace, arrays = 'replace'} = options;
+  const {SymbolDelete, del, diff, replace, arrays = 'merge'} = options;
   let forceReplace: any = replace;
   if (typeof forceReplace !== 'function') {
     if (!isMergeable(replace)) forceReplace = () => false;
@@ -165,14 +196,14 @@ function mergeState(state: any, source: any, options: MergeStateOptionsArgument 
 
   function recusion(state: any, source: any, track: Path = []): MergeStateResult {
     const changes: any = {};
-    const isSourceArray = isArr(source);
+    const isSourceArray = isArray(source);
     // const forceReplace = getIn(replace, track) || {}; // force replace for mergeable object instead of merge
     // console.log('forceReplace', forceReplace)
     if (!isMergeable(state)) {
       state = isSourceArray ? [] : {};  // return only objects
-      if (isArr(state) && setLength) changes.length = 0;
+      if (isArray(state) && setLength) changes.length = 0;
     }
-    const isStateArray = isArr(state);
+    const isStateArray = isArray(state);
     if (!isMergeable(source)) return {state};  // merge only mergeable objects, may be throw here
 
     let stateKeys = fn(state);
@@ -255,7 +286,7 @@ merge.all = function (state: any, obj2merge: any[], options: MergeStateOptionsAr
 };
 
 function isObject(val: any) {
-  return isMergeable(val) && !isArr(val)
+  return isMergeable(val) && !isArray(val)
 }
 
 function isMergeable(val: any) {
@@ -283,20 +314,26 @@ function memoize(fn: any) {
 }
 
 
-function getByKey(obj: any, keys: Array<string | number | symbol> | string | number | symbol, value: any = {}) {
-  if (!isArr(keys)) keys = [keys];
-  for (let i = 0; i < keys.length; i++) {
-    if (keys[i] == '#') continue;
-    if (!obj.hasOwnProperty(keys[i])) obj[keys[i]] = (i == keys.length - 1) ? value : {};
-    obj = obj[keys[i]];
-  }
-  return obj;
+function getCreateIn(state: any, value: any, ...pathes: any[]) {
+  if (!hasIn(state, ...pathes)) setIn(state, value, ...pathes);
+  return getIn(state, ...pathes)
 }
+
+//
+// function getOrCreate(obj: any, keys: Array<string | number | symbol> | string | number | symbol, value: any = {}) {
+//   if (!isArray(keys)) keys = [keys];
+//   for (let i = 0; i < keys.length; i++) {
+//     if (keys[i] == '#') continue;
+//     if (!obj.hasOwnProperty(keys[i])) obj[keys[i]] = (i == keys.length - 1) ? value : {};
+//     obj = obj[keys[i]];
+//   }
+//   return obj;
+// }
 
 function not(val: any) {
   return !val
 }
 
-export {not, mergeState, merge, getByKey, push2array, asNumber, isEqual, isObject, isMergeable, objKeysNSymb, moveArrayElems, delIn, getIn, getSlice, makeSlice, memoize};
-export {objKeys, isArr, isUndefined}
+export {not, mergeState, merge, push2array, asNumber, isEqual, isObject, isMergeable, objKeysNSymb, moveArrayElems, delIn, setIn, hasIn, getIn, getCreateIn, getSlice, makeSlice, memoize};
+export {objKeys, isArray, isUndefined}
 

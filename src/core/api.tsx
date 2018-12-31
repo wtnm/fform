@@ -1,25 +1,47 @@
 /////////////////////////////////////////////
 //  Actions function
 /////////////////////////////////////////////
-import {delIn, getByKey, getIn, isEqual, isMergeable, isObject, makeSlice, memoize, merge, mergeState, moveArrayElems, objKeysNSymb, push2array} from "./commonLib";
 import {
-  arrayStart,
-  basicLengths,
-  get,
-  getBindedValue, getMaxValue, getSchemaPart, getValue,
-  isReplaceable,
-  makeArrayOfPathItem,
-  makePathItem, makeStateBranch,
-  makeStateFromSchema, makeUpdateItem,
-  object2PathValues,
-  path2string, _rawValuesKeys, string2path, SymBranch,
-  SymData, SymDelete,
-  SymReset, SymClear,
-  UpdateItems, utils,
-  val2path
+  delIn,
+  getIn,
+  setIn,
+  hasIn,
+  isEqual,
+  isMergeable,
+  isObject,
+  makeSlice,
+  memoize,
+  merge,
+  mergeState,
+  moveArrayElems,
+  objKeysNSymb,
+  push2array,
+  objKeys,
+  isArray,
+  isUndefined,
+  getCreateIn
+} from "./commonLib";
+
+import {
+  getDefaultFromSchema,
+  getFromState,
+  getSchemaPart,
+  oneOfFromState,
+  makeStateFromSchema,
+  makeNUpdate,
+  branchKeys,
+  path2string,
+  string2path,
+  SymData, SymDelete, SymReset, SymClear,
+  normalizePath,
+  updateStatePROCEDURE,
+  mergeStatePROCEDURE,
+  isSelfManaged,
+  getKeyMapFromSchema,
 } from "./stateLib";
 
-import {objKeys, isArr, isUndefined} from "./commonLib";
+
+const JSONSchemaValidator = require('./is-my-json-valid');
 
 
 class exoPromise {
@@ -59,182 +81,263 @@ class exoPromise {
   }
 }
 
-
-let formReducerValue = 'fforms';
-
 /////////////////////////////////////////////
-//  Actions names
-/////////////////////////////////////////////
-const actionName4setItems = 'FFORM_SET_ITEMS';
-const actionNameReplaceState = 'FFROM_REPLACE_STATE';
-const actionNameExecAction = 'FFROM_EXEC_ACTIONS';
-
-
-const actionUpdateState = (items: any[], stuff: any): SetItemsType => {
-  return {type: actionName4setItems, items, stuff};
-};
-
-const actionExecActions = (actions: any[], stuff: any, forceValidation: any, opts: any, promises: any): any => {
-  return execActions.bind({type: actionNameExecAction, actions, forceValidation, stuff, opts, promises});
-};
-
-
-/////////////////////////////////////////////
-//  Hooks
+//  FFormCore class
 /////////////////////////////////////////////
 
+const _CORES = new WeakMap();
 
-function hookManager() {
-  const Hooks = {};
+function fformCores(name: string) {return _CORES[name]}
 
-  const add: any = function (name: string, hookName: string, hook: HooksType) { // name = '' uses for global hooks
-    getByKey(Hooks, [name, hookName], []).push(hook);
-    return remove.bind(null, name, hookName, hook)
-  };
+/** Creates a api that contains data and api for changing it */
+class FFormStateManager {
+  private _isDispatching: boolean;
+  private _currentState: any;
+  private _reducer: any;
+  private _validator: any;
+  private _unsubscribe: any;
+  private _listeners: Array<(state: StateType) => void> = [];
+  _props: any;
 
-  function remove(name: string, hookName: string, hook: HooksType) {
-    Hooks[name][hookName].splice(Hooks[name][hookName].indexOf(hook), 1);
-  };
+  // utils: utilsApiType = utils;
+  schema: JsonSchema;
+  keyMap: any;
+  dispatch: any;
+  JSONValidator: (values: any) => any;
+  name?: string;
 
-  add.get = (name: string) => {
-    if (!Hooks[name] || name == '') return Hooks[''];
-    else return merge(Hooks[''], Hooks[name], {arrays: 'concat'});
-  };
-  return add;
-}
+  // promise: Promise<any>;
 
-const Hooks = hookManager();
+  constructor(props: FFormCoreProps) {
+    // if ((props.getState || props.setState) && props.store) throw new Error('Expected either "store" or "getState & setState" but not all of them.');
+    if (((props.getState ? 1 : 0) + (props.setState ? 1 : 0)) == 1) new Error('Expected both "getState" and "setState" or none but not only one of them.');
+    if (props.store && !props.name) throw new Error('Expected "name" to be passed together with "store".');
 
-function getValueFromUpdateItemIfExists(keyPath: Path, item: UpdateItem) {
-  if (!item.keyPath) return;
-  let i = 0;
-  for (i; i < Math.min(item.keyPath.length, keyPath.length); i++) {
-    if (keyPath[i] !== item.keyPath[i]) return;
+    const self = this;
+    self._props = props;
+    self.schema = props.schema;
+    self.name = props.name || '';
+    self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
+    self._reducer = formReducer();
+    self._validator = JSONSchemaValidator(props.schema, {greedy: true});
+    self.JSONValidator = self._jValidator.bind(self);
+    self._getState = self._getState.bind(self);
+    self._setState = self._setState.bind(self);
+    if (props.setState && props.store) self._unsubscribe = self._props.store.subscribe(self._handleChange.bind(self));
+    if (props.name) _CORES[props.name] = self;
+    self.keyMap = getKeyMapFromSchema(self.schema, self._getState);
+    if (!self._getState()) self._setState(makeStateFromSchema(props.schema));
   }
-  if (item.keyPath.length <= keyPath.length) return getIn(item.value, keyPath.slice(i));
-  else return makeSlice(item.keyPath.slice(i), item.value)
+
+  private _dispatch(action: any) {
+    const self = this;
+    if (typeof action === 'function') return action(self._dispatch.bind(self));
+    else self._setState(self._reducer(self._getState() || {}, action));
+    return action;
+  };
+
+  _setState(state: any) {
+    const self = this;
+    if (state === self._getState()) return;
+    if (self._props.setState) self._props.setState(state);
+    else self._currentState = state;
+    if (self._props.store) self._setStoreState(state);
+    self._listeners.forEach(fn => fn(state));
+  }
+
+  _getState() {
+    const self = this;
+    if (self._props.store) return self._getStoreState();
+    else if (self._props.getState) return self._props.getState();
+    else return self._currentState;
+  }
+
+  private _setStoreState(state: any) {
+    return this._props.store.dispatch({type: actionNameSetState, state, api: this});
+  }
+
+  private _getStoreState() {
+    return this._props.store.getState()[getFRVal()][this._props.name];
+  }
+
+  private _jValidator(data: any) {
+    this._validator(data);
+    let result = this._validator.errors;
+    if (!result) return [];
+    if (!isArray(result)) result = [result];
+    return result.map((item: any) => [item.field.split('.').slice(1), item.message])
+  }
+
+  private _handleChange() {
+    const self = this;
+    let nextState = self._getStoreState();
+    let curState = self._props.getState ? self._props.getState() : self._currentState;
+    if (nextState !== curState) self._setState(nextState);
+  }
+
+  addListener(fn: (state: StateType) => void) {
+    const self = this;
+    self._listeners.push(fn);
+    if (self._props.store && !self._unsubscribe) self._unsubscribe = self._props.store.subscribe(self._handleChange.bind(self));
+    return self.delListener.bind(self, fn);
+  }
+
+  delListener(fn?: (state: StateType) => void) {
+    const self = this;
+    if (isUndefined(fn)) self._listeners = [];
+    else {
+      let idx = self._listeners.indexOf(fn);
+      if (~idx) self._listeners.splice(idx, 1)
+    }
+    if (!self._listeners.length && self._unsubscribe && !self._props.setState) {
+      self._unsubscribe();
+      delete self._unsubscribe;
+    }
+  }
 }
 
-// recalc array and set pristine
-Hooks('', 'beforeMerge', (state: StateType, item: UpdateItem, utils: utilsApiType, schema: JsonSchema, data: StateType) => {
-  // function recurseSetData(stateItems: any, newState: StateType, track: Path) {
-  //   stateItems[path2string(track)] = makeDataItem(newState[SymData]);
-  //   objKeys(newState).forEach(key => recurseSetData(stateItems, newState[key], track.concat(key)))
+/////////////////////////////////////////////
+//  API
+/////////////////////////////////////////////
+
+class FFormStateAPI extends FFormStateManager {
+  private _noExec = 0;
+  private _resultPromises: any;
+  private _newState: StateType | undefined;
+  private _updates: StateApiUpdateType[] = [];
+  private _forceValidation: StateType | boolean | null = null;
+  private _defferedTimerId: any;
+  getState = this._getState;
+
+  // constructor(props: FFormCoreProps) {//schema: JsonSchema, name: string, dispatch: any, getState: () => StateType, setState: (state: any) => any, JSONValidator: any) {
+  //   super(props);
+  //   this.getState = this._getState;
+  //   //   const self = this;
+  //   //   this.keyMap = getKeyMapFromSchema(this.schema);
+  //   //   self.setState(self.getState() || makeStateFromSchema(self.schema), {execute: true});
   // }
 
-  if (!item.keyPath) return [];
-  const after: UpdateItem[] = [];
-  let newLengthsValue = getValueFromUpdateItemIfExists(['array', 'lengths'], item);
-  if (newLengthsValue) setArrayLength(after, schema, state, item.path, newLengthsValue);
+  private _clearActions() {
+    const self = this;
+    self._newState = undefined;
+    self._defferedTimerId = null;
+    self._forceValidation = null;
+    self._updates = [];
+    self._promise(true);
+  }
 
-  let newValues = getValueFromUpdateItemIfExists(['values'], item);
+  private _execBatch(updates: StateApiUpdateType[], opts: APIOptsType, promises: any, forceValidation: StateType | boolean | null) {
+    const self = this;
+    let action = {type: actionNameUpdateState, state: self._newState, updates, api: self, forceValidation, opts, promises};
+    self._clearActions();
+    self.dispatch(updateState.bind(action));
+    return promises;
+  }
 
-  if (newValues) { // calculate pristine value
-    const dataItem = getIn(state, item.path)[SymData];
-    if (dataItem.values) {
-      newValues = merge(dataItem.values, newValues);
-      let curValue = newValues.current;
-      if (curValue === SymReset || curValue === SymClear) {
-        newValues = merge(newValues, {'current': getValue(newValues, curValue === SymReset ? 'inital' : 'default')});
-        after.push(makeUpdateItem(item.path, ['values', 'current'], newValues.current));
+  private _setExecution(addUpdates: any, opts: APIOptsType = {}) {
+    const self = this;
+    if (addUpdates) push2array(self._updates, addUpdates);
+    // console.log('---------------- added updates', updates);
+    if (opts.force === true && self._noExec > 0) self._noExec--;
+    let promises = self._promise();
+    if (opts.execute === false || self._noExec) return promises;
+    if (self._defferedTimerId) clearTimeout(self._defferedTimerId);
+    if (opts.execute === true) self._execBatch(self._updates, opts, promises, self._forceValidation);
+    else self._defferedTimerId = setTimeout(self._execBatch.bind(self, self._updates, opts, promises, self._forceValidation), opts.execute || 0);
+
+    return promises;
+  }
+
+  private _promise(reset?: true): apiPromises {
+    const self = this;
+    if (reset) self._resultPromises = null;
+    if (!self._resultPromises) {
+      self._resultPromises = new exoPromise();
+      self._resultPromises.vAsync = new exoPromise();
+    }
+    return self._resultPromises;
+  }
+
+  //getState = () => this._getState();
+  //setState = (state: StateType) => this._setState(state);
+
+  noExec = () => {this._noExec++;};
+
+  execute = (opts: APIOptsType = {}) => {
+    return this._setExecution(null, merge(opts, {execute: true}));
+  };
+
+  setState = (state: StateType, opts: APIOptsType = {}) => {
+    const self = this;
+    self._updates = []; // reset all previous updates
+    self._newState = state;
+    return self._setExecution(null, opts);
+  };
+
+  validate = (force: boolean | StateType | string[] | string = true, opts: APIOptsType = {}) => {
+    const self = this;
+    if (force === false) self._forceValidation = false;
+    else if (self._forceValidation !== true) {
+      if (typeof force === 'string') force = [force];
+      if (isArray(force)) {
+        let result = {};
+        force.forEach(value => setIn(result, true, string2path(value)));
+        force = result;
       }
-      after.push(makeUpdateItem(item.path, ['status', 'pristine'], isEqual(getValue(newValues), getValue(newValues, 'inital'))));
+      if (force === true) self._forceValidation = true;
+      else self._forceValidation = merge(self._forceValidation || {}, force);
     }
-  }
+    return self._setExecution(null, opts);
+  };
 
-  return after
-});
+  get = (...pathes: Array<string | Path>): any => getFromState(this.getState(), ...pathes);
 
-function recursivelySetChanges(after: UpdateItem[], statePart: StateType, keyPath: Path, value: any, track: Path) {
-  after.push(makeUpdateItem(track, keyPath, value));
-  getKeysAccording2schema(statePart, []).forEach(key => recursivelySetChanges(after, statePart[key], keyPath, value, track.concat(key)))
-};
-// switch 
-Hooks('', 'beforeMerge', (state: StateType, item: UpdateItem, utils: utilsApiType, schema: JsonSchema, data: StateType) => {
+  set = (path: string | Path, value: any, opts: APIOptsType & { replace?: any, macros?: string } = {}) => {
+    let {execute, force, noValidation, ...item} = opts;
+    (item as StateApiUpdateType).path = path;
+    (item as StateApiUpdateType).value = value;
 
-  if (!item.keyPath) return [];
-  const after: UpdateItem[] = [];
-  const result: any = {after};
-  let switches = getValueFromUpdateItemIfExists(['switch'], item);
-  if (switches) {
-    result.skip = true;
-    if (isObject(switches)) object2PathValues(switches).forEach(pathValue => recursivelySetChanges(after, getIn(state, item.path), pathValue, pathValue.pop(), item.path));
-  }
-  return result;
-});
+    return this._setExecution((item as StateApiUpdateType), opts);
+  };
 
-// Recalculate
-Hooks('', 'afterMerge', (state: StateType, changesArray: StateType[], utils: utilsApiType, schema: JsonSchema, data: StateType) => {
-  const addChangeData: UpdateItem[] = [];
-  let recalcArray: any;
+  getValue = (opts: APIOptsType & { inital?: boolean, flatten?: boolean, path?: string | Path } = {}): any => {
+    const path = normalizePath(opts.path || []);
+    let value = getIn(this.getState(), SymData, opts.inital ? 'inital' : 'current', path);
+    return opts.flatten ? this.keyMap.flatten(value/*, path*/) : value;
+  };
 
-  function countRecalc(state: StateType, changes: StateType, track: Path = ['#']) {
-    if (state === undefined) return;
-    objKeys(changes).forEach(key => countRecalc(state[key], changes[key], track.concat(key)));
-    const dataItemChanges = changes[SymData];
-    if (!dataItemChanges) return;
-    const dataItem = state[SymData];
-    if (!dataItem) return;
-    let status: string[] = [];
-    let path = track.concat();
-    let controls = dataItemChanges['controls'] || {};
-    if (getIn(dataItemChanges, ['array', 'lengths'])) status = objKeys(dataItem.status);
-    else if (controls.hasOwnProperty('omit') || controls.hasOwnProperty('omitBind')) {
-      path.pop();
-      status = objKeys(dataItem.status);
-    } else if (dataItemChanges.status) {
-      path.pop();
-      status = objKeys(dataItemChanges.status);
-    }
-    let length = path.length;
-    if (!recalcArray) recalcArray = [];
-    for (let i = 0; i < length; i++) {
-      status.forEach((key) => getByKey(recalcArray, [path.length, path2string(path, ['status'].concat(key))], {path: path.slice(), keyPath: ['status'].concat(key), checkValue: key != 'pending'}));
-      path.pop();
-    }
-  }
+  setValue = (value: any, opts: APIOptsType & { inital?: boolean, flatten?: boolean, path?: string | Path } = {}) => {
+    const path = normalizePath(opts.path || []);
+    return this._setExecution({path: [opts.inital ? '@inital' : '@current'].concat(path), value: opts.flatten ? this.keyMap.unflatten(value/*, path*/) : value}, opts);
+  };
 
-  // countRecalc(state, changes);
-  changesArray.forEach(changes => countRecalc(state, changes)); // fills recalcArray with values needed to recalculate
+  getDefaultValue = (opts: { flatten?: boolean } = {}) => opts.flatten ? this.keyMap.flatten(getDefaultFromSchema(this.schema)) : getDefaultFromSchema(this.schema);
 
-  if (recalcArray) {
-    const newVals: any = {};
-    for (let i = 0; i < recalcArray.length; i++) {
-      const obj = recalcArray[recalcArray.length - i - 1];  // from bigger levels to smaller
-      if (obj) {
-        objKeys(obj).forEach((key) => {
-          const {path, keyPath, checkValue} = obj[key];
-          const lengths = keyPath[1] == 'pristine' && getIn(state, path.concat(SymData, 'array', 'lengths'));
-          let result;
-          if (lengths && lengths.current !== getValue(lengths, 'inital')) result = false;
-          else {
-            const keys = getKeysAccording2schema(state, path);  // get all keys to check
-            result = checkValue;
-            for (let j = 0; j < keys.length; j++) {
-              if (getBindedValue(getIn(state, path.concat(keys[j], SymData, 'controls')), 'omit')) continue; // skip value if omit key is true
-              let pathString = path2string(path.concat(keys[j]), keyPath);
-              let value = newVals.hasOwnProperty(pathString) ? newVals[pathString] : utils.get(state, pathString);
-              if (value === !checkValue) {
-                result = !checkValue;
-                break;
-              } else if (value === null) result = null; // && result !== !checkValue - not needed, as we have break when set result = !checkValue
-            }
-          }
-          addChangeData.push({path, keyPath, value: result});
-          newVals[path2string(path, keyPath)] = result;
-        })
-      }
-    }
-  }
-  return addChangeData;
-});
+  reset = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymReset, opts);
 
-function getKeysAccording2schema(state: StateType, path: Path) {
-  const data = getIn(state, path)[SymData];
-  let keys: string[] = [];
-  if (data.schemaData.type == 'array') for (let j = 0; j < getValue(data.array.lengths); j++) keys.push(j.toString());
-  else keys = objKeys(getIn(state, path));
-  return keys;
+  clear = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymClear, opts);
+
+  getActive = () => this.get(SymData, 'active');
+
+  arrayAdd = (path: string | Path, value: number | any[] = 1, opts: APIOptsType = {}) => {
+    return this._setExecution({path, value: value, macros: 'array'}, opts);
+  };
+
+  arrayItemOps = (path: string | Path, op: 'up' | 'down' | 'first' | 'last' | 'del' | 'move' | 'shift', opts: APIOptsType & { value?: number } = {}) => {
+    return this._setExecution({path, op: op, value: opts.value || 0, macros: 'arrayItem'}, opts);
+  };
+
+  setHidden = (path: string | Path, value = true, opts: APIOptsType = {}) => {
+    return this._setExecution([{path: path + '@' + '/controls/hidden', value}], opts);
+  };
+
+  showOnly = (path: string | Path, opts: APIOptsType & { skipFields?: string[] } = {}) => {
+    path = normalizePath(path);
+    return this._setExecution([
+      {path: path2string(path.slice(0, -1)) + '/*/@' + '/controls/hidden', value: true},
+      {path: path2string(path) + '@' + '/controls/hidden', value: false},
+    ], opts);
+  };
 
 }
 
@@ -243,534 +346,239 @@ function getKeysAccording2schema(state: StateType, path: Path) {
 //  Reducer
 /////////////////////////////////////////////
 
-
-function getRawValuesChanges(prevState: StateType = {}, nextState: StateType, opts: { SymbolDelete?: any } = {}) {
-// gather changed values from state, undefined values are not removed
-  const forceCheck = {};
-  const data = nextState[SymData];
-  // if (!data) return {replace: false};
-  if (prevState[SymData] !== nextState[SymData]) {
-    if (data.values) {
-      if (data.schemaData.type == 'object' || data.schemaData.type == 'array') return {replace: true, values: data.values};
-      return {replace: false, values: data.values};
+function updateMessagesPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, track: Path, result?: MessageData, defaultGroup = 0) {
+  function conv(item: MessageGroupType | string): MessageGroupType {
+    return (typeof item === 'object') ? item : {group: defaultGroup, text: item};
+  };
+  let messages: MessageGroupType[] = isArray(result) ? (result as any).map(conv) : [conv(result as any)];
+  messages.forEach((item) => {
+    let {path, ...itemNoPath} = item;
+    if (path) {
+      path = normalizePath(path, track);
+      return updateMessagesPROCEDURE(state, schema, UPDATABLE_object, path, itemNoPath, defaultGroup)
     } else {
-      if (data.array) _rawValuesKeys.forEach(val => {
-        let a = getIn(prevState, SymData, 'array', 'lengths', val) || 0;
-        let b = getIn(nextState, SymData, 'array', 'lengths', val) || 0;
-        for (let i = a; i < b; i++) forceCheck[i] = true  // we need to force check arrayItems on length increase, because it is possible that (prevState[key] === nextState[key])
-      })
-    }
-  }
-  const result = {};
-  _rawValuesKeys.forEach(val => result[val] = data.array ? [] : {});
-  const replace = {};
-  objKeys(nextState).forEach(key => {
-    if (nextState[key] && (prevState[key] !== nextState[key] || forceCheck[key])) {
-      const childResult = getRawValuesChanges(prevState[key], nextState[key], opts);
-      let childValues = childResult['values'];
-      if (childResult['replace']) replace[key] = childResult['replace'];
-      let omit = getBindedValue(getIn(nextState[key], SymData, 'controls'), 'omit');
-      _rawValuesKeys.forEach(val => result[val] && (result[val][key] = omit ? opts.SymbolDelete : childValues[val]));
+      let {group = defaultGroup, text, priority = 0, ...rest} = itemNoPath;
+      //if (!hasIn(UPDATABLE_object.update, track, SymData, 'messages')) setIn(UPDATABLE_object.update, {}, track, SymData, 'messages', priority);
+      //const messageData = getIn(UPDATABLE_object.update, track, SymData, 'messages', priority);
+      const messageData = getCreateIn(UPDATABLE_object.update, {}, track, SymData, 'messages', priority);
+      // setIn(UPDATABLE_object.replace, true, track, SymData, 'messages', priority, group);
+      Object.assign(messageData, rest);
+      if (!isObject(messageData.textGroups)) messageData.textGroups = {};
+      if (!isArray(messageData.textGroups[group])) messageData.textGroups[group] = [];
+      if (text) push2array(messageData.textGroups[group], text);
     }
   });
-  if (data.array) _rawValuesKeys.forEach(val => (result[val].length = Math.max(data.array.lengths[val] || 0, 0)));
-  if (objKeys(replace).length) return {replace, values: result};
-  return {replace: false, values: result};
+  return state
 }
 
-function ownValues(schemaPart: JsonSchema) {
-  return (schemaPart.type != 'object' && schemaPart.type != 'array') || (schemaPart.x && schemaPart.x.values);
-}
-
-function recursivelyResetValue(items: UpdateItem[], schema: any, keyPath: Path, value: any, track: Path = ['#']) {
-  const schemaPart = getSchemaPart(schema, track);
-  const haveVals = ownValues(schemaPart);
-  if (haveVals) items.push({path: track, keyPath, value});  // SymReset and SymClear replaced with proper value in hooks
-  else if (schemaPart.type === 'object') objKeys(schemaPart.properties || {}).forEach(key => recursivelyResetValue(items, schema, keyPath, value, track.concat(key)));
-  else if (schemaPart.type === 'array') items.push({path: track, keyPath: ['array', 'lengths', keyPath[1]], value: 0});
-}
-
-function recursivelySetItems(items: UpdateItem[], schema: any, state: StateType, keyPath: Path, vals: any, track: Path = ['#'], forceSetLength: boolean = false) {
-  let schemaPart;
-  try {schemaPart = getSchemaPart(schema, track)} catch (e) {return}
-  const ownVals = ownValues(schemaPart);  // if dataObjects has prop "values" it means that it has no children
-  if (ownVals) { // if object have own values then update them
-    items.push({path: track, keyPath, value: vals, opts: ownVals !== true ? {replace: makeSlice(track, SymData, keyPath, true)} : undefined}); // then set new value (set "replace" to true for track if values set for object or array)
-  } else {
-    if (isMergeable(vals)) {  // if we receive object or array then apply their values
-      if (schemaPart.type == 'array' && vals.length !== undefined) {
-        items.push({path: track, keyPath: ['array', 'lengths', keyPath[1]], value: vals.length});
-        if (forceSetLength) setArrayLength(items, schema, state, track, makeSlice(keyPath[1], vals.length));
-      }
-      objKeys(vals).forEach(key => recursivelySetItems(items, schema, state, keyPath, vals[key], track.concat(key)));
-    } else recursivelyResetValue(items, schema, keyPath, vals, track);  // otherwise we received undefined or SymReset or SymClear, so recusively reset values
-  }
-}
-
-function setArrayLength(items: UpdateItem[], schema: any, state: StateType, path: Path, newLengthsValue: { current?: number, inital?: number, 'default'?: number }) {
-  //let newLengthsValue = getValueFromUpdateItemIfExists(['array', 'lengths'], item);
-  const schemaPart = getSchemaPart(schema, path);
-  const branch = getIn(state, path);
-  const lengthFull = branch ? branch[SymData].array.lengths : basicLengths;
-  let newLengthFull = merge(lengthFull, newLengthsValue);
-  // if (newLengthFull.current === undefined) newLengthFull = merge(newLengthFull, {'current': getValue(newLengthFull, 'inital')});
-  // objKeys(newLengthsValue).forEach(key => items.push(makeUpdateItem(path, ['array', 'lengths', key], newLengthFull[key])));
-  let start = getMaxValue(lengthFull) || 0;
-  let end = getMaxValue(newLengthFull) || 0;
-  if (start < 0) start = 0;
-  if (end < 0) end = 0;
-  for (let i = start; i < end; i++) {
-    let elemPath = path.concat(i);
-    // console.time('makeStateFromSchema Hook');
-    let newElem = makeStateBranch(schema, elemPath);
-    // console.timeEnd('makeStateFromSchema Hook');
-    items.push({path: elemPath, value: newElem.state, opts: {replace: makeSlice(elemPath, true)}});
-    if (newElem.defaultValues) recursivelySetItems(items, schema, state, ['values', 'current'], newElem.defaultValues, elemPath, true);
-    if (newElem.dataMap) items.push(makeUpdateItem([], newElem.dataMap));
-  }
-  for (let i = end; i < start; i++) items.push({path: path.concat(i), value: SymDelete});
-
-  const arrayStartIndex = arrayStart(schemaPart); //; dataItem.array.arrayStartIndex;
-  const newLength = getValue(newLengthFull);
-  const minItems = schemaPart.minItems || 0;
-  items.push({path: path, keyPath: ['array', 'canAdd'], value: (schemaPart.additionalItems !== false || newLength < arrayStartIndex) && (newLength < (schemaPart.maxItems || Infinity))});
-  for (let i = Math.max(Math.min(getValue(lengthFull), newLength) - 1, 0); i < newLength; i++) {
-    let elemPath = path.concat(i);
-    if (i >= arrayStartIndex) {
-      items.push(makeUpdateItem(elemPath, ['arrayItem', 'canUp'], arrayStartIndex < i));
-      items.push(makeUpdateItem(elemPath, ['arrayItem', 'canDown'], (arrayStartIndex <= i) && (i < newLength - 1)));
-    }
-    if (i >= minItems) items.push(makeUpdateItem(elemPath, ['arrayItem', 'canDel'], i >= Math.min(arrayStartIndex, newLength - 1)));
-  }
-}
-
-function setStateChanges(startState: StateType, action: SetItemsType) {// resultObject: PathValueResultType, stuff: actionStuffType, options = {}) {
-  function makeSliceFromUpdateItem(item: UpdateItem) {
-    return delIn(item.keyPath ? makeSlice(item.path, SymData, item.keyPath, item.value) : makeSlice(item.path, item.value), [SymData, 'rawValues']);
-  }
-
-  function mergeProcedure(prevState: StateType, newState: StateType) {
-    changes = mergeState(prevState, newState, options4changes).changes;
-    // state = mergeResult.state;
-    // changes = mergeResult.changes;
-    if (changes) allChanges.push(changes);
-    return newState;
-  }
-
-  function apiHandler(item: UpdateItem) {
-    let result: UpdateItem[] = [];
-    if (item.path.length == 0 && item.keyPath && (item.keyPath[0] == 'rawValues')) {
-      throw new Error('"rawValues" cannot be changed directly.');
-      // } else if (item.keyPath && item.keyPath[0] == 'array' && item.keyPath[1] == 'lengths') {
-      //   let newLengthsValue = getValueFromUpdateItemIfExists(['array', 'lengths'], item);
-      //   setArrayLength(result, stuff.schema, state, item.path, newLengthsValue);
-    } else if (item.keyPath && item.keyPath[0] == 'api') {
-      if (item.keyPath[1] == 'array') {  // array operation
-        if (item.keyPath[2] == 'add') {
-          let num = item.keyPath[3] || 1;
-          let lengthOld = Math.max(0, (getIn(state, item.path, SymData, 'array', 'lengths', 'current') || 0));
-          result.push({path: item.path, keyPath: ['array', 'lengths', 'current'], value: lengthOld + num});
-          if (!item.value) {
-
-          }
-          if (item.value) {
-            if (!isArr(item.value)) throw new Error('Expected values to be passed as array.');
-            for (let i = 0; i < num; i++) recursivelySetItems(result, stuff.schema, state, ['values', 'current'], item.value[i], item.path.concat(lengthOld + i)) // result.push({path: item.path.concat(lengthOld + i), keyPath: ['values', 'current'], value: item.value[i]});
-          }
-        }
-      } else if (item.keyPath[1] == 'setRawValues') {
-        if (items.length > 1) throw new Error('"setRawValues" must be executed lonely');
-        result = makeItems4rawValues(item.value.prevRaw, item.value.newRaw, stuff.schema, state);
-      } else if (item.keyPath[1] == 'arrayItem') {
-        let path = item.path.slice();
-        let op = item.keyPath[2];
-        let opVal = item.value || 0;
-        const from = parseInt(path.pop());
-        let to = from;
-        const min = get(state, path, SymData, 'array', 'arrayStartIndex'); // api.get(path.concat(SymData, 'array', 'arrayStartIndex'));
-        const lengthFull = get(state, path, SymData, 'array', 'lengths'); //api.get(path.concat(SymData, 'array', 'lengths'));
-        const max = getValue(lengthFull) - 1;
-        if (op == 'up') to--;
-        if (op == 'down') to++;
-        if (op == 'first') to = min;
-        if (op == 'last' || op == 'del') to = max;
-        if (op == 'move') to = opVal;
-        if (op == 'shift') to += opVal;
-        if (to < min) to = min;
-        if (to > max) to = max;
-
-        const valuesNames = ['inital', 'default'];
-        const fullValues = {};
-        valuesNames.forEach(key => { // save inital and default values for moved array items
-          fullValues[key] = [];
-          let arr = getIn(state[SymData]['rawValues'][key], path);
-          if (!arr) return;
-          for (let i = Math.min(from, to); i <= Math.max(from, to); i++) arr.hasOwnProperty(i) && (fullValues[key][i] = arr[i]);
-          fullValues[key].length = arr.length;
-        });
-
-        let stateObject = {};
-        let arrayItems = {};
-        for (let i = Math.min(from, to); i <= Math.max(from, to); i++) {
-          stateObject[i] = getIn(state, path.concat(i));
-          arrayItems[i] = stateObject[i][SymData].arrayItem; //delIn(stateObject[i][SymData].arrayItem, ['uniqId']); // save arrayItem values, except "uniqId"
-        }
-        stateObject = moveArrayElems(stateObject, from, to);
-        objKeys(arrayItems).forEach(i => {
-          stateObject[i] = merge(stateObject[i], makeSlice(SymData, 'arrayItem', arrayItems[i]))
-        }); // restore arrayItem values
-
-        if (op == 'del') stateObject[to] = undefined;
-
-        const length2test = item.path.length - (item.path[0] == '#' ? 1 : 0);  // length2test can be smaller because of leading '#' in item.path (replace function receives path without leading '#')
-        result.push({path, value: stateObject, opts: {replace: (path) => path.length === length2test}});  // instead of merge do replace of items
-        if (op == 'del') result.push({path, keyPath: ['array', 'lengths', 'current'], value: max}); // max = current length - 1
-        valuesNames.forEach(key => fullValues[key] && recursivelySetItems(result, stuff.schema, state, ['values', key], fullValues[key], path)) // restore inital and default values for moved array items
-
-      } else if (item.keyPath[1] == 'setMultiply') {
-
-      } else if (item.keyPath[1] == 'setExceptMultiply') {
-
-      } else if (item.keyPath[1] == 'switch') {
-
-      } else if (item.keyPath[1] == 'setHidden') {
-
-      } else if (item.keyPath[1] == 'showOnly') {
-
-      } else if (item.keyPath[1] == 'selectOnly') {
-
-      } else if (item.keyPath[1] == 'showNselect') {
-
-      }
-
-    } else result.push(item);
-    return result;
-  }
-
-  function applyHooksProcedure(items: UpdateItem[], hookType: string) {
-    for (let j = 0; j < items.length; j++) {
-      let moreItems = apiHandler(items[j]);
-      for (let k = 0; k < moreItems.length; k++) {
-        const item = moreItems[k];
-        if (item.keyPath && !isObject(getIn(state, item.path))) continue;
-        const changes: any = {};
-        changes.before = [];
-        changes.after = [];
-        changes.item = [item];
-
-        for (let i = 0; i < beforeMerge.length; i++) {
-          let res = beforeMerge[i](state, item, utils, stuff.schema, data, hookType);
-          if (!res) return false;
-          if (isArr(res)) res = {after: res};
-          ['before', 'after'].forEach(key => res[key] && push2array(changes[key], res[key]));
-          if (res.skip) changes.item = [];
-        }
-        ['before', 'item', 'after'].forEach(key => {
-          changes[key].forEach((item: UpdateItem) => {
-            state = merge(state, makeSliceFromUpdateItem(item), item.opts || defaultMergeOpts)
-          })
-        });
+function setValidStatusPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, track: Path = []) {
+  let schemaPart: JsonSchema;
+  try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {return state}
+  const selfManaged = isSelfManaged(state, track);
+  let priorities = objKeys(Object.assign({}, getIn(state, track, SymData, 'messages') || {}, getIn(UPDATABLE_object.update, track, SymData, 'messages') || {}));
+  let currentPriority;
+  for (let i = 0; i < priorities.length; i++) {
+    let groups = objKeys(Object.assign({}, getIn(state, track, SymData, 'messages', priorities[i]) || {}, getIn(UPDATABLE_object.update, track, SymData, 'messages', priorities[i]) || {}));
+    for (let j = 0; j < groups.length; j++) {
+      if (getIn(groups, groups[j], 'length')) {
+        currentPriority = parseInt(priorities[i]);
+        break;
       }
     }
-    afterMergeProcedureState = mergeProcedure(afterMergeProcedureState, state);
-    for (let i = 0; i < afterMerge.length; i++) {
-      let res = afterMerge[i](state, allChanges, utils, stuff.schema, data, hookType);
-      if (!res) return false; // all changes blocked
-      res.forEach(item => state = merge(state, makeSliceFromUpdateItem(item), item.opts || defaultMergeOpts));
-      afterMergeProcedureState = mergeProcedure(afterMergeProcedureState, state);
-    }
-    return true;
+    if (!isUndefined(currentPriority)) break;
   }
 
-  const {stuff, items, mergeOptions: defaultMergeOpts = {}} = action;
-  const schemaDataObj = stuff.schema[SymData];
-  const allChanges: StateType[] = [];
-  let replaceRawValues: any;
-  // Object.assign(options, );
+  state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, selfManaged ? ['status', 'invalid'] : ['status', 'obj', 'invalid'], currentPriority === 0 ? 1 : -1, true, {macros: 'setStatus'}));
+  state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['status', 'priority'], currentPriority));
 
-  let mergeResult, changes: any, state = startState, data = {};
-  let options4changes = merge(defaultMergeOpts, {diff: true});
-  let afterMergeProcedureState = startState; // modified by applyHooksProcedure
-  const {afterMerge, beforeMerge} = stuff.hooks;
+  if (!selfManaged) objKeys(getIn(UPDATABLE_object.update, track)).forEach(key => state = setValidStatusPROCEDURE(state, schema, UPDATABLE_object, track.concat(key)));
 
-  // console.time('applyHooksProcedure beforeMap');
-  if (!applyHooksProcedure(items, 'beforeMap')) return startState;  
-  // console.timeEnd('applyHooksProcedure beforeMap'); 
-
-  let apllyItems = applyMap(state, allChanges, stuff);
-  if (!apllyItems) return startState; // all changes blocked
-
-  // console.time('applyHooksProcedure afterMap');
-  if (!applyHooksProcedure(apllyItems, 'afterMap')) return startState;
-
-  return state;
+  return state
 }
 
-function applyMap(state: StateType, changesArray: StateType[], stuff: any): UpdateItem[] | false {
-  let result: UpdateItem[] = [];
+function makeValidation(state: StateType, dispatch: any, action: any) {
 
-  function recurse(statePart: StateType, changes: StateType, track: Path = ['#']) {
-    if (getIn(statePart, [SymData, 'dataMap'])) {
-      let dataObj = statePart[SymData];
-      const trackString = path2string(track);
-      objKeysNSymb(dataObj['dataMap']).forEach((keyPathFrom: any) => {
-        let mapTo = dataObj['dataMap'][keyPathFrom];
-        let value = keyPathFrom === SymBranch ? statePart : getIn(dataObj, string2path(keyPathFrom)); // SymBranch means that we want to map branch, if we want to map dataObject keyPathFrom = ''
-        let from = makePathItem(keyPathFrom === SymBranch ? track : path2string(track) + '/@/' + keyPathFrom);
-        objKeys(mapTo).forEach(key => {
-          let valueFn = mapTo[key];
-          let to = makePathItem(key, track);
-          if (keyPathFrom === SymBranch && to.keyPath) delete to.keyPath; // don't alow to map branch into data object 
-          //(to as UpdateItem).value = valueFn ? valueFn.bind({state, from, to, utils})(value) : value;
-          //result.push((to as UpdateItem));
-          let res = value;
-          if (valueFn) res = valueFn.bind({state, from, to, utils, api: stuff.api})(value);
-          if (res instanceof UpdateItems) push2array(result, res.items);
-          else {
-            (to as UpdateItem).value = res;
-            result.push((to as UpdateItem));
-          }
-        });
-      });
-    }
-    if (isObject(changes)) objKeys(changes).forEach((key) => recurse(statePart[key], changes[key], track.concat(key)));
-  }
+  function recurseValidationInnerPROCEDURE(state: StateType, validatedValue: StateType, modifiedValues: StateType, track: Path = []) {
+    let schemaPart: JsonSchema;
+    try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {return state}
 
-  changesArray.forEach(changes => recurse(state, changes));
-  return result
-}
+    const selfManaged = isSelfManaged(state, track);
+    if (!selfManaged)
+      modifiedValues && objKeys(modifiedValues).forEach(key => state = recurseValidationInnerPROCEDURE(state, validatedValue[key], modifiedValues[key], track.concat(key)));
 
-function makeItems4rawValues(rawValues: any, newRawValues: any, schema: any, state: StateType) {
-  let result: UpdateItem[] = [];
-  objKeys(newRawValues).forEach(key => {
-    let changes = mergeState(rawValues[key], newRawValues[key], {arrays: 'merge', diff: true, replace: isReplaceable(schema)}).changes;
-    if (changes) recursivelySetItems(result, schema, state, ['values', key], changes)
-  });
-  return result
-}
+    let ff_validators = schemaPart.ff_validators;
 
-const getValsFromSchema: any = memoize(function (schema: JsonSchema, empty: boolean = false) {
-  return getRawValuesChanges({}, makeStateFromSchema(schema).state).values[empty ? 'inital' : 'default']; // inital is allways empty
-});
-
-function rawValuesReplaceable(schema: JsonSchema) {
-  let fn = isReplaceable(schema);
-  return (path: Path) => path.length ? fn(path.slice(1)) : false;
-}
-
-const getEmptyRawValsForSchema: any = memoize(function (schema: JsonSchema) {
-  const obj = getValsFromSchema(schema, true);
-  return {current: obj, inital: obj, 'default': obj};
-});
-
-function restoreStructure(obj: any, example: any) {
-  if (!isObject(example)) return obj;
-  let changes: any = {};
-  objKeys(example).forEach(key => {
-    if (!obj.hasOwnProperty(key)) {
-      changes[key] = example[key];
-    } else if (isObject(example[key])) {
-      let res = restoreStructure(obj[key], example[key]);
-      if (obj[key] !== res) changes[key] = res;
-    }
-  });
-  if (!objKeys(changes).length) return obj;
-  else return Object.assign({}, obj, changes);
-}
-
-function getUpdatedRawValues(rawValues: any, prevState: StateType, nextState: StateType, stuff: any, replaceRawValues?: any) {
-  const {schema, apiOpts} = stuff;
-  let rawValuesChanges = getRawValuesChanges(prevState, nextState).values;
-  if (replaceRawValues && objKeys(replaceRawValues).length < 3) replaceRawValues = restoreStructure(Object.assign({}, rawValues, replaceRawValues), getEmptyRawValsForSchema(schema));
-  let newRawValues = merge(replaceRawValues ? replaceRawValues : rawValues, rawValuesChanges, {replace: rawValuesReplaceable(schema), arrays: 'merge'});
-  const inital = getValue(newRawValues, 'inital');
-  if (apiOpts.keepEqualRawValues && nextState[SymData].status.pristine && newRawValues.current !== inital) {
-    const schemaPart = getSchemaPart(schema, []);
-    // if rawValues.current is object then it will be replaced only if deep equal with rawValues.inital (schemaPart.additionalProperties ignored and used only in validation)
-    if (schemaPart.type == 'object' && isEqual(newRawValues.current, inital, {deep: true})) { // {skipKeys: objKeys(schemaPart.properties)})) {
-      newRawValues = Object.assign({}, newRawValues);
-      newRawValues.current = inital;
-    } else if (schemaPart.type == 'array') {  // additional items (except for numeric keys, of couse) not supported by arrays, so simply replace if status.pristine == true
-      newRawValues = Object.assign([], newRawValues);
-      newRawValues.current = inital;
-    }
-  }
-  return newRawValues;
-}
-
-function makeValidation(state: any, dispath: any, action: any): Promise<void> {
-
-  function addValidatorResult2message(srcMessages: any, track: Path, result?: MessageData | { [key: string]: MessageData }, defLevel = 0) {
-    function conv(item: MessageLevelType | string): MessageLevelType {
-      return (typeof item === 'object') ? item : {level: defLevel, text: item};
-    };
-    const colors = ['', 'success', 'warning', 'danger'];  // in order of importance, higher index owerwrite lower
-    if (isObject(result)) objKeys(result as any).forEach((key) => addValidatorResult2message(srcMessages, track.concat(key), (result as any)[key], defLevel));
-    else {
-      let messages: MessageLevelType[] = isArr(result) ? (result as any).map(conv) : [conv(result as any)];
-      messages.forEach((item) => {
-        let {level, text, path, replace, type = 'danger', ...rest} = item;
-        path = track.concat((typeof path === 'string' ? string2path(path) : path) || []);
-        const fullPath = path2string(path, ['messages', level]);
-        let mData = getByKey(srcMessages, fullPath, {textArray: []});
-        mData = getByKey(validationMessages, fullPath, mData);
-        if (text) {
-          if (replace === undefined) mData.textArray.push(text);
-          else mData.textArray[replace] = text;
-        }
-        Object.assign(mData, rest);
-        const shortPath = path2string(path);
-        if (type == 'danger') {
-          let valid = validStatus[shortPath];
-          if ((isUndefined(valid) || valid || mData.textArray.length)) validStatus[shortPath] = !mData.textArray.length; // "false" overwrite null, true, undefined and never owerwritten
-        } // "null" owerwrites true, undefined and owerwritten by false, "true" owerwrites undefined and owerwritten by false and null
-        if (isUndefined(colorStatus[shortPath])) colorStatus[shortPath] = '';
-        if (mData.textArray.length && (colors.indexOf(colorStatus[shortPath]) < colors.indexOf(type))) colorStatus[shortPath] = ~colors.indexOf(type) ? type : '';
-      });
-    }
-  }
-
-  function recurseValidation(curValues: StateType, modifiedValues: StateType, track: Path = []) {
-    const data = getIn(state, track.concat([SymData]));
-    //console.log('recurseValidation track', track);
-    //console.log('objKeys(modifiedValues)', modifiedValues);
-    if (!data) return;
-    const schemaPart = getSchemaPart(schema, track);
-
-    if ((schemaPart.type == 'object' || schemaPart.type == 'array') && !getIn(schemaPart, ['x', 'values']))
-      modifiedValues && objKeys(modifiedValues).forEach(key => recurseValidation(curValues[key], modifiedValues[key], track.concat(key)));
-
-    let x = schemaPart.x;
-    if (x && x.validators) {
-      x.validators.forEach((validator: any) => {
-        let result = validator({utils, state: state, path: track, schemaPart, schema}, curValues);
-        // if (!result) return;
+    if (ff_validators) {
+      const props = {state, path: path2string(track), schema, getFromState: (...tPath: Array<string | Path>) => getFromState(state, ...tPath)};
+      ff_validators.forEach((validator: any) => {
+        let result = validator(validatedValue, props);
         if (result && result.then && typeof result.then === 'function') { //Promise
-          result.vData = {curValues, path: track};
+          result.validatedValue = validatedValue;
+          result.path = track;
+          result.selfManaged = selfManaged;
           vPromises.push(result);
-          pendingStatus[path2string(track)] = true;
-        } else addValidatorResult2message(validationMessages, track, result, 1)
+          updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, selfManaged ? ['status', 'pending'] : ['status', 'obj', 'pending'], 1, true, {macros: 'setStatus'}))
+        } else state = updateMessagesPROCEDURE(state, schema, UPDATABLE_object, track, result, 1)
       })
     }
+    return state
   }
 
-  function getUpdateItems4Messages() {
-    objKeys(validationMessages).forEach(pathString => {
-      let item = makePathItem(pathString);
-      (item as UpdateItem).value = validationMessages[pathString];
-      validationUpdates.push(item as UpdateItem)
-    });
-    objKeys(validStatus).forEach(pathString => validationUpdates.push({path: string2path(pathString), keyPath: ['status', 'valid'], value: validStatus[pathString]}));
-    objKeys(pendingStatus).forEach(pathString => validationUpdates.push({path: string2path(pathString), keyPath: ['status', 'pending'], value: pendingStatus[pathString]}));
-    objKeys(colorStatus).forEach(pathString => validationUpdates.push({path: string2path(pathString), keyPath: ['status', 'color'], value: colorStatus[pathString]}));
-    return validationUpdates;
-    // if (validationUpdates.length) dispath({
-    //   type: actionName4setItems,
-    //   items: validationUpdates,
-    //   stuff,
-    // });
+  function clearDefaultMessagesInnerPROCEDURE(state: StateType, modifiedValues: StateType, track: Path = []) {
+    const type = getIn(state, track, SymData, 'fData', 'type');
+    if (!type) return state;
+    if (type == 'object' || type == 'array')
+      modifiedValues && objKeys(modifiedValues).forEach(key => clearDefaultMessagesInnerPROCEDURE(state, modifiedValues[key], track.concat(key)));
+    return updateMessagesPROCEDURE(state, schema, UPDATABLE_object, track); // sets empty array for 0-level messages
   }
 
-  function clearDefaultMessages(modifiedValues: StateType, track: Path = []) {
+  let {api, force, opts, promises} = action;
+  const schemaDataObj = api.schema[SymData];
+  const {JSONValidator, schema, getState} = api;
+  const currentValues = state[SymData].current;
+  const pendingStatus = {};
+  const vPromises: vPromisesType[] = [];
 
-    const data = getIn(state, track.concat([SymData]));
-    if (!data) return;
-    if (data.schemaData.type == 'object' || data.schemaData.type == 'array')
-      modifiedValues && objKeys(modifiedValues).forEach(key => clearDefaultMessages(modifiedValues[key], track.concat(key)));
-    addValidatorResult2message(validationMessages, track); // sets empty array for 0-level messages
-  }
+  let UPDATABLE_object = {update: {}, replace: {}};
 
-  let {stuff, force, opts, promises} = action;
-  const schemaDataObj = stuff.schema[SymData];
-  const {JSONValidator, schema, getState} = stuff;
-
-  // const state = getState();
-  const currentValues = state[SymData]['rawValues'].current; // getRawValues().current;
-  // const newValues = state[SymData]['rawValues'].current;
-  let validStatus = {};
-  let pendingStatus = {};
-  let colorStatus = {};
-  let validationMessages: any = {};
-  let validationUpdates: UpdateItem[] = [];
-  const vPromises: any[] = [];
-
-  const modifiedValues = force === true ? currentValues : force; //
-  if (!modifiedValues || objKeys(modifiedValues).length == 0) {
+  const modifiedValues = force === true ? currentValues : force;
+  if (!modifiedValues || objKeys(modifiedValues).length == 0) { // no changes, no validation
     promises.resolve();
     promises.vAsync.resolve();
     return state;
-  }  // no changes, no validation
-
-  clearDefaultMessages(modifiedValues);
-  let errs = JSONValidator(currentValues);
-  errs.forEach((item: any) => addValidatorResult2message(validationMessages, item[0], item[1])); // Validate, using JSONSchemaValidator;
-  recurseValidation(currentValues, modifiedValues);
-  let items = getUpdateItems4Messages();
-  let mergeOptions = {arrays: 'merge'};
-  state = setStateChanges(state, {items, stuff, type: actionName4setItems, mergeOptions});
+  }
+  if (JSONValidator) {
+    state = clearDefaultMessagesInnerPROCEDURE(state, modifiedValues);
+    let errs = JSONValidator(currentValues);  // Validate, using JSONSchemaValidator;
+    errs.forEach((item: any) => updateMessagesPROCEDURE(state, schema, UPDATABLE_object, item[0], item[1]));
+  }
+  state = recurseValidationInnerPROCEDURE(state, currentValues, modifiedValues);
+  state = setValidStatusPROCEDURE(state, schema, UPDATABLE_object);
+  state = mergeStatePROCEDURE(state, UPDATABLE_object);
   promises.resolve();
   if (vPromises.length) {
-    validationMessages = {};
-    validStatus = {};
-    validationUpdates = [];
     Promise.all(vPromises).then((results) => {
-      let newValues = getState()[SymData]['rawValues'].current; //getRawValues().current;
+      let state = getState();
+      let UPDATABLE_object = {update: {}, replace: {}};
+      let newValues = state[SymData].current; //getRawValues().current;
       for (let i = 0; i < vPromises.length; i++) {
         if (!results[i]) continue;
-        let {curValues, path} = vPromises[i].vData;
-        if (curValues == getIn(newValues, path)) {
-          addValidatorResult2message(validationMessages, path, results[i], 2);
-          pendingStatus[path2string(path)] = false;
+        let {validatedValue, path, selfManaged} = vPromises[i];
+        if (validatedValue == getIn(newValues, path)) {
+          state = updateMessagesPROCEDURE(state, schema, UPDATABLE_object, path, results[i], 2);
+          state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, selfManaged ? ['status', 'pending'] : ['status', 'obj', 'pending'], -1, false, {macros: 'setStatus'}))
+          // pendingStatus[path2string(path)] = false;
         }
       }
-      let items = getUpdateItems4Messages();
-      dispath({type: actionName4setItems, items, stuff, mergeOptions});
+      state = setValidStatusPROCEDURE(state, schema, UPDATABLE_object);
+      state = mergeStatePROCEDURE(state, UPDATABLE_object);// merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace});
+      dispatch({type: actionNameSetState, state, api});
       promises.vAsync.resolve();
-    }).catch(reason => promises.vAsync.reject(reason))
+    }).catch(reason => {
+      let state = getState();
+      let UPDATABLE_object = {update: {}, replace: {}};
+      let newValues = state[SymData].current; //getRawValues().current;
+      for (let i = 0; i < vPromises.length; i++) {
+        let {validatedValue, path, selfManaged} = vPromises[i];
+        if (validatedValue == getIn(newValues, path)) {
+          state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, selfManaged ? ['status', 'pending'] : ['status', 'obj', 'pending'], -1, false, {macros: 'setStatus'}))
+        }
+      }
+      state = setValidStatusPROCEDURE(state, schema, UPDATABLE_object);
+      state = merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace});
+      dispatch({type: actionNameSetState, state, api});
+      promises.vAsync.reject(reason);
+    })
   } else promises.vAsync.resolve();
   return state;
 }
 
-function execActions(dispath: any) {
+function setDirtyPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, inital: any, current: any, track: Path = []) {
+  if (current === inital) return state;
+  let schemaPart;
+  try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {}
+
+  if (!schemaPart || isSelfManaged(state, track)) { //direct compare
+    let path: Path = schemaPart ? track : track.slice(0, -1);
+    state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['status', 'dirty'], 1, false, {macros: 'setStatus'}))
+  } else {
+    let keys = objKeys(Object.assign({}, inital, current));
+    keys.forEach(key => state = setDirtyPROCEDURE(state, schema, UPDATABLE_object, getIn(inital, key), getIn(current, key), track.concat(key)))
+  }
+  return state
+}
+
+function updateDirtyPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, inital: any, currentChanges: any, track: Path = [], forceDirty = false) {
+  let schemaPart;
+  try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {}
+  if (!schemaPart || isSelfManaged(state, track)) { //direct compare
+    let current = getIn(state, SymData, 'current', track);
+    let value = forceDirty || current !== inital ? 1 : -1;
+    let path: Path = schemaPart ? track : track.slice(0, -1);
+    state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['status', 'dirty'], value, false, {macros: 'setStatus',}))
+  } else {
+    let keys = objKeys(currentChanges || {});
+    if (schemaPart.type == 'array') {
+      let existKeys = branchKeys(getIn(state, track));
+      keys = keys.filter(k => isNaN(parseInt(k)) || ~existKeys.indexOf(k))
+    }
+    // if (schemaPart.type == 'array' && !~keys.indexOf('length')) keys.push('length');
+    forceDirty = forceDirty || !isMergeable(inital);
+    keys.forEach(key => state = updateDirtyPROCEDURE(state, schema, UPDATABLE_object, getIn(inital, key), currentChanges[key], track.concat(key), forceDirty))
+  }
+  return state
+}
+
+function setCurrentPristine(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, inital: any, track: Path = []) {
+  if (getIn(UPDATABLE_object.update, track, SymData, 'status', 'pristine')) {
+    if (isMergeable(inital) && getIn(state, SymData, 'current', track) !== inital) {
+      setIn(UPDATABLE_object.update, inital, SymData, 'current', track);
+      setIn(UPDATABLE_object.replace, true, SymData, 'current', track);
+    }
+  } else {
+    objKeys(getIn(UPDATABLE_object.update, track)).forEach(key => setCurrentPristine(state, schema, UPDATABLE_object, getIn(inital, key), track.concat(key)))
+  }
+  return state
+}
+
+function updateState(dispatch: any) {
   // console.time('execActions');
 
-  let {actions, stuff, forceValidation, opts, promises} = this;
-  let {getState, schema} = stuff;
-  let state = getState();
+  let {updates, state, api, forceValidation, opts, promises} = this;
+  let {getState, schema} = api;
+  if (!state) state = getState();
   let prevState = state;
-  let rawValues = getIn(prevState, SymData, 'rawValues') || {};
-  let prevRawValues = rawValues;
-  // console.log(actions);
-  for (let i = 0; i < actions.length; i++) {
-    let action = actions[i];
-    if (action.state) { // replace state and rawValues, expecting state to be validated, don't use it for inital set
-      state = action.state;
-      rawValues = getIn(prevState, SymData, 'rawValues');
-      if (!rawValues) rawValues = getUpdatedRawValues(rawValues, prevState, state, stuff); // inital rawValues build, validaion needed
-      else prevRawValues = rawValues; // if raw values already present then skip validation
-    } else {
-      if (action.items) state = setStateChanges(state, {items: action.items, stuff, type: actionName4setItems}); // dispath(actionUpdateState(action.items, stuff));
-      else if (action.rawValues) state = setStateChanges(state, {items: [{path: [], keyPath: ['api', 'setRawValues'], value: {prevRaw: rawValues, newRaw: action.rawValues}}], stuff, type: actionName4setItems}); // dispath(actionUpdateState(makeItems4rawValues(rawValues, action.rawValues, schema), stuff));
-      rawValues = getUpdatedRawValues(rawValues, prevState, state, stuff, action.rawValues);
-    }
-    prevState = state;
-  }
+  let UPDATABLE_object: PROCEDURE_UPDATABLE_objectType = {update: {}, replace: {}};
 
-  if (prevRawValues !== rawValues) state = merge(state, makeSlice(SymData, 'rawValues', rawValues), {replace: makeSlice(SymData, 'rawValues', true)});
+  updates.forEach((update: StateApiUpdateType) => state = updateStatePROCEDURE(state, schema, UPDATABLE_object, update));
+  state = mergeStatePROCEDURE(state, UPDATABLE_object);
+
+  let currentChanges = mergeState(getIn(prevState, SymData, 'current'), getIn(state, SymData, 'current'), {diff: true}).changes;
+  if (prevState[SymData].inital !== state[SymData].inital) {  // check dirty for all
+    state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], ['status', 'dirty'], 0, false, {macros: 'switch'}));  //reset all dirty
+    state = setDirtyPROCEDURE(state, schema, UPDATABLE_object, state[SymData].inital, state[SymData].current);
+  } else if (currentChanges)
+    state = updateDirtyPROCEDURE(state, schema, UPDATABLE_object, state[SymData].inital, currentChanges); // check dirty only for changes
+  state = setCurrentPristine(state, schema, UPDATABLE_object, state[SymData].inital);
+  state = mergeStatePROCEDURE(state, UPDATABLE_object);
 
   if (opts.noValidation) {
     promises.resolve();
     promises.vAsync.resolve();
-  } else {
-    let force = forceValidation === true ? true : merge(forceValidation || {}, mergeState(prevRawValues['current'], rawValues['current']).changes);
-    state = makeValidation(state, dispath, {force, stuff, opts, promises})
+  } else if (forceValidation !== false) {
+    UPDATABLE_object = {update: {}, replace: {}};
+    let force = forceValidation === true ? true : currentChanges; //merge(forceValidation || {}, mergeState(prevRawValues['current'], rawValues['current']).changes);
+    state = makeValidation(state, dispatch, {force, api, opts, promises});
+    // state = merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace});
   }
-  dispath({type: actionNameReplaceState, state, stuff});
+  dispatch({type: actionNameSetState, state, api});
 
   // console.timeEnd('execActions');
   return promises;
 
 }
+
+let formReducerValue = 'fforms';
 
 function getFRVal() {
   return formReducerValue
@@ -789,19 +597,10 @@ function formReducer(name?: string): any {
     return storageState
   }
 
-  reducersFunction[actionName4setItems] = (state: any, action: SetItemsType): any => {
-    if (action.stuff.name) return replaceFormState(state, action.stuff.name, setStateChanges(state[action.stuff.name], action));
-    return setStateChanges(state, action);
-  };
-
-  reducersFunction[actionNameReplaceState] = (state: any, action: any): any => {
-    if (action.stuff.name) return replaceFormState(state, action.stuff.name, action.state);
+  reducersFunction[actionNameSetState] = (state: any, action: any): any => {
+    if (action.api._props.store) return replaceFormState(state, action.api.name, action.state);
     return action.state
   };
-
-  // reducersFunction[actionNameSetRawValues] = (state: any, action: SetRawValuesType): any => {
-  //   return merge(state, makeSlice(SymData, 'rawValues', action.rawValues), {replace: makeSlice(SymData, 'rawValues', true)});
-  // };
 
   return (state: any = {}, action: ActionType) => {
     let reduce = reducersFunction[action.type];
@@ -811,204 +610,10 @@ function formReducer(name?: string): any {
 
 
 /////////////////////////////////////////////
-//  API
+//  Actions names
 /////////////////////////////////////////////
 
+const actionNameSetState = 'FFROM_SET_STATE';
+const actionNameUpdateState = 'FFROM_UPDATE_STATE';
 
-function apiCreator(schema: JsonSchema, name: string, dispath: any, getState: () => StateType, setState: (state: any) => any, keyMap: any, hooks: HooksObjectType, JSONValidator: any, apiOpts: APICreateOptsType): FormApi {
-  let api: any = {};
-  let noExec = 0;
-  let apiResultPromises: any;
-  let items: UpdateItem[] = [];
-  let batchedActions: any[] = [];
-  let forceValidation: StateType | boolean = false;
-  let dispathAction: (action: any) => Promise<void> = dispath;
-  let defferedTimerId: any;
-  let stateChanges = new Map();
-  // let rawValues = {};
-  const APIDefaultOpts = {execute: true};
-  const stuff = {JSONValidator, hooks, getState, schema, name, keyMap, api, apiOpts};
-  api.getState = getState;
-
-  function apiPromises(reset?: true): apiPromises {
-    if (reset) apiResultPromises = null;
-    if (!apiResultPromises) {
-      apiResultPromises = new exoPromise();
-      apiResultPromises.vAsync = new exoPromise();
-    }
-    return apiResultPromises;
-  }
-
-  function clearActions() {
-    defferedTimerId = null;
-    forceValidation = false;
-    items = [];
-    stateChanges.clear();
-    batchedActions = [];
-    apiPromises(true);
-  }
-
-  function execBatch(actions: any[], items: UpdateItem[], opts: APIOptsType, promises: any, forceValidation: StateType | boolean) {
-    if (items.length) actions.push({items});
-    clearActions();
-    dispath(actionExecActions(actions, stuff, forceValidation, opts, promises));
-    return promises;
-  }
-
-  function setExecution(addItems: any, opts: APIOptsType = APIDefaultOpts) {
-    if (addItems.length) push2array(items, addItems);
-    // console.log('---------------- added items', items);
-    if (opts.force === true && noExec > 0) noExec--;
-    let promises = apiPromises();
-    if (opts.execute === false || noExec) return promises;
-    if (defferedTimerId) clearTimeout(defferedTimerId);
-    if (opts.returnItems && opts.execute === true) {
-      let result = items;
-      clearActions();
-      return result;
-    }
-    if (typeof opts.execute == 'number') {
-      if (opts.execute > 0) defferedTimerId = setTimeout(execBatch.bind(null, batchedActions, items, opts, promises, forceValidation), opts.execute)
-    } else execBatch(batchedActions, items, opts, promises, forceValidation);
-    return promises;
-  }
-
-  api.getStateChanges = (state: any) => {
-    if (!stateChanges.has(state)) stateChanges.set(state, mergeState(getState(), state, {diff: true}).changes);
-    return stateChanges.get(state);
-  };
-
-  api.noExec = () => {noExec++;};
-
-  api.execute = (opts: (APIOptsType) = {execute: true}) => {
-    return setExecution([], opts);
-  };
-
-  api.replaceState = (state: StateType, opts: APIOptsType = APIDefaultOpts) => {
-    // if (items.length) batchedActions.push({items});
-    // batchedActions.push({state});
-    items = [];
-    batchedActions = [{state}];
-    return setExecution([], opts);
-  };
-
-  api.validate = (forceValidate: boolean | StateType | string[] | string = true, opts: APIOptsType = APIDefaultOpts) => {
-    if (forceValidate === false) forceValidation = false;
-    else if (forceValidation !== true) {
-      if (typeof forceValidate === 'string') forceValidate = [forceValidate];
-      if (isArr(forceValidate)) {
-        let result = {};
-        forceValidate.forEach(value => getByKey(result, string2path(value)));
-        forceValidate = result;
-      }
-      if (forceValidate === true) forceValidation = true;
-      else forceValidation = merge(forceValidation || {}, forceValidate);
-    }
-    return setExecution([], opts);
-  };
-
-  api.get = (...pathes: Array<string | Path>): any => get(getState(), ...pathes);
-
-  api.set = (path: string | Path, value: any, opts: APIOptsType & { replace?: boolean } = APIDefaultOpts) => {
-    let item = makeUpdateItem(path, value);
-    if (opts.replace) item.opts = {replace: makeSlice(val2path(path), true)};
-    return setExecution([item], opts);
-  };
-
-  api.setMultiply = (path: string | Path, value: any, opts: APIOptsType & { skipFields?: string[] } = APIDefaultOpts) => {
-    let items: PathItem[] = makeArrayOfPathItem(path);
-    if (opts.skipFields) items = items.filter(item => !(~(opts as any).skipFields.indexOf(item.path[item.path.length - 1])));
-    items.forEach(item => (item as UpdateItem).value = value);
-    return setExecution(items, opts);
-  };
-
-  api.setExceptMultiply = (path: string | Path, value: any, opts: APIOptsType & { skipFields?: string[] } = APIDefaultOpts) => {
-    let items: PathItem[] = makeArrayOfPathItem(path);
-    const obj: any = {};
-    const result: UpdateItem[] = [];
-    items.forEach(item => {
-      let key = item.path.slice(0, -1).concat(item.keyPath ? push2array(['@'], item.keyPath) : []).join('/');
-      if (!obj[key]) obj[key] = [];
-      obj[key].push(item.path[item.path.length - 1]);
-    });
-    const state = (opts.getState || getState)();
-    objKeys(obj).forEach(pathString => {
-      const pathItem = makePathItem(pathString);
-      let keys = getKeysAccording2schema(state, pathItem.path); // objKeys(getIn());
-      obj[pathString].forEach((key2del: string) => ~keys.indexOf(key2del) && keys.splice(keys.indexOf(key2del), 1));
-      keys.forEach(key => result.push({path: pathItem.path.concat(key), keyPath: pathItem.keyPath, value}))
-    });
-    items = result;
-    if (opts.skipFields) items = items.filter(item => !(~(opts as any).skipFields.indexOf(item.path[item.path.length - 1])));
-    return setExecution(items, opts);
-  };
-
-  api.getValues = (opts: APIOptsType & { valueType?: 'current' | 'inital' | 'default', flatten?: boolean } = {}): any => {
-    let rawValues = (opts.getState || getState)()[SymData]['rawValues'];
-    if (opts.valueType) return opts.flatten ? keyMap.flatten(rawValues[opts.valueType]) : rawValues[opts.valueType];
-    if (!opts.flatten) return rawValues;
-    let res = {};
-    objKeys(rawValues).forEach(key => res[key] = keyMap.flatten(rawValues[key]));
-    return res;
-  };
-
-  api.setValues = (vals: any, opts: APIOptsType & { valueType?: 'current' | 'inital' | 'default', flatten?: boolean } = APIDefaultOpts) => {
-    let properRawValues = {};
-    if (opts.valueType) properRawValues[opts.valueType] = vals;
-    else properRawValues = vals;
-    if (opts.flatten) objKeys(properRawValues).forEach(key => properRawValues[key] = keyMap.unflatten(properRawValues[key]));
-    if (items.length) batchedActions.push({items});
-    items = [];
-    batchedActions.push({rawValues: properRawValues});
-    return setExecution([], opts);
-  };
-
-  api.getEmptyVals = (valueType: 'current' | 'inital' | 'default' = 'current') => getEmptyRawValsForSchema(schema)[valueType];
-
-  api.getActive = () => api.get([[], ['active']]);
-
-  api.arrayOps = (path: string | Path, op = 'add', opts: APIOptsType & { num?: number, values?: any[] } = APIDefaultOpts) => {
-    return setExecution([makeUpdateItem(val2path(path), ['api', 'array', op, opts.num || 1], opts.values)], opts);
-  };
-
-  api.arrayItemOps = (path: string | Path, op: 'up' | 'down' | 'first' | 'last' | 'del' | 'move' | 'shift', opts: APIOptsType & { value?: number } = APIDefaultOpts) => {
-    return setExecution([makeUpdateItem(val2path(path), ['api', 'arrayItem', op], opts.value || 0)], opts);
-  };
-
-  api.setHidden = (path: string, value = true, opts: APIOptsType = APIDefaultOpts) => {
-    const items: UpdateItem[] | PathItem[] = makeArrayOfPathItem(path);
-    items.forEach(item => {
-      (item as UpdateItem).value = value;
-      (item as UpdateItem).keyPath = ['controls', 'hidden'];
-    });
-    //return dispathAction(actionSetItems(items, stuff, false));
-    return setExecution(items, opts);
-  };
-
-  api.showOnly = (path: string, opts: APIOptsType & { skipFields?: string[] } = APIDefaultOpts) => {
-    let opts4sub = merge(opts, {execute: 0});
-    let promise = api.setMultiply(path + '/@/controls/hidden', false, opts4sub);
-    promise = api.setExceptMultiply(path + '/@/controls/hidden', true, opts4sub);
-    return setExecution([], opts);
-  };
-
-  api.selectOnly = (path: string, opts: APIOptsType & { skipFields?: string[] } = APIDefaultOpts) => {
-    let opts4sub = merge(opts, {execute: 0});
-    let promise = api.setMultiply(path + '/@/controls/omit', false, opts4sub);
-    promise = api.setExceptMultiply(path + '/@/controls/omit', true, opts4sub);
-    return setExecution([], opts);
-  };
-
-  api.selectNshow = (path: string, opts: APIOptsType & { skipFields?: string[] } = APIDefaultOpts) => {
-    let opts4sub = merge(opts, {execute: 0});
-    api.showOnly(path, opts4sub);
-    api.selectOnly(path, opts4sub);
-    return setExecution([], opts);
-  };
-
-  return api
-}
-
-export {getFRVal, apiCreator, getRawValuesChanges, formReducer, getValsFromSchema, Hooks}
-
-export {getValueFromUpdateItemIfExists}
+export {getFRVal, FFormStateAPI, formReducer, fformCores}

@@ -1,5 +1,5 @@
 import {fieldPropsSchema} from './FFEditor';
-import {getIn, merge, push2array, getByKey} from "./core/commonLib";
+import {getIn, merge, push2array, getCreateIn} from "./core/commonLib";
 
 const objKeys = Object.keys;
 const symbolMarker = '#@>';
@@ -136,8 +136,7 @@ function formValues2JSON(formValues: any, __EXTERNAL__: any = {}): any {
           items[field.name] = formValues2JSON(field, __EXTERNAL__)
         }
         fields.push(lastField);
-      }
-      else if (isFObjectSchema(field)) fields.push(formObj2JSON(field, __EXTERNAL__));
+      } else if (isFObjectSchema(field)) fields.push(formObj2JSON(field, __EXTERNAL__));
       else if (isFGroupSchema(field)) {
         let res = getFieldsAndProps(field.object.fields);
         if (isArray) push2array(items, res.items); else items = merge(items, res.items);
@@ -258,9 +257,8 @@ function JSON2formValues(JSONValues: any, name?: string) {
     pItems = JSONValues[basicPropName];
     if (typeof JSONValues[additionPropName] == 'object') {
       additionPItem = JSONValues[additionPropName];
-      getByKey(jsonProps, groupName)[additionPropName] = 2;  // object id
-    }
-    else if (JSONValues[additionPropName] !== undefined) getByKey(jsonProps, groupName)[additionPropName] = JSONValues[additionPropName] ? 1 : 0; // true, false ids
+      getCreateIn(jsonProps, {}, groupName)[additionPropName] = 2;  // object id
+    } else if (JSONValues[additionPropName] !== undefined) getCreateIn(jsonProps, {}, groupName)[additionPropName] = JSONValues[additionPropName] ? 1 : 0; // true, false ids
     let restKeys = objKeys(pItems);
     result['object'] = {fields: makeFormFields(xJSONValues['fields'], restKeys)};
     restKeys.forEach(key => result['object'].fields.push(JSON2formValues(pItems[key], key)));
@@ -329,7 +327,7 @@ function JSONform2js(JSONValues: any) {
       let dataMapResult = xProps['dataMap'].map((dmObj: any) => '[' + JSON.stringify(dmObj[0]) + ',' + JSON.stringify(dmObj[1]) + (dmObj[2] ? ',' + dmObj[2] : '') + ']');
       xResult.push('"dataMap":[' + dataMapResult.join(',') + ']');
     } else if (xkey == 'fields') {
-      xResult.push('"fields":' + makeJSFields(xProps['fields']))
+      xResult.push('"_fields":' + makeJSFields(xProps['fields']))
 
     } else if (xkey == 'validators') {
       xResult.push('"validators": [' + xProps['validators'].join(',') + ']')

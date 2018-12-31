@@ -1,114 +1,136 @@
 declare type mixed = string | number | boolean | null | {}
 declare type Path = Array<string | number | symbol | any>;  // [Path, Path, any] | [Path, any]
 declare type PathItem = { path: Path, keyPath?: Path, fullPath?: Path };
-declare type UpdateItem = PathItem & { value: any, opts?: MergeStateOptionsArgument };
 declare type MapValuesItem = { from: PathItem, to: PathItem, fn: any };
+declare type StateApiUpdateType = { path: any, value: any, replace?: boolean, macros?: string, [key: string]: any };
+declare type NormalizedUpdateType = { path: Path, value: any, replace?: boolean, [key: string]: any };
+
 
 declare type PathSlice = Array<string | number | any | Array<string | number | any>>;
-declare type MessageData = Array<MessageLevelType | string> | MessageLevelType | string;
+declare type MessageData = Array<MessageGroupType | string> | MessageGroupType | string;
 
-type MessageLevelType = {
-  level: number;
-  text: string;
-  replace?: number;
-  path?: Path;
-  hidden?: boolean;
-  hiddenBind?: boolean;
-  type?: 'danger' | 'warning' | 'success' | 'info' | 'notice';
+type MessageGroupType = {
+  group?: number;
+  text: string | string[];
+  priority?: number;  // 0 and below means validation failed, else if priority > 0 message considered valid 
+  path?: Path | string;
+  className?: string;
+  inputClassName?: string;  // className for input choosen from the message with lowest priority
+
+
+  // replace?: number;
+  // hidden?: boolean;
+  // hiddenBind?: boolean;
+  // type?: 'danger' | 'warning' | 'success' | 'info' | 'notice';
+
 }
 
+interface anyObject {
+  [key: string]: any;
 
-interface BasicData {
+  [key: number]: any;
+}
+
+type StateType = { [key: string]: BasicData } | { [key: number]: BasicData };
+
+type PROCEDURE_UPDATABLE_objectType = { update: StateType, replace: StateType }
+
+interface BasicData extends anyObject {
   value?: any;
-  params?: ParamsTypeField
+  length?: number;
+  params?: FFParamsType
   fData: {
-    inital?: any;
-    'default'?: any;
-    title: string;  // true if ALL children true
-    type: string; // true if ALL children true
-    required: boolean; // false if ALL children false
+    title: string;  //
+    type: string; //
+    required: boolean; // 
+    canAdd?: boolean;
   };
-  array?:{
-    length: number;
-    canAdd: boolean;
-    canUp: boolean;
-    canDown: boolean;
-    canDel: boolean;
-  }
   arrayItem?: {
     canUp?: boolean;
     canDown?: boolean;
     canDel?: boolean;
   }
   status: {
-    color?: 'danger' | 'warning' | 'success' | '';
-    valid: boolean;  // true if ALL children true, null if ANY children null, otherwise false
-    pristine: boolean;  // true if ALL children true
-    touched: boolean; // true if ALL children true
-    pending: boolean; // false if ALL children false
+    obj: {
+      invalid?: boolean;
+      pending?: boolean;
+    };
+    currentPriority: number;
+    invalid: number;  // 0 if ALL children 0
+    dirty: number;  // 0 if ALL children 0
+    untouched: number; // 0 if ALL children 0
+    pending: number; // 0 if ALL children 0
+    valid: boolean; // null if pending else !invalid
+    pristine: boolean; // !dirty
+    touched: boolean; // !untouched
   }
   messages?: { [key: number]: MessagesDataType };
-  controls: controlType;
+  controls: FFControlsType;
+
 }
 
 interface MessagesDataType {
-  textArray: string[];
-  hidden?: boolean;
-  hiddenBind?: boolean;
-  type?: MessageType;
+  priority: number;
+  textGroups: string[][];
+  skip?: boolean;
+  className?: any;
 }
 
-interface ParamsTypeField {
+interface FFParamsType {
   liveValidate?: boolean;
   autofocus?: boolean;
   placeholder?: string;
 }
 
-type controlType = {
+interface FFPropsType {
+  flatten?: boolean | string; // prefix if string
+  managed?: boolean;
+  keyField?: string,
+}
+
+type FFControlsType = {
   readonly?: boolean;
-  readonlyBind?: boolean;
   disabled?: boolean;
-  disabledBind?: boolean; // bind value if not undefined and ignores "disabled" value
   hidden?: boolean;
-  hiddenBind?: boolean; // bind value if not undefined and ignores "show" value
-  omit?: boolean;
-  omitBind?: boolean;
+  norender?: boolean;
 }
 
 type MessageType = 'danger' | 'warning' | 'success' | 'info' | 'notice' | '';
 
-interface MessageResultType {
-  text: string;
-  level?: number;
-  type: MessageType;
-  classes?: string | string [];
-  style?: styleType;
-  clearOnValidate?: boolean;
-}
+// interface MessageResultType {
+//   text: string;
+//   level?: number;
+//   type: MessageType;
+//   classes?: string | string [];
+//   style?: styleType;
+//   // clearOnValidate?: boolean;
+// }
 
 type styleType = { [key: string]: string | number }
-type DataMapType = [string, string, MapFunction] | [string, string]
-// type ResolvedMapType = [[Path, Path|undefined], [Path, Path|undefined], MapFunction | undefined]
-// type MapTypeShort = [string, MapFunction | undefined]
-type MapFunction = (value: any) => any;
 
-interface FormData extends BasicData {
-  active: Array<string | number>;
-  formValue: any;
-}
 
-interface ControlsType {
-  readonly?: boolean;
-  readonlyBind?: boolean;
-  disabled?: boolean;
-  disabledBind?: boolean;
-  hidden?: boolean;
-  hiddenBind?: boolean;
-  omit?: boolean;
-  omitBind?: boolean;
-}
+type DataMapStateType = { emitter: Path, from: string, to: string, fn: MapFunctionType | true | undefined }; //{ fromPath: Path, fromKeyPath: Path, to: string, fn: MapFunctionType | false }
+
+// type ResolvedMapType = [[Path, Path|undefined], [Path, Path|undefined], MapFunctionType | undefined]
+// type MapTypeShort = [string, MapFunctionType | undefined]
+type MapFunctionType = (value: any, props: MapPropsType) => any;
+
+type MapPropsType = { path: string, pathTo: string, schema: JsonSchema, getFromState: (...pathes: Array<string | Path>) => any };
+
+
+// interface FormData extends BasicData {
+//   active: Array<string | number>;
+//   current: any;
+//   inital: any;
+// }
 
 
 type makeDataObjectResult = { data: BasicData, dataMap: StateType }
 
-type ObjectDataStorageForSchema = { [key: string]: any } & { [symbol: string]: { isArray: boolean, length: number, addable: boolean } }
+type ObjectDataStorageForSchema = { [key: string]: any } & { [symbol: string]: { isArray: boolean, length?: number, addable: boolean } }
+
+type vPromisesType = Promise<any> & {
+  validatedValue: any,
+  path: Path,
+  selfManaged: boolean;
+}

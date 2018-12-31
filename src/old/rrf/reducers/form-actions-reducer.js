@@ -174,7 +174,7 @@ export default function formActionsReducer(state, action, localPath) {
         : !validity;
 
       // If the field is a form, its validity is
-      // also based on whether its fields are all valid.
+      // also based on whether its _fields are all valid.
       const areFieldsValid = (field && field.$form)
         ? fieldsValid(field)
         : true;

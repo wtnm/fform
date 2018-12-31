@@ -1,10 +1,9 @@
 import * as React from 'react';
 import {render} from 'react-dom';
-import {FForm, FFormCore, selectorMap, basicObjects, getFieldBlocks,} from './core/core';
+import {FForm, FFormStateAPI, selectorMap, basicObjects, getFieldBlocks,} from './core/components';
 
-import {getValsFromSchema} from './core/api'
-import {not, getIn, memoize, merge, push2array} from './core/commonLib'
-import {UpdateItems, getValue, getBindedValue, makePathItem} from './core/stateLib'
+import {not, getIn, memoize, merge, push2array, isArray, isObject} from './core/commonLib'
+import {stateUpdates, getBindedValue, string2NUpdate, getDefaultFromSchema} from './core/stateLib'
 
 import {formValues2JSON, formObj2JSON, isFFieldSchema, isFGroupSchema, isFObjectSchema} from './constructorLib';
 // import 'react-select/dist/react-select.css';
@@ -12,7 +11,6 @@ import {formValues2JSON, formObj2JSON, isFFieldSchema, isFGroupSchema, isFObject
 import {Creatable} from 'react-select';
 
 const Select = require('react-select').default;
-import {isArray, isObject} from "util";
 
 
 const objKeys = Object.keys;
@@ -86,7 +84,7 @@ class loadableSelectWidget extends React.Component<any, any> {
     else {
       const pFField = self.props.pFField;
       const {pFForm, path} = this.props.pFField;
-      pFForm.api.set(path + '/@/values/current', Array.isArray(options) ? options.map((item: any) => item.value) : options && options.value, {execute: 1})
+      pFForm.api.set(path + '/@/value', isArray(options) ? options.map((item: any) => item.value) : options && options.value, {execute: 1})
     }
     // self.options = [];
     self.forceUpdate();
@@ -97,7 +95,8 @@ class loadableSelectWidget extends React.Component<any, any> {
     const props = this.props;
     const {pFField, loadOption, onChange, value = [], ...rest} = props;
     return (<div className='fform-body-block'>
-      <Select value={ value.map((value: string) => {return {value, label: value}})} {...rest} options={self.options} onChange={self._onChange} onMenuOpen={self._loadOptions}/>
+      <Select value={isArray(value) ? value.map((value: string) => {return {value, label: value}}) : {value, label: value}}
+              options={self.options} onChange={self._onChange} onMenuOpen={self._loadOptions} {...rest} />
     </div>)
   }
 }
@@ -116,7 +115,7 @@ class moveToSelectWidget extends React.Component<any, any> {
   _loadOptions() {
     const self = this;
     const parent = getTopParent(self.props.pFField.pFForm.parent);
-    const fields = parent.pFForm.api.getValues().current.object.fields;
+    const fields = parent.pFForm.api.getValue().object.fields;
     self.options = [];
     for (let i = 0; i < fields.length; i++) {
       let field = fields[i];
@@ -130,9 +129,9 @@ class moveToSelectWidget extends React.Component<any, any> {
     const parent = getTopParent(self.props.pFField.pFForm.parent);
     const fieldsApi = parent.pFForm.api;
     const fieldsPath = parent.self.props.path.split('/').slice(0, -1).join('/') + '/' + option.value;
-    let obj = fieldsApi.get(fieldsPath + '/@/values/current');
+    let obj = fieldsApi.get(fieldsPath + '/@/value');
     fieldsApi.arrayItemOps(fieldsPath, 'del', {execute: 1});
-    self.props.pFField.pFForm.api.arrayOps('#/object/fields', 'add', {execute: 1, values: [obj]});
+    self.props.pFField.pFForm.api.arrayAdd('#/object/fields', [obj]);
     self.options = [];
     self.forceUpdate();
   }
@@ -166,7 +165,7 @@ let editFormObjects = basicObjects.extend({
           className: 'white-button',
           titles: {'del': 'delete'},
           onClick: function (key: string) {
-            this.pFForm.api.arrayItemOps(this.field.props.path, key, {execute: true})
+            this.pFForm.api.arrayItemOps(this.field.path, key, {execute: true})
           }
         }
       }
@@ -183,7 +182,7 @@ let editFormObjects = basicObjects.extend({
         isMulti: true,
         onChange: function (values: any) {
           let vals = values.map((item: any) => item.value);
-          this.pFForm.api.set(this.field.props.path + '/@/values/current', vals, {execute: 1});
+          this.pFForm.api.set(this.field.path + '/@/value', vals, {execute: 1});
         },
         propsMap: {
           fieldType: 'fieldType'
@@ -225,45 +224,46 @@ const expandButtonObject = {
     return <button {...rest}>{props.expanded ? <span>&minus;</span> : '+'} </button>
   },
   onClick: function (key: string) {
-    let path = this.field.props.path + '/@/expanded';
+    let path = this.field.path + '/@/expanded';
     this.pFForm.api.set(path, !this.pFForm.api.get(path), {execute: true})
   },
   propsMap: {expanded: 'expanded', disabled: 'expandedDisabled'},
   type: 'button',
-  className: "white-button collapse-props-button",
+  className: "white-button collapse-_props-button",
 };
 
 const addButtonsObject = {
   widget: (props: any) => {
     const {text, onClick, buttonProps, fieldType, addOnlyFields, ...rest} = props;
-    if (addOnlyFields) return (<span {...rest}><button onClick={onClick(getValsFromSchema(JSONSchema))} {...buttonProps}>+field</button></span>);
+    if (addOnlyFields) return (<span {...rest}><button onClick={onClick(getDefaultFromSchema(JSONSchema))} {...buttonProps}>+field</button></span>);
     if (fieldType == 'object' || fieldType == 'array') return (
       <span {...rest}>
-        <button onClick={onClick(getValsFromSchema(JSONSchema))} {...buttonProps}>+field</button>
-        <button onClick={onClick(getValsFromSchema(groupSchema))} {...buttonProps}>+group</button>
-        <button onClick={onClick(getValsFromSchema(objectSchema))} {...buttonProps}>+object</button>
+        <button onClick={onClick(getDefaultFromSchema(JSONSchema))} {...buttonProps}>+field</button>
+        <button onClick={onClick(getDefaultFromSchema(groupSchema))} {...buttonProps}>+group</button>
+        <button onClick={onClick(getDefaultFromSchema(objectSchema))} {...buttonProps}>+object</button>
       </span>);
     return false;
   },
   onClick: function (obj: string) {
-    const path = this.field.props.path + '/object/fields';
+    const path = this.field.path + '/object/fields';
     const api = this.pFForm.api;
-    const opts = {num: 1, values: [obj], execute: true};  // , obj, obj, obj, obj, obj, obj, obj, obj, obj, obj
+    const opts = {execute: true};  // , obj, obj, obj, obj, obj, obj, obj, obj, obj, obj
+    const value = [obj];
     return function () {
-      api.arrayOps(path, 'add', opts)
+      api.arrayAdd(path, value, opts)
     }
   },
   className: 'property-array-item-menu',
   buttonProps: {
     type: 'button',
-    className: "white-button collapse-props-button",
+    className: "white-button collapse-_props-button",
   },
   propsMap: {fieldType: 'fieldType'},
 };
 
 function getTopParent(parent: any) {
   while (parent) {
-    if (isFFieldSchema(parent.pFForm.api.getValues().current)) break;
+    if (isFFieldSchema(parent.pFForm.api.getValue())) break;
     parent = parent.pFForm.parent
   }
   return parent
@@ -274,27 +274,27 @@ const topMoveButtonObject = {
   widget: (props: any) => {
     const {text, onClick, buttonProps, pFField, ...rest} = props;
     const parent = getIn(pFField.pFForm, 'parent');
-    if (parent && parent.pFForm.api.getValues().current.hasOwnProperty('xtend')) return (<span {...rest}><button onClick={onClick(getValsFromSchema(JSONSchema))} {...buttonProps}>↰</button></span>);
+    if (parent && parent.pFForm.api.getValue().hasOwnProperty('xtend')) return (<span {...rest}><button onClick={onClick(getDefaultFromSchema(JSONSchema))} {...buttonProps}>↰</button></span>);
     return false;
   },
   onClick: function (obj: string) {
     const groupApi = this.pFForm.parent.pFForm.api;
-    const groupField = this.pFForm.parent.self;
+    const groupField = this.pFForm.parent;
     const parent = getTopParent(this.pFForm.parent);
     const fieldsApi = parent.pFForm.api;
-    const fieldsPath = parent.self.props.path.split('/').slice(0, -1).join('/');
+    const fieldsPath = parent.path.split('/').slice(0, -1).join('/');
     //const opts = {num: 1, values: [obj], execute: true};  // , obj, obj, obj, obj, obj, obj, obj, obj, obj, obj
     return function () {
-      let obj = groupApi.get(groupField.props.path + '/@/values/current');
-      groupApi.arrayItemOps(groupField.props.path, 'del', {execute: 1});
-      fieldsApi.arrayOps(fieldsPath, 'add', {execute: 1, values: [obj]});
+      let obj = groupApi.get(groupField.path + '/@/value');
+      groupApi.arrayItemOps(groupField.path, 'del', {execute: 1});
+      fieldsApi.arrayAdd(fieldsPath, [obj]);
     }
   },
   passPFField: 'pFField',
   className: 'property-array-item-menu',
   buttonProps: {
     type: 'button',
-    className: "white-button collapse-props-button",
+    className: "white-button collapse-_props-button",
   }
 };
 
@@ -303,7 +303,7 @@ const itemMenuObject = {
   widget: editFormObjects.widgets['ItemMenu'],
   buttons: ['up', 'down', 'del'],
   buttonProps: {
-    onClick: function (key: string) {this.pFForm.api.arrayItemOps(this.field.props.path, key, {execute: true})},
+    onClick: function (key: string) {this.pFForm.api.arrayItemOps(this.field.path, key, {execute: true})},
     className: 'white-button',
     titles: {'del': 'delete'}
   },
@@ -324,107 +324,101 @@ const itemMenuObjectParent = merge(itemMenuObject, {
   }
 });
 
-function objectXtend_isObject(values: any) {
-  let value = getValue(values);
+function objectXtend_isObject(value: any) {
   return value == 'object'
 }
 
-function objectXtend_isExpandable(values: any) {
-  let value = getValue(values);
+function objectXtend_isExpandable(value: any) {
   return value == 'array' || value == 'object'
 }
 
-const objectXtendDefinition = {
+const objectXtendDefinition: definitionType = {
   objectXtend: {
     type: "object",
-    x: {
-      fields: [{
-        fields: [expandButtonObject,
-          'name',
-          'type',
-          'external',
-          'value',
-          merge(arrayAddButtonObject, {onClick: function () {this.pFForm.api.arrayOps(this.field.props.path + '/valueArray', 'add', {execute: true}) }}),
-          itemMenuObject],
-        style: {flexFlow: 'row'}
-      }
-      ],
-      dataMap: [['./@/expanded', './valueArray/@/controls/hidden', not]],
-      expanded: false,
-    },
+
+    ff_fields: [{
+      fields: [expandButtonObject,
+        'name',
+        'type',
+        'external',
+        'value',
+        merge(arrayAddButtonObject, {onClick: function () {this.pFForm.api.arrayAdd(this.field.path + '/valueArray', 1, {execute: true}) }}),
+        itemMenuObject],
+      style: {flexFlow: 'row'}
+    }
+    ],
+    ff_dataMap: [['./@/expanded', './valueArray/@/controls/hidden', not]],
+    ff_data: {expanded: false},
     properties: {
       name: {
         type: "string",
-        x: {
-          params: {placeholder: 'Enter name...'},
-          // controls: {hiddenBind: false, omitBind: false},
-          custom: {
-            blocks: {Array: false}, //false
-          }
+
+        ff_params: {placeholder: 'Enter name...'},
+        // controls: {hiddenBind: false, omitBind: false},
+        ff_custom: {
+          blocks: {Array: false}, //false
         }
+
       },
       type: {
         // title: 'type',
         type: "string",
         'default': 'string',
-        x: {
-          preset: 'select',
-          // controls: {hiddenBind: false, omitBind: false},
-          dataMap: [
-            ['./@/values', '../@/expanded', objectXtend_isExpandable],
-            ['./@/values', '../valueArray/@/controls/hidden', (values: any) => !objectXtend_isExpandable(values)],
-            ['./@/values', '../value/@/controls/readonly', objectXtend_isExpandable],
-            ['./@/values', '../@/expandedDisabled', (values: any) => !objectXtend_isExpandable(values)],
-            ['./@/values', '../@/addDisabled', (values: any) => !objectXtend_isExpandable(values)],
-            ['./@/values', '../external/@/controls/hidden', (values: any) => !objectXtend_isObject(values)],
-            ['./@/values', '../value/@/controls/hidden', (values: any) => objectXtend_isObject(values)],
-          ],
-        },
+
+        ff_preset: 'select',
+        // controls: {hiddenBind: false, omitBind: false},
+        ff_dataMap: [
+          ['./@/value', '../@/expanded', objectXtend_isExpandable],
+          ['./@/value', '../valueArray/@/controls/hidden', (values: any) => !objectXtend_isExpandable(values)],
+          ['./@/value', '../value/@/controls/readonly', objectXtend_isExpandable],
+          ['./@/value', '../@/expandedDisabled', (values: any) => !objectXtend_isExpandable(values)],
+          ['./@/value', '../@/addDisabled', (values: any) => !objectXtend_isExpandable(values)],
+          ['./@/value', '../external/@/controls/hidden', (values: any) => !objectXtend_isObject(values)],
+          ['./@/value', '../value/@/controls/hidden', (values: any) => objectXtend_isObject(values)],
+        ],
+
         'enum': ['string', 'unescaped', 'array', 'object']
       },
       value: {
         type: "string",
-        x: {
-          params: {placeholder: 'Enter value...'},
-          // controls: {hiddenBind: false, omitBind: false},
-          custom: {GroupBlocks: {style: {flex: '10 1'}}}
-        }
+
+        ff_params: {placeholder: 'Enter value...'},
+        // controls: {hiddenBind: false, omitBind: false},
+        ff_custom: {GroupBlocks: {style: {flex: '10 1'}}}
+
       },
       external: {
         type: "array",
-        x: {
-          params: {placeholder: 'Select external objects...'},
-          preset: '*',
-          custom: {
-            Main: {
-              widget: loadableSelectWidget,
-              passPFField: 'pFField',
-              closeMenuOnSelect: true,
-              isClearable: true,
-              isMulti: true,
-              className: 'preset-select',
-              propsMap: {value: 'values/current'},
-              // onChange: function (values: any) {
-              //   let vals = values.map((item: any) => item.value);
-              //   this.pFForm.api.set(this.field.props.path + '/@/values/current', vals, {execute: 1});
-              // },
-              loadOption: function () {return __EXTERNAL__ && __EXTERNAL__.objects ? objKeys(__EXTERNAL__.objects).map(item => {return {value: item, label: item}}) : []}
-            },
-            GroupBlocks: {style: {flex: '10 1'}}
+
+        ff_params: {placeholder: 'Select external objects...'},
+        ff_preset: '*',
+        ff_custom: {
+          Main: {
+            widget: loadableSelectWidget,
+            passPFField: 'pFField',
+            closeMenuOnSelect: true,
+            isClearable: true,
+            isMulti: true,
+            className: 'preset-select',
+            propsMap: {value: 'value'},
+            // onChange: function (values: any) {
+            //   let vals = values.map((item: any) => item.value);
+            //   this.pFForm.api.set(this.field._props.path + '/@/value', vals, {execute: 1});
+            // },
+            loadOption: function () {return __EXTERNAL__ && __EXTERNAL__.objects ? objKeys(__EXTERNAL__.objects).map(item => {return {value: item, label: item}}) : []}
           },
-          values: {}
-        }
+          GroupBlocks: {style: {flex: '10 1'}}
+        },
+        ff_props: {managed: true}
       },
       valueArray: {
         type: 'array',
-        x: {
-          custom: {
-            blocks: {Array: false},
-            GroupBlocks: {className: 'object-xtend-array'}
-          }
+        ff_custom: {
+          blocks: {Array: false},
+          GroupBlocks: {className: 'object-xtend-array'}
         },
         items: {
-          x: {custom: {blocks: {ArrayItem: false}}},
+          ff_custom: {blocks: {ArrayItem: false}},
           $ref: '#/definitions/objectXtend'
         }
       }
@@ -436,12 +430,12 @@ const objectXtendSchema = {
   definitions: objectXtendDefinition,
 
   $ref: '#/definitions/objectXtend',
-  x: {custom: {Main: {className: 'object-xtend'}}},
+  ff_custom: {Main: {className: 'object-xtend'}},
   type: 'object',
   properties: {
-    name: {x: {controls: {hiddenBind: true}}},
-    value: {x: {controls: {hiddenBind: true}}},
-    type: {'default': 'object', x: {controls: {hiddenBind: true}}},
+    name: {ff_controls: {hidden: true}},
+    value: {ff_controls: {hidden: true}},
+    type: {'default': 'object', ff_controls: {hidden: true}},
   }
 
 };
@@ -454,10 +448,8 @@ const JSONBlockEditorSelect = {
     blocks: {
       type: 'string',
       'enum': getAllBlocks(editFormObjects),
-      x: {
-        preset: 'radio:buttons:inlineItems',
-        custom: {GroupBlocks: {style: {flex: '0 0 auto'}}}
-      }
+      ff_preset: 'radio:buttons:inlineItems',
+      ff_custom: {GroupBlocks: {style: {flex: '0 0 auto'}}}
     },
   }
 };
@@ -472,7 +464,7 @@ class ObjectEditor extends React.Component<any, any> {
   constructor(props: any, context: any) {
     super(props, context);
     const self = this;
-    self.objectXtendCore = new FFormCore({schema: objectXtendSchema, name: props.id + ' => objectXtend'});
+    self.objectXtendCore = new FFormStateAPI({schema: objectXtendSchema, name: props.id + ' => objectXtend'});
     self._onChange = self._onChange.bind(self);
 
   }
@@ -498,7 +490,7 @@ class ObjectEditor extends React.Component<any, any> {
       ...rest
     }: { [key: string]: any } = props;
     const self = this;
-    let block_vals = values || self.objectXtendCore.api.getEmptyVals('inital');
+    let block_vals = values || self.objectXtendCore.getDefaultVals('inital');
     return <FForm className="object-xtend" widget="div" core={self.objectXtendCore} objects={_objects} values={block_vals} onChange={self._onChange} {...rest}/>;
   }
 }
@@ -581,8 +573,8 @@ class PresetBlockEditor extends React.Component<any, any> {
   constructor(props: any, context: any) {
     super(props, context);
     const self = this;
-    self.switcherCore = new FFormCore({schema: JSONBlockEditorSelect, name: props.id + ' => propSelect'});
-    // self.objectXtendCore = new FFormCore({schema: objectXtend, name: 'objectXtend/' + props.id});
+    self.switcherCore = new FFormStateAPI({schema: JSONBlockEditorSelect, name: props.id + ' => propSelect'});
+    // self.objectXtendCore = new FFormStateAPI({schema: objectXtend, name: 'objectXtend/' + _props.id});
     self._onEditorChange = self._onEditorChange.bind(self);
     self._onSwitchChange = self._onSwitchChange.bind(self);
   }
@@ -595,7 +587,7 @@ class PresetBlockEditor extends React.Component<any, any> {
   _onEditorChange(value: any) {
     const {pFForm, path} = this.props.pFField;
     const propSelected = this.props.propSelected;
-    if (propSelected && propSelected.blocks) pFForm.api.set(path + '/@/values/current/' + propSelected.blocks, value, {execute: 1});
+    if (propSelected && propSelected.blocks) pFForm.api.set(path + '/@/value/' + propSelected.blocks, value, {execute: 1});
 
   }
 
@@ -631,17 +623,17 @@ class fieldPropsWidget extends React.Component<any, any> {
   }
 
   // _onChange(values: any) {
-  //   const {pFForm, path} = this.props.pFField;
+  //   const {pFForm, path} = this._props.pFField;
   //   pFForm.api.set(path + '/@/values', values, {execute: 1, replace: true});
   // }
 
   _makeCore() {
     const self = this;
     if (self.fieldPropsCore) return;
-    // console.log('making core ', self.props.id);
+    // console.log('making api ', self._props.id);
     const props = self.props;
     if (props.hidden === false || props.makeCore)
-      self.fieldPropsCore = new FFormCore({schema: fieldPropsSchema, name: props.id + ' => fieldProps'});
+      self.fieldPropsCore = new FFormStateAPI({schema: fieldPropsSchema, name: props.id + ' => fieldProps'});
   }
 
   render() {
@@ -656,19 +648,20 @@ class fieldPropsWidget extends React.Component<any, any> {
     self._makeCore();
     if (!self.fieldPropsCore) return null;
     // console.log('get values', values);
-    return <FForm widget="div" objects={_objects} core={self.fieldPropsCore} rawValues={values} onChange={rawValuesOnChange(self.props.pFField)}/>
+    return <FForm widget="div" objects={_objects} core={self.fieldPropsCore} rawValues={values} onChange={valueOnChange(self.props.pFField)}/>
   }
 }
 
 const basicMainFunc = () => {};
 const coreFuncs = {'Main': {onChange: basicMainFunc, onFocus: basicMainFunc, onBlur: basicMainFunc}};
 
-function presetValuesHandler(presetsValue: string[] = []) {
-  const {state, from, to, utils}: { state: StateType, from: PathItem, to: UpdateItem, utils: any } = this;
-  let curValue = utils.get(state, to.fullPath);
+function presetValuesHandler(presetsValue: string[] = [], props: MapPropsType) {
+  const {getFromState, pathTo} = props;
+  // const to = makePathItem(pathTo);
+  let curValue = getFromState(pathTo);
   // let curValue = utils.get(state, to.toString() + '/current');
-  if(!isArray(presetsValue)) presetsValue=[];
-  let result: UpdateItem[] = [];
+  if (!isArray(presetsValue)) presetsValue = [];
+  let result: any[] = [];
   let presets = presetsValue.join(',');
   // console.log('curValue', curValue);
   if (!curValue || presets != curValue['presets']) {
@@ -677,292 +670,277 @@ function presetValuesHandler(presetsValue: string[] = []) {
     objKeys(fieldBlocks).forEach(key => res[key] = {base: fieldBlocks[key]});
     // res['base'] = fieldBlocks;
     res['presets'] = presets;
-    let minLength = (to.keyPath || []).length + to.path.length;
-    result.push({path: to.path, keyPath: to.keyPath, value: res, opts: {replace: (path: Path) => {return path.length > minLength && path[path.length - 1] === 'base'}}});
+    //let minLength = (to.keyPath || []).length + to.path.length;
+    //result.push({path: pathTo, value: res, opts: {replace: (path: Path) => {return path.length > minLength && path[path.length - 1] === 'base'}}});
+    result.push({path: pathTo, value: res, replace: true});
   }
-  return new UpdateItems(result);
+  return new stateUpdates(result);
 }
 
-function setVisiblePropsHandler(value: string) {
-  const {state, from, to, utils, api}: { state: StateType, from: PathItem, to: UpdateItem, utils: any, api: any } = this;
+function setVisiblePropsHandler(value: string, props: MapPropsType) {
+  const {getFromState, path, pathTo} = props;
+  const from = string2NUpdate(pathTo);
   let show: any = ['commonProps'];
   if (value === 'string') show.push('stringProps');
   if (value === 'number' || value === 'integer') show.push('numberProps');
   if (value === 'array') show.push('arrayProps');
   if (value === 'object') show.push('objectProps');
-  show = from.path.slice(0, -1).join('/') + '/jsonProps/' + show.join(',');
-  const getState = () => state;
-  let result = api.showOnly(show, {getState, returnItems: true, execute: true});
-  return new UpdateItems(result);
+  show = from.path.slice(0, -1).join('/') + '/jsonProps/' + show.join(',') + '/@/controls/hidden';
+  // const getState = () => state;
+  // let result = api.showOnly(show, {getState, returnItems: true, execute: true});
+
+  return new stateUpdates([{path: show, value: false, macros: 'setMultiply'}, {path: show, value: true, macros: 'setAllBut'}]);
 }
 
 
 const fieldPropsSchema = {
   type: "object",
-  x: {
-    custom: {GroupBlocks: {className: 'field-properties'}},
-    controls: {
-      hiddenBind: false,
-      omitBind: false,
-    }
-  },
+  ff_custom: {GroupBlocks: {className: 'field-properties'}},
+  ff_controls: {
+    hiddenBind: false,
+    omitBind: false,
+  }
+  ,
   properties: {
     hidden: {
       type: "object",
-      x: {
-        preset: 'hidden',
-        values: {},
-        dataMap: [
-          ['./@/values/current/fieldType', '../xProps/preset/@/fieldType'],
-          ['./@/values/current/fieldType', '../xProps/preset/@/values/current', () => []],
-          ['./@/values/current/fieldType', '../xProps/custom/@/values/current', presetValuesHandler],
-          ['./@/values/current/fieldType', '../jsonProps/', setVisiblePropsHandler]
-        ]
-      }
+      ff_preset: 'hidden',
+      ff_props: {managed: true},
+      ff_dataMap: [
+        ['./@/value/fieldType', '../xProps/preset/@/fieldType'],
+        ['./@/value/fieldType', '../xProps/preset/@/value', () => []],
+        // ['./@/value/fieldType', '../xProps/custom/@/value', presetValuesHandler],
+        ['./@/value/fieldType', '../jsonProps/', setVisiblePropsHandler]
+      ]
     },
     jsonProps: {
-      title: 'JSON Schema props:',
+      title: 'JSON Schema _props:',
       type: "object",
       properties: {
         commonProps: {
           type: "object",
-          x: {
-            preset: 'object:flexRow',
-            fields: ['title', 'description', 'default', 'ref',],
-          },
+          ff_preset: 'object:flexRow',
+          ff_fields: ['title', 'description', 'default', 'ref',],
           properties: {
             ref: {
               type: 'string',
               title: '$ref',
-              x: {params: {placeholder: ''}, preset: 'string:inlineTitle'}
+              ff_params: {placeholder: ''},
+              ff_preset: 'string:inlineTitle'
             },
             title: {
               type: "string",
               // title: 'Title',
-              x: {params: {placeholder: 'Title'}, preset: 'string'}
+              ff_params: {placeholder: 'Title'},
+              ff_preset: 'string'
             },
             description: {
               type: "string",
               // title: 'Description',
-              x: {params: {placeholder: 'Description'}, preset: 'string:inlineTitle'}
+              ff_params: {placeholder: 'Description'},
+              ff_preset: 'string:inlineTitle'
             },
             'default': {
               type: "string",
               title: 'Default',
-              x: {params: {placeholder: 'Default'}, preset: 'string:inlineTitle'}
+              ff_params: {placeholder: 'Default'},
+              ff_preset: 'string:inlineTitle'
             },
           }
         },
         stringProps: {
           type: "object",
-          x: {
-            preset: 'object:flexRow',
-            fields: ['minLength', 'maxLength', 'format', 'pattern'],
-            controls: {hidden: true}
-          },
+          ff_preset: 'object:flexRow',
+          ff_fields: ['minLength', 'maxLength', 'format', 'pattern'],
+          ff_controls: {hidden: true},
           properties: {
             minLength: {
               title: 'Length: min',
               type: "integer",
               minimum: 0,
               'default': 0,
-              x: {preset: 'integer:autosize:inlineTitle'}
+              ff_preset: 'integer:autosize:inlineTitle'
             },
             maxLength: {
               title: 'max',
               type: "integer",
               minimum: 0,
-              x: {preset: 'integer:autosize:inlineTitle'}
+              ff_preset: 'integer:autosize:inlineTitle'
             },
-            pattern: {title: 'Pattern', type: "string", x: {preset: 'string:inlineTitle', custom: {GroupBlocks: {style: {flexGrow: 10}}}}},
+            pattern: {title: 'Pattern', type: "string", ff_preset: 'string:inlineTitle', ff_custom: {GroupBlocks: {style: {flexGrow: 10}}}},
             format: {
               title: 'Format',
               type: "string",
               'enum': ['date-time', 'date', 'time', 'email', 'ipv4', 'ipv6', 'uri', 'color', 'hostname', 'phone', 'utc-millisec', 'alpha', 'alphanumeric'],
-              x: {params: {placeholder: 'Select format...'}, preset: 'select:inlineTitle'}
+              ff_params: {placeholder: 'Select format...'}, ff_preset: 'select:inlineTitle'
             }
           }
         },
         numberProps: {
           type: "object",
-          x: {
-            preset: 'object:flexRow',
-            fields: ['multipleOf', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', {widget: 'DivBlock', style: {flexGrow: 10}}],
-            controls: {hidden: true}
-          },
+          ff_preset: 'object:flexRow',
+          ff_fields: ['multipleOf', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', {widget: 'DivBlock', style: {flexGrow: 10}}],
+          ff_controls: {hidden: true}
+          ,
           properties: {
             multipleOf: {
               title: 'Multiple of',
               type: "number",
               minimum: 0,
               exclusiveMinimum: true,
-              x: {preset: 'number:autosize:inlineTitle'}
+              ff_preset: 'number:autosize:inlineTitle'
             },
             maximum: {
               title: 'max',
               type: "number",
-              x: {preset: 'number:autosize:inlineTitle'}
+              ff_preset: 'number:autosize:inlineTitle'
             },
             exclusiveMaximum: {
               title: 'Exclusive max',
               type: "boolean",
               'default': false,
-              x: {preset: 'boolean:inlineTitle'}
+              ff_preset: 'boolean:inlineTitle'
             },
             minimum: {
               title: 'min',
               type: "number",
-              x: {preset: 'number:autosize:inlineTitle'}
+              ff_preset: 'number:autosize:inlineTitle'
             },
             exclusiveMinimum: {
               title: 'Exclusive min',
               "type": "boolean",
               "default": false,
-              x: {preset: 'boolean:inlineTitle'}
+              ff_preset: 'boolean:inlineTitle'
             },
           }
         },
         arrayProps: {
           type: "object",
-          x: {
-            preset: 'object:flexRow',
-            fields: ['additionalItems', 'minItems', 'maxItems', 'uniqueItems'],
-            controls: {hidden: true}
-          },
+          ff_preset: 'object:flexRow',
+          ff_fields: ['additionalItems', 'minItems', 'maxItems', 'uniqueItems'],
+          ff_controls: {hidden: true},
           properties: {
             additionalItems: {
               title: 'Items: additional',
               "type": "number",
               'enum': [0, 1, 2],
               'enumNames': ['false', 'true', 'object'],
-              x: {
-                preset: 'radio:buttons:inlineItems:inlineTitle',
-                custom: {GroupBlocks: {style: {flexGrow: 0}}}
-              }
+              ff_preset: 'radio:buttons:inlineItems:inlineTitle',
+              ff_custom: {GroupBlocks: {style: {flexGrow: 0}}}
             },
             minItems: {
               title: 'min',
               type: 'integer',
               "default": 0,
-              x: {preset: 'integer:autosize:inlineTitle'},
-
+              ff_preset: 'integer:autosize:inlineTitle',
             },
             maxItems: {
               title: 'max',
               type: 'integer',
-              x: {preset: 'integer:autosize:inlineTitle'},
+              ff_preset: 'integer:autosize:inlineTitle',
             },
             uniqueItems: {
               title: 'Unique items',
               type: "boolean",
               "default": false,
-              x: {preset: 'boolean'}
+              ff_preset: 'boolean'
             },
           }
         },
         objectProps: {
           type: "object",
-          x: {
-            preset: 'object',
-            fields: [{fields: ['additionalProperties', 'minProperties', 'maxProperties', 'required'], style: {flexFlow: 'row'}}],
-            controls: {hidden: true}
-          },
+          ff_preset: 'object',
+          ff_fields: [{fields: ['additionalProperties', 'minProperties', 'maxProperties', 'required'], style: {flexFlow: 'row'}}],
+          ff_controls: {hidden: true},
           properties: {
             required: {
               title: 'required',
               type: "string",
-              x: {
-                preset: 'string:inlineTitle',
-                custom: {GroupBlocks: {style: {flexGrow: 10}}}
-              },
+              ff_preset: 'string:inlineTitle',
+              ff_custom: {GroupBlocks: {style: {flexGrow: 10}}}
             },
             minProperties: {
               title: 'min',
               type: 'integer',
               "default": 0,
-              x: {preset: 'integer:autosize:inlineTitle'},
+              ff_preset: 'integer:autosize:inlineTitle',
             },
             maxProperties: {
               title: 'max',
               type: 'integer',
-              x: {preset: 'integer:autosize:inlineTitle'},
+              ff_preset: 'integer:autosize:inlineTitle',
             },
             additionalProperties: {
               title: 'Props: additional',
               "type": "number",
               'enum': [0, 1, 2],
               'enumNames': ['false', 'true', 'object'],
-              x: {
-                preset: 'radio:buttons:inlineItems:inlineTitle',
-                custom: {GroupBlocks: {style: {flex: '0 0 auto'}}}
-              }
+
+              ff_preset: 'radio:buttons:inlineItems:inlineTitle',
+              ff_custom: {GroupBlocks: {style: {flex: '0 0 auto'}}}
+
             },
             dependencies: {
               title: 'Dependencies',
               "type": "string",
-              x: {
-                preset: 'string:inlineTitle',
-                custom: {GroupBlocks: {style: {flexGrow: 10}}}
-              },
+
+              ff_preset: 'string:inlineTitle',
+              ff_custom: {GroupBlocks: {style: {flexGrow: 10}}}
+
             }
           }
         },
       }
     },
     xProps: {
-      title: 'Extended props:',
+      title: 'Extended _props:',
       type: "object",
-      x: {
-        preset: 'object',
-        fields: [{fields: ['preset', 'flattenBool', 'flatten'], style: {flexFlow: 'row'}}],
-      },
+      ff_preset: 'object',
+      ff_fields: [{fields: ['preset', 'flattenBool', 'flatten'], style: {flexFlow: 'row'}}],
       properties: {
         preset: {
           type: 'array',
           title: 'preset',
-          x: {
-            preset: 'preset-select:inlineTitle',
-            values: {},
-            dataMap: [
-              ['./@/values/current', '../custom/@/values/current', presetValuesHandler]
-            ]
-          }
+          ff_preset: 'preset-select:inlineTitle',
+          ff_props: {managed: true},
+          ff_dataMap: [
+            ['./@/value', '../custom/@/value', presetValuesHandler]
+          ]
+
         },
         flattenBool: {
           type: 'boolean',
           title: 'flatten',
-          x: {preset: 'boolean:inlineTitle', custom: {GroupBlocks: {style: {flexGrow: 0}}}}
+          ff_preset: 'boolean:inlineTitle',
+          ff_custom: {GroupBlocks: {style: {flexGrow: 0}}}
         },
         flatten: {
           type: 'string',
           //title: 'flatten',
-          x: {preset: 'string:inlineTitle',}
+          ff_preset: 'string:inlineTitle',
         },
         validators: {
           type: 'array',
           title: 'Validators',
-          x: {
-            custom: {
-              Array: {
-                empty: {text: ''},
-                addButton: {text: 'Add new validator'}
-              }
+          ff_custom: {
+            Array: {
+              empty: {text: ''},
+              addButton: {text: 'Add new validator'}
             }
+
           },
           items: {
             type: "string",
-            x: {custom: {blocks: {ArrayItem: true}}},
+            ff_custom: {blocks: {ArrayItem: true}},
           }
         },
         dataMap: {
           type: 'array',
           title: 'Data Maps',
-          x: {
-            custom: {
-              Array: {
-                empty: {text: ''},
-                addButton: {text: 'Add new data map'}
-              }
+          ff_custom: {
+            Array: {
+              empty: {text: ''},
+              addButton: {text: 'Add new data map'}
             }
           },
 
@@ -970,110 +948,86 @@ const fieldPropsSchema = {
             'default': ['', '', ''],
             type: "array",
             items: [
-              {type: 'string', x: {params: {placeholder: 'From path...'}, custom: {blocks: {ArrayItem: false}}}},
-              {type: 'string', x: {params: {placeholder: 'Destination path...'}, custom: {blocks: {ArrayItem: false}}}},
-              {type: 'string', x: {params: {placeholder: 'Function'}, custom: {blocks: {ArrayItem: false}}}},
+              {type: 'string', ff_params: {placeholder: 'From path...'}, ff_custom: {blocks: {ArrayItem: false}}},
+              {type: 'string', ff_params: {placeholder: 'Destination path...'}, ff_custom: {blocks: {ArrayItem: false}}},
+              {type: 'string', ff_params: {placeholder: 'Function'}, ff_custom: {blocks: {ArrayItem: false}}},
             ],
             minItems: 3,
             additionalItems: false,
-            x: {custom: {blocks: {ArrayItem: true}, Main: {style: {flexFlow: 'row'}}}},
+            ff_custom: {blocks: {ArrayItem: true}, Main: {style: {flexFlow: 'row'}}},
           }
         },
         custom: {
           type: "object",
           title: 'custom',
           'default': {},
-          x: {
-            custom: {
-              Main: {
-                widget: PresetBlockEditor,
-                _objects: editFormObjects,
-                propsMap: {
-                  values: 'values/current',
-                  propSelected: 'propSelected',
-                  presetValues: 'presetValues',
-                }
-              },
+          ff_custom: {
+            Main: {
+              widget: PresetBlockEditor,
+              _objects: editFormObjects,
+              propsMap: {
+                values: 'value',
+                propSelected: 'propSelected',
+                presetValues: 'presetValues',
+              }
             },
-            //values: {},
-            propSelected: '',
-          }
+          },
+          //values: {},
+          ff_data: {propSelected: ''},
+          ff_props: {managed: true}
         },
         params: {
           type: "object",
           title: 'params',
-          x: {
-            preset: 'object:flexRow',
-            fields: ['autofocus', 'liveValidate', 'placeholder'],
-          },
+          ff_preset: 'object:flexRow',
+          ff_fields: ['autofocus', 'liveValidate', 'placeholder'],
+
           properties: {
             autofocus: {
               type: 'boolean',
               title: 'autofocus',
-              x: {preset: 'boolean'}
+              ff_preset: 'boolean'
             },
             liveValidate: {
               type: 'boolean',
               title: 'liveValidate',
-              x: {preset: 'boolean'}
+              ff_preset: 'boolean'
             },
             placeholder: {
               type: 'string',
               title: 'placeholder',
-              x: {
-                preset: 'string:inlineTitle',
-                custom: {GroupBlocks: {style: {flex: '10 1 auto'}}}
-              }
+              ff_preset: 'string:inlineTitle',
+              ff_custom: {GroupBlocks: {style: {flex: '10 1 auto'}}}
+
             },
           }
         },
         controls: {
           type: "object",
           title: 'controls',
-          x: {
-            preset: 'object:flexRow',
-            fields: ['readonly', 'readonlyBind', 'disabled', 'disabledBind', 'hidden', 'hiddenBind', 'omit', 'omitBind'],
-          },
+          ff_preset: 'object:flexRow',
+          ff_fields: ['readonly', 'disabled', 'hidden', 'norender',],
+
           properties: {
             readonly: {
               title: 'readonly',
               type: 'boolean',
-              x: {preset: 'tristate'}
-            },
-            readonlyBind: {
-              title: 'readonlyBind',
-              type: 'boolean',
-              x: {preset: 'tristate'}
+              ff_preset: 'tristate'
             },
             disabled: {
               title: 'disabled',
               type: 'boolean',
-              x: {preset: 'tristate'}
-            },
-            disabledBind: {
-              title: 'disabledBind',
-              type: 'boolean',
-              x: {preset: 'tristate'}
+              ff_preset: 'tristate'
             },
             hidden: {
               title: 'hidden',
               type: 'boolean',
-              x: {preset: 'tristate'}
+              ff_preset: 'tristate'
             },
-            hiddenBind: {
-              title: 'hiddenBind',
+            norender: {
+              title: 'norender',
               type: 'boolean',
-              x: {preset: 'tristate'}
-            },
-            omit: {
-              title: 'omit',
-              type: 'boolean',
-              x: {preset: 'tristate'}
-            },
-            omitBind: {
-              title: 'omitBind',
-              type: 'boolean',
-              x: {preset: 'tristate'}
+              ff_preset: 'tristate'
             },
           }
         }
@@ -1083,11 +1037,11 @@ const fieldPropsSchema = {
 };
 
 
-const rawValuesOnChange: any = memoize(function (pFField: any) {
+const valueOnChange: any = memoize(function (pFField: any) {
   const set = pFField.pFForm.api.set;
-  const opts = {execute: 1, replace: true};
-  return (values: any) => {
-    set(pFField.path + '/@/values', values, opts)
+  const opts = {replace: true};
+  return (value: any) => {
+    set(pFField.path + '/@/value', value, opts)
   }
 });
 
@@ -1099,13 +1053,13 @@ const getAllPropsFromObject: any = memoize(function (obj: any, type: 'object' | 
 
 
 function fieldObjectSelector(props: any) {
-  let {_objects, rawValues, id, pFField, arrayItem, refName, ...rest} = props;
+  let {_objects, value, id = '', pFField, arrayItem, refName, ...rest} = props;
   let schema, name = '';
   let ref = rest[refName];
-  if (isFGroupSchema(rawValues.current)) {
+  if (isFGroupSchema(value)) {
     schema = groupSchema;
     name = 'FGroup';
-  } else if (isFFieldSchema(rawValues.current)) {
+  } else if (isFFieldSchema(value)) {
     schema = JSONSchema;
     name = 'FField';
   } else {
@@ -1113,95 +1067,87 @@ function fieldObjectSelector(props: any) {
     name = 'FObject';
   }
   return <FForm ref={ref} widget="div" className={name + '-cls'} core={{name: id + ' => ' + name, schema}} extData={{'/@/arrayItem': arrayItem}}
-                parent={pFField} objects={_objects} rawValues={rawValues} onChange={rawValuesOnChange(pFField)}/>
+                parent={pFField} objects={_objects} value={value} onChange={valueOnChange(pFField)}/>
 }
 
-const fieldsObject = {
+const fieldsObject: JsonSchema = {
   type: "array",
-  x: {
-    custom: {
-      GroupBlocks: {className: 'layout-array-property'},
-      Array: {
-        empty: {text: 'No properties'},
-        addButton: {text: false},
-      },
-      //blocks: {ArrayItem: false}
-    }
-  },
+  ff_custom: {
+    GroupBlocks: {className: 'layout-array-property'},
+    Array: {
+      empty: {text: 'No properties'},
+      addButton: {text: false},
+    },
+    //blocks: {ArrayItem: false}
+  }
+  ,
   items: {
     type: "object",
-    x: {
-      custom: {
-        Main: {
-          widget: fieldObjectSelector,
-          _objects: editFormObjects,
-          propsMap: {
-            rawValues: 'values',
-            arrayItem: 'arrayItem',
-          }
-        }, blocks: {ArrayItem: false}
-
-      },
-      values: {}
+    ff_custom: {
+      Main: {
+        widget: fieldObjectSelector,
+        _objects: editFormObjects,
+        propsMap: {
+          value: 'value',
+          arrayItem: 'arrayItem',
+        }
+      }, blocks: {ArrayItem: false}
     },
+    ff_props: {managed: true}
   },
 };
 
 
-const objectSchema = {
+const objectSchema: JsonSchema = {
   definitions: objectXtendDefinition,
   $ref: '#/definitions/objectXtend',
   type: "object",
-  x: {
-    fields: [{
-      fields: [expandButtonObject,
-        'name',
-        'type',
-        'external',
-        'value',
-        merge(arrayAddButtonObject, {onClick: function () {this.pFForm.api.arrayOps(this.field.props.path + '/valueArray', 'add', {execute: true}) }}),
-        itemMenuObjectParent],
-      style: {flexFlow: 'row'}
-    }],
-    custom: {Main: {className: 'object-xtend'}, blocks: {ArrayItem: false}}
-  },
+
+  ff_fields: [{
+    fields: [expandButtonObject,
+      'name',
+      'type',
+      'external',
+      'value',
+      merge(arrayAddButtonObject, {onClick: function () {this.pFForm.api.arrayAdd(this.field.path + '/valueArray', 1, {execute: true}) }}),
+      itemMenuObjectParent],
+    style: {flexFlow: 'row'}
+  }],
+  ff_custom: {Main: {className: 'object-xtend'}, blocks: {ArrayItem: false}}
+  ,
   properties: {
-    name: {x: {controls: {hiddenBind: true}}},
-    value: {x: {controls: {hiddenBind: true}}},
-    type: {'default': 'object', x: {controls: {hiddenBind: true}}},
+    name: {ff_controls: {hidden: true}},
+    value: {ff_controls: {hidden: true}},
+    type: {'default': 'object', ff_controls: {hidden: true}},
   }
 };
 
 
-const groupSchema = {
+const groupSchema: JsonSchema = {
   definitions: objectXtendDefinition,
   type: "object",
-  x: {
-    preset: 'object',
-    fields: [{
-      style: {flexFlow: 'row'},
-      fields: [expandButtonObject,
-        moveToSelectObject,
-        addButtonsObject,
-        itemMenuObjectParent]
-    },
-      'xtend',
-      'object'
-    ],
-    dataMap: [['./@/expanded', './xtend/@/controls/hiddenBind', not]],
-    custom: {Main: {className: 'object-xtend'}, blocks: {ArrayItem: false}},
-    fieldType: 'object',
+  ff_preset: 'object',
+  ff_fields: [{
+    style: {flexFlow: 'row'},
+    fields: [expandButtonObject,
+      moveToSelectObject,
+      addButtonsObject,
+      itemMenuObjectParent]
   },
+    'xtend',
+    'object'
+  ],
+  ff_dataMap: [['./@/expanded', './xtend/@/controls/hiddenBind', not]],
+  ff_custom: {Main: {className: 'object-xtend'}, blocks: {ArrayItem: false}},
+  ff_data: {fieldType: 'object'},
   properties: {
     xtend: {
       $ref: '#/definitions/objectXtend',
-      // x: {custom: {Main: {className: 'object-xtend'}}},
       type: 'object',
       properties: {
-        name: {x: {controls: {hiddenBind: true}}},
-        value: {x: {controls: {hiddenBind: true}}},
-        // external: {x: {controls: {hiddenBind: true}}},
-        type: {'default': 'object', x: {controls: {hiddenBind: true}}},
+        name: {ff_controls: {hidden: true}},
+        value: {ff_controls: {hidden: true}},
+        type: {'default': 'object', ff_controls: {hidden: true}},
       }
     },
     object: {
@@ -1213,105 +1159,93 @@ const groupSchema = {
   }
 };
 
-const fieldItemDefinition = {
+const fieldItemDefinition: JsonSchema = {
   type: "object",
-  x: {
-    preset: 'object',
-    fields: [{
-      style: {flexFlow: 'row'},
-      fields: [merge(expandButtonObject, {
-        onMouseEnter: function () {
-          this.pFForm.api.set(this.field.props.path + '/fieldProps/@/controls/makeCore', true, {execute: 1})
-        }
-      }),
-        'name',
-        addButtonsObject,
-        'type',
-        'schema',
-        topMoveButtonObject,
-        itemMenuObjectParent]
-    }],
-    dataMap: [['./@/expanded', './fieldProps/@/controls/hidden', not]],
-    custom: {blocks: {ArrayItem: false}},
-    // expanded:true
-  },
+  ff_preset: 'object',
+  ff_fields: [{
+    style: {flexFlow: 'row'},
+    fields: [merge(expandButtonObject, {
+      onMouseEnter: function () {
+        this.pFForm.api.set(this.field.path + '/fieldProps/@/controls/makeCore', true, {execute: 1})
+      }
+    }),
+      'name',
+      addButtonsObject,
+      'type',
+      'schema',
+      topMoveButtonObject,
+      itemMenuObjectParent]
+  }],
+  ff_dataMap: [['./@/expanded', './fieldProps/@/controls/hidden', not]],
+  ff_custom: {blocks: {ArrayItem: false}},
+  // expanded:true
   properties: {
     name: {
       type: "string",
-      x: {
-        preset: 'string',
-        params: {placeholder: 'Enter field name...'},
-        controls: {
-          hiddenBind: false,
-          omitBind: false,
-        },
-      }
+      ff_preset: 'string',
+      ff_params: {placeholder: 'Enter field name...'},
+      ff_controls: {
+        hidden: false,
+      },
     },
     type: {
       type: "string",
       'default': 'string',
-      x: {
-        preset: 'select:selector',
-        params: {placeholder: 'Select type...'},
-        controls: {
-          hiddenBind: false,
-          omitBind: false,
-        },
-        custom: {
-          GroupBlocks: {style: {flex: '0 1', marginLeft: '0.5em'}},
-        },
-        dataMap: [
-          ['./@/values/current', '../fieldProps/@/values/current/hidden/fieldType'],
-          ['./@/values/current', '../@/fieldType'],
-          ['./@/values/current', './', selectorMap({keepHiddenValues: true, skipFields: ['name', 'fieldProps'], replaceFields: {'array': 'object'}})],
-          ['./@/values/current', '../fieldProps/@/controls/hiddenBind', (val: any) =>
-            val === 'schema' ? true : undefined],
-        ]
+      ff_preset: 'select:selector',
+      ff_params: {placeholder: 'Select type...'},
+      ff_controls: {
+        hidden: false,
       },
+      ff_custom: {
+        GroupBlocks: {style: {flex: '0 1', marginLeft: '0.5em'}},
+      },
+      ff_dataMap: [
+        ['./@/value', '../fieldProps/@/value/hidden/fieldType'],
+        ['./@/value', '../@/fieldType'],
+        ['./@/value', './', selectorMap({skipFields: ['name', 'fieldProps'], replaceFields: {'array': 'object'}})],
+        ['./@/value', '../fieldProps/@/controls/hiddenBind', (val: any) => val === 'schema' ? true : undefined],
+      ],
       'enum': editFormObjects.types.concat('schema')
     },
     fieldProps: {
       type: 'object',
-      x: {
-        controls: {omitBind: false},
-        custom: {
-          Main: {
-            widget: fieldPropsWidget,
-            _objects: editFormObjects,
-            propsMap: {
-              values: 'values',
-              makeCore: 'controls/makeCore',
-              hidden: ['controls', (controls: any) => getBindedValue(controls, 'hidden')],
-            }
-          },
-          Builder: {
-            hiddenStyle: {visibility: 'hidden', height: 0}
+      ff_custom: {
+        Main: {
+          widget: fieldPropsWidget,
+          _objects: editFormObjects,
+          propsMap: {
+            values: 'values',
+            makeCore: 'controls/makeCore',
+            hidden: ['controls', (controls: any) => getBindedValue(controls, 'hidden')],
           }
         },
-        values: {}
+        Builder: {
+          hiddenStyle: {visibility: 'hidden', height: 0}
+        }
       },
+      ff_props: {managed: true},
     },
     schema: {
       type: 'string',
-      x: {
-        params: {placeholder: 'Select schema...'},
-        custom: {
-          Main: {
-            widget: loadableSelectWidget,
-            passPFField: 'pFField',
-            // placeholder: 'Select schema...',
-            closeOnSelect: true,
-            clearable: true,
-            className: 'preset-select',
-            propsMap: {
-              value: 'values/current',
-            },
-            loadOption: function () {
-              return __EXTERNAL__ && __EXTERNAL__.schemas ? objKeys(__EXTERNAL__.schemas).map(item => {return {value: item, label: item}}) : []
-            }
+      ff_params: {placeholder: 'Select schema...'},
+      ff_custom: {
+        Main: {
+          widget: loadableSelectWidget,
+          passPFField: 'pFField',
+          // placeholder: 'Select schema...',
+          closeOnSelect: true,
+          isClearable: true,
+          // isMulti: true,
+          className: 'preset-select',
+          propsMap: {
+            value: 'value',
           },
+          loadOption: function () {
+            return __EXTERNAL__ && __EXTERNAL__.schemas ? objKeys(__EXTERNAL__.schemas).map(item => {return {value: item, label: item}}) : []
+          }
         },
       },
+
     },
     object: {
       type: 'object',
@@ -1322,52 +1256,40 @@ const fieldItemDefinition = {
   }
 };
 
-const JSONSchema = {
+const JSONSchema: JsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem'
 };
 
-const JSONSchemaForm = {
+const JSONSchemaForm: JsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem',
   properties: {
-    name: {x: {params: {placeholder: 'Enter form name...'}}},
+    name: {ff_params: {placeholder: 'Enter form name...'}},
     type: {'enum': editFormObjects.types}
   }
 };
 
-const JSONDefinitionsSchema = {
+const JSONDefinitionsSchema: JsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem',
-  x: {
-    preset: 'object',
-    fields: [{
-      style: {flexFlow: 'row'},
-      fields: [{widget: () => <legend style={{paddingTop: '0.2em'}}>Definitions:</legend>}, merge(addButtonsObject, {addOnlyFields: true}), 'type']
-    }]
-  },
+  ff_preset: 'object',
+  ff_fields: [{
+    style: {flexFlow: 'row'},
+    fields: [{widget: () => <legend style={{paddingTop: '0.2em'}}>Definitions:</legend>}, merge(addButtonsObject, {addOnlyFields: true}), 'type']
+  }],
   properties: {
-    name: {x: {controls: {hiddenBind: true}}},
-    schema: {x: {controls: {hiddenBind: true}}},
-    type: {
-      'default': 'object',
-      x: {
-        controls: {
-          hiddenBind: true,
-          omitBind: false,
-        },
-      }
-    },
+    name: {ff_controls: {hidden: true}},
+    schema: {ff_controls: {hidden: true}},
+    type: {'default': 'object', ff_controls: {hidden: true,}},
     object: {
       properties: {
         fields: {
-          x: {
-            custom: {
-              Array: {
-                empty: {text: false},
-                addButton: {text: false},
-              },
-            }
+          ff_custom: {
+            Array: {
+              empty: {text: false},
+              addButton: {text: false},
+            },
           }
         }
       }
@@ -1375,32 +1297,29 @@ const JSONDefinitionsSchema = {
   }
 };
 
-const FFormSchema = {
+const FFormSchema: JsonSchema = {
   type: 'object',
   properties: {
     definitions: {
       type: 'object',
-      x: {
-        custom: {
-          Main: {
-            widget: FFormWidget,
-            _objects: editFormObjects,
-            core: new FFormCore({schema: JSONDefinitionsSchema, name: 'FFormSchema/definitions'})
-          }
+      ff_custom: {
+        Main: {
+          widget: FFormWidget,
+          _objects: editFormObjects,
+          core: new FFormStateAPI({schema: JSONDefinitionsSchema, name: 'FFormSchema/definitions'})
         }
       },
     },
     form: {
       title: 'Form:',
       type: 'object',
-      x: {
-        custom: {
-          Main: {
-            widget: FFormWidget,
-            _objects: editFormObjects,
-            core: new FFormCore({schema: JSONSchemaForm, name: 'FFormSchema/form'})
-          }
+      ff_custom: {
+        Main: {
+          widget: FFormWidget,
+          _objects: editFormObjects,
+          core: new FFormStateAPI({schema: JSONSchemaForm, name: 'FFormSchema/form'})
         }
+
       },
       //$ref: '#/definitions/fieldItem'
     }

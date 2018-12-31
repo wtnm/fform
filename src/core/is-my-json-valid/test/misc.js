@@ -95,7 +95,7 @@ tape('greedy/true', function(t) {
   t.end();
 });
 
-tape('additional props', function(t) {
+tape('additional _props', function(t) {
   var validate = validator({
     type: 'object',
     additionalProperties: false
@@ -399,7 +399,7 @@ tape('verbose mode', function(t) {
   t.end()
 })
 
-tape('additional props in verbose mode', function(t) {
+tape('additional _props in verbose mode', function(t) {
   var schema = {
     type: 'object',
     required: true,

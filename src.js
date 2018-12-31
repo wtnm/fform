@@ -1,5 +1,5 @@
 "use strict";
-var __$_0__='createElement',__$_1__='length',__$_2__='forEach',__$_3__='fieldOptions',__$_4__='concat',__$_5__='keyPath',__$_6__='indexOf',__$_7__='methodBindObject',__$_8__='widget',__$_9__='additionalItems',__$_10__='hasOwnProperty',__$_11__='_currentState',__$_12__='currentValue',__$_13__='useTag',__$_14__='prototype',__$_15__='unsubscribe',__$_16__='getPrototypeOf',__$_17__='_dataProps',__$_18__='toString',__$_19__='focusField',__$_20__='push',__$_21__='value',__$_22__='layoutsObject',__$_23__='slice',__$_24__='properties',__$_25__='schema',__$_26__='getSingle',__$_27__='changes',__$_28__='fields',__$_29__='getOwnPropertySymbols',__$_30__='__proto__',__$_31__='textArray',__$_32__='dataTree',__$_33__='onChange',__$_34__='registry',__$_35__='startBatch',__$_36__='path',__$_37__='default',__$_38__='forceUpdate',__$_39__='dataMap',__$_40__='shouldBuild',__$_41__='_enumOptions',__$_42__='setAsObject',__$_43__='props',__$_44__='dataMaps',__$_45__='key2path',__$_46__='execBatch',__$_47__='methods2chain',__$_48__='type',__$_49__='items',__$_50__='schemaData',__$_51__='arrayDelta',__$_52__='setExceptMultiply',__$_53__='mainRef',__$_54__='rebuild',__$_55__='_forceRebuild',__$_56__='values',__$_57__='status',__$_58__='setState',__$_59__='setSingle',__$_60__='rRefs',__$_61__='_builderData',__$_62__='refName',__$_63__='currentValueChanges',__$_64__='Main',__$_65__='store',__$_66__='defineProperty',__$_67__='placeholder',__$_68__='_jValidator',__$_69__='widgets',__$_70__='required',__$_71__='ArrayItem',__$_72__='getState',__$_73__='state',__$_74__='children',__$_75__='labelProps',__$_76__='current',__$_77__='filter',__$_78__='Autosize',__$_79__='_liveValidate',__$_80__='Component',__$_81__='blocks',__$_82__='assign',__$_83__='Layout',__$_84__='objects',__$_85__='schemaProps',__$_86__='Message',__$_87__='resolve',__$_88__='setMultiply',__$_89__='getAsObject',__$_90__='$ref',__$_91__='splice',__$_92__='minItems',__$_93__='Group',__$_94__='prefix',__$_95__='showOnly',__$_96__='mapProps',__$_97__='propsMap',__$_98__='validators',__$_99__='schemaPart',__$_100__='selectOnly',__$_101__='#',__$_102__='bind';
+var __$_0__='createElement',__$_1__='length',__$_2__='forEach',__$_3__='fieldOptions',__$_4__='concat',__$_5__='keyPath',__$_6__='indexOf',__$_7__='methodBindObject',__$_8__='widget',__$_9__='additionalItems',__$_10__='hasOwnProperty',__$_11__='_savedState',__$_12__='currentValue',__$_13__='useTag',__$_14__='prototype',__$_15__='unsubscribe',__$_16__='getPrototypeOf',__$_17__='_dataProps',__$_18__='toString',__$_19__='_focusField',__$_20__='push',__$_21__='value',__$_22__='_objectLayouts',__$_23__='slice',__$_24__='properties',__$_25__='schema',__$_26__='getSingle',__$_27__='changes',__$_28__='fields',__$_29__='getOwnPropertySymbols',__$_30__='__proto__',__$_31__='textArray',__$_32__='dataTree',__$_33__='onChange',__$_34__='registry',__$_35__='startBatch',__$_36__='path',__$_37__='default',__$_38__='forceUpdate',__$_39__='dataMap',__$_40__='_rebuild',__$_41__='_enumOptions',__$_42__='setAsObject',__$_43__='props',__$_44__='_dataMaps',__$_45__='key2path',__$_46__='execBatch',__$_47__='methods2chain',__$_48__='type',__$_49__='items',__$_50__='schemaData',__$_51__='arrayDelta',__$_52__='setExceptMultiply',__$_53__='mainRef',__$_54__='rebuild',__$_55__='_forceRebuild',__$_56__='values',__$_57__='status',__$_58__='setState',__$_59__='setSingle',__$_60__='rRefs',__$_61__='_builderData',__$_62__='refName',__$_63__='currentValueChanges',__$_64__='Main',__$_65__='store',__$_66__='defineProperty',__$_67__='placeholder',__$_68__='_jValidator',__$_69__='widgets',__$_70__='required',__$_71__='ArrayItem',__$_72__='getState',__$_73__='state',__$_74__='children',__$_75__='labelProps',__$_76__='current',__$_77__='filter',__$_78__='Autosize',__$_79__='_liveValidate',__$_80__='Component',__$_81__='blocks',__$_82__='assign',__$_83__='Layout',__$_84__='objects',__$_85__='schemaProps',__$_86__='Message',__$_87__='resolve',__$_88__='setMultiply',__$_89__='getAsObject',__$_90__='$ref',__$_91__='splice',__$_92__='minItems',__$_93__='Group',__$_94__='prefix',__$_95__='showOnly',__$_96__='mapProps',__$_97__='propsMap',__$_98__='validators',__$_99__='schemaPart',__$_100__='selectOnly',__$_101__='#',__$_102__='bind';
 
 var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol[__$_14__]  ? "symbol" : typeof obj; };
 
@@ -492,8 +492,8 @@ var Form = function (_react_1$PureComponen) {
             self.iface = iface;
             if (self.iface == 'redux') {
                 var store = void 0;
-                if (self[__$_65__] ) store = self[__$_65__] ;else if (self.context.store) store = self[__$_65__]  = self.context.store;else throw new Error('In redux mode store must be provided either in context or in props.store');
-                self.dispath = store.dispath;
+                if (self[__$_65__] ) store = self[__$_65__] ;else if (self.context.store) store = self[__$_65__]  = self.context.store;else throw new Error('In redux mode store must be provided either in context or in _props.store');
+                self.dispatch = store.dispatch;
                 if (self[__$_15__] ) self[__$_15__] ();
                 self[__$_15__]  = store.subscribe(self._handleChange);
             } else {
@@ -501,7 +501,7 @@ var Form = function (_react_1$PureComponen) {
                     self[__$_15__] ();
                     delete self[__$_15__] ;
                 }
-                self.dispath = self._dispath.bind(self);
+                self.dispatch = self._dispath.bind(self);
             }
             self.api = apiCreator(self.dispath, self[__$_72__] .bind(self), self[__$_58__] .bind(self), self.keyMap, Hooks.get(self[__$_43__] .name), self[__$_68__] , self[__$_25__] );
         }
@@ -742,7 +742,7 @@ var Section = function (_react_1$Component2) {
             };
             var setWidRef = function setWidRef(key) {
                 return function (item) {
-                    return self.wids[key] = item;
+                    return self._widgets[key] = item;
                 };
             };
             var getDataProps = function getDataProps() {
@@ -819,7 +819,7 @@ var Section = function (_react_1$Component2) {
                             var tmp = mergeState(self[__$_17__] , dataProps);
                             self[__$_17__]  = tmp[__$_73__] ;
                             if (tmp[__$_27__] ) objKeys(tmp[__$_27__] )[__$_2__] (function (key) {
-                                return self.wids[key] && self.wids[key][__$_38__] ();
+                                return self._widgets[key] && self._widgets[key][__$_38__] ();
                             });
                         })();
                     }
@@ -844,7 +844,7 @@ var Section = function (_react_1$Component2) {
                 dataTree = _a[__$_32__] ,
                 refName = _a[__$_62__] ,
                 focusField = _a[__$_19__] ,
-                rest = __rest(_a, ["useTag", "funcs", "length", "_enumOptions", "fieldOptions", "onChange", "onFocus", "onBlur", "dataTree", "refName", "focusField"]);
+                rest = __rest(_a, ["useTag", "funcs", "length", "_enumOptions", "fieldOptions", "onChange", "onFocus", "onBlur", "dataTree", "refName", "_focusField"]);
             if (self[__$_40__] ) self._build(self[__$_43__] ); 
             self[__$_40__]  = false;
             return React[__$_0__] (UseTag, __assign({}, rest), self[__$_22__] );

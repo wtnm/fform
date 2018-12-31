@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {render} from 'react-dom';
 
-import {FForm, FFormCore,} from './core/core';
+import {FForm, FFormStateAPI} from './core/components';
 
 import {FFormSchema, editFormObjects} from './FFEditor';
 import FFView from './FFView';
@@ -9,6 +9,8 @@ import FFView from './FFView';
 import './core/core.scss';
 import './tacit/main.scss';
 import './styles.scss';
+
+// const schemaArray = require('../__tests__/schemaArray').default;
 
 
 const objKeys = Object.keys;
@@ -25,7 +27,7 @@ function onMainFormChange(values: any) {
 
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');
-  const constructorCore = new FFormCore({schema: FFormSchema, name: "FFormConstructor"});
+  const constructorCore = new FFormStateAPI({schema: FFormSchema, name: "FFormConstructor"});
 
 
   render(<div>

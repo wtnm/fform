@@ -362,7 +362,7 @@ var apiMixin = function () {
             this /__prop#_990__ (data);
             var result = this /__prop#_991__ .errors;
             if (!result) return [];
-            if (!isArr(result)) result = [result];
+            if (!isArray(result)) result = [result];
             return result /__prop#_992__ (function (item) {
                 return [item /__prop#_993__ .split( /__string#_363__ ) /__prop#_994__ (1), item /__prop#_995__ ];
             });
@@ -587,7 +587,7 @@ var SectionWidget = function (_react_1$Component) {
 
 function replaceWidgetNamesWithFunctions(presetArrays, objects) {
     var tmp = presetArrays;
-    if (!isArr(tmp)) tmp = [tmp];
+    if (!isArray(tmp)) tmp = [tmp];
 
     var _loop2 = function _loop2(i) {
         var presetArray = tmp[i];
@@ -1041,7 +1041,7 @@ var Field = function (_react_1$Component3) {
 
             var schemaPart = getSchemaPart(registry /__prop#_1388__ , path);
             
-            var type = isArr(schemaPart /__prop#_1389__ ) ? schemaPart /__prop#_1390__ [0] : schemaPart /__prop#_1391__ ;
+            var type = isArray(schemaPart /__prop#_1389__ ) ? schemaPart /__prop#_1390__ [0] : schemaPart /__prop#_1391__ ;
             var x = schemaPart /__prop#_1392__  || {};
             
             var objects = registry /__prop#_1393__ ;
@@ -1150,7 +1150,7 @@ function mapProps(map, data, bindObject) {
     });
     keys /__prop#_1470__ (function (to) {
         var item = map[to];
-        if (!isArr(item)) item = [item];
+        if (!isArray(item)) item = [item];
         var value = getIn(data, string2path(item[0]));
         var fn = item[1];
         var path = string2path(to);
@@ -1555,7 +1555,7 @@ function selectorOnChange(asTabs) {
         api /__prop#_1717__ ();
         this /__prop#_1718__ (value);
         var vals = void 0;
-        if (isArr(value)) vals = value /__prop#_1719__ ();else vals = [value];
+        if (isArray(value)) vals = value /__prop#_1719__ ();else vals = [value];
         var path = this /__prop#_1720__ .slice();
         var selectorField = path /__prop#_1721__ ();
         var stringPath = path2string(path);
@@ -1856,7 +1856,7 @@ function makeValidation(dispath) {
         if (isObject(result)) objKeys(result) /__prop#_1770__ (function (key) {
             return addValidatorResult2message(srcMessages, track /__prop#_1771__ (key), result[key], defLevel);
         });else {
-            var messages = isArr(result) ? result /__prop#_1772__ (conv) : [conv(result)];
+            var messages = isArray(result) ? result /__prop#_1772__ (conv) : [conv(result)];
             messages /__prop#_1773__ (function (item) {
                 var level = item /__prop#_1774__ ,
                     text = item /__prop#_1775__ ,
@@ -2038,7 +2038,7 @@ function formReducer(name) {
                                 v: false
                             }
                         };
-                    if (isArr(res)) res = { after: res };
+                    if (isArray(res)) res = { after: res };
                     [ /__string#_663__ ,  /__string#_664__ ] /__prop#_1855__ (function (key) {
                         return res[key] && push2array(changes[key], res[key]);
                     });
@@ -2300,7 +2300,7 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
         var force = arguments /__prop#_1901__  > 0 && arguments[0] !== undefined ? arguments[0] : true;
 
         if (typeof force ===  /__string#_671__ ) force = [force];
-        if (isArr(force)) {
+        if (isArray(force)) {
             (function () {
                 var result = {};
                 force /__prop#_1902__ (function (value) {
@@ -2363,7 +2363,7 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
         function recursivelySetLength4arrays(items, vals) {
             var track = arguments /__prop#_1935__  > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
-            if (isArr(vals) && changeLength) items /__prop#_1936__ ({ path:  /__stringProp#_66__ .concat(keyMap /__prop#_1938__ (track)), keyPath: [ /__string#_675__ ,  /__string#_676__ , changeLength], value: vals /__prop#_1939__  });
+            if (isArray(vals) && changeLength) items /__prop#_1936__ ({ path:  /__stringProp#_66__ .concat(keyMap /__prop#_1938__ (track)), keyPath: [ /__string#_675__ ,  /__string#_676__ , changeLength], value: vals /__prop#_1939__  });
             if (isMergeableObject(vals)) objKeys(vals) /__prop#_1940__ (function (key) {
                 return recursivelySetValues(items, vals[key], track /__prop#_1941__ (key));
             });
@@ -2526,7 +2526,7 @@ function getSchemaPart(schema, path) {
     function getArrayItemSchemaPart(index, schemaPart) {
         var items = [];
         if (schemaPart /__prop#_2019__ ) {
-            if (!isArr(schemaPart /__prop#_2020__ )) return schemaPart /__prop#_2021__ ;else items = schemaPart /__prop#_2022__ ;
+            if (!isArray(schemaPart /__prop#_2020__ )) return schemaPart /__prop#_2021__ ;else items = schemaPart /__prop#_2022__ ;
         }
         if (index < items /__prop#_2023__ ) return items[index];else {
             if (schemaPart /__prop#_2024__  !== false) {
@@ -2631,7 +2631,7 @@ function makeDataObject(schema, values, path) {
     var result = merge({ controls: {}, messages: {} }, rest);
     var schemaData = result /__prop#_2078__  = {};
     schemaData /__prop#_2079__  = schemaPart /__prop#_2080__ ;
-    schemaData /__prop#_2081__  = isArr(schemaPart /__prop#_2082__ ) ? schemaPart /__prop#_2083__ [0] : schemaPart /__prop#_2084__ ;
+    schemaData /__prop#_2081__  = isArray(schemaPart /__prop#_2082__ ) ? schemaPart /__prop#_2083__ [0] : schemaPart /__prop#_2084__ ;
     
     if (schemaPart /__prop#_2085__  !=  /__string#_734__  && schemaPart /__prop#_2086__  !=  /__string#_735__ ) {
         schemaData /__prop#_2087__  = !!isParentRequires(path, schema) || schemaPart /__prop#_2088__ ;
@@ -2652,7 +2652,7 @@ function makeDataObject(schema, values, path) {
     return { data: result, dataMap: dataMap ? makeDataMap(dataMap) : {} };
 }
 var getArrayStartIndex = function getArrayStartIndex(schemaPart) {
-    if (!isArr(schemaPart /__prop#_2102__ )) return 0;
+    if (!isArray(schemaPart /__prop#_2102__ )) return 0;
     if (schemaPart /__prop#_2103__  === false) return Infinity;
     if (_typeof2(schemaPart /__prop#_2104__ ) ===  /__string#_742__ ) return schemaPart /__prop#_2105__ .length;
     return schemaPart /__prop#_2106__ .length - 1;
@@ -2679,7 +2679,7 @@ function makeStateFromSchema(schema) {
         (function () {
             var vals = schemaPart /__prop#_2114__ ;
             var lengthFull = {  /__string#_745__ : 0 };
-            if (vals && isArr(vals)) lengthFull /__prop#_2115__  = vals /__prop#_2116__ ;
+            if (vals && isArray(vals)) lengthFull /__prop#_2115__  = vals /__prop#_2116__ ;
             if (schemaPart /__prop#_2117__ ) lengthFull /__prop#_2118__  = Math /__prop#_2119__ (lengthFull /__prop#_2120__ , schemaPart /__prop#_2121__ );
             var maxLength = lengthFull /__prop#_2122__ ;
             [ /__string#_746__ ,  /__string#_747__ ,  /__string#_748__ ] /__prop#_2123__ (function (type) {
@@ -2819,7 +2819,7 @@ function getKeyMapFromSchema(schema) {
                 var _path2 = fnDirect(track);
                 for (var i = 0; i < _path2 /__prop#_2186__  - 1; i++) {
                     var _field2 = _path2[i];
-                    if (!tmp[_field2]) tmp[_field2] = isArr(getIn(object, fnReverse(_path2 /__prop#_2187__ (0, i + 1)))) ? [] : {};
+                    if (!tmp[_field2]) tmp[_field2] = isArray(getIn(object, fnReverse(_path2 /__prop#_2187__ (0, i + 1)))) ? [] : {};
                     tmp = tmp[_field2];
                 }
                 tmp[_path2 /__prop#_2188__ ()] = value;
@@ -2853,9 +2853,9 @@ function mergeState(state, source) {
     function recusion(state, source) {
         var track = arguments /__prop#_2196__  > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
-        var isSourceArray = isArr(source);
+        var isSourceArray = isArray(source);
         if (!isMergeableObject(state)) state = isSourceArray ? [] : {}; 
-        var isStateArray = isArr(state);
+        var isStateArray = isArray(state);
         if (!isMergeableObject(source)) return { state: state }; 
         var stateKeys = fn(state);
         if (stateKeys /__prop#_2197__  == 0 && !del && (!isStateArray || isSourceArray && arrays !=  /__string#_770__ )) return { state: source, changes: source };
@@ -2943,7 +2943,7 @@ merge /__prop#_2225__  = function (state, obj2merge) {
         }, state); 
 };
 function isObject(val) {
-    return isMergeableObject(val) && !isArr(val);
+    return isMergeableObject(val) && !isArray(val);
 }
 function isMergeableObject(val) {
     var nonNullObject = val && (typeof val ===  /__string#_309__  ?  /__string#_310__  : _typeof2(val)) ===  /__string#_771__ ;
@@ -2965,7 +2965,7 @@ utils /__prop#_2239__  = getSchemaPart;
 function getByKey(obj, keys) {
     var value = arguments /__prop#_2240__  > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-    if (!isArr(keys)) keys = [keys];
+    if (!isArray(keys)) keys = [keys];
     for (var i = 0; i < keys /__prop#_2241__ ; i++) {
         if (keys[i] ==  /__string#_774__ ) continue;
         if (!obj /__prop#_2242__ (keys[i])) obj[keys[i]] = i == keys /__prop#_2243__  - 1 ? value : {};
@@ -2974,7 +2974,7 @@ function getByKey(obj, keys) {
     return obj;
 }
 function path2string(path, keyPath) {
-    if (!isArr(path)) {
+    if (!isArray(path)) {
         keyPath = path /__prop#_2244__ ;
         path = path /__prop#_2245__ ;
     }
@@ -3038,7 +3038,7 @@ function makeUpdateItem(path) {
         value = arguments /__prop#_2264__  <= 2 ? undefined : arguments[2];
     }
     updateItem = makePathItem(path);
-    if (keyPath) updateItem /__prop#_2265__  = isArr(keyPath) ? keyPath : string2path(keyPath);
+    if (keyPath) updateItem /__prop#_2265__  = isArray(keyPath) ? keyPath : string2path(keyPath);
     updateItem /__prop#_2266__  = value;
     return updateItem;
 }
@@ -3099,7 +3099,7 @@ function makeArrayOfPathItem(path) {
         } else if (typeof value ==  /__string#_795__ ) {
             result /__prop#_2300__ (function (pathPart) {
                 var tmp = value(pathPart);
-                if (!isArr(tmp)) tmp = [tmp];
+                if (!isArray(tmp)) tmp = [tmp];
                 tmp /__prop#_2301__ (function (tmpVal) {
                     return tmpVal === false ? false : tmpVal /__prop#_2302__ () /__prop#_2303__ ( /__string#_796__ ) /__prop#_2304__ (function (key) {
                         return res /__prop#_2305__ (pathPart /__prop#_2306__ (key));
@@ -3130,7 +3130,7 @@ function push2array(array) {
     }
 
     for (var i = 0; i < vals /__prop#_2309__ ; i++) {
-        if (isArr(vals[i])) array /__prop#_2310__ .apply(array, _toConsumableArray(vals[i]));else array /__prop#_2311__ (vals[i]);
+        if (isArray(vals[i])) array /__prop#_2310__ .apply(array, _toConsumableArray(vals[i]));else array /__prop#_2311__ (vals[i]);
     }
     return array;
 }
@@ -3176,10 +3176,10 @@ function makeSlice() {
     }
 
     var lastI = pathValues /__prop#_2327__  - 2;
-    if (!lastI && isArr(pathValues[0]) && !pathValues[0] /__prop#_2328__ ) return pathValues[1];
+    if (!lastI && isArray(pathValues[0]) && !pathValues[0] /__prop#_2328__ ) return pathValues[1];
     for (var i = 0; i < pathValues /__prop#_2329__  - 1; i++) {
         var _path3 = pathValues[i];
-        if (!isArr(_path3)) _path3 = [_path3];
+        if (!isArray(_path3)) _path3 = [_path3];
         for (var j = 0; j < _path3 /__prop#_2330__ ; j++) {
             if (_path3[j] ==  /__string#_798__ ) continue;
             obj[_path3[j]] = i == lastI && j == _path3 /__prop#_2331__  - 1 ? pathValues[pathValues /__prop#_2332__  - 1] : {};
@@ -3250,7 +3250,7 @@ function without(obj) {
     var symbol = arguments /__prop#_2356__  > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
     
-    var result = isArr(obj) ? [] : {};
+    var result = isArray(obj) ? [] : {};
     var fn = symbol ? objKeys : objKeysNSymb;
     fn(obj) /__prop#_2357__ (function (key) {
         if (!~rest /__prop#_2358__ (key)) result[key] = obj[key];
@@ -3355,7 +3355,7 @@ function getMaxValue(values) {
 }
 function replaceDeep(obj, value) {
     if (!isMergeableObject(obj)) return value;
-    var result = isArr(obj) ? [] : {};
+    var result = isArray(obj) ? [] : {};
     objKeys(obj) /__prop#_2384__ (function (field) {
         return result[field] = replaceDeep(obj[field], value);
     });
