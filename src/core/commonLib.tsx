@@ -1,3 +1,5 @@
+import flatten from "../old/rrf/utils/flatten";
+
 const objKeys = Object.keys;
 const isArray = Array.isArray;
 const isUndefined = (value: any): value is undefined => typeof value === 'undefined';

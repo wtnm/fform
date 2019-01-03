@@ -33,7 +33,7 @@ interface anyObject {
 
 type StateType = { [key: string]: BasicData } | { [key: number]: BasicData };
 
-type PROCEDURE_UPDATABLE_objectType = { update: StateType, replace: StateType }
+type PROCEDURE_UPDATABLE_objectType = { update: StateType, replace: StateType, forceCheck?: StateType }
 
 interface BasicData extends anyObject {
   value?: any;

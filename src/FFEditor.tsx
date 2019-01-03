@@ -2,8 +2,8 @@ import * as React from 'react';
 import {render} from 'react-dom';
 import {FForm, FFormStateAPI, selectorMap, basicObjects, getFieldBlocks,} from './core/components';
 
-import {not, getIn, memoize, merge, push2array, isArray, isObject} from './core/commonLib'
-import {stateUpdates, getBindedValue, string2NUpdate, getDefaultFromSchema} from './core/stateLib'
+import {not, getIn, memoize, merge, push2array, isArray, isObject, isUndefined} from './core/commonLib'
+import {stateUpdates, getBindedValue, string2NUpdate, getDefaultFromSchema, SymData} from './core/stateLib'
 
 import {formValues2JSON, formObj2JSON, isFFieldSchema, isFGroupSchema, isFObjectSchema} from './constructorLib';
 // import 'react-select/dist/react-select.css';
@@ -12,10 +12,7 @@ import {Creatable} from 'react-select';
 
 const Select = require('react-select').default;
 
-
 const objKeys = Object.keys;
-const SymbolData = Symbol.for('FFormData');
-const isUndefined = (value: any) => typeof value === "undefined";
 
 const __EXTERNAL__: any = {};
 __EXTERNAL__.schemas = {'test schema': {}, 'test schema 2': {}};
@@ -202,7 +199,7 @@ function getAllBlocks(objects: any) {
 
 const moveToSelectObject = {
   widget: moveToSelectWidget,
-  passPFField: 'pFField',
+  pFField: 'pFField',
   placeholder: 'Select field to move here...',
   className: 'preset-select',
 };
@@ -352,8 +349,7 @@ const objectXtendDefinition: definitionType = {
     properties: {
       name: {
         type: "string",
-
-        ff_params: {placeholder: 'Enter name...'},
+        ff_placeholder: 'Enter name...',
         // controls: {hiddenBind: false, omitBind: false},
         ff_custom: {
           _blocks: {Array: false}, //false
@@ -381,16 +377,14 @@ const objectXtendDefinition: definitionType = {
       },
       value: {
         type: "string",
-
-        ff_params: {placeholder: 'Enter value...'},
+        ff_placeholder: 'Enter value...',
         // controls: {hiddenBind: false, omitBind: false},
         ff_custom: {GroupBlocks: {style: {flex: '10 1'}}}
 
       },
       external: {
         type: "array",
-
-        ff_params: {placeholder: 'Select external objects...'},
+        ff_placeholder: 'Select external objects...',
         ff_preset: '*',
         ff_custom: {
           Main: {
@@ -433,9 +427,9 @@ const objectXtendSchema = {
   ff_custom: {Main: {className: 'object-xtend'}},
   type: 'object',
   properties: {
-    name: {ff_controls: {hidden: true}},
-    value: {ff_controls: {hidden: true}},
-    type: {'default': 'object', ff_controls: {hidden: true}},
+    name: {ff_params: {hidden: true}},
+    value: {ff_params: {hidden: true}},
+    type: {'default': 'object', ff_params: {hidden: true}},
   }
 
 };
@@ -696,9 +690,9 @@ function setVisiblePropsHandler(value: string, props: MapPropsType) {
 const fieldPropsSchema = {
   type: "object",
   ff_custom: {GroupBlocks: {className: 'field-properties'}},
-  ff_controls: {
-    hiddenBind: false,
-    omitBind: false,
+  ff_params: {
+    hidden: false,
+    omit: false,
   }
   ,
   properties: {
@@ -725,25 +719,25 @@ const fieldPropsSchema = {
             ref: {
               type: 'string',
               title: '$ref',
-              ff_params: {placeholder: ''},
+              ff_placeholder: '',
               ff_preset: 'string:inlineTitle'
             },
             title: {
               type: "string",
               // title: 'Title',
-              ff_params: {placeholder: 'Title'},
+              ff_placeholder: 'Title',
               ff_preset: 'string'
             },
             description: {
               type: "string",
               // title: 'Description',
-              ff_params: {placeholder: 'Description'},
+              ff_placeholder: 'Description',
               ff_preset: 'string:inlineTitle'
             },
             'default': {
               type: "string",
               title: 'Default',
-              ff_params: {placeholder: 'Default'},
+              ff_placeholder: 'Default',
               ff_preset: 'string:inlineTitle'
             },
           }
@@ -752,7 +746,7 @@ const fieldPropsSchema = {
           type: "object",
           ff_preset: 'object:flexRow',
           ff_fields: ['minLength', 'maxLength', 'format', 'pattern'],
-          ff_controls: {hidden: true},
+          ff_params: {hidden: true},
           properties: {
             minLength: {
               title: 'Length: min',
@@ -772,7 +766,7 @@ const fieldPropsSchema = {
               title: 'Format',
               type: "string",
               'enum': ['date-time', 'date', 'time', 'email', 'ipv4', 'ipv6', 'uri', 'color', 'hostname', 'phone', 'utc-millisec', 'alpha', 'alphanumeric'],
-              ff_params: {placeholder: 'Select format...'}, ff_preset: 'select:inlineTitle'
+              ff_placeholder: 'Select format...', ff_preset: 'select:inlineTitle'
             }
           }
         },
@@ -780,7 +774,7 @@ const fieldPropsSchema = {
           type: "object",
           ff_preset: 'object:flexRow',
           ff_fields: ['multipleOf', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', {widget: 'DivBlock', style: {flexGrow: 10}}],
-          ff_controls: {hidden: true}
+          ff_params: {hidden: true}
           ,
           properties: {
             multipleOf: {
@@ -818,7 +812,7 @@ const fieldPropsSchema = {
           type: "object",
           ff_preset: 'object:flexRow',
           ff_fields: ['additionalItems', 'minItems', 'maxItems', 'uniqueItems'],
-          ff_controls: {hidden: true},
+          ff_params: {hidden: true},
           properties: {
             additionalItems: {
               title: 'Items: additional',
@@ -851,7 +845,7 @@ const fieldPropsSchema = {
           type: "object",
           ff_preset: 'object',
           ff_fields: [{fields: ['additionalProperties', 'minProperties', 'maxProperties', 'required'], style: {flexFlow: 'row'}}],
-          ff_controls: {hidden: true},
+          ff_params: {hidden: true},
           properties: {
             required: {
               title: 'required',
@@ -948,9 +942,9 @@ const fieldPropsSchema = {
             'default': ['', '', ''],
             type: "array",
             items: [
-              {type: 'string', ff_params: {placeholder: 'From path...'}, ff_custom: {_blocks: {ArrayItem: false}}},
-              {type: 'string', ff_params: {placeholder: 'Destination path...'}, ff_custom: {_blocks: {ArrayItem: false}}},
-              {type: 'string', ff_params: {placeholder: 'Function'}, ff_custom: {_blocks: {ArrayItem: false}}},
+              {type: 'string', ff_placeholder: 'From path...', ff_custom: {_blocks: {ArrayItem: false}}},
+              {type: 'string', ff_placeholder: 'Destination path...', ff_custom: {_blocks: {ArrayItem: false}}},
+              {type: 'string', ff_placeholder: 'Function', ff_custom: {_blocks: {ArrayItem: false}}},
             ],
             minItems: 3,
             additionalItems: false,
@@ -1116,9 +1110,9 @@ const objectSchema: JsonSchema = {
   ff_custom: {Main: {className: 'object-xtend'}, _blocks: {ArrayItem: false}}
   ,
   properties: {
-    name: {ff_controls: {hidden: true}},
-    value: {ff_controls: {hidden: true}},
-    type: {'default': 'object', ff_controls: {hidden: true}},
+    name: {ff_params: {hidden: true}},
+    value: {ff_params: {hidden: true}},
+    type: {'default': 'object', ff_params: {hidden: true}},
   }
 };
 
@@ -1145,9 +1139,9 @@ const groupSchema: JsonSchema = {
       $ref: '#/definitions/objectXtend',
       type: 'object',
       properties: {
-        name: {ff_controls: {hidden: true}},
-        value: {ff_controls: {hidden: true}},
-        type: {'default': 'object', ff_controls: {hidden: true}},
+        name: {ff_params: {hidden: true}},
+        value: {ff_params: {hidden: true}},
+        type: {'default': 'object', ff_params: {hidden: true}},
       }
     },
     object: {
@@ -1183,8 +1177,8 @@ const fieldItemDefinition: JsonSchema = {
     name: {
       type: "string",
       ff_preset: 'string',
-      ff_params: {placeholder: 'Enter field name...'},
-      ff_controls: {
+      ff_placeholder: 'Enter field name...',
+      ff_params: {
         hidden: false,
       },
     },
@@ -1192,8 +1186,8 @@ const fieldItemDefinition: JsonSchema = {
       type: "string",
       'default': 'string',
       ff_preset: 'select:selector',
-      ff_params: {placeholder: 'Select type...'},
-      ff_controls: {
+      ff_placeholder: 'Select type...',
+      ff_params: {
         hidden: false,
       },
       ff_custom: {
@@ -1227,12 +1221,12 @@ const fieldItemDefinition: JsonSchema = {
     },
     schema: {
       type: 'string',
-      ff_params: {placeholder: 'Select schema...'},
+      ff_placeholder: 'Select schema...',
       ff_custom: {
         Main: {
           widget: loadableSelectWidget,
           passPFField: 'pFField',
-          // placeholder: 'Select schema...',
+          // ff_placeholder: 'Select schema...',
           closeOnSelect: true,
           isClearable: true,
           // isMulti: true,
@@ -1265,7 +1259,7 @@ const JSONSchemaForm: JsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem',
   properties: {
-    name: {ff_params: {placeholder: 'Enter form name...'}},
+    name: {ff_placeholder: 'Enter form name...'},
     type: {'enum': editFormObjects.types}
   }
 };
@@ -1279,9 +1273,9 @@ const JSONDefinitionsSchema: JsonSchema = {
     fields: [{widget: () => <legend style={{paddingTop: '0.2em'}}>Definitions:</legend>}, merge(addButtonsObject, {addOnlyFields: true}), 'type']
   }],
   properties: {
-    name: {ff_controls: {hidden: true}},
-    schema: {ff_controls: {hidden: true}},
-    type: {'default': 'object', ff_controls: {hidden: true,}},
+    name: {ff_params: {hidden: true}},
+    schema: {ff_params: {hidden: true}},
+    type: {'default': 'object', ff_params: {hidden: true,}},
     object: {
       properties: {
         fields: {

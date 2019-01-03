@@ -182,16 +182,21 @@ Macros.setStatus = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROC
 };
 
 Macros.setCurrent = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
-  return updateCurrentRecursively(state, schema, UPDATABLE_object, item.value, item.replace, item.path)
+  return updateCurrentRecursively(state, schema, UPDATABLE_object, item.value, item.replace, item.path, item.setOneOf)
 };
 
 Macros.setOneOf = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
-  state = mergeStatePROCEDURE(state, UPDATABLE_object);
-  const oldType = getIn(state, item.path, SymData, 'fData', 'type');
-  let value = getIn(state, SymData, 'current', item.path);
-  state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(item.path, item[SymData], item.value, item.replace));
-  if (oldType == getIn(state, item.path, SymData, 'fData', 'type')) return updateCurrentRecursively(state, schema, UPDATABLE_object, value, false, item.path);
-  return state;
+  let oldOneOf = getIn(state, item.path, SymData, 'oneOf');
+  if (oldOneOf == item.value) {
+    if (!isUndefined(item.setValue)) state = updateCurrentRecursively(state, schema, UPDATABLE_object, item.setValue, false, item.path);
+    return state;
+  }
+  const {macros, ...newItem} = item;
+  if (isUndefined(newItem.setValue)) {
+    state = mergeStatePROCEDURE(state, UPDATABLE_object);
+    newItem.setValue = getIn(state, SymData, 'current', item.path);
+  }
+  return updateStatePROCEDURE(state, schema, UPDATABLE_object, newItem);
 };
 
 
@@ -414,8 +419,16 @@ function makeStateBranch(schema: JsonSchema, getOneOf: (path: Path, value?: numb
   const isReqiured = parentSchemaPart ? isPropRequired(parentSchemaPart, path[path.length - 1]) : false;
   const dataMapObjects: DataMapStateType[] = [];
   let defaultValues: any;
-
-  const {schemaPart, oneOf, type} = findOneOf(getSchemaPart(schema, path, getOneOf, true), value);
+  const currentOneOf = getOneOf(path);
+  const schemaPartsOneOf = getSchemaPart(schema, path, getOneOf, true);
+  let {schemaPart, oneOf, type} = findOneOf(schemaPartsOneOf, value, currentOneOf);
+  if (!isUndefined(currentOneOf) && currentOneOf != oneOf) { // keep existing structure of one of
+    value = schemaPartsOneOf[currentOneOf].default;
+    const tmp = findOneOf(schemaPartsOneOf, value, currentOneOf);
+    schemaPart = tmp.schemaPart;
+    oneOf = tmp.oneOf;
+    type = tmp.type;
+  }
   push2array(dataMapObjects, makeDataMap(schemaPart.ff_dataMap || [], path));
   result[SymData] = makeDataStorage(schemaPart, type, isReqiured, isArrayItem, value);
   if (isArrayItem) result[SymData] = merge(result[SymData], {uniqId: getUniqId()});
@@ -527,20 +540,24 @@ function isSchemaSelfManaged(schemaPart: JsonSchema) {
   return schemaPart.type !== 'array' && schemaPart.type !== 'object' || hasIn(schemaPart, 'ff_props', 'managed')
 }
 
-function findOneOf(oneOfShemas: any, value?: any) {
+function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
   if (!isArray(oneOfShemas)) oneOfShemas = [oneOfShemas];
-  for (let i = 0; i < oneOfShemas.length; i++) {
-    let schemaTypes = oneOfShemas[i].type;
+  const oneOfKeys = oneOfShemas.map((v: any, i: number) => i);
+  //for (let i = 0; i < oneOfShemas.length; i++) oneOfKeys.push(i);
+  if (currentOneOf) moveArrayElems(oneOfKeys, currentOneOf, 0); // currentOneOf should be checked first to match type
+  for (let k = 0; k < oneOfKeys.length; k++) {
+    let oneOf = oneOfKeys[k];
+    let schemaTypes = oneOfShemas[oneOf].type;
     if (!isArray(schemaTypes)) schemaTypes = [schemaTypes];
-    let checkValue = isUndefined(value) ? oneOfShemas[i].default : value;
+    let checkValue = isUndefined(value) ? oneOfShemas[oneOf].default : value;
     for (let j = 0; j < schemaTypes.length; j++) {
-      if (types[schemaTypes[j] || 'any'](checkValue) || isUndefined(checkValue)) return {schemaPart: oneOfShemas[i], oneOf: i, type: schemaTypes[j]}
+      if (types[schemaTypes[j] || 'any'](checkValue) || isUndefined(checkValue)) return {schemaPart: oneOfShemas[oneOf], oneOf, type: schemaTypes[j]}
     }
   }
   return {};
 }
 
-function updateCurrentRecursively(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, value: any, replace: any, track: Path = []): StateType {
+function updateCurrentRecursively(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, value: any, replace: any, track: Path = [], setOneOf?: number): StateType {
 
   if (value === SymReset) value = getIn(state, SymData, 'inital', track);
   if (value === SymClear) value = getIn(getDefaultFromSchema(schema), track);
@@ -560,12 +577,11 @@ function updateCurrentRecursively(state: StateType, schema: JsonSchema, UPDATABL
   }
 
   if (!types[branch[SymData].fData.type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
-    const {schemaPart, oneOf, type} = findOneOf(getSchemaPart(schema, track, oneOfFromState(state), true), value);
+    const {schemaPart, oneOf, type} = findOneOf(getSchemaPart(schema, track, oneOfFromState(state), true), value, isUndefined(setOneOf) ? branch[SymData].oneOf : setOneOf);
     if (schemaPart) {
-      state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['oneOf'], oneOf));
-      state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['fData', 'type'], type));
-      branch = getIn(state, track);
-    } else console.warn('Wrong type in path [' + track.join('/') + ']')
+      return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
+      //branch = getIn(state, track);
+    } else console.warn('Type not found in path [' + track.join('/') + ']')
   }
 
   if (isSelfManaged(branch)) { // if object has own value then replace it directly
@@ -731,14 +747,19 @@ function updateStatePROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_ob
       if (!isUndefined(newKey)) setIn(update, value, path, SymData, 'status', newKey);
 
     } else if (keyPath[0] == 'oneOf') {
-      let oldOneOf = getIn(state, path, SymData, 'oneOf') || 0;
+      const oldBranch = getIn(state, path);
+      let oldOneOf = getIn(oldBranch, SymData, 'oneOf') || 0;
       let newOneOf = getIn(UPDATABLE_object.update, path, SymData, 'oneOf');
-      if (oldOneOf != newOneOf) {
+      if ((oldOneOf != newOneOf) || (item.type && item.type != getIn(oldBranch, SymData, 'fData', 'type'))) {
+        setIfNotDeeper(UPDATABLE_object, SymReset, 'forceCheck', item.path);
         state = mergeStatePROCEDURE(state, UPDATABLE_object);
         state = setDataMapInState(state, schema, getIn(state, path, SymDataMapTree, SymData) || [], true);
-        const oldBranch = getIn(state, path);
-        let {state: branch, dataMap: maps2enable = [], defaultValues} = makeStateBranch(schema, oneOfStructure(state, path), path);
-        {
+
+        let {state: branch, dataMap: maps2enable = [], defaultValues} = makeStateBranch(schema, oneOfStructure(state, path), path, item.setValue);
+        if (isSelfManaged(oldBranch) && isSelfManaged(branch)) {  // keep status values for self-managed branch
+          const {value, length, oneOf, fData, ...rest} = oldBranch[SymData];
+          branch = merge(branch, makeSlice(SymData, {...rest}));
+        } else {
           const {value, length, oneOf, fData, status, ...rest} = oldBranch[SymData];
           branch = merge(branch, makeSlice(SymData, {...rest}));
         }
@@ -1118,6 +1139,19 @@ function resolvePath(path: Path, base?: Path) {
   return result;
 }
 
+function setIfNotDeeper(state: any, value: any, ...pathes: any[]) {
+  const path = flattenPath(pathes);
+  let result = state;
+  for (let i = 0; i < path.length - 1; i++) {
+    if (result === value) return state;
+    result[path[i]] = {};
+    result = result[path[i]];
+  }
+  if (path.length) result[path[path.length - 1]] = value;
+  else return value;
+  return state
+}
+
 function flattenPath(path: any): Path {
   if (isArray(path)) {
     const result: Path = [];
@@ -1221,7 +1255,8 @@ export {
   getUpdValue,
   isTopPath,
   symConv,
-  normalizeUpdate
+  normalizeUpdate,
+  setIfNotDeeper
 }
 
 export {SymData, SymReset, SymClear, SymDelete}

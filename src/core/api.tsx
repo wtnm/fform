@@ -38,7 +38,8 @@ import {
   mergeStatePROCEDURE,
   isSelfManaged,
   getKeyMapFromSchema,
-  normalizeUpdate
+  normalizeUpdate,
+  setIfNotDeeper
 } from "./stateLib";
 
 
@@ -206,7 +207,7 @@ class FFormStateAPI extends FFormStateManager {
   private _resultPromises: any;
   private _newState: StateType | undefined;
   private _updates: StateApiUpdateType[] = [];
-  private _forceValidation: StateType | boolean | null = null;
+  private _validation: StateType | boolean | null = null;
   private _defferedTimerId: any;
   getState = this._getState;
 
@@ -222,7 +223,7 @@ class FFormStateAPI extends FFormStateManager {
     const self = this;
     self._newState = undefined;
     self._defferedTimerId = null;
-    self._forceValidation = null;
+    self._validation = null;
     self._updates = [];
     self._promise(true);
   }
@@ -243,8 +244,8 @@ class FFormStateAPI extends FFormStateManager {
     let promises = self._promise();
     if (opts.execute === false || self._noExec) return promises;
     if (self._defferedTimerId) clearTimeout(self._defferedTimerId);
-    if (opts.execute === true) self._execBatch(self._updates, opts, promises, self._forceValidation);
-    else self._defferedTimerId = setTimeout(self._execBatch.bind(self, self._updates, opts, promises, self._forceValidation), opts.execute || 0);
+    if (opts.execute === true) self._execBatch(self._updates, opts, promises, self._validation);
+    else self._defferedTimerId = setTimeout(self._execBatch.bind(self, self._updates, opts, promises, self._validation), opts.execute || 0);
 
     return promises;
   }
@@ -279,12 +280,8 @@ class FFormStateAPI extends FFormStateManager {
 
   validate = (path: boolean | string | Path = [], opts: APIOptsType = {}) => {
     const self = this;
-    if (typeof path == 'boolean') self._forceValidation = path;
-    else if (self._forceValidation !== true) {
-      let result = {};
-      normalizeUpdate({path: path, value: true}, self.getState()).forEach(i => setIn(result, true, i.path));
-      self._forceValidation = merge(self._forceValidation || {}, result);
-    }
+    if (typeof path == 'boolean') self._validation = path;
+    else normalizeUpdate({path: path, value: true}, self.getState()).forEach(i => self._validation = setIfNotDeeper(self._validation || {}, true, i.path));
     return self._setExecution(null, opts);
   };
 
@@ -304,7 +301,7 @@ class FFormStateAPI extends FFormStateManager {
     return opts.flatten ? this.keyMap.flatten(value/*, path*/) : value;
   };
 
-  setValue = (value: any, opts: APIOptsType & { path?: string | Path, inital?: boolean, flatten?: boolean } = {}) => {
+  setValue = (value: any, opts: APIOptsType & { path?: string | Path, setOneOf?: number, inital?: boolean, flatten?: boolean } = {}) => {
     const path = normalizePath(opts.path || []);
     return this._setExecution({path: [opts.inital ? '@inital' : '@current'].concat(path), value: opts.flatten ? this.keyMap.unflatten(value/*, path*/) : value}, opts);
   };
@@ -553,8 +550,9 @@ function updateState(dispatch: any) {
 
   updates.forEach((update: StateApiUpdateType) => state = updateStatePROCEDURE(state, schema, UPDATABLE_object, update));
   state = mergeStatePROCEDURE(state, UPDATABLE_object);
-
-  let currentChanges = mergeState(getIn(prevState, SymData, 'current'), getIn(state, SymData, 'current'), {diff: true}).changes;
+  let oldCurrent = getIn(prevState, SymData, 'current');
+  if (UPDATABLE_object.forceCheck) oldCurrent = merge(oldCurrent, UPDATABLE_object.forceCheck);
+  let currentChanges = mergeState(oldCurrent, getIn(state, SymData, 'current'), {diff: true}).changes;
   if (prevState[SymData].inital !== state[SymData].inital) {  // check dirty for all
     state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], ['status', 'dirty'], 0, false, {macros: 'switch'}));  //reset all dirty
     state = setDirtyPROCEDURE(state, schema, UPDATABLE_object, state[SymData].inital, state[SymData].current);

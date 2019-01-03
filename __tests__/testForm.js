@@ -226,11 +226,11 @@ describe('FForm state functions tests', function () {
     expect(state.objLevel_1.objLevel_2.array_1[Symbol.for('FFormData')].length === 0).toBe(true);
     state = stateFuncs.makeStateFromSchema(require('./schema').default);
     expect(state === state).toBe(true);
-    let array_1_00 = stateFuncs.makeStateBranch(require('./schema').default, ['objLevel_1', 'objLevel_2', 'array_1', 0, 0]);
+    let array_1_00 = stateFuncs.makeStateBranch(require('./schema').default, stateFuncs.oneOfStructure({}, []), ['objLevel_1', 'objLevel_2', 'array_1', 0, 0]);
     expect(array_1_00.defaultValues.bazinga).toBe('bazinga default');
     expect(array_1_00.state.bazinga[Symbol.for('FFormData')].value === 'bazinga default').toBe(true);
 
-    let array_1_10 = stateFuncs.makeStateBranch(require('./schema').default, ['objLevel_1', 'objLevel_2', 'array_1', 1, 0], () => 0, {bazinga: 'test value'});
+    let array_1_10 = stateFuncs.makeStateBranch(require('./schema').default, stateFuncs.oneOfStructure({}, []), ['objLevel_1', 'objLevel_2', 'array_1', 1, 0], {bazinga: 'test value'});
     expect(array_1_10.defaultValues.bazinga === 'test value').toBe(true);
     expect(array_1_10.state.bazinga[Symbol.for('FFormData')].value === 'test value').toBe(true);
     expect(array_1_10.defaultValues.bazingaCinema.favBook === 'favBook default').toBe(true);
@@ -484,52 +484,52 @@ describe('FForm state functions tests', function () {
     expect(state[0][1].arrValue[3][SymData].status.untouched).toBe(1);
 
     UPDATABLE_object = {update: {}, replace: {}};
-    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/0,2/@/controls/hidden'], value: true});
+    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/0,2/@/params/hidden'], value: true});
     state = commonFuncs.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
-    expect(state[0][1].arrValue[0][SymData].controls.hidden).toBe(true);
-    expect(state[0][1].arrValue[1][SymData].controls.hidden).toBe(undefined);
-    expect(state[0][1].arrValue[2][SymData].controls.hidden).toBe(true);
-    expect(state[0][1].arrValue[3][SymData].controls.hidden).toBe(undefined);
+    expect(state[0][1].arrValue[0][SymData].params.hidden).toBe(true);
+    expect(state[0][1].arrValue[1][SymData].params.hidden).toBe(undefined);
+    expect(state[0][1].arrValue[2][SymData].params.hidden).toBe(true);
+    expect(state[0][1].arrValue[3][SymData].params.hidden).toBe(undefined);
 
     UPDATABLE_object = {update: {}, replace: {}};
-    //state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue@/controls/hidden'], value: null, macros: 'setAll', skipFields: ['3']});
-    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/*@/controls/hidden'], value: null});
-    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/3@/controls/hidden'], value: undefined});
+    //state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue@/params/hidden'], value: null, macros: 'setAll', skipFields: ['3']});
+    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/*@/params/hidden'], value: null});
+    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/3@/params/hidden'], value: undefined});
     state = commonFuncs.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
-    expect(state[0][1].arrValue[0][SymData].controls.hidden).toBe(null);
-    expect(state[0][1].arrValue[1][SymData].controls.hidden).toBe(null);
-    expect(state[0][1].arrValue[2][SymData].controls.hidden).toBe(null);
-    expect(state[0][1].arrValue[3][SymData].controls.hidden).toBe(undefined);
+    expect(state[0][1].arrValue[0][SymData].params.hidden).toBe(null);
+    expect(state[0][1].arrValue[1][SymData].params.hidden).toBe(null);
+    expect(state[0][1].arrValue[2][SymData].params.hidden).toBe(null);
+    expect(state[0][1].arrValue[3][SymData].params.hidden).toBe(undefined);
 
 
     UPDATABLE_object = {update: {}, replace: {}};
-    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/*/@/controls/hidden, disabled'], value: true});
-    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/mapValue, arrValue/@/controls/hidden, disabled'], value: undefined});
+    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/*/@/params/hidden, disabled'], value: true});
+    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/mapValue, arrValue/@/params/hidden, disabled'], value: undefined});
     state = commonFuncs.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
-    expect(state[0][1].arrValue[SymData].controls.hidden).toBe(undefined);
-    expect(state[0][1].strValue[SymData].controls.hidden).toBe(true);
-    expect(state[0][1].mapArrValue[SymData].controls.hidden).toBe(true);
-    expect(state[0][1].mapValue[SymData].controls.hidden).toBe(undefined);
-    expect(state[0][1].turpleValue[SymData].controls.hidden).toBe(true);
-    expect(state[0][1].arrValue[SymData].controls.disabled).toBe(undefined);
-    expect(state[0][1].strValue[SymData].controls.disabled).toBe(true);
-    expect(state[0][1].mapArrValue[SymData].controls.disabled).toBe(true);
-    expect(state[0][1].mapValue[SymData].controls.disabled).toBe(undefined);
-    expect(state[0][1].turpleValue[SymData].controls.disabled).toBe(true);
+    expect(state[0][1].arrValue[SymData].params.hidden).toBe(undefined);
+    expect(state[0][1].strValue[SymData].params.hidden).toBe(true);
+    expect(state[0][1].mapArrValue[SymData].params.hidden).toBe(true);
+    expect(state[0][1].mapValue[SymData].params.hidden).toBe(undefined);
+    expect(state[0][1].turpleValue[SymData].params.hidden).toBe(true);
+    expect(state[0][1].arrValue[SymData].params.disabled).toBe(undefined);
+    expect(state[0][1].strValue[SymData].params.disabled).toBe(true);
+    expect(state[0][1].mapArrValue[SymData].params.disabled).toBe(true);
+    expect(state[0][1].mapValue[SymData].params.disabled).toBe(undefined);
+    expect(state[0][1].turpleValue[SymData].params.disabled).toBe(true);
 
     UPDATABLE_object = {update: {}, replace: {}};
-    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue, turpleValue@controls/hidden,disabled'], value: null});
+    state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue, turpleValue@params/hidden,disabled'], value: null});
     state = commonFuncs.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
-    expect(state[0][1].arrValue[SymData].controls.hidden).toBe(null);
-    expect(state[0][1].strValue[SymData].controls.hidden).toBe(true);
-    expect(state[0][1].mapArrValue[SymData].controls.hidden).toBe(true);
-    expect(state[0][1].mapValue[SymData].controls.hidden).toBe(undefined);
-    expect(state[0][1].turpleValue[SymData].controls.hidden).toBe(null);
-    expect(state[0][1].arrValue[SymData].controls.disabled).toBe(null);
-    expect(state[0][1].strValue[SymData].controls.disabled).toBe(true);
-    expect(state[0][1].mapArrValue[SymData].controls.disabled).toBe(true);
-    expect(state[0][1].mapValue[SymData].controls.disabled).toBe(undefined);
-    expect(state[0][1].turpleValue[SymData].controls.disabled).toBe(null);
+    expect(state[0][1].arrValue[SymData].params.hidden).toBe(null);
+    expect(state[0][1].strValue[SymData].params.hidden).toBe(true);
+    expect(state[0][1].mapArrValue[SymData].params.hidden).toBe(true);
+    expect(state[0][1].mapValue[SymData].params.hidden).toBe(undefined);
+    expect(state[0][1].turpleValue[SymData].params.hidden).toBe(null);
+    expect(state[0][1].arrValue[SymData].params.disabled).toBe(null);
+    expect(state[0][1].strValue[SymData].params.disabled).toBe(true);
+    expect(state[0][1].mapArrValue[SymData].params.disabled).toBe(true);
+    expect(state[0][1].mapValue[SymData].params.disabled).toBe(undefined);
+    expect(state[0][1].turpleValue[SymData].params.disabled).toBe(null);
   });
 
   it('test relativePath', function () {
@@ -658,7 +658,7 @@ describe('FForm state functions tests', function () {
   it('test getSchemaPart', function () {
     const schemaOneOf = require('./schemaOneOf').default;
     let state = stateFuncs.makeStateFromSchema(schemaOneOf);
-    expect(state[SymData].oneOf).toBe(undefined);
+    expect(state[SymData].oneOf).toBe(0);
     let UPDATABLE_object = {update: {}, replace: {}};
     state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, stateFuncs.makeNUpdate([], ['oneOf'], 1));
     state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
