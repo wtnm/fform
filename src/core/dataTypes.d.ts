@@ -38,24 +38,16 @@ type PROCEDURE_UPDATABLE_objectType = { update: StateType, replace: StateType }
 interface BasicData extends anyObject {
   value?: any;
   length?: number;
-  params?: FFParamsType
+  oneOf?: number;
   fData: {
     title: string;  //
     type: string; //
     required: boolean; // 
     canAdd?: boolean;
+    placeholder?: string;
   };
-  arrayItem?: {
-    canUp?: boolean;
-    canDown?: boolean;
-    canDel?: boolean;
-  }
   status: {
-    obj: {
-      invalid?: boolean;
-      pending?: boolean;
-    };
-    currentPriority: number;
+    priority: number;
     invalid: number;  // 0 if ALL children 0
     dirty: number;  // 0 if ALL children 0
     untouched: number; // 0 if ALL children 0
@@ -64,8 +56,13 @@ interface BasicData extends anyObject {
     pristine: boolean; // !dirty
     touched: boolean; // !untouched
   }
+  params?: FFParamsType
+  arrayItem?: {
+    canUp?: boolean;
+    canDown?: boolean;
+    canDel?: boolean;
+  }
   messages?: { [key: number]: MessagesDataType };
-  controls: FFControlsType;
 
 }
 
@@ -76,11 +73,10 @@ interface MessagesDataType {
   className?: any;
 }
 
-interface FFParamsType {
-  liveValidate?: boolean;
-  autofocus?: boolean;
-  placeholder?: string;
-}
+// interface FFParamsType {
+//  
+//   placeholder?: string;
+// }
 
 interface FFPropsType {
   flatten?: boolean | string; // prefix if string
@@ -88,7 +84,9 @@ interface FFPropsType {
   keyField?: string,
 }
 
-type FFControlsType = {
+type FFParamsType = {
+  liveValidate?: boolean;
+  autofocus?: boolean;
   readonly?: boolean;
   disabled?: boolean;
   hidden?: boolean;

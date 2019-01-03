@@ -12,6 +12,7 @@ import {
   SymDelete,
   stateUpdates,
   normalizePath,
+  relativePath,
 } from './stateLib'
 import {FFormStateAPI, fformCores} from './api'
 
@@ -93,7 +94,6 @@ class FForm extends Component<any, any> {
 
   _submit() {
     const self = this;
-    // todo: set untoched to 0
     self.api.set('/@untoched', 0, {execte: true, macros: 'switch'});
     if (self.props.onSubmit) return self.props.onSubmit(self._savedValue, self)
   }
@@ -159,16 +159,16 @@ class FField extends Component<any, any> {
   private _dataProps: any = {};
   private _builderData: any = {};
   private _rebuild = true;
-  private _liveValidate: boolean;
-  private cached: any;
-  private cachedTimeout: any;
+  private _cached: any;
+  private _cachedTimeout: any;
   private _enumOptions: any;
   // private _stateBranch: StateType;
   private _isNotSelfManaged: boolean | undefined;
 
-
   _bindObject: any;
-  blocks: string[] = [];
+  _blocks: string[] = [];
+
+  liveValidate: boolean;
   presetProps: any;
   mainRef: any;
   funcs: any;
@@ -189,12 +189,11 @@ class FField extends Component<any, any> {
     const self = this;
     Object.defineProperty(self, "path", {get: () => self.props.getPath()});
     Object.defineProperty(self, "pFForm", {get: () => self.props.pFForm});
-    Object.defineProperty(self, "api", {get: () => self.props.pFForm.api});
+    self._apiWrapper();
     const branch = self.api.get(self.path);
     self.state = {branch};
     self._build();
     self._setDataProps(branch[SymData]);
-
     //self._setId();
   }
 
@@ -211,31 +210,78 @@ class FField extends Component<any, any> {
   //   }
   //   self.mainRef && self.mainRef['rebuild'] && self.mainRef['rebuild'](path);
   // }
-
-  _setCachedValue(value: any) {
-    const self = this;
-    self.cached = {value};
-    let fieldCache = self.pFForm.props.fieldCache;
-    if (isUndefined(fieldCache) || fieldCache === true) fieldCache = 40;
-    if (fieldCache) {
-      if (self.cachedTimeout) clearTimeout(self.cachedTimeout);
-      self.cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
-      const data = merge(self.state.branch[SymData], {value: self.cached.value});
-      const dataProps = self._dataProps;
-      self._setDataProps(data);
-      if (dataProps != self._dataProps) self.forceUpdate();
-    } else self._updateCachedValue();
-  }
+  //
+  // _setCachedValue(value: any) {
+  //   const self = this;
+  //   self._cached = {value};
+  //   let fieldCache = self.pFForm.props.fieldCache;
+  //   if (isUndefined(fieldCache) || fieldCache === true) fieldCache = 40;
+  //   if (fieldCache) {
+  //     if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
+  //     self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
+  //     const data = merge(self.state.branch[SymData], {value: self._cached.value});
+  //     const dataProps = self._dataProps;
+  //     self._setDataProps(data);
+  //     if (dataProps != self._dataProps) self.forceUpdate();
+  //   } else self._updateCachedValue();
+  // }
 
   _updateCachedValue() {
     const self = this;
-    self.cachedTimeout = 0;
-    if (self.cached) {
-      const value = self.cached.value;
-      self.api.set(self.path + '/@/value', value === "" ? undefined : value, {noValidation: !self._liveValidate});
-      self.cached = undefined;
+    self._cachedTimeout = undefined;
+    if (self._cached) {
+      self.api.setValue(self._cached.value, {noValidation: !self.liveValidate});
+      self._cached = undefined;
     }
   }
+
+  _cacheValue(path: any, value: any, setValue = false): boolean {
+    const self = this;
+    let fieldCache = self.pFForm.props.fieldCache;
+    if (isUndefined(fieldCache) || fieldCache === true) fieldCache = 40;
+    if (fieldCache) {
+      let valueSet = setValue && (!path || path == './' || path == '.');
+      if (!valueSet) {
+        let fPath = self.path;
+        path = '#/' + path2string(normalizePath(path, self.path)) + (setValue ? '/@/value' : '');
+        valueSet = (path == fPath + '/@/value') || (path == '#/@/current/' + fPath.slice(2));
+      }
+      if (valueSet) {
+        self._cached = {value};
+        if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
+        self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
+        const data = merge(self.state.branch[SymData], {value: self._cached.value});
+        const dataProps = self._dataProps;
+        self._setDataProps(data);
+        if (dataProps != self._dataProps) self.forceUpdate();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  _apiWrapper() {
+    const self = this;
+    const api = self.props.pFForm.api;
+    const wrapPath = (path: string | Path = []) => normalizePath(path, self.path);
+    const wrapOpts = (opts: any) => {
+      const {path, ...rest} = opts;
+      rest.path = wrapPath(path);
+      return rest;
+    };
+
+    self.api = {
+      validate: (path: boolean | string | Path = [], ...args: any[]) => api.validate(typeof path == 'boolean' ? path : wrapPath(path), ...args),
+      get: (...path: any[]) => api.get(wrapPath(path)),
+      set: (path: string | Path = [], value: any, ...args: any[]) => self._cacheValue(path, value) || api.set(wrapPath(path), value, ...args),
+      setValue: (value: any, opts: any, ...args: any[]) => self._cacheValue(opts.path, value, true) || api.setValue(value, wrapOpts(opts), ...args)
+    };
+    ['noExec', 'execute', 'setState', 'getActive',].forEach(fn => self.api[fn] = (...args: any[]) => api[fn](...args));
+    ['arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly', 'getSchemaPart']
+      .forEach(fn => self.api[fn] = (path: string | Path = [], ...args: any[]) => api[fn](wrapPath(path), ...args));
+    ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
+  }
+
 
   _build() {
     const isMultiSelect = (schema: any) => isArray(schema.items && schema.items.enum) && schema.uniqueItems;
@@ -252,8 +298,8 @@ class FField extends Component<any, any> {
     const self = this;
     const pFForm = self.pFForm;
 
-    const path = string2path(self.path);
-    const schemaPart = getSchemaPart(self.api.schema, path);
+    //const path = string2path(self.path);
+    const schemaPart = self.api.getSchemaPart(self.path);
     const type = isArray(schemaPart.type) ? schemaPart.type[0] : schemaPart.type;
     //const x = schemaPart.x || ({} as FFSchemaExtensionType);
     const objects = pFForm.props.objects;
@@ -263,15 +309,12 @@ class FField extends Component<any, any> {
 
     self.schemaPart = schemaPart;
     self._isNotSelfManaged = !isSchemaSelfManaged(schemaPart) || undefined;
-    //self._stateBranch = pFForm.api.get(path);
 
-    // funcs.onChange = (value: any) => {
-    //   self.pFForm.set(self._props.path + '/@/value', value === "" ? undefined : value, {execute: 10, noValidation: !self._liveValidate});
-    // };
-    funcs.onChange = self._setCachedValue.bind(self);
+    //funcs.onChange = self._setCachedValue.bind(self);
     funcs.onBlur = (value: any) => {
-      self.api.set(self.path + '/@/status/untouched', 0, {noValidation: true});
-      return !self._liveValidate ? self.api.validate(self.path) : null;
+      self.api.set('./@status/untouched', 0, {noValidation: true});
+      self.api.set('/@/active', undefined, {noValidation: true});
+      return !self.liveValidate ? self.api.validate() : null;
     };
     funcs.onFocus = (value: any) => self.api.set('/@/active', self.path, {noValidation: true});
     self.funcs = funcs;
@@ -284,14 +327,19 @@ class FField extends Component<any, any> {
 
     self._enumOptions = getEnumOptions(schemaPart);
     const widgets = {}, schemaProps = {};
-    self.blocks = objKeys(result.blocks).filter(key => result.blocks[key]);
+    self._blocks = objKeys(result._blocks).filter(key => result._blocks[key]);
 
-    self.blocks.forEach((block: string) => {
-      const {propsMap, widget, ...rest} = result[block];
+    self._blocks.forEach((block: string) => {
+      const {_propsMap, widget, ...rest} = result[block];
       widgets[block] = widget;
-      if (rest.refName) rest[rest.refName] = self._setRef.bind(self); // refName - name for ref-function, so put it if it exists
+      if (rest._refName) rest[rest._refName] = self._setRef.bind(self); // _refName - name for ref-function, so put it if it exists
       schemaProps[block] = rest;  // all properties, except for several reserved names
     });
+
+    // if (self._isNotSelfManaged) {
+    //   widgets['Main'] = FSection;
+    //   self.presetProps['Main'] = {widget: FSection, ...schemaProps['Main']};
+    // }
 
     self.widgets = widgets;
     self.schemaProps = schemaProps;
@@ -320,11 +368,11 @@ class FField extends Component<any, any> {
   _setDataProps(data: any) {
     const self = this;
     const dataProps = {};
-    self.blocks.forEach((block: string) => dataProps[block] = mapProps(self.presetProps[block].propsMap, data, self._bindObject));
+    self._blocks.forEach((block: string) => dataProps[block] = mapProps(self.presetProps[block]._propsMap, data, self._bindObject));
     const upd: any = {};
     let updateComponent = false;
     upd._dataProps = merge(self._dataProps, dataProps, {diff: true});
-    upd._liveValidate = data.params && data.params._liveValidate;
+    upd._liveValidate = data.params && data.params.liveValidate;
     upd._enumOptions = self._enumOptions || data.enum;
     objKeys(upd).forEach(key => {
       if (self[key] !== upd[key]) {
@@ -383,7 +431,7 @@ class SectionObject extends PureComponent<any, any> { // need to be class, as we
 //                  pFForm={pFForm} path={path + (fieldName ? '/' + fieldName : '')} stateBranch={stateBranch}/>;
 // }
 
-class Section extends Component<any, any> {
+class FSection extends Component<any, any> {
   private _arrayStartIndex: number = 0;
   private _items4arrayLayout: any[] = [];
   private _rebuild = true;
@@ -435,7 +483,7 @@ class Section extends Component<any, any> {
   // }
 
   _build(props: any) {
-    function bindMetods(restField: any, track:Path = []) {
+    function bindMetods(restField: any, track: Path = []) {
       let result = {...restField};
       chains.methods2chain.forEach((methodName: string) => {
         if (typeof result[methodName] == 'function') result[methodName] = result[methodName].bind(pFField._bindObject)
@@ -454,18 +502,18 @@ class Section extends Component<any, any> {
             keys.splice(idx, 1);
           }
         } else if (isObject(fieldName)) { // if field is object, then do makeLayouts if prop "_fields" is passed
-          let {fields: groupFields, propsMap, passPFField, ...restField} = fieldName as GroupType;
+          let {_fields: groupFields, _propsMap, _pFField, ...restField} = fieldName as GroupType;
           let savedCountValue = count; // save count value as it may change in following makeLayouts calls
           count++;
           restField = bindMetods(restField);  // binds onFunctis to field
           restField = replaceWidgetNamesWithFunctions(restField, pFField.pFForm.props.objects); // replace widget name (that passed as string value) with functions
           let opts = {};
-          if (passPFField) opts[passPFField === true ? 'pFField' : passPFField] = pFField; // pass FField to widget. If true name 'options' is used, if string, then string value is used
+          if (_pFField) opts[_pFField === true ? 'pFField' : _pFField] = pFField; // pass FField to widget. If true name 'options' is used, if string, then string value is used
           if (groupFields) {  // if _fields exists then this is group section and we should map groupPropsMap, pass schemaProps['Layouts'] and use GroupWidget as default if no widget is supplied
-            if (propsMap || LayoutsPropsMap) self._dataMaps[savedCountValue] = merge(propsMap || {}, LayoutsPropsMap || {}); // merge propsMap and LayoutsPropsMap, to pass them every time _props changed
+            if (_propsMap || LayoutsPropsMap) self._dataMaps[savedCountValue] = merge(_propsMap || {}, LayoutsPropsMap || {}); // merge _propsMap and LayoutsPropsMap, to pass them every time _props changed
             Object.assign(opts, schemaProps['Layouts']);
             if (!restField.widget) opts['widget'] = LayoutsWidget
-          } else if (propsMap) self._dataMaps[savedCountValue] = propsMap;
+          } else if (_propsMap) self._dataMaps[savedCountValue] = _propsMap;
           layout.push(<SectionObject {...opts} count={savedCountValue} getDataProps={self.getDataProps} ref={self._setWidRef(savedCountValue)}
                                      key={'widget_' + savedCountValue} {...restField} >{groupFields && makeLayouts(keys, groupFields)}</SectionObject>);
         }
@@ -481,8 +529,8 @@ class Section extends Component<any, any> {
     if (isSchemaSelfManaged(schemaPart)) return;
 
     const LayoutsWidget = widgets['Layouts'] || 'div';
-    const LayoutsPropsMap = pFField.presetProps['Layouts'].propsMap;
-    const {x = {}, properties = {}}: { [key: string]: any } = schemaPart;
+    const LayoutsPropsMap = pFField.presetProps['Layouts']._propsMap;
+    const {properties = {}}: { [key: string]: any } = schemaPart;
     // const {groups = []} = x;
 
     self._keyField = schemaPart.ff_props && schemaPart.ff_props.keyField || '/uniqId';
@@ -504,7 +552,7 @@ class Section extends Component<any, any> {
     let objectKeys: string[] = self._getObjectKeys(stateBranch, self.props);
     if (!self._focusField) self._focusField = props._focusField || objectKeys[0] || '';
 
-    self._objectLayouts = makeLayouts(objectKeys, x.fields || []);  // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
+    self._objectLayouts = makeLayouts(objectKeys, schemaPart.ff_fields || []);  // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
     objectKeys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));  // so here we have only keys was not used and we add them to _objectLayouts
     objKeys(self._dataMaps).forEach((key: string) => self._dataProps[key] = mapProps(self._dataMaps[key], stateBranch[SymData], pFField._bindObject));
 
@@ -625,7 +673,7 @@ class Section extends Component<any, any> {
 
   render() {
     const self = this;
-    let {funcs, length, enumOptions, pFField, onChange, onFocus, onBlur, stateBranch, FFormProps, refName, focusField, ...rest} = self.props;
+    let {funcs, length, enumOptions, pFField, onChange, onFocus, onBlur, stateBranch, FFormProps, _refName, focusField, ...rest} = self.props;
     if (self._rebuild) self._build(self.props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
     // else if (self._items4arrayLayout.length) self._add2arrayLayout();
     return (
@@ -687,11 +735,11 @@ function getFieldBlocks(presetsString: string | string[], objects: any = {}, sch
       result = merge(result, makeSlice('$' + methodName, SymDelete), {del: true});
     });
     objKeys(result).forEach(key => {
-      if (key[0] !== '_' && isObject(result[key])) {
-        let keyRes: any = chainMethods(result[key], initalFuncs && initalFuncs[key], track.concat(key))
+      if (key[0] !== '_' && isObject(result[key])) { // skip keys that begins with '_'
+        let keyRes: any = chainMethods(result[key], initalFuncs && initalFuncs[key], track.concat(key));
         result = merge(result, makeSlice(key, keyRes))
       }
-    });  // skip keys that begins with '_'
+    });
     return result;
   }
 
@@ -813,16 +861,16 @@ function BaseInput(props: any) {
     stateBranch,
     pFField,
     enumOptions,
-    refName,
+    _refName,
     className,
-    currentPriority,
+    priority,
     ...rest
   }: { [key: string]: any } = props;
   UseTag = UseTag || (type == 'textarea' || type == 'select' ? type : 'input');
   const refObj: any = {};
-  let ref = rest[refName];
-  if (refName) delete rest[refName];
-  if (typeof UseTag == 'string') refObj.ref = ref; else refObj[refName] = ref; // if "simple" tag then use ref else pass further in refName property
+  let ref = rest[_refName];
+  if (_refName) delete rest[_refName];
+  if (typeof UseTag == 'string') refObj.ref = ref; else refObj[_refName] = ref; // if "simple" tag then use ref else pass further in _refName property
   const commonProps = title ? {label: title} : {}; //{name: props.id, label: title || props.id.split('/').slice(-1)[0]}; 
   let valueObj: any = {};
   if (type === 'checkbox') valueObj.checked = !!value;
@@ -838,7 +886,7 @@ function BaseInput(props: any) {
         {enumOptions.map(({value, label}: any, i: number) => <option key={i} value={value}>{label}</option>)}
       </UseTag>);
   }// {enumOptions.map(({value, name}:any, i: number) => <option key={i} value={value}>{name}</option>)}
-  else return (<UseTag className={classNames(className, getIn(_PRIORITYClassNames, currentPriority))} {...rest} {...refObj} {...valueObj} type={type} {...commonProps}/>);
+  else return (<UseTag className={classNames(className, getIn(_PRIORITYClassNames, priority))} {...rest} {...refObj} {...valueObj} type={type} {...commonProps}/>);
 };
 
 function ArrayInput(props: any) {
@@ -861,7 +909,7 @@ function ArrayInput(props: any) {
     stateBranch,
     pFField,
     enumOptions,
-    refName,
+    _refName,
     autofocus,
     disabled,
     disabledClass,
@@ -873,8 +921,8 @@ function ArrayInput(props: any) {
   }: { [key: string]: any } = props;
   if (!type) type = pFField && pFField.schemaPart.type == 'array' ? 'checkbox' : 'radio';
   const name = props.id;
-  let ref = rest[refName];
-  if (refName) delete rest[refName];
+  let ref = rest[_refName];
+  if (_refName) delete rest[_refName];
   let {useTag: InputUseTag = 'input', ...restInput} = inputProps;
   let {useTag: LabelUseTag = 'label', ...restLabel} = labelProps;
   let stacked = !!stackedProps;
@@ -1016,34 +1064,6 @@ function ArrayItem(props: any) {
   )
 }
 
-/*function CombineWidgets(_props: any) {
-  function processWidget(key: string) {
-    if (skip[key]) return false;
-    const {widget: Widget, inner = {}, innerProps = [], addProps = [], extractProps = [], ...rest} : { [key: string]: any } = this[key];
-    const {widget: InnerWidget, ...restInner} = inner;
-    const widgetProps = {}, innerWidgetProps = {};
-    addProps.forEach((propName: string) => widgetProps[propName] = _props[propName]);
-    innerProps.forEach((propName: string) => innerWidgetProps[propName] = _props[propName]);
-    push2array(props2remove, extractProps);
-    return InnerWidget ? <Widget key={key} {...widgetProps} {...rest}><InnerWidget {...innerWidgetProps} {...restInner}/></Widget> : <Widget key={key} {...widgetProps} {...rest}/>
-  }
-
-  const {widget: Widget, before = {}, after = {}, skip = {}, GroupBlocks, ...rest} = _props;
-  const PrevWidget = _props.FField.preset.getPropBefore('Main/widget', CombineWidgets);  // gets widget that was before CombineWidgets in presets chain
-  const {widget: LayoutWidget, ...layoutRest} = GroupBlocks;
-  const props2remove: string[] = [];
-  const beforeWidgets = objKeys(before).sort().map(processWidget.bind(before));
-  const afterWidgets = objKeys(after).sort().map(processWidget.bind(after));
-  props2remove.forEach(key => delete rest[key]);
-  return (
-    <LayoutWidget {...layoutRest}>
-      {beforeWidgets}
-      <PrevWidget {...rest}/>
-      {afterWidgets}
-    </LayoutWidget>
-  )
-}*/
-
 function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: string]: string } } = {}) { //skipFields: string[] = [], replaceFields: { [key: string]: string } = {}) {
   const skipFields = opts.skipFields || [];
   const replaceFields = opts.replaceFields || {};
@@ -1059,23 +1079,6 @@ function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: stri
     return new stateUpdates([
       {skipFields, path: stringPath, value: false, macros: 'setMultiply'}, {skipFields, path: stringPath, value: true, macros: 'setAllBut'}]);
   }
-}
-
-function onSelectChange(event: any) {
-  function processSelectValue({type, items}: any, value: any) {
-    // if (value === "") return null;
-    if (type === "array" && items && (items.type == "number" || items.type == "integer")) return value.map(asNumber);
-    else if (type === "boolean") return value === "true";
-    else if (type === "number") return asNumber(value);
-    return value;
-  }
-
-  function getSelectValue(event: any, multiple: boolean) {
-    if (multiple) return [].slice.call(event.target.options).filter((item: any) => item.selected).map((item: any) => item.value);
-    else return event.target.value;
-  }
-
-  this.onChange(processSelectValue(this.schemaPart, getSelectValue(event, this.field.schemaProps['Main'].multiple)))
 }
 
 function getArrayOfPropsFromArrayOfObjects(arr: any, propPath: string | Path) {
@@ -1098,6 +1101,24 @@ function TristateBox(props: any) {
                 }}/>
 }
 
+
+function onSelectChange(event: any) {
+  function processSelectValue({type, items}: any, value: any) {
+    // if (value === "") return null;
+    if (type === "array" && items && (items.type == "number" || items.type == "integer")) return value.map(asNumber);
+    else if (type === "boolean") return value === "true";
+    else if (type === "number") return asNumber(value);
+    return value;
+  }
+
+  function getSelectValue(event: any, multiple: boolean) {
+    if (multiple) return [].slice.call(event.target.options).filter((item: any) => item.selected).map((item: any) => item.value);
+    else return event.target.value;
+  }
+
+  this.onChange(processSelectValue(this.schemaPart, getSelectValue(event, this.field.schemaProps['Main'].multiple)))
+}
+
 /////////////////////////////////////////////
 //  basicObjects
 /////////////////////////////////////////////
@@ -1112,7 +1133,6 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
     'onBlur': true, 'onMouseOver': true, 'onMouseEnter': true, 'onMouseLeave': true, 'onChange': true, 'onSelect': true, 'onClick': true, 'onSubmit': true, 'onFocus': true, 'onUnload': true, 'onLoad': true
   },
   widgets: {
-    // CombineWidgets: CombineWidgets,
     Builder: DefaultBuilder,
     Array: ArrayBlock,
     ArrayItem: ArrayItem,
@@ -1125,34 +1145,34 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
     BaseInput: BaseInput,
     CheckboxInput: CheckboxInput,
     ArrayInput: ArrayInput,
-    Section: Section,
+    Section: FSection,
     DivBlock: DivBlock,
     Autosize: AutosizeBlock,
   },
   presets: {
     '*': {
-      blocks: {'Builder': true, 'Title': true, 'Body': true, 'Main': true, 'Message': true, 'GroupBlocks': true, 'ArrayItem': true, 'Autosize': false},
+      //_blocks: {'Builder': true, 'Title': true, 'Body': true, 'Main': true, 'Message': true, 'GroupBlocks': true, 'ArrayItem': true, 'Autosize': false},
       // childrenBlocks: {},
       Autosize: {
-        widget: 'Autosize',
-        propsMap: {
+        _widget: '%/widgets/Autosize',
+        _propsMap: {
           value: 'value',
           placeholder: 'params/placeholder',
         }
       },
       Array: {
-        widget: 'Array',
-        empty: {widget: 'EmptyArray'},
-        addButton: {widget: 'AddButton'},
-        propsMap: {
+        _widget: '%/widgets/Array',
+        empty: {_widget: '%/widgets/EmptyArray'},
+        addButton: {_widget: '%/widgets/AddButton'},
+        _propsMap: {
           length: 'length',
           canAdd: 'fData/canAdd',
         },
       },
       ArrayItem: {
-        widget: 'ArrayItem',
+        _widget: '%/widgets/ArrayItem',
         itemMenu: {
-          widget: 'ItemMenu',
+          _widget: '%/widgets/ItemMenu',
           buttons: ['first', 'last', 'up', 'down', 'del'],
           buttonProps: {
             onClick: function (key: string) {
@@ -1160,70 +1180,71 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
             }
           }
         },
-        propsMap: {itemData: 'arrayItem'}
+        _propsMap: {itemData: 'arrayItem'}
       },
       Builder: {
-        widget: 'Builder',
-        propsMap: {
+        _widget: '%/widgets/Builder',
+        _propsMap: {
           hidden: ['controls', (controls: any) => getBindedValue(controls, 'hidden')],
         },
       },
       Layouts: {
-        widget: 'DivBlock',
+        _widget: '%/widgets/DivBlock',
         className: 'fform-group-block',
       },
       GroupBlocks: {
-        widget: 'DivBlock',
+        _widget: '%/widgets/DivBlock',
         className: 'fform-layout-block',
       },
       Body: {
-        widget: 'DivBlock',
+        _widget: '%/widgets/DivBlock',
         className: 'fform-body-block',
       },
       Title: {
-        widget: 'Title',
+        _widget: '%/widgets/Title',
         useTag: 'label',
         requireSymbol: '*',
-        propsMap: {
+        _propsMap: {
           required: 'fData/required',
           title: 'fData/title',
         },
       },
       Message: {
-        widget: 'Messages',
-        propsMap: {
+        _widget: '%/widgets/Messages',
+        _propsMap: {
           messages: 'messages',
           untouched: 'status/untouched',
         },
         messageItem: {
-          widget: 'MessageItem',
+          _widget: '%/widgets/MessageItem',
         },
       },
       Main: {
-        widget: 'BaseInput',
-        refName: 'getRef',
-        propsMap: {
-          currentPriority: 'status/currentPriority',
+        _widget: '%/widgets/BaseInput',
+        _refName: 'getRef',
+        _propsMap: {
+          priority: 'status/priority',
           value: 'value',
           autoFocus: 'params/autofocus',
           placeholder: 'params/placeholder',
           required: 'fData/required',
           title: 'fData/title',
-          readOnly: ['controls', (controls: any) => getBindedValue(controls, 'readonly')],
-          disabled: ['controls', (controls: any) => getBindedValue(controls, 'disabled')],
+          readOnly: 'controls/readonly',
+          disabled: 'controls/disabled',
         }
       }
     },
     base: {
+      $ref: '%/presets/*',
       Main: {
         onChange: function (event: any) {
           this.onChange(event.target.value)
         },
       }
     },
-    string: {_: 'base', Main: {type: 'text'}},
+    string: {$ref: '%/presets/base', Main: {type: 'text'}},
     integer: {
-      _: 'base',
+      $ref: '%/presets/base',
       Main: {
         type: 'number',
         "$onChange": function (val: string) {
@@ -1232,7 +1253,7 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
       }
     },
     number: {
-      _: 'base',
+      $ref: '%/presets/base',
       Main: {
         type: 'number',
         step: 'any',
@@ -1241,12 +1262,12 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
         }
       }
     },
-    range: {_: 'base', Main: {type: 'range'}},
-    'null': {Main: {type: 'hidden'}},
+    range: {$ref: '%/presets/base', Main: {type: 'range'}},
+    'null': {$ref: '%/presets/base', Main: {type: 'hidden'}},
     hidden: {
       Builder: {
         hidden: true,
-        propsMap: {hidden: false}
+        _propsMap: {hidden: false}
       }
     },
     booleanBase: {
@@ -1256,9 +1277,9 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
       }
     },
     boolean: {
-      _: 'booleanBase',
+      $ref: '%/presets/booleanBase',
       Main: {
-        widget: 'CheckboxInput',
+        _widget: '%/widgets/CheckboxInput',
       },
       Title: {emptyTitle: true},
     },
@@ -1269,18 +1290,18 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
       }
     },
     tristate: {
-      _: 'tristateBase',
+      $ref: '%/presets/tristateBase',
       Main: {
-        widget: 'CheckboxInput',
+        _widget: '%/widgets/CheckboxInput',
       },
       Title: {emptyTitle: true},
     },
     object: {
-      blocks: {'Layouts': true},
+      _blocks: {'Layouts': true},
       Main: {
-        widget: 'Section',
-        refName: 'ref',
-        propsMap: {
+        _widget: '%/widgets/Section',
+        _refName: 'ref',
+        _propsMap: {
           value: false,
           autoFocus: false,
           placeholder: false,
@@ -1294,11 +1315,11 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
       Title: {useTag: 'legend'},
     },
     array: {
-      _: 'object',
-      blocks: {'Array': true},
-      Main: {propsMap: {length: 'length'}},
-      GroupBlocks: {useTag: 'fieldset'},
-      Title: {useTag: 'legend'},
+      $ref: '%/presets/object',
+      _blocks: {'Array': true},
+      //Main: {_propsMap: {length: 'length'}},
+      //GroupBlocks: {useTag: 'fieldset'},
+      //Title: {useTag: 'legend'},
     },
     inlineTitle: {
       GroupBlocks: {
@@ -1306,34 +1327,35 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
       }
     },
     select: {Main: {type: 'select', onChange: onSelectChange}},
-    multiselect: {_: 'select', Main: {multiply: true}},
+    multiselect: {$ref: '%/presets/select', Main: {multiply: true}},
     arrayOf: {
       Main: {
-        widget: 'ArrayInput',
+        _widget: '%/widgets/ArrayInput',
         inputProps: {},
         labelProps: {},
         stackedProps: {},
         disabledClass: 'disabled',
       },
     },
+    radio: {$ref: '%/presets/arrayOf', Main: {type: 'radio'}},
+    checkboxes: {$ref: '%/presets/arrayOf', Main: {type: 'checkbox'}, fields: {'Layouts': false, 'Array': false}},
+
     inlineItems: {Main: {stackedProps: false}},
     buttons: {Main: {inputProps: {className: 'button'}, labelProps: {className: 'button'}}},
-    radio: {_: 'arrayOf', Main: {type: 'radio'}},
-    checkboxes: {_: 'arrayOf', Main: {type: 'checkbox'}, fields: {'Layouts': false, 'Array': false}},
     //selector: {dataMap: [['./@/value', './', selectorOnChange(false)]]}, // {onChange: selectorOnChange(false)}},
     //tabs: {dataMap: [['./@/value', './', selectorOnChange(true)]]}, //{Main: {onChange: selectorOnChange(true)}},
     autosize: {
-      blocks: {'Autosize': true},
+      _blocks: {'Autosize': true},
       GroupBlocks: {style: {flexGrow: 0}},
     },
     flexRow: {
       Layouts: {style: {flexFlow: 'row'}}
     },
     noArrayItemButtons: {
-      blocks: {ArrayItem: false},
+      _blocks: {ArrayItem: false},
     },
     noArrayButtons: {
-      blocks: {Array: false},
+      _blocks: {Array: false},
     }
   },
   presetMap: {
@@ -1343,27 +1365,27 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
     integer: ['select', 'updown', 'range', 'radio'],
     array: ['select', 'checkboxes', 'files'],
   },
-  presetsCombineAfter: {
-    radio: ['inlineItems', 'buttons'],
-    checkboxes: ['inlineItems', 'buttons'],
-    string: ['autosize'],
-    number: ['autosize'],
-    integer: ['autosize'],
-    email: ['autosize'],
-    password: ['autosize'],
-    hostname: ['autosize'],
-    uri: ['autosize'],
-  },
-  presetsCombineBefore: {
-    radio: ['selector', 'tabs'],
-    checkboxes: ['selector', 'tabs'],
-    select: ['selector', 'tabs'],
-  },
+  // presetsCombineAfter: {
+  //   radio: ['inlineItems', 'buttons'],
+  //   checkboxes: ['inlineItems', 'buttons'],
+  //   string: ['autosize'],
+  //   number: ['autosize'],
+  //   integer: ['autosize'],
+  //   email: ['autosize'],
+  //   password: ['autosize'],
+  //   hostname: ['autosize'],
+  //   uri: ['autosize'],
+  // },
+  // presetsCombineBefore: {
+  //   radio: ['selector', 'tabs'],
+  //   checkboxes: ['selector', 'tabs'],
+  //   select: ['selector', 'tabs'],
+  // },
 };
 
 
 const buttonObject = {
-  widget: function (props: any) {
+  _widget: function (props: any) {
     let {text = 'Submit', ...rest} = props;
     return <button {...rest}>{text}</button>
   }

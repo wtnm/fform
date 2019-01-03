@@ -38,6 +38,7 @@ import {
   mergeStatePROCEDURE,
   isSelfManaged,
   getKeyMapFromSchema,
+  normalizeUpdate
 } from "./stateLib";
 
 
@@ -274,18 +275,15 @@ class FFormStateAPI extends FFormStateManager {
     return self._setExecution(null, opts);
   };
 
-  validate = (force: boolean | StateType | string[] | string = true, opts: APIOptsType = {}) => {
+  getActive = () => this.get(SymData, 'active');
+
+  validate = (path: boolean | string | Path = [], opts: APIOptsType = {}) => {
     const self = this;
-    if (force === false) self._forceValidation = false;
+    if (typeof path == 'boolean') self._forceValidation = path;
     else if (self._forceValidation !== true) {
-      if (typeof force === 'string') force = [force];
-      if (isArray(force)) {
-        let result = {};
-        force.forEach(value => setIn(result, true, string2path(value)));
-        force = result;
-      }
-      if (force === true) self._forceValidation = true;
-      else self._forceValidation = merge(self._forceValidation || {}, force);
+      let result = {};
+      normalizeUpdate({path: path, value: true}, self.getState()).forEach(i => setIn(result, true, i.path));
+      self._forceValidation = merge(self._forceValidation || {}, result);
     }
     return self._setExecution(null, opts);
   };
@@ -300,24 +298,22 @@ class FFormStateAPI extends FFormStateManager {
     return this._setExecution((item as StateApiUpdateType), opts);
   };
 
-  getValue = (opts: APIOptsType & { inital?: boolean, flatten?: boolean, path?: string | Path } = {}): any => {
+  getValue = (opts: APIOptsType & { path?: string | Path, inital?: boolean, flatten?: boolean } = {}): any => {
     const path = normalizePath(opts.path || []);
     let value = getIn(this.getState(), SymData, opts.inital ? 'inital' : 'current', path);
     return opts.flatten ? this.keyMap.flatten(value/*, path*/) : value;
   };
 
-  setValue = (value: any, opts: APIOptsType & { inital?: boolean, flatten?: boolean, path?: string | Path } = {}) => {
+  setValue = (value: any, opts: APIOptsType & { path?: string | Path, inital?: boolean, flatten?: boolean } = {}) => {
     const path = normalizePath(opts.path || []);
     return this._setExecution({path: [opts.inital ? '@inital' : '@current'].concat(path), value: opts.flatten ? this.keyMap.unflatten(value/*, path*/) : value}, opts);
   };
 
-  getDefaultValue = (opts: { flatten?: boolean } = {}) => opts.flatten ? this.keyMap.flatten(getDefaultFromSchema(this.schema)) : getDefaultFromSchema(this.schema);
+  getDefaultValue = (opts: { path?: string | Path, flatten?: boolean } = {}) => opts.flatten ? this.keyMap.flatten(getDefaultFromSchema(this.schema)) : getDefaultFromSchema(this.schema);
 
   reset = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymReset, opts);
 
   clear = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymClear, opts);
-
-  getActive = () => this.get(SymData, 'active');
 
   arrayAdd = (path: string | Path, value: number | any[] = 1, opts: APIOptsType = {}) => {
     return this._setExecution({path, value: value, macros: 'array'}, opts);
@@ -338,6 +334,11 @@ class FFormStateAPI extends FFormStateManager {
       {path: path2string(path) + '@' + '/controls/hidden', value: false},
     ], opts);
   };
+
+  getSchemaPart = (path: string | Path) => {
+    path = normalizePath(path);
+    return getSchemaPart(this.schema, path, oneOfFromState(this.getState()))
+  }
 
 }
 
@@ -388,7 +389,7 @@ function setValidStatusPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE
     if (!isUndefined(currentPriority)) break;
   }
 
-  state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, selfManaged ? ['status', 'invalid'] : ['status', 'obj', 'invalid'], currentPriority === 0 ? 1 : -1, true, {macros: 'setStatus'}));
+  state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['status', 'validation', 'invalid'], currentPriority === 0 ? 1 : 0, true, {macros: 'setStatus'}));
   state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['status', 'priority'], currentPriority));
 
   if (!selfManaged) objKeys(getIn(UPDATABLE_object.update, track)).forEach(key => state = setValidStatusPROCEDURE(state, schema, UPDATABLE_object, track.concat(key)));
@@ -417,7 +418,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
           result.path = track;
           result.selfManaged = selfManaged;
           vPromises.push(result);
-          updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, selfManaged ? ['status', 'pending'] : ['status', 'obj', 'pending'], 1, true, {macros: 'setStatus'}))
+          updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['status', 'validation', 'pending'], 1, true, {macros: 'setStatus'}))
         } else state = updateMessagesPROCEDURE(state, schema, UPDATABLE_object, track, result, 1)
       })
     }
@@ -466,7 +467,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
         let {validatedValue, path, selfManaged} = vPromises[i];
         if (validatedValue == getIn(newValues, path)) {
           state = updateMessagesPROCEDURE(state, schema, UPDATABLE_object, path, results[i], 2);
-          state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, selfManaged ? ['status', 'pending'] : ['status', 'obj', 'pending'], -1, false, {macros: 'setStatus'}))
+          state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}))
           // pendingStatus[path2string(path)] = false;
         }
       }
@@ -481,7 +482,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
       for (let i = 0; i < vPromises.length; i++) {
         let {validatedValue, path, selfManaged} = vPromises[i];
         if (validatedValue == getIn(newValues, path)) {
-          state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, selfManaged ? ['status', 'pending'] : ['status', 'obj', 'pending'], -1, false, {macros: 'setStatus'}))
+          state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}))
         }
       }
       state = setValidStatusPROCEDURE(state, schema, UPDATABLE_object);

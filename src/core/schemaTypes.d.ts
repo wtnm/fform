@@ -90,9 +90,9 @@ interface FFCompiledExtensionType extends FFCommonSchemaType {
 
 interface FFCommonSchemaType {
   ff_preset?: string; // presets for rendering components
-  ff_controls?: FFControlsType; // editable in state controls
+  ff_placeholder?: string;
   ff_params?: FFParamsType; // editable in state params
-  ff_props?: FFPropsType; // not editable in state params/controls
+  ff_props?: FFPropsType; // not editable in state params
   ff_data?: { [key: string]: any } | { [key: number]: any };
 }
 
@@ -110,8 +110,6 @@ interface formObjectsType {
   "types"?: string[];
   "presetMap"?: { [key: string]: string[] };
   "methods2chain"?: { [key: string]: any };
-  "presetsCombineBefore"?: { [key: string]: any };
-  "presetsCombineAfter"?: { [key: string]: any };
   "array"?: {
     empty?: FFCompiledCustomizeType;
     addButton?: FFCompiledCustomizeType;
@@ -123,16 +121,17 @@ interface formObjectsType {
 
 type PropsMapType = { [key: string]: false | string | [string, MapFunctionType] }
 
+type FFieldsType = Array<string | GroupType>;
+
 interface FFCompiledCustomizeType {
-  widget?: any,
-  propsMap?: PropsMapType;
+  _widget?: any,
+  _propsMap?: PropsMapType;
+  $ref?: string;
 
   [key: string]: any;
 }
 
-type FFieldsType = Array<string | GroupType>;
-
 interface GroupType extends FFCompiledCustomizeType {
-  fields?: FFieldsType,
-  passPFField?: true | string
+  _fields?: FFieldsType,
+  _pFField?: true | string
 }
