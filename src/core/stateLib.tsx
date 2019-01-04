@@ -61,7 +61,7 @@ function getBindedMaps2update(branch: StateType, path: Path = []) {
 
 const Macros: { [key: string]: any } = {};
 
-Macros.array = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   let path = item.path;
   let length = getUpdValue([UPDATABLE_object.update, state], path, SymData, 'length');
   if (isArray(item.value)) {
@@ -79,7 +79,7 @@ Macros.array = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDUR
   }
 };
 
-Macros.arrayItem = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   let path = item.path;
   let op = item.op;
   let opVal = item.value || 0;
@@ -141,14 +141,14 @@ Macros.arrayItem = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROC
   return state
 };
 
-Macros.switch = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.switch = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   let keyPath = item[SymData] || [];
   let switches = makeSlice(keyPath, item.value);
   object2PathValues(switches).forEach(pathValue => state = recursivelyUpdate(state, schema, UPDATABLE_object, makeNUpdate(item.path, pathValue, pathValue.pop())));
   return state
 };
 
-Macros.setExtraStatus = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.setExtraStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   const keyPath = item[SymData] || [];
   let prevVal = getUpdValue([UPDATABLE_object.update, state], item.path, SymData, keyPath);
   let value = item.value > 0;
@@ -160,7 +160,7 @@ Macros.setExtraStatus = (state: StateType, schema: JsonSchema, UPDATABLE_object:
 };
 
 // todo: make SymReset processing
-Macros.setStatus = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.setStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   const keyPath = item[SymData] || [];
   if (keyPath.length > 2) return Macros.setExtraStatus(state, schema, UPDATABLE_object, item);
   let op = keyPath[1];
@@ -181,11 +181,11 @@ Macros.setStatus = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROC
   return state
 };
 
-Macros.setCurrent = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.setCurrent = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   return updateCurrentRecursively(state, schema, UPDATABLE_object, item.value, item.replace, item.path, item.setOneOf)
 };
 
-Macros.setOneOf = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.setOneOf = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   let oldOneOf = getIn(state, item.path, SymData, 'oneOf');
   if (oldOneOf == item.value) {
     if (!isUndefined(item.setValue)) state = updateCurrentRecursively(state, schema, UPDATABLE_object, item.setValue, false, item.path);
@@ -205,7 +205,7 @@ Macros.setOneOf = (state: StateType, schema: JsonSchema, UPDATABLE_object: PROCE
 /////////////////////////////////////////////
 
 
-const schemaStorage = memoize(function (schema: JsonSchema) { // object that used to store and cache data for schema without modifying schema itself  
+const schemaStorage = memoize(function (schema: jsJsonSchema) { // object that used to store and cache data for schema without modifying schema itself  
   return {};
 });
 
@@ -213,7 +213,7 @@ function isTopPath(path: Path) {
   return path.length == 0 || path.length == 1 && path[0] == '#';
 }
 
-function recursivelyUpdate(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) {
+function recursivelyUpdate(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) {
   state = updateStatePROCEDURE(state, schema, UPDATABLE_object, item);
   const keys = branchKeys(getIn(state, item.path));
   keys.forEach(key => state = recursivelyUpdate(state, schema, UPDATABLE_object, merge(item, {path: item.path.concat(key)})));
@@ -250,10 +250,10 @@ function branchKeys(branch: StateType) {
   return keys;
 }
 
-function getSchemaPart(schema: JsonSchema, path: Path, getOneOf?: (path: Path) => number, fullOneOf?: boolean): JsonSchema {
+function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path) => number, fullOneOf?: boolean): jsJsonSchema {
 
-  function getArrayItemSchemaPart(index: number, schemaPart: JsonSchema): JsonSchema {
-    let items: JsonSchema[] = [];
+  function getArrayItemSchemaPart(index: number, schemaPart: jsJsonSchema): jsJsonSchema {
+    let items: jsJsonSchema[] = [];
     if (schemaPart.items) {
       if (!isArray(schemaPart.items)) return schemaPart.items;
       else items = schemaPart.items;
@@ -268,18 +268,18 @@ function getSchemaPart(schema: JsonSchema, path: Path, getOneOf?: (path: Path) =
     throw new Error(errorText + path.join('/'));
   }
 
-  function getSchemaByRef(schema: JsonSchema, $ref: string) {
+  function getSchemaByRef(schema: jsJsonSchema, $ref: string) {
     const path = string2path($ref);
     if ($ref[0] == '#') return getIn(schema, path); // Extract and use the referenced definition if we have it.
     throw new Error(`Can only ref to #`);// No matching definition found, that's an error (bogus schema?)
   }
 
-  function deref(schema: JsonSchema, schemaPart: JsonSchema) {
+  function deref(schema: jsJsonSchema, schemaPart: jsJsonSchema) {
     while (schemaPart.$ref) schemaPart = getSchemaByRef(schema, schemaPart.$ref);
     return schemaPart;
   }
 
-  function combineSchemasINNER_PROCEDURE(schemaPart: JsonSchema) {
+  function combineSchemasINNER_PROCEDURE(schemaPart: jsJsonSchema) {
     if (schemaPart.$ref || schemaPart.allOf || schemaPart.oneOf) {
       if (combinedSchemas.get(schemaPart)) schemaPart = combinedSchemas.get(schemaPart);
       else {
@@ -287,7 +287,7 @@ function getSchemaPart(schema: JsonSchema, path: Path, getOneOf?: (path: Path) =
         schemaPart = derefAndMergeAllOf(schema, schemaPart);  // merge allOf, with derefing it and merge with schemaPart
         if (schemaPart.oneOf) {
           let {oneOf, ...restSchemaPart} = schemaPart;
-          (schemaPart as JsonSchema[]) = oneOf.map((oneOfPart) => merge(derefAndMergeAllOf(schema, oneOfPart), restSchemaPart, {array: 'replace'})) // deref every oneOf, merge allOf in there, and merge with schemaPart
+          (schemaPart as jsJsonSchema[]) = oneOf.map((oneOfPart) => merge(derefAndMergeAllOf(schema, oneOfPart), restSchemaPart, {array: 'replace'})) // deref every oneOf, merge allOf in there, and merge with schemaPart
         }
         combinedSchemas.set(schemaPartAsKey, schemaPart);
       }
@@ -295,7 +295,7 @@ function getSchemaPart(schema: JsonSchema, path: Path, getOneOf?: (path: Path) =
     return schemaPart;
   }
 
-  function derefAndMergeAllOf(schema: JsonSchema, schemaPart: JsonSchema) {
+  function derefAndMergeAllOf(schema: jsJsonSchema, schemaPart: jsJsonSchema) {
     schemaPart = deref(schema, schemaPart);
     if (schemaPart.allOf) {
       let {allOf, ...restSchemaPart} = schemaPart;
@@ -310,7 +310,7 @@ function getSchemaPart(schema: JsonSchema, path: Path, getOneOf?: (path: Path) =
 
 
   const errorText = 'Schema path not found: ';
-  let schemaPart: JsonSchema = schema;
+  let schemaPart: jsJsonSchema = schema;
   const combinedSchemas = getCreateIn(schemaStorage(schema), new Map(), 'combinedSchemas');
 
   for (let i = path[0] == '#' ? 1 : 0; i < path.length; i++) {
@@ -332,7 +332,7 @@ function getSchemaPart(schema: JsonSchema, path: Path, getOneOf?: (path: Path) =
   return schemaPart;
 }
 
-// function getParentArrayValue(schema: JsonSchema, path: Path) {
+// function getParentArrayValue(schema: jsJsonSchema, path: Path) {
 //   let pathPart = path.slice();
 //   let keyPart: Path = [];
 //   let result;
@@ -350,7 +350,7 @@ function getSchemaPart(schema: JsonSchema, path: Path, getOneOf?: (path: Path) =
 // }
 
 
-const arrayStart = memoize(function (schemaPart: JsonSchema) {
+const arrayStart = memoize(function (schemaPart: jsJsonSchema) {
     if (!isArray(schemaPart.items)) return 0;
     if (schemaPart.additionalItems === false) return schemaPart.items.length;
     if (typeof schemaPart.additionalItems === 'object') return schemaPart.items.length;
@@ -362,7 +362,7 @@ const arrayStart = memoize(function (schemaPart: JsonSchema) {
 const basicStatus = {invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true, touched: false, pristine: true};
 const basicArrayItem = {canUp: false, canDown: false, canDel: false};
 
-const makeDataStorage = memoize(function (schemaPart: JsonSchema, type: string, required: boolean, arrayItem: boolean, value?: any) {
+const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, type: string, required: boolean, arrayItem: boolean, value?: any) {
   // const x = schemaPart.x || ({} as FFSchemaExtensionType);
   const {ff_params = {}, ff_data = {}} = schemaPart;
   const result: any = Object.assign({params: ff_params}, ff_data);
@@ -390,7 +390,7 @@ const makeDataStorage = memoize(function (schemaPart: JsonSchema, type: string, 
   return result;
 });
 
-function makeDataMap(dataMap: FFCompiledDataMapType[], path: Path): DataMapStateType[] {
+function makeDataMap(dataMap: FFDataMapGeneric<MapFunctionType>[], path: Path): DataMapStateType[] {
   return dataMap.map((item) => {  // item is array where item[0] - from, item[1] - to
     return {emitter: path, from: item[0], to: item[1], fn: typeof item[2] == 'function' && item[2] || true} as DataMapStateType;
   })
@@ -400,18 +400,18 @@ function makeDataMap(dataMap: FFCompiledDataMapType[], path: Path): DataMapState
 //       to: ((item[1][0] == '.' && path2string(path) + '/') || '') + item[1],
 
 
-function getParentSchema(schema: JsonSchema, path: Path, getOneOf?: (path: Path) => number) {
+function getParentSchema(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path) => number) {
   if (!path.length || path.length == 1 && path[0] === '#') return false;
   return getSchemaPart(schema, path.slice(0, -1), getOneOf);
 }
 
-function isPropRequired(schema: JsonSchema, path: Path) {
+function isPropRequired(schema: jsJsonSchema, path: Path) {
   return !!(schema.type == 'object' && isArray(schema.required) && ~schema.required.indexOf(path[path.length - 1]))
 }
 
 function getUniqId() {return Date.now().toString(36) + Math.random().toString(36) }
 
-function makeStateBranch(schema: JsonSchema, getOneOf: (path: Path, value?: number) => number, path: Path = [], value?: any) { //: { state: StateType, dataMap: StateType } {
+function makeStateBranch(schema: jsJsonSchema, getOneOf: (path: Path, value?: number) => number, path: Path = [], value?: any) { //: { state: StateType, dataMap: StateType } {
   const result = {};
   //const schemaPart = getSchemaPart(schema, path, getOneOf);
   const parentSchemaPart = getParentSchema(schema, path, getOneOf);
@@ -462,7 +462,7 @@ function makeStateBranch(schema: JsonSchema, getOneOf: (path: Path, value?: numb
   return {state: result, defaultValues, dataMap: dataMapObjects.length ? dataMapObjects : undefined}
 }
 
-const makeStateFromSchema = memoize(function (schema: JsonSchema) {
+const makeStateFromSchema = memoize(function (schema: jsJsonSchema) {
   let {state, dataMap = [], defaultValues} = makeStateBranch(schema, oneOfStructure({}, []));
   state = merge(state, setIn({}, defaultValues, [SymData, 'current']));
   state = setDataMapInState(state, schema, dataMap);
@@ -472,7 +472,7 @@ const makeStateFromSchema = memoize(function (schema: JsonSchema) {
   return state;
 });
 
-function setDataMapInState(state: StateType, schema: JsonSchema, dataMaps: DataMapStateType[], unset: boolean = false) {
+function setDataMapInState(state: StateType, schema: jsJsonSchema, dataMaps: DataMapStateType[], unset: boolean = false) {
   //let update: StateType = {};
   const UPDATABLE_object = {update: {}, replace: {}};
   dataMaps.forEach((dataMap) => {
@@ -502,7 +502,7 @@ function setDataMapInState(state: StateType, schema: JsonSchema, dataMaps: DataM
   return state
 }
 
-// function updDataMap2state(state: StateType, dataMap: DataMapStateType[], schema: JsonSchema) {
+// function updDataMap2state(state: StateType, dataMap: DataMapStateType[], schema: jsJsonSchema) {
 //   const UPDATABLE_object = {update: {}, replace: {}};
 //   dataMap.forEach((dataMap) => {
 //     if (dataMap.fn === false) return; // disabled map
@@ -513,13 +513,13 @@ function setDataMapInState(state: StateType, schema: JsonSchema, dataMaps: DataM
 //   return state
 // }
 
-function isArrayCanAdd(schemaPart: JsonSchema, length: number) {
+function isArrayCanAdd(schemaPart: jsJsonSchema, length: number) {
   const arrayStartIndex = arrayStart(schemaPart); //; dataItem.array.arrayStartIndex;
   const minItems = schemaPart.minItems || 0;
   return (schemaPart.additionalItems !== false || length < arrayStartIndex) && (length < (schemaPart.maxItems || Infinity))
 }
 
-function getArrayItemData(schemaPart: JsonSchema, index: number, length: number) {
+function getArrayItemData(schemaPart: jsJsonSchema, index: number, length: number) {
   let result: { [key: string]: boolean } = {};
   const arrayStartIndex = arrayStart(schemaPart); //; dataItem.array.arrayStartIndex;
   const minItems = schemaPart.minItems || 0;
@@ -536,7 +536,7 @@ function isSelfManaged(state: StateType, ...pathes: any[]) {
   return hasIn(state, ...pathes, SymData, 'value')
 }
 
-function isSchemaSelfManaged(schemaPart: JsonSchema) {
+function isSchemaSelfManaged(schemaPart: jsJsonSchema) {
   return schemaPart.type !== 'array' && schemaPart.type !== 'object' || hasIn(schemaPart, 'ff_props', 'managed')
 }
 
@@ -557,7 +557,7 @@ function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
   return {};
 }
 
-function updateCurrentRecursively(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, value: any, replace: any, track: Path = [], setOneOf?: number): StateType {
+function updateCurrentRecursively(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, value: any, replace: any, track: Path = [], setOneOf?: number): StateType {
 
   if (value === SymReset) value = getIn(state, SymData, 'inital', track);
   if (value === SymClear) value = getIn(getDefaultFromSchema(schema), track);
@@ -607,7 +607,7 @@ function getUpdValue(states: StateType[], ...pathes: Path) {
 }
 
 
-function splitValuePROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType): StateType {
+function splitValuePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType): StateType {
   const {value: itemValue, path, replace} = item;
   const keyPath = item[SymData] || [];
   if (keyPath.length == 0) {
@@ -624,7 +624,7 @@ function splitValuePROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_obj
   return state
 }
 
-function updateNormalizationPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: StateApiUpdateType): StateType {
+function updateNormalizationPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: StateApiUpdateType): StateType {
   const items = normalizeUpdate(item, state);
   items.forEach(i => {
     if (i.path.length === 0 && i[SymData][0] == 'current') {
@@ -655,7 +655,7 @@ function mergeStatePROCEDURE(state: StateType, UPDATABLE_object: PROCEDURE_UPDAT
   return state;
 }
 
-function updateStatePROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType | StateApiUpdateType): StateType {
+function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType | StateApiUpdateType): StateType {
   const {update, replace: replace_UPDATABLE} = UPDATABLE_object;
 
   // normalize updates
@@ -800,7 +800,7 @@ function updateStatePROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_ob
   return state;
 }
 
-function executeDataMapsPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, maps: any, item: NormalizedUpdateType) {
+function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, maps: any, item: NormalizedUpdateType) {
   const {value, path, replace} = item;
   const keyPath = item[SymData] || [];
   objKeys(maps || {}).forEach((pathTo) => {
@@ -821,11 +821,11 @@ function getFrom4DataMap(state: StateType, UPDATABLE_object: PROCEDURE_UPDATABLE
   }
 }
 
-function getDefaultFromSchema(schema: JsonSchema) {
+function getDefaultFromSchema(schema: jsJsonSchema) {
   return makeStateFromSchema(schema)[SymData].current
 }
 
-function getKeyMapFromSchema(schema: JsonSchema, getState: () => StateType): any {
+function getKeyMapFromSchema(schema: jsJsonSchema, getState: () => StateType): any {
   return {
     key2path,
     path2key,
@@ -833,7 +833,7 @@ function getKeyMapFromSchema(schema: JsonSchema, getState: () => StateType): any
     unflatten: mapObj.bind(null, key2path, path2key),
   };
 
-  function getKeyMap(schema: JsonSchema, track: Path = []) {
+  function getKeyMap(schema: jsJsonSchema, track: Path = []) {
     function checkIfHaveKey(key: string) {if (keyMap.key2path.hasOwnProperty(key)) throw new Error(`Duplicate flatten name for ${key}`);}
 
     function mapPath2key(prefix: string, obj: any) {

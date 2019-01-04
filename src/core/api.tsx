@@ -102,7 +102,7 @@ class FFormStateManager {
   _props: any;
 
   // utils: utilsApiType = utils;
-  schema: JsonSchema;
+  schema: jsJsonSchema;
   keyMap: any;
   dispatch: any;
   JSONValidator: (values: any) => any;
@@ -211,7 +211,7 @@ class FFormStateAPI extends FFormStateManager {
   private _defferedTimerId: any;
   getState = this._getState;
 
-  // constructor(props: FFormCoreProps) {//schema: JsonSchema, name: string, dispatch: any, getState: () => StateType, setState: (state: any) => any, JSONValidator: any) {
+  // constructor(props: FFormCoreProps) {//schema: jsJsonSchema, name: string, dispatch: any, getState: () => StateType, setState: (state: any) => any, JSONValidator: any) {
   //   super(props);
   //   this.getState = this._getState;
   //   //   const self = this;
@@ -321,14 +321,14 @@ class FFormStateAPI extends FFormStateManager {
   };
 
   setHidden = (path: string | Path, value = true, opts: APIOptsType = {}) => {
-    return this._setExecution([{path: path + '@' + '/controls/hidden', value}], opts);
+    return this._setExecution([{path: path + '@' + '/params/hidden', value}], opts);
   };
 
   showOnly = (path: string | Path, opts: APIOptsType & { skipFields?: string[] } = {}) => {
     path = normalizePath(path);
     return this._setExecution([
-      {path: path2string(path.slice(0, -1)) + '/*/@' + '/controls/hidden', value: true},
-      {path: path2string(path) + '@' + '/controls/hidden', value: false},
+      {path: path2string(path.slice(0, -1)) + '/*/@/params/hidden', value: true},
+      {path: path2string(path) + '@' + '/params/hidden', value: false},
     ], opts);
   };
 
@@ -344,7 +344,7 @@ class FFormStateAPI extends FFormStateManager {
 //  Reducer
 /////////////////////////////////////////////
 
-function updateMessagesPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, track: Path, result?: MessageData, defaultGroup = 0) {
+function updateMessagesPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, track: Path, result?: MessageData, defaultGroup = 0) {
   function conv(item: MessageGroupType | string): MessageGroupType {
     return (typeof item === 'object') ? item : {group: defaultGroup, text: item};
   };
@@ -369,8 +369,8 @@ function updateMessagesPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE
   return state
 }
 
-function setValidStatusPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, track: Path = []) {
-  let schemaPart: JsonSchema;
+function setValidStatusPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, track: Path = []) {
+  let schemaPart: jsJsonSchema;
   try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {return state}
   const selfManaged = isSelfManaged(state, track);
   let priorities = objKeys(Object.assign({}, getIn(state, track, SymData, 'messages') || {}, getIn(UPDATABLE_object.update, track, SymData, 'messages') || {}));
@@ -397,7 +397,7 @@ function setValidStatusPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE
 function makeValidation(state: StateType, dispatch: any, action: any) {
 
   function recurseValidationInnerPROCEDURE(state: StateType, validatedValue: StateType, modifiedValues: StateType, track: Path = []) {
-    let schemaPart: JsonSchema;
+    let schemaPart: jsJsonSchema;
     try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {return state}
 
     const selfManaged = isSelfManaged(state, track);
@@ -491,7 +491,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
   return state;
 }
 
-function setDirtyPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, inital: any, current: any, track: Path = []) {
+function setDirtyPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, inital: any, current: any, track: Path = []) {
   if (current === inital) return state;
   let schemaPart;
   try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {}
@@ -506,7 +506,7 @@ function setDirtyPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_objec
   return state
 }
 
-function updateDirtyPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, inital: any, currentChanges: any, track: Path = [], forceDirty = false) {
+function updateDirtyPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, inital: any, currentChanges: any, track: Path = [], forceDirty = false) {
   let schemaPart;
   try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {}
   if (!schemaPart || isSelfManaged(state, track)) { //direct compare
@@ -527,7 +527,7 @@ function updateDirtyPROCEDURE(state: StateType, schema: JsonSchema, UPDATABLE_ob
   return state
 }
 
-function setCurrentPristine(state: StateType, schema: JsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, inital: any, track: Path = []) {
+function setCurrentPristine(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, inital: any, track: Path = []) {
   if (getIn(UPDATABLE_object.update, track, SymData, 'status', 'pristine')) {
     if (isMergeable(inital) && getIn(state, SymData, 'current', track) !== inital) {
       setIn(UPDATABLE_object.update, inital, SymData, 'current', track);

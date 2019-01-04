@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component, PureComponent} from 'react';
-import {asNumber, not, setIn, getIn, isArray, isEqual, isObject, isString, isUndefined, makeSlice, merge, mergeState, objKeys, push2array} from "./commonLib";
+import {asNumber, not, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, makeSlice, merge, mergeState, objKeys, push2array} from "./commonLib";
 import {
   arrayStart,
   getBindedValue,
@@ -140,13 +140,12 @@ class FForm extends Component<any, any> {
 
   render() {
     const self = this;
-    let {core, state, value, inital, extData, fieldCache, flatten, noValidate, parent, onSubmit, onChange, onStateChange, widget: Widget = 'form', ...rest} = self.props;
-
+    let {core, state, value, inital, extData, fieldCache, flatten, noValidate, parent, onSubmit, onChange, onStateChange, useTag: UseTag = 'form', ...rest} = self.props;
 
     return (
-      <Widget {...rest} onSubmit={self._submit}>
+      <UseTag {...rest} onSubmit={self._submit}>
         <FField ref={self._setRef} pFForm={self} getPath={self._getPath} FFrormProps={self._FFrormProps}/>
-      </Widget>
+      </UseTag>
     )
   }
 }
@@ -172,7 +171,7 @@ class FField extends Component<any, any> {
   presetProps: any;
   mainRef: any;
   funcs: any;
-  schemaPart: JsonSchema;
+  schemaPart: jsJsonSchema;
   widgets: any;
   schemaProps: any;
   chains: any;
@@ -283,13 +282,22 @@ class FField extends Component<any, any> {
     ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
   }
 
-  _makePreset(schemaPart: JsonSchema) {
+  _makePreset(schemaPart: jsJsonSchema) {
     let {ff_preset = ''} = schemaPart;
     if (!ff_preset && !isString(schemaPart.type)) throw new Error('For multi-types ff_preset should be defined');
     if (!ff_preset && isString(schemaPart.type)) ff_preset = schemaPart.type;
     let {$ref = '', ...custom} = schemaPart.ff_custom || {};
     custom.$ref = ff_preset.split(':').map(v => v[0] != '%' && '%/presets/' + v).join(':') + $ref ? ':' + $ref : '';
-    return objectResolver(custom, this.pFForm.props.objects, this)
+    return objectResolver(custom, this.pFForm.props.objects)
+  }
+
+  _bindFuncs(fncs: any) {
+    if (typeof fncs == 'function') return fncs.bind(this);
+    if (isMergeable(fncs)) {
+      let res = isArray(fncs) ? [] : {};
+      objKeys(fncs).forEach(key => res[key] = this._bindFuncs(fncs[key]));
+      return res;
+    }
   }
 
   _build() {
@@ -297,7 +305,7 @@ class FField extends Component<any, any> {
     const isFilesArray = (schema: any) => schema.items && schema.items.type === "string" && schema.items.format === "data-url";
     const getPresetName = (schemaPart: any, type: string = 'null') => type == 'array' ? (isMultiSelect(schemaPart) ? 'multiselect' : isFilesArray(schemaPart) ? 'files' : 'array') : type;
     const getWidget = (objects: any, widget: any) => typeof widget === 'string' ? objects.widgets && objects.widgets[widget] || widget : widget;
-    const getEnumOptions = (schemaPart: JsonSchema) => {
+    const getEnumOptions = (schemaPart: jsJsonSchema) => {
       if (!schemaPart.enum) return undefined;
       let result: any[] = [], vals: any[] = schemaPart.enum, names: any[] = schemaPart.enumNames || [];
       vals.forEach((value, i) => result[i] = {value, label: names[i] || value});
@@ -327,11 +335,12 @@ class FField extends Component<any, any> {
     // };
     // funcs.onFocus = (value: any) => self.api.set('/@/active', self.path, {noValidation: true});
     // self.funcs = funcs;
-
     // self._bindObject = {pFForm, schemaPart, field: self, funcs};
     // Object.defineProperty(self._bindObject, "path", {get: () => self.path});
     //let {result, chains} = getFieldBlocks(presetName, objects, schemaPart, {'Main': funcs}, self._bindObject);
-    const result = self._makePreset(schemaPart);
+    let result = self._makePreset(schemaPart);
+    if (result[SymData]) result = merge(result, self._bindFuncs(result[SymData]));
+
     //self.chains = chains;
     self.presetProps = result;
 
@@ -500,7 +509,7 @@ class FSection extends Component<any, any> {
       return result
     }
 
-    function makeLayouts(keys: string[], fields: Array<string | GroupType>) {
+    function makeLayouts(keys: string[], fields: Array<string | FFGroupGeneric<jsFFCustomizeType>>) {
       const layout: any[] = [];
       fields.forEach(fieldName => {
         if (typeof fieldName == 'string') { // if field is string then make SectionField
@@ -510,7 +519,7 @@ class FSection extends Component<any, any> {
             keys.splice(idx, 1);
           }
         } else if (isObject(fieldName)) { // if field is object, then do makeLayouts if prop "_fields" is passed
-          let {_fields: groupFields, _propsMap, _pFField, ...restField} = fieldName as GroupType;
+          let {_fields: groupFields, _propsMap, _pFField, ...restField} = fieldName as FFGroupGeneric<jsFFCustomizeType>;
           let savedCountValue = count; // save count value as it may change in following makeLayouts calls
           count++;
           restField = bindMetods(restField);  // binds onFunctis to field
@@ -716,7 +725,7 @@ function ArrayBlock(props: any) {
   else return (<UseTag {...rest}><Empty {...emptyRest}>{canAdd ? <AddButton onClick={onClick} {...addButtonRest} /> : ''}</Empty></UseTag>);
 }
 
-function objectResolver(obj2resolve: any, _objects: any, field: any) {
+function objectResolver(obj2resolve: any, _objects: any) {
   function deref(obj: any) {
     let {$ref = '', restObj} = obj;
     $ref = $ref.split(':');
@@ -729,19 +738,22 @@ function objectResolver(obj2resolve: any, _objects: any, field: any) {
       if (refObj.$ref) refObj = deref(refObj);
       objs2merge.push(refObj);
     }
-    let result = {};
+    let result = isArray(obj) ? [] : {};
     for (let i = objs2merge.length - 1; i >= 0; i--) result = merge(result, objs2merge[i]);
     return merge(result, restObj);
   }
 
   const result = deref(obj2resolve);
-  const retResult = {};
+  const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
     const resolvedValue = isString(result[key]) && result[key][0] == '%' && result[key][1] == '/' ? getIn({'%': _objects}, string2path(result[key])) : result[key];
-    if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _
-    else if (isObject(result[key])) retResult[key] = objectResolver(resolvedValue, _objects, field);
-    else if (typeof resolvedValue == 'function') {
-      retResult[key] = resolvedValue.bind(field);
+    if (key[0] == '_') retResult[key] = resolvedValue;  //only resolve for keys that begins with _
+    else if (isMergeable(result[key])) {
+      retResult[key] = objectResolver(resolvedValue, _objects);
+      if (retResult[key][SymData]) retResult[SymData][key] = retResult[key][SymData];
+      delete retResult[key][SymData];
+    } else if (typeof resolvedValue == 'function') {
+      retResult[SymData][key] = resolvedValue;
     } else retResult[key] = resolvedValue;
   });
 
@@ -808,7 +820,7 @@ function getFieldBlocks(presetsString: string | string[], objects: any = {}, sch
   return {result, chains, presetArray};
 }
 
-function mapProps(map: PropsMapType, data: BasicData, field: any) {
+function mapProps(map: FFDataMapGeneric<MapFunctionType>, data: FFieldDataType, field: FField) {
   if (!map) return {};
   let result = {};
   objKeys(map).filter(key => map[key]).forEach((to) => {
@@ -885,7 +897,7 @@ class AutosizeBlock extends PureComponent<any, any> {
 function TitleBlock(props: any) {
   const {id, title = '', required, useTag: UseTag = 'label', requireSymbol, emptyTitle, ...rest} = props;
   return (
-    <UseTag {...(UseTag == 'label' ? {htmlFor: id} : {})} {...rest}>
+    <UseTag {...(UseTag == 'label' && id ? {htmlFor: id} : {})} {...rest}>
       {emptyTitle ? typeof emptyTitle == 'string' ? emptyTitle : '' : (required ? title + requireSymbol : title)}
     </UseTag>
   );
@@ -897,7 +909,6 @@ function BaseInput(props: any) {
     useTag: UseTag,
     type = 'text',
     title,
-    stateBranch,
     pFField,
     enumOptions,
     _refName,
@@ -1114,7 +1125,7 @@ function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: stri
     let stringPath = path2string(tmpPath);
     vals = vals.filter(key => getFromState(stringPath + '/' + key));
     vals.push(selectorField);
-    stringPath = stringPath + '/' + vals.join(',') + '/@/controls/hidden';
+    stringPath = stringPath + '/' + vals.join(',') + '/@/params/hidden';
     return new stateUpdates([
       {skipFields, path: stringPath, value: false, macros: 'setMultiply'}, {skipFields, path: stringPath, value: true, macros: 'setAllBut'}]);
   }
@@ -1168,9 +1179,9 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
     return merge(this, obj, {symbol: false}) // merge without symbols, as there (in symbol keys) will be stored cache data which MUST be recalculated after each extend
   },
   types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
-  methods2chain: { // bind on<EventName> methods, so that it can access to previous method in chain by using this.on<EventName>
-    'onBlur': true, 'onMouseOver': true, 'onMouseEnter': true, 'onMouseLeave': true, 'onChange': true, 'onSelect': true, 'onClick': true, 'onSubmit': true, 'onFocus': true, 'onUnload': true, 'onLoad': true
-  },
+  // methods2chain: { // bind on<EventName> methods, so that it can access to previous method in chain by using this.on<EventName>
+  //   'onBlur': true, 'onMouseOver': true, 'onMouseEnter': true, 'onMouseLeave': true, 'onChange': true, 'onSelect': true, 'onClick': true, 'onSubmit': true, 'onFocus': true, 'onUnload': true, 'onLoad': true
+  // },
   widgets: {
     Builder: DefaultBuilder,
     Array: ArrayBlock,
@@ -1262,8 +1273,8 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
           placeholder: 'params/placeholder',
           required: 'fData/required',
           title: 'fData/title',
-          readOnly: 'controls/readonly',
-          disabled: 'controls/disabled',
+          readOnly: 'params/readonly',
+          disabled: 'params/disabled',
         },
         onChange: function (event: any) {this.api.setValue(event.target.value, {})},
         onBlur: function (value: any) {

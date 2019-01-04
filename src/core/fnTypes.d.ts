@@ -148,11 +148,11 @@ interface object2PathValuesOptions {
 }
 
 
-type MergeHook = (state: StateType, item: NormalizedUpdateType, utils: utilsApiType, schema: JsonSchema, data: StateType, hookType: string) =>
+type MergeHook = (state: StateType, item: NormalizedUpdateType, utils: utilsApiType, schema: jsJsonSchema, data: StateType, hookType: string) =>
   false
   | NormalizedUpdateType[]
   | { before?: NormalizedUpdateType[], after?: NormalizedUpdateType[], skip?: boolean };
-type UpdateHook = (state: StateType, changesArray: StateType[], utils: utilsApiType, schema: JsonSchema, data: StateType, hookType: string) => false | NormalizedUpdateType[]
+type UpdateHook = (state: StateType, changesArray: StateType[], utils: utilsApiType, schema: jsJsonSchema, data: StateType, hookType: string) => false | NormalizedUpdateType[]
 type HooksType = MergeHook | UpdateHook;
 
 // type MergeHookResultObject =  {result: boolean, changes?: MergeHookChanges}

@@ -16,13 +16,6 @@ type MessageGroupType = {
   path?: Path | string;
   className?: string;
   inputClassName?: string;  // className for input choosen from the message with lowest priority
-
-
-  // replace?: number;
-  // hidden?: boolean;
-  // hiddenBind?: boolean;
-  // type?: 'danger' | 'warning' | 'success' | 'info' | 'notice';
-
 }
 
 interface anyObject {
@@ -31,11 +24,11 @@ interface anyObject {
   [key: number]: any;
 }
 
-type StateType = { [key: string]: BasicData } | { [key: number]: BasicData };
+type StateType = { [key: string]: FFieldDataType } | { [key: number]: FFieldDataType };
 
 type PROCEDURE_UPDATABLE_objectType = { update: StateType, replace: StateType, forceCheck?: StateType }
 
-interface BasicData extends anyObject {
+interface FFieldDataType extends anyObject {
   value?: any;
   length?: number;
   oneOf?: number;
@@ -73,57 +66,24 @@ interface MessagesDataType {
   className?: any;
 }
 
-// interface FFParamsType {
-//  
-//   placeholder?: string;
-// }
-
-interface FFPropsType {
-  flatten?: boolean | string; // prefix if string
-  managed?: boolean;
-  keyField?: string,
-}
-
-type FFParamsType = {
-  liveValidate?: boolean;
-  autofocus?: boolean;
-  readonly?: boolean;
-  disabled?: boolean;
-  hidden?: boolean;
-  norender?: boolean;
-}
-
 type MessageType = 'danger' | 'warning' | 'success' | 'info' | 'notice' | '';
 
-// interface MessageResultType {
-//   text: string;
-//   level?: number;
-//   type: MessageType;
-//   classes?: string | string [];
-//   style?: styleType;
-//   // clearOnValidate?: boolean;
-// }
+interface formObjectsType {
+  "presets"?: { [key: string]: jsFFCustomizeType };
+  "widgets"?: { [key: string]: any };
+  "types"?: string[];
+  "presetMap"?: { [key: string]: string[] };
+}
 
 type styleType = { [key: string]: string | number }
 
-
 type DataMapStateType = { emitter: Path, from: string, to: string, fn: MapFunctionType | true | undefined }; //{ fromPath: Path, fromKeyPath: Path, to: string, fn: MapFunctionType | false }
 
-// type ResolvedMapType = [[Path, Path|undefined], [Path, Path|undefined], MapFunctionType | undefined]
-// type MapTypeShort = [string, MapFunctionType | undefined]
 type MapFunctionType = (value: any, props: MapPropsType) => any;
 
-type MapPropsType = { path: string, pathTo: string, schema: JsonSchema, getFromState: (...pathes: Array<string | Path>) => any };
+type MapPropsType = { path: string, pathTo: string, schema: jsJsonSchema, getFromState: (...pathes: Array<string | Path>) => any };
 
-
-// interface FormData extends BasicData {
-//   active: Array<string | number>;
-//   current: any;
-//   inital: any;
-// }
-
-
-type makeDataObjectResult = { data: BasicData, dataMap: StateType }
+type makeDataObjectResult = { data: FFieldDataType, dataMap: StateType }
 
 type ObjectDataStorageForSchema = { [key: string]: any } & { [symbol: string]: { isArray: boolean, length?: number, addable: boolean } }
 

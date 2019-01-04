@@ -2527,7 +2527,7 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
 /////////////////////////////////////////////
 //      Schema utilities
 /////////////////////////////////////////////
-// function getSchemaApi(schema: JsonSchema) {
+// function getSchemaApi(schema: jsJsonSchema) {
 //   return {schema, getSchemaPart: getSchemaPart.bind(null, schema), makeDataObject: makeDataObject.bind(null, schema)};
 // };
 function getSchemaPart(schema, path) {

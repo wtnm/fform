@@ -329,7 +329,7 @@ function objectXtend_isExpandable(value: any) {
   return value == 'array' || value == 'object'
 }
 
-const objectXtendDefinition: definitionType = {
+const objectXtendDefinition: { [key: string]: jsJsonSchema; } = {
   objectXtend: {
     type: "object",
 
@@ -1064,7 +1064,7 @@ function fieldObjectSelector(props: any) {
                 parent={pFField} objects={_objects} value={value} onChange={valueOnChange(pFField)}/>
 }
 
-const fieldsObject: JsonSchema = {
+const fieldsObject: jsJsonSchema = {
   type: "array",
   ff_custom: {
     GroupBlocks: {className: 'layout-array-property'},
@@ -1092,7 +1092,7 @@ const fieldsObject: JsonSchema = {
 };
 
 
-const objectSchema: JsonSchema = {
+const objectSchema: jsJsonSchema = {
   definitions: objectXtendDefinition,
   $ref: '#/definitions/objectXtend',
   type: "object",
@@ -1117,7 +1117,7 @@ const objectSchema: JsonSchema = {
 };
 
 
-const groupSchema: JsonSchema = {
+const groupSchema: jsJsonSchema = {
   definitions: objectXtendDefinition,
   type: "object",
   ff_preset: 'object',
@@ -1153,7 +1153,7 @@ const groupSchema: JsonSchema = {
   }
 };
 
-const fieldItemDefinition: JsonSchema = {
+const fieldItemDefinition: jsJsonSchema = {
   type: "object",
   ff_preset: 'object',
   ff_fields: [{
@@ -1250,12 +1250,12 @@ const fieldItemDefinition: JsonSchema = {
   }
 };
 
-const JSONSchema: JsonSchema = {
+const JSONSchema: jsJsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem'
 };
 
-const JSONSchemaForm: JsonSchema = {
+const JSONSchemaForm: jsJsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem',
   properties: {
@@ -1264,7 +1264,7 @@ const JSONSchemaForm: JsonSchema = {
   }
 };
 
-const JSONDefinitionsSchema: JsonSchema = {
+const JSONDefinitionsSchema: jsJsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem',
   ff_preset: 'object',
@@ -1291,7 +1291,7 @@ const JSONDefinitionsSchema: JsonSchema = {
   }
 };
 
-const FFormSchema: JsonSchema = {
+const FFormSchema: jsJsonSchema = {
   type: 'object',
   properties: {
     definitions: {
