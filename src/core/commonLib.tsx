@@ -3,7 +3,7 @@ import flatten from "../old/rrf/utils/flatten";
 const objKeys = Object.keys;
 const isArray = Array.isArray;
 const isUndefined = (value: any): value is undefined => typeof value === 'undefined';
-
+const isString = (value: any): value is string => typeof value === 'string';
 
 const _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol"
   ? (obj: any) => typeof obj
@@ -336,6 +336,6 @@ function not(val: any) {
   return !val
 }
 
-export {not, mergeState, merge, push2array, asNumber, isEqual, isObject, isMergeable, objKeysNSymb, moveArrayElems, delIn, setIn, hasIn, getIn, getCreateIn, getSlice, makeSlice, memoize};
+export {not, mergeState, merge, push2array, asNumber, isEqual, isString, isObject, isMergeable, objKeysNSymb, moveArrayElems, delIn, setIn, hasIn, getIn, getCreateIn, getSlice, makeSlice, memoize};
 export {objKeys, isArray, isUndefined}
 

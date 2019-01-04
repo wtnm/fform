@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="some fixes, multitype inital changes">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="multitype support (not fully tested)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__tests__/testForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/testForm.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/FFEditor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/FFEditor.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/core/api.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/api.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/core/commonLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/commonLib.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/core/dataTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/dataTypes.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/core/stateLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/stateLib.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/core/components.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/components.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/core/schemaTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/schemaTypes.d.ts" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -30,17 +27,26 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="212">
-              <caret line="554" column="92" selection-start-line="554" selection-start-column="92" selection-end-line="554" selection-end-column="92" />
+            <state relative-caret-position="4305">
+              <caret line="289" column="53" selection-start-line="289" selection-start-column="53" selection-end-line="289" selection-end-column="53" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/core/fnTypes.d.ts">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="480">
+              <caret line="32" column="10" selection-start-line="32" selection-start-column="10" selection-end-line="32" selection-end-column="10" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/core/components.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4785">
-              <caret line="319" column="23" selection-start-line="319" selection-start-column="23" selection-end-line="319" selection-end-column="23" />
+            <state relative-caret-position="534">
+              <caret line="746" lean-forward="true" selection-start-line="746" selection-end-line="746" />
             </state>
           </provider>
         </entry>
@@ -48,7 +54,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
+            <state relative-caret-position="5505">
               <caret line="367" column="43" selection-start-line="367" selection-start-column="37" selection-end-line="367" selection-end-column="43" />
             </state>
           </provider>
@@ -57,8 +63,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/dataTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="296">
-              <caret line="35" column="89" selection-start-line="35" selection-start-column="79" selection-end-line="35" selection-end-column="89" />
+            <state relative-caret-position="510">
+              <caret line="34" selection-start-line="34" selection-end-line="34" />
               <folding>
                 <element signature="n#!!block;n#status#0;n#!!block;n#BasicData#0" />
               </folding>
@@ -69,8 +75,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/schemaTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="462">
-              <caret line="93" column="11" selection-start-line="93" selection-start-column="2" selection-end-line="93" selection-end-column="11" />
+            <state relative-caret-position="387">
+              <caret line="127" column="21" selection-start-line="127" selection-start-column="21" selection-end-line="127" selection-end-column="21" />
             </state>
           </provider>
         </entry>
@@ -78,8 +84,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/commonLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="167">
-              <caret line="114" column="1" selection-start-line="114" selection-start-column="1" selection-end-line="114" selection-end-column="1" />
+            <state relative-caret-position="5070">
+              <caret line="338" column="72" selection-start-line="338" selection-start-column="72" selection-end-line="338" selection-end-column="72" />
             </state>
           </provider>
         </entry>
@@ -87,26 +93,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/FFEditor.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
+            <state relative-caret-position="195">
               <caret line="13" selection-start-line="13" selection-end-line="13" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/__tests__/schemaOneOf.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1065">
-              <caret line="71" column="26" selection-start-line="71" selection-start-column="26" selection-end-line="71" selection-end-column="26" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="322">
-              <caret line="660" column="39" selection-start-line="660" selection-start-column="39" selection-end-line="660" selection-end-column="39" />
+            <state relative-caret-position="9990">
+              <caret line="666" selection-start-line="666" selection-end-line="666" />
             </state>
           </provider>
         </entry>
@@ -115,7 +112,7 @@
         <entry file="file://$PROJECT_DIR$/__tests__/schema.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="300">
-              <caret line="103" column="19" lean-forward="true" selection-start-line="103" selection-start-column="19" selection-end-line="103" selection-end-column="19" />
+              <caret line="103" column="19" selection-start-line="103" selection-start-column="19" selection-end-line="103" selection-end-column="19" />
               <folding>
                 <element signature="e#93#366#0" />
                 <element signature="e#384#442#0" />
@@ -137,13 +134,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>stringRecursiveValue</find>
-      <find>obj</find>
-      <find>getSchemaPart</find>
-      <find>files</find>
-      <find>multiselect</find>
-      <find>currentPriority</find>
-      <find>refName</find>
       <find>propsMap</find>
       <find>blocks</find>
       <find>'obj'</find>
@@ -167,6 +157,13 @@
       <find>findOneOf</find>
       <find>oneOf</find>
       <find>controls/</find>
+      <find>_propsMap</find>
+      <find>_blocks</find>
+      <find>isString</find>
+      <find>ff</find>
+      <find>ff_</find>
+      <find>objectResolver</find>
+      <find>_bindObject</find>
     </findStrings>
     <replaceStrings>
       <replace>untouched</replace>
@@ -254,14 +251,14 @@
         <option value="$PROJECT_DIR$/__tests__/schema3.js" />
         <option value="$PROJECT_DIR$/__tests__/schema.js" />
         <option value="$PROJECT_DIR$/__tests__/schemaOneOf.js" />
-        <option value="$PROJECT_DIR$/src/core/components.tsx" />
-        <option value="$PROJECT_DIR$/src/core/schemaTypes.d.ts" />
         <option value="$PROJECT_DIR$/src/FFEditor.tsx" />
         <option value="$PROJECT_DIR$/src/core/dataTypes.d.ts" />
-        <option value="$PROJECT_DIR$/src/core/commonLib.tsx" />
         <option value="$PROJECT_DIR$/src/core/stateLib.tsx" />
-        <option value="$PROJECT_DIR$/src/core/api.tsx" />
         <option value="$PROJECT_DIR$/__tests__/testForm.js" />
+        <option value="$PROJECT_DIR$/src/core/api.tsx" />
+        <option value="$PROJECT_DIR$/src/core/commonLib.tsx" />
+        <option value="$PROJECT_DIR$/src/core/schemaTypes.d.ts" />
+        <option value="$PROJECT_DIR$/src/core/components.tsx" />
       </list>
     </option>
   </component>
@@ -360,6 +357,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -387,7 +385,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1119,7 +1116,12 @@
       <workItem from="1546350873690" duration="12259000" />
       <workItem from="1546378449917" duration="450000" />
       <workItem from="1546434649745" duration="21250000" />
-      <workItem from="1546521610276" duration="7658000" />
+      <workItem from="1546521610276" duration="12115000" />
+      <workItem from="1546553710582" duration="1737000" />
+      <workItem from="1546558479416" duration="1324000" />
+      <workItem from="1546561275523" duration="645000" />
+      <workItem from="1546561970446" duration="229000" />
+      <workItem from="1546562535510" duration="209000" />
     </task>
     <task id="LOCAL-00001" summary="before package update">
       <created>1542772477945</created>
@@ -1170,7 +1172,14 @@
       <option name="project" value="LOCAL" />
       <updated>1546474237072</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="multitype support (not fully tested)">
+      <created>1546535804835</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1546535804835</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1206,7 +1215,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2865883000" />
+    <option name="totallyTimeSpent" value="2874484000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1222,8 +1231,8 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.39523" visible="true" weight="0.12223393" />
-      <window_info id="Structure" order="2" sideWeight="0.60477" side_tool="true" visible="true" weight="0.18651211" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.38831615" visible="true" weight="0.119072706" />
+      <window_info id="Structure" order="2" sideWeight="0.61168385" side_tool="true" visible="true" weight="0.18703899" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.41616163" side_tool="true" weight="0.10795155" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32937366" />
@@ -1262,7 +1271,8 @@
     <MESSAGE value="pre rework" />
     <MESSAGE value="reworked" />
     <MESSAGE value="some fixes, multitype inital changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="some fixes, multitype inital changes" />
+    <MESSAGE value="multitype support (not fully tested)" />
+    <option name="LAST_COMMIT_MESSAGE" value="multitype support (not fully tested)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1285,7 +1295,6 @@
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/core/stateLib.tsx</url>
           <line>198</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="17" />
         </line-breakpoint>
       </breakpoints>
@@ -1620,13 +1629,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/fnTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1710">
-          <caret line="114" selection-start-line="114" selection-end-line="116" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/__tests__/testConstructor.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="240">
@@ -1662,13 +1664,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/components.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4785">
-          <caret line="319" column="23" selection-start-line="319" selection-start-column="23" selection-end-line="319" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/__tests__/schemaOneOf.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1065">
@@ -1676,10 +1671,62 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4305">
+          <caret line="289" column="53" selection-start-line="289" selection-start-column="53" selection-end-line="289" selection-end-column="53" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/fnTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="480">
+          <caret line="32" column="10" selection-start-line="32" selection-start-column="10" selection-end-line="32" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5505">
+          <caret line="367" column="43" selection-start-line="367" selection-start-column="37" selection-end-line="367" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/dataTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="510">
+          <caret line="34" selection-start-line="34" selection-end-line="34" />
+          <folding>
+            <element signature="n#!!block;n#status#0;n#!!block;n#BasicData#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/commonLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5070">
+          <caret line="338" column="72" selection-start-line="338" selection-start-column="72" selection-end-line="338" selection-end-column="72" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/FFEditor.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" selection-start-line="13" selection-end-line="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="9990">
+          <caret line="666" selection-start-line="666" selection-end-line="666" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/__tests__/schema.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="300">
-          <caret line="103" column="19" lean-forward="true" selection-start-line="103" selection-start-column="19" selection-end-line="103" selection-end-column="19" />
+          <caret line="103" column="19" selection-start-line="103" selection-start-column="19" selection-end-line="103" selection-end-column="19" />
           <folding>
             <element signature="e#93#366#0" />
             <element signature="e#384#442#0" />
@@ -1690,53 +1737,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/core/schemaTypes.d.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="462">
-          <caret line="93" column="11" selection-start-line="93" selection-start-column="2" selection-end-line="93" selection-end-column="11" />
+        <state relative-caret-position="387">
+          <caret line="127" column="21" selection-start-line="127" selection-start-column="21" selection-end-line="127" selection-end-column="21" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/FFEditor.tsx">
+    <entry file="file://$PROJECT_DIR$/src/core/components.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="13" selection-start-line="13" selection-end-line="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/dataTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="296">
-          <caret line="35" column="89" selection-start-line="35" selection-start-column="79" selection-end-line="35" selection-end-column="89" />
-          <folding>
-            <element signature="n#!!block;n#status#0;n#!!block;n#BasicData#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/commonLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="167">
-          <caret line="114" column="1" selection-start-line="114" selection-start-column="1" selection-end-line="114" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="212">
-          <caret line="554" column="92" selection-start-line="554" selection-start-column="92" selection-end-line="554" selection-end-column="92" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="367" column="43" selection-start-line="367" selection-start-column="37" selection-end-line="367" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="322">
-          <caret line="660" column="39" selection-start-line="660" selection-start-column="39" selection-end-line="660" selection-end-column="39" />
+        <state relative-caret-position="534">
+          <caret line="746" lean-forward="true" selection-start-line="746" selection-end-line="746" />
         </state>
       </provider>
     </entry>

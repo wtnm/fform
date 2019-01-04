@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component, PureComponent} from 'react';
-import {asNumber, not, setIn, getIn, isArray, isEqual, isObject, isUndefined, makeSlice, merge, mergeState, objKeys, push2array} from "./commonLib";
+import {asNumber, not, setIn, getIn, isArray, isEqual, isObject, isString, isUndefined, makeSlice, merge, mergeState, objKeys, push2array} from "./commonLib";
 import {
   arrayStart,
   getBindedValue,
@@ -165,7 +165,7 @@ class FField extends Component<any, any> {
   // private _stateBranch: StateType;
   private _isNotSelfManaged: boolean | undefined;
 
-  _bindObject: any;
+  //_bindObject: any;
   _blocks: string[] = [];
 
   liveValidate: boolean;
@@ -265,15 +265,16 @@ class FField extends Component<any, any> {
     const api = self.props.pFForm.api;
     const wrapPath = (path: string | Path = []) => normalizePath(path, self.path);
     const wrapOpts = (opts: any) => {
-      const {path, ...rest} = opts;
-      rest.path = wrapPath(path);
+      const {path, noValidation, ...rest} = opts;
+      if (!isUndefined(path)) rest.path = wrapPath(path);
+      rest.noValidation = isUndefined(noValidation) ? !self.liveValidate : noValidation;
       return rest;
     };
 
     self.api = {
       validate: (path: boolean | string | Path = [], ...args: any[]) => api.validate(typeof path == 'boolean' ? path : wrapPath(path), ...args),
       get: (...path: any[]) => api.get(wrapPath(path)),
-      set: (path: string | Path = [], value: any, ...args: any[]) => self._cacheValue(path, value) || api.set(wrapPath(path), value, ...args),
+      set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => self._cacheValue(path, value) || api.set(wrapPath(path), value, wrapOpts(opts), ...args),
       setValue: (value: any, opts: any, ...args: any[]) => self._cacheValue(opts.path, value, true) || api.setValue(value, wrapOpts(opts), ...args)
     };
     ['noExec', 'execute', 'setState', 'getActive',].forEach(fn => self.api[fn] = (...args: any[]) => api[fn](...args));
@@ -282,6 +283,14 @@ class FField extends Component<any, any> {
     ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
   }
 
+  _makePreset(schemaPart: JsonSchema) {
+    let {ff_preset = ''} = schemaPart;
+    if (!ff_preset && !isString(schemaPart.type)) throw new Error('For multi-types ff_preset should be defined');
+    if (!ff_preset && isString(schemaPart.type)) ff_preset = schemaPart.type;
+    let {$ref = '', ...custom} = schemaPart.ff_custom || {};
+    custom.$ref = ff_preset.split(':').map(v => v[0] != '%' && '%/presets/' + v).join(':') + $ref ? ':' + $ref : '';
+    return objectResolver(custom, this.pFForm.props.objects, this)
+  }
 
   _build() {
     const isMultiSelect = (schema: any) => isArray(schema.items && schema.items.enum) && schema.uniqueItems;
@@ -311,24 +320,24 @@ class FField extends Component<any, any> {
     self._isNotSelfManaged = !isSchemaSelfManaged(schemaPart) || undefined;
 
     //funcs.onChange = self._setCachedValue.bind(self);
-    funcs.onBlur = (value: any) => {
-      self.api.set('./@status/untouched', 0, {noValidation: true});
-      self.api.set('/@/active', undefined, {noValidation: true});
-      return !self.liveValidate ? self.api.validate() : null;
-    };
-    funcs.onFocus = (value: any) => self.api.set('/@/active', self.path, {noValidation: true});
-    self.funcs = funcs;
+    // funcs.onBlur = (value: any) => {
+    //   self.api.set('./@status/untouched', 0, {noValidation: true});
+    //   self.api.set('/@/active', undefined, {noValidation: true});
+    //   return !self.liveValidate ? self.api.validate() : null;
+    // };
+    // funcs.onFocus = (value: any) => self.api.set('/@/active', self.path, {noValidation: true});
+    // self.funcs = funcs;
 
-    self._bindObject = {pFForm, schemaPart, field: self, funcs};
-    Object.defineProperty(self._bindObject, "path", {get: () => self.path});
-    let {result, chains} = getFieldBlocks(presetName, objects, schemaPart, {'Main': funcs}, self._bindObject);
-    self.chains = chains;
+    // self._bindObject = {pFForm, schemaPart, field: self, funcs};
+    // Object.defineProperty(self._bindObject, "path", {get: () => self.path});
+    //let {result, chains} = getFieldBlocks(presetName, objects, schemaPart, {'Main': funcs}, self._bindObject);
+    const result = self._makePreset(schemaPart);
+    //self.chains = chains;
     self.presetProps = result;
 
     self._enumOptions = getEnumOptions(schemaPart);
     const widgets = {}, schemaProps = {};
-    self._blocks = objKeys(result._blocks).filter(key => result._blocks[key]);
-
+    self._blocks = objKeys(result).filter(key => result[key]);
     self._blocks.forEach((block: string) => {
       const {_propsMap, widget, ...rest} = result[block];
       widgets[block] = widget;
@@ -343,7 +352,6 @@ class FField extends Component<any, any> {
 
     self.widgets = widgets;
     self.schemaProps = schemaProps;
-    // self.pFField = {self, funcs, pFForm, schemaPart, widgets, schemaProps, chains};
 
     self._rebuild = false;
   }
@@ -368,7 +376,7 @@ class FField extends Component<any, any> {
   _setDataProps(data: any) {
     const self = this;
     const dataProps = {};
-    self._blocks.forEach((block: string) => dataProps[block] = mapProps(self.presetProps[block]._propsMap, data, self._bindObject));
+    self._blocks.forEach((block: string) => dataProps[block] = mapProps(self.presetProps[block]._propsMap, data, self));
     const upd: any = {};
     let updateComponent = false;
     upd._dataProps = merge(self._dataProps, dataProps, {diff: true});
@@ -486,7 +494,7 @@ class FSection extends Component<any, any> {
     function bindMetods(restField: any, track: Path = []) {
       let result = {...restField};
       chains.methods2chain.forEach((methodName: string) => {
-        if (typeof result[methodName] == 'function') result[methodName] = result[methodName].bind(pFField._bindObject)
+        if (typeof result[methodName] == 'function') result[methodName] = result[methodName].bind(pFField)
       });
       objKeys(result).forEach(key => isObject(result[key]) && (result[key] = bindMetods(result[key], track.concat(key))));
       return result
@@ -508,7 +516,7 @@ class FSection extends Component<any, any> {
           restField = bindMetods(restField);  // binds onFunctis to field
           restField = replaceWidgetNamesWithFunctions(restField, pFField.pFForm.props.objects); // replace widget name (that passed as string value) with functions
           let opts = {};
-          if (_pFField) opts[_pFField === true ? 'pFField' : _pFField] = pFField; // pass FField to widget. If true name 'options' is used, if string, then string value is used
+          if (_pFField) opts[_pFField === true ? '_pFField' : _pFField] = pFField; // pass FField to widget. If true name 'options' is used, if string, then string value is used
           if (groupFields) {  // if _fields exists then this is group section and we should map groupPropsMap, pass schemaProps['Layouts'] and use GroupWidget as default if no widget is supplied
             if (_propsMap || LayoutsPropsMap) self._dataMaps[savedCountValue] = merge(_propsMap || {}, LayoutsPropsMap || {}); // merge _propsMap and LayoutsPropsMap, to pass them every time _props changed
             Object.assign(opts, schemaProps['Layouts']);
@@ -554,7 +562,7 @@ class FSection extends Component<any, any> {
 
     self._objectLayouts = makeLayouts(objectKeys, schemaPart.ff_fields || []);  // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
     objectKeys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));  // so here we have only keys was not used and we add them to _objectLayouts
-    objKeys(self._dataMaps).forEach((key: string) => self._dataProps[key] = mapProps(self._dataMaps[key], stateBranch[SymData], pFField._bindObject));
+    objKeys(self._dataMaps).forEach((key: string) => self._dataProps[key] = mapProps(self._dataMaps[key], stateBranch[SymData], pFField));
 
     self._makeArrayItems(self.props);
 
@@ -661,7 +669,7 @@ class FSection extends Component<any, any> {
 
       if (nextBranch[SymData] !== prevBranch[SymData]) {  // update _dataProps
         const dataProps = {};
-        objKeys(self._dataMaps).forEach((key: string) => dataProps[key] = mapProps(self._dataMaps[key], nextBranch[SymData], nextProps.pFField._bindObject));
+        objKeys(self._dataMaps).forEach((key: string) => dataProps[key] = mapProps(self._dataMaps[key], nextBranch[SymData], nextProps.pFField));
         let {state: newDataProps, changes} = mergeState(self._dataProps, dataProps);
         self._dataProps = newDataProps;
         if (changes) objKeys(changes).forEach(key => self._widgets[key] && self._widgets[key]['forceUpdate']());
@@ -708,6 +716,37 @@ function ArrayBlock(props: any) {
   else return (<UseTag {...rest}><Empty {...emptyRest}>{canAdd ? <AddButton onClick={onClick} {...addButtonRest} /> : ''}</Empty></UseTag>);
 }
 
+function objectResolver(obj2resolve: any, _objects: any, field: any) {
+  function deref(obj: any) {
+    let {$ref = '', restObj} = obj;
+    $ref = $ref.split(':');
+    const objs2merge: any[] = [];
+    for (let i = 0; i < $ref.length; i++) {
+      if (!$ref[i]) continue;
+      let path = string2path($ref[i]);
+      if (path[0] !== '%') throw new Error('Can reffer only to %');
+      let refObj = getIn({'%': _objects}, path);
+      if (refObj.$ref) refObj = deref(refObj);
+      objs2merge.push(refObj);
+    }
+    let result = {};
+    for (let i = objs2merge.length - 1; i >= 0; i--) result = merge(result, objs2merge[i]);
+    return merge(result, restObj);
+  }
+
+  const result = deref(obj2resolve);
+  const retResult = {};
+  objKeys(result).forEach((key) => {
+    const resolvedValue = isString(result[key]) && result[key][0] == '%' && result[key][1] == '/' ? getIn({'%': _objects}, string2path(result[key])) : result[key];
+    if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _
+    else if (isObject(result[key])) retResult[key] = objectResolver(resolvedValue, _objects, field);
+    else if (typeof resolvedValue == 'function') {
+      retResult[key] = resolvedValue.bind(field);
+    } else retResult[key] = resolvedValue;
+  });
+
+  return retResult
+}
 
 function getFieldBlocks(presetsString: string | string[], objects: any = {}, schemaPart: any = {}, initalFuncsObject: any = {}, object2bind: any = {}) {
 
@@ -769,14 +808,14 @@ function getFieldBlocks(presetsString: string | string[], objects: any = {}, sch
   return {result, chains, presetArray};
 }
 
-function mapProps(map: PropsMapType, data: BasicData, _bindObject: any) {
+function mapProps(map: PropsMapType, data: BasicData, field: any) {
   if (!map) return {};
   let result = {};
   objKeys(map).filter(key => map[key]).forEach((to) => {
     let item: any = map[to];
     if (!isArray(item)) item = [item];
     let value = getIn(data, normalizePath(item[0]));
-    result = merge(result, makeSlice(normalizePath(to), item[1] ? item[1].bind(_bindObject)(value) : value));
+    result = merge(result, makeSlice(normalizePath(to), item[1] ? item[1].bind(field)(value) : value));
   });
   return result;
 }
@@ -1150,16 +1189,10 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
     Autosize: AutosizeBlock,
   },
   presets: {
-    '*': {
+    'base': {
       //_blocks: {'Builder': true, 'Title': true, 'Body': true, 'Main': true, 'Message': true, 'GroupBlocks': true, 'ArrayItem': true, 'Autosize': false},
       // childrenBlocks: {},
-      Autosize: {
-        _widget: '%/widgets/Autosize',
-        _propsMap: {
-          value: 'value',
-          placeholder: 'params/placeholder',
-        }
-      },
+
       Array: {
         _widget: '%/widgets/Array',
         empty: {_widget: '%/widgets/EmptyArray'},
@@ -1231,25 +1264,28 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
           title: 'fData/title',
           readOnly: 'controls/readonly',
           disabled: 'controls/disabled',
-        }
-      }
-    },
-    base: {
-      $ref: '%/presets/*',
-      Main: {
-        onChange: function (event: any) {
-          this.onChange(event.target.value)
         },
+        onChange: function (event: any) {this.api.setValue(event.target.value, {})},
+        onBlur: function (value: any) {
+          const self = this;
+          self.api.set('./@status/untouched', 0, {noValidation: true});
+          self.api.set('/@/active', undefined, {noValidation: true});
+          return !self.liveValidate ? self.api.validate() : null;
+        },
+        onFocus: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})}
       }
     },
-    string: {$ref: '%/presets/base', Main: {type: 'text'}},
+    string: {
+      $ref: '%/presets/base', Main: {
+        type: 'text',
+        onChange: function (event: any) {this.api.setValue(event.target.value, {})}
+      }
+    },
     integer: {
       $ref: '%/presets/base',
       Main: {
         type: 'number',
-        "$onChange": function (val: string) {
-          this.onChange(!val ? undefined : parseInt(val))
-        }
+        onChange: function (event: any) {this.setValue(event.target.value == '' ? undefined : parseInt(event.target.value))}
       }
     },
     number: {
@@ -1257,20 +1293,20 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
       Main: {
         type: 'number',
         step: 'any',
-        "$onChange": function (val: string) {
-          this.onChange(!val ? undefined : parseFloat(val))
-        }
+        onChange: function (event: any) {this.setValue(event.target.value == '' ? undefined : parseFloat(event.target.value))}
       }
     },
     range: {$ref: '%/presets/base', Main: {type: 'range'}},
     'null': {$ref: '%/presets/base', Main: {type: 'hidden'}},
     hidden: {
+      $ref: '%/presets/base',
       Builder: {
         hidden: true,
         _propsMap: {hidden: false}
       }
     },
     booleanBase: {
+      $ref: '%/presets/base',
       Main: {
         type: 'checkbox',
         onChange: function (event: any) {this.onChange(event.target.checked)}
@@ -1284,6 +1320,7 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
       Title: {emptyTitle: true},
     },
     tristateBase: {
+      $ref: '%/presets/base',
       Main: {
         type: 'tristate',
         useTag: TristateBox
@@ -1297,26 +1334,28 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
       Title: {emptyTitle: true},
     },
     object: {
-      _blocks: {'Layouts': true},
+      $ref: '%/presets/base',
+      // _blocks: {'Layouts': true},
       Main: {
         _widget: '%/widgets/Section',
         _refName: 'ref',
-        _propsMap: {
-          value: false,
-          autoFocus: false,
-          placeholder: false,
-          required: false,
-          title: false,
-          readOnly: false,
-          disabled: false,
-        }
+        _propsMap: false,
+        // _propsMap: {
+        //   value: false,
+        //   autoFocus: false,
+        //   placeholder: false,
+        //   required: false,
+        //   title: false,
+        //   readOnly: false,
+        //   disabled: false,
+        // }
       },
       GroupBlocks: {useTag: 'fieldset'},
       Title: {useTag: 'legend'},
     },
     array: {
       $ref: '%/presets/object',
-      _blocks: {'Array': true},
+      //_blocks: {'Array': true},
       //Main: {_propsMap: {length: 'length'}},
       //GroupBlocks: {useTag: 'fieldset'},
       //Title: {useTag: 'legend'},
@@ -1326,9 +1365,10 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
         style: {flexFlow: 'row'},
       }
     },
-    select: {Main: {type: 'select', onChange: onSelectChange}},
+    select: {$ref: '%/presets/base', Main: {type: 'select', onChange: onSelectChange}},
     multiselect: {$ref: '%/presets/select', Main: {multiply: true}},
     arrayOf: {
+      $ref: '%/presets/base',
       Main: {
         _widget: '%/widgets/ArrayInput',
         inputProps: {},
@@ -1345,17 +1385,23 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
     //selector: {dataMap: [['./@/value', './', selectorOnChange(false)]]}, // {onChange: selectorOnChange(false)}},
     //tabs: {dataMap: [['./@/value', './', selectorOnChange(true)]]}, //{Main: {onChange: selectorOnChange(true)}},
     autosize: {
-      _blocks: {'Autosize': true},
+      Autosize: {
+        _widget: '%/widgets/Autosize',
+        _propsMap: {
+          value: 'value',
+          placeholder: 'params/placeholder',
+        }
+      },
       GroupBlocks: {style: {flexGrow: 0}},
     },
     flexRow: {
       Layouts: {style: {flexFlow: 'row'}}
     },
-    noArrayItemButtons: {
-      _blocks: {ArrayItem: false},
+    noArrayItem: {
+      ArrayItem: false,
     },
-    noArrayButtons: {
-      _blocks: {Array: false},
+    noArray: {
+      Array: false,
     }
   },
   presetMap: {

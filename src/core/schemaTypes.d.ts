@@ -84,7 +84,7 @@ interface FFSchemaExtensionType extends FFCommonSchemaType {
 interface FFCompiledExtensionType extends FFCommonSchemaType {
   ff_validators?: any[]; // sync/async validators
   ff_dataMap?: FFCompiledDataMapType[]; // mapping values in state
-  ff_custom?: { [key: string]: FFCompiledCustomizeType }; // components customization
+  ff_custom?:  FFCompiledCustomizeType; // components customization
   ff_fields?: FFieldsType; // fields order and object/group extenion
 }
 
@@ -105,7 +105,7 @@ type JsonSchemaTypes = 'string' | 'number' | 'object' | 'array' | 'boolean' | 'n
 // type PropsMapType = [string, string, MapFunctionType] | [string, string] | string
 
 interface formObjectsType {
-  "presets"?: { [key: string]: { [key: string]: string | FFCompiledCustomizeType } };
+  "presets"?: { [key: string]: FFCompiledCustomizeType };
   "widgets"?: { [key: string]: any };
   "types"?: string[];
   "presetMap"?: { [key: string]: string[] };
@@ -125,7 +125,7 @@ type FFieldsType = Array<string | GroupType>;
 
 interface FFCompiledCustomizeType {
   _widget?: any,
-  _propsMap?: PropsMapType;
+  _propsMap?: PropsMapType | false;
   $ref?: string;
 
   [key: string]: any;
