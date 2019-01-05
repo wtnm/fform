@@ -70,16 +70,19 @@ interface JsonSchemaGeneric<T> {
 type JsonSchemaTypes = 'string' | 'number' | 'object' | 'array' | 'boolean' | 'null';
 
 interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaType {
+  ff_objects: formObjectsType;
   ff_validators?: Function[]; // sync/async validators
   ff_dataMap?: FFDataMapGeneric<MapFunctionType>[]; // mapping values in state
   ff_fields?: FFieldsGeneric<jsFFCustomizeType>; // fields order and object/group extenion
-  ff_preset?: string; // presets for rendering components
-  ff_custom?: jsFFCustomizeType; // components customization
+  ff_components?: jsFFCustomizeType;
+  // ff_preset?: string; // presets for rendering components
+  // ff_custom?: jsFFCustomizeType; // components customization
 }
 
 interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
+  ff_objects: undefined;
   ff_validators?: string[]; // sync/async validators
-  ff_dataMap?: FFDataMapGeneric<string>; // mapping values in state
+  ff_dataMap?: FFDataMapGeneric<string>[]; // mapping values in state
   ff_fields?: FFieldsGeneric<FFCustomizeType>; // fields order and object/group extenion
   ff_preset?: string; // presets for rendering components
   ff_custom?: FFCustomizeType; // components customization
@@ -99,21 +102,21 @@ type PropsMapGeneric<FN> = { [key: string]: false | string | [string, FN] }
 type FFieldsGeneric<T> = Array<string | FFGroupGeneric<T>>;
 
 type FFGroupGeneric<T> = T & {
-  _fields?: FFieldsGeneric<T>,
-  _pFField?: true | string
+  $fields?: FFieldsGeneric<T>,
+  $pFField?: true | string
 }
 
 interface FFCustomizeType {
-  _widget?: string,
-  _propsMap?: PropsMapGeneric<string>;
+  _$widget?: string,
+  $propsMap?: PropsMapGeneric<string>;
   $ref?: string;
 
   [key: string]: string | object | undefined;
 }
 
 interface jsFFCustomizeType {
-  _widget?: string | Function,
-  _propsMap?: PropsMapGeneric<MapFunctionType>;
+  _$widget?: string | Function,
+  $propsMap?: PropsMapGeneric<MapFunctionType>;
   $ref?: string;
 
   [key: string]: any;

@@ -243,12 +243,14 @@ function oneOfStructure(state: StateType | Function, path: Path) { // makes obje
   return fn
 }
 
+
 function branchKeys(branch: StateType) {
   let keys: string[] = [];
   if (branch[SymData].fData.type == 'array') for (let j = 0; j < getIn(branch, SymData, 'length'); j++) keys.push(j.toString());
   else keys = objKeys(branch).filter(v => v);
   return keys;
 }
+
 
 function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path) => number, fullOneOf?: boolean): jsJsonSchema {
 
@@ -279,7 +281,7 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path)
     return schemaPart;
   }
 
-  function combineSchemasINNER_PROCEDURE(schemaPart: jsJsonSchema) {
+  function combineSchemasINNER_PROCEDURE(schemaPart: jsJsonSchema): jsJsonSchema | jsJsonSchema[] {
     if (schemaPart.$ref || schemaPart.allOf || schemaPart.oneOf) {
       if (combinedSchemas.get(schemaPart)) schemaPart = combinedSchemas.get(schemaPart);
       else {
@@ -287,7 +289,7 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path)
         schemaPart = derefAndMergeAllOf(schema, schemaPart);  // merge allOf, with derefing it and merge with schemaPart
         if (schemaPart.oneOf) {
           let {oneOf, ...restSchemaPart} = schemaPart;
-          (schemaPart as jsJsonSchema[]) = oneOf.map((oneOfPart) => merge(derefAndMergeAllOf(schema, oneOfPart), restSchemaPart, {array: 'replace'})) // deref every oneOf, merge allOf in there, and merge with schemaPart
+          (schemaPart as any) = oneOf.map((oneOfPart) => merge(derefAndMergeAllOf(schema, oneOfPart), restSchemaPart, {array: 'replace'})) // deref every oneOf, merge allOf in there, and merge with schemaPart
         }
         combinedSchemas.set(schemaPartAsKey, schemaPart);
       }
@@ -310,7 +312,7 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path)
 
 
   const errorText = 'Schema path not found: ';
-  let schemaPart: jsJsonSchema = schema;
+  let schemaPart: jsJsonSchema | jsJsonSchema[] = schema;
   const combinedSchemas = getCreateIn(schemaStorage(schema), new Map(), 'combinedSchemas');
 
   for (let i = path[0] == '#' ? 1 : 0; i < path.length; i++) {
@@ -327,7 +329,7 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path)
     }
   }
   schemaPart = combineSchemasINNER_PROCEDURE(schemaPart);
-  if (fullOneOf) return schemaPart;
+  if (fullOneOf) return schemaPart as any;
   if (isArray(schemaPart)) schemaPart = schemaPart[getOneOf && getOneOf(path) || 0];
   return schemaPart;
 }
@@ -1083,11 +1085,8 @@ function NUpdate2string(item: PathItem): string {
   return path + (item.keyPath && !~path.indexOf('@') ? '/@/' + path2string(item.keyPath) : '');
 }
 
-function makeNUpdate(path: Path, keyPath: Path, value?: any, replace?: any, rest: any = {}): NormalizedUpdateType {
-  const updateItem = {path, value, replace, ...rest};
-  updateItem[SymData] = keyPath;
-  return updateItem
-}
+const makeNUpdate = (path: Path, keyPath: Path, value?: any, replace?: any, rest: any = {}): NormalizedUpdateType => {return {path, [SymData]: keyPath, value, replace, ...rest}};
+
 
 function isNUpdate(updateItem: any): updateItem is NormalizedUpdateType {
   return !isUndefined(getIn(updateItem, SymData)) && isArray(updateItem[SymData]);
@@ -1177,6 +1176,19 @@ function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
   return getIn(state, ...pathes.map(path => normalizePath(path as any)));
 }
 
+function objMap(obj: any, fn: Function, symbol = false) {
+  if (!isMergeable(obj)) return obj;
+  const result = isArray(obj) ? [] : {};
+  (symbol ? objKeys : objKeysNSymb)(obj).forEach(key => result[key] = fn(obj[key]));
+  return result
+};
+
+// function objKeysMap(obj: any, fn: Function, symbol = false) {
+//   if (!isMergeable(obj)) return obj;
+//   const result = isArray(obj) ? [] : {};
+//   (symbol ? objKeys : objKeysNSymb)(obj).forEach(key => result[fn(key)] = obj[key]);
+//   return result;
+// };
 
 // function without(obj: {}, symbol = false, ...rest: any[]) {
 //   //const args = arrFrom(rest); // [].slice.call(arguments);
@@ -1187,7 +1199,6 @@ function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
 //   });
 //   return result;
 // };
-//
 //
 // function split(test: (key: string, val: any) => boolean, obj: any, symbol = false) {
 //   const passed = {};
@@ -1204,27 +1215,13 @@ function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
 // };
 //
 //
-// function map(fnc: (val: any) => any, obj: any, symbol = false) {
-//   const result = {};
-//   const fn = symbol ? objKeys : objKeysNSymb;
-//   fn(obj).forEach(key => result[key] = fnc(obj[key]));
-//   return result
-// };
-//
-//
-// function mapKeys(fnc: (val: any) => any, obj: any, symbol = false) {
-//   const result = {};
-//   const fn = symbol ? objKeys : objKeysNSymb;
-//   fn(obj).map(key => result[fnc(key)] = obj[key]);
-//   return result;
-// };
-//
 // function replaceDeep(obj: any, value: any) {
 //   if (!isMergeable(obj)) return value;
 //   const result = isArray(obj) ? [] : {};
 //   objKeys(obj).forEach(field => result[field] = replaceDeep(obj[field], value));
 //   return result;
 // }
+//
 
 
 export {
@@ -1256,7 +1253,8 @@ export {
   isTopPath,
   symConv,
   normalizeUpdate,
-  setIfNotDeeper
+  setIfNotDeeper,
+  objMap
 }
 
 export {SymData, SymReset, SymClear, SymDelete}

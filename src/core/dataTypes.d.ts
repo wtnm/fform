@@ -73,6 +73,8 @@ interface formObjectsType {
   "widgets"?: { [key: string]: any };
   "types"?: string[];
   "presetMap"?: { [key: string]: string[] };
+
+  [key: string]: any;
 }
 
 type styleType = { [key: string]: string | number }

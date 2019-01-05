@@ -31,20 +31,19 @@ interface FormApi {
 }
 
 interface FFormProps {
-  objects: { [key: string]: any };
   widget?: any;
-  
-  core: any;  
+
+  core: any;
   state?: any;
   value?: any;
   inital?: any;
   extData?: { [key: string]: any };
-  fieldCache?: boolean | number;  
+  fieldCache?: boolean | number;
   flatten?: boolean;
   noValidate?: boolean;
-  
-  parent?:any;
-  
+
+  parent?: any;
+
   onSubmit?: (value: any, fform?: any) => boolean;
   onChange?: (value: any, fform?: any) => void;
   onStateChange?: (state: any, fform?: any) => void;
@@ -52,12 +51,15 @@ interface FFormProps {
 
 /** Parameters to creates a FFormCore */
 interface FFormCoreProps {
-  schema: any;  /** schema that will be used to create state */
-  name?: string;  /** name that will be used to access data in redux storage */
+  schema: jsJsonSchema | JsonSchema;
+  /** schema that will be used to create state */
+  objects?: { [key: string]: any };
+  name?: string;
+  /** name that will be used to access data in redux storage */
   store?: any,   // redux
   getState?: () => any  // external
   setState?: (state: any) => void // external
-  
+
 }
 
 
@@ -93,7 +95,6 @@ interface ActionType {
   core: any,
   mergeOptions?: any;
 }
-
 
 
 interface SetItemsType extends ActionType {

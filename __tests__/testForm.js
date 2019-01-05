@@ -721,7 +721,7 @@ describe('FForm api tests', function () {
     let reverseMainOnChange = () => {};
     let mainWidget = () => {};
     let schemaPart = {'ff_custom': {'Main': {widget: mainWidget, onChange: directMainOnChange, $onChange: reverseMainOnChange}}};
-    let {result, chains} = formFuncs.getFieldBlocks('string:inlineTitle', formFuncs.basicObjects, {}, {'Main': {onChange: basicMainOnChange}}, {});
+    let {result, chains} = formFuncs.getFieldBlocks('string:inlineTitle', formFuncs.fformObjects, {}, {'Main': {onChange: basicMainOnChange}}, {});
 
     expect(commonFuncs.isEqual(result['_blocks'], {'Builder': true, 'Title': true, 'Body': true, 'Main': true, 'Message': true, 'GroupBlocks': true, 'ArrayItem': true, 'Autosize': false})).toBeTruthy();
     expect(commonFuncs.isEqual(chains['methods2chain'], ["onBlur", "onMouseOver", "onMouseEnter", "onMouseLeave", "onChange", "onSelect", "onClick", "onSubmit", "onFocus", "onUnload", "onLoad"])).toBeTruthy();
@@ -731,7 +731,7 @@ describe('FForm api tests', function () {
     expect(chains['funcs'].Main['onChange'].length === 2).toBeTruthy();
     expect(chains['funcs'].Main['onChange'][0] === basicMainOnChange).toBeTruthy();
 
-    let res = formFuncs.getFieldBlocks(['string', 'inlineTitle'], formFuncs.basicObjects, schemaPart, {'Main': {onChange: basicMainOnChange}}, {});
+    let res = formFuncs.getFieldBlocks(['string', 'inlineTitle'], formFuncs.fformObjects, schemaPart, {'Main': {onChange: basicMainOnChange}}, {});
     result = res.result;
     chains = res.chains;
     expect(chains['funcs'].Main['onChange'].length === 4).toBeTruthy();
@@ -744,7 +744,7 @@ describe('FForm api tests', function () {
     let fn = result['Main']['onChange'];
     expect(fn.name === 'bound directMainOnChange').toBeTruthy();
 
-    res = formFuncs.getFieldBlocks(['radio', 'buttons'], formFuncs.basicObjects, {}, {'Main': {onChange: basicMainOnChange}}, {});
+    res = formFuncs.getFieldBlocks(['radio', 'buttons'], formFuncs.fformObjects, {}, {'Main': {onChange: basicMainOnChange}}, {});
     result = res.result;
     chains = res.chains;
     expect(chains['funcs'].Main['onChange'].length === 1).toBeTruthy();

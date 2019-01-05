@@ -4799,7 +4799,7 @@ var HTMLDOMPropertyConfig = {
     // keyboard hints.
     autoCapitalize: 0,
     autoCorrect: 0,
-    // autoSave allows WebKit/Blink to persist values of input _fields on page reloads
+    // autoSave allows WebKit/Blink to persist values of input $fields on page reloads
     autoSave: 0,
     // color is for Safari mask-icon link
     color: 0,
@@ -4814,7 +4814,7 @@ var HTMLDOMPropertyConfig = {
     itemID: 0,
     itemRef: 0,
     // results show looking glass icon and recent searches on input
-    // search _fields in WebKit/Blink
+    // search $fields in WebKit/Blink
     results: 0,
     // IE-only attribute that specifies security restrictions on an iframe
     // as an alternative to the sandbox attribute on IE<10
@@ -5109,7 +5109,7 @@ var DEFAULT_POOLER = oneArgumentPooler;
 
 /**
  * Augments `CopyConstructor` to be a poolable class, augmenting only the class
- * itself (statically) not adding any prototypical _fields. Any CopyConstructor
+ * itself (statically) not adding any prototypical $fields. Any CopyConstructor
  * you give this may have a `poolSize` property, and will look for a
  * prototypical `destructor` on instances.
  *
@@ -6122,16 +6122,16 @@ var ReactCompositeComponent = {
       this._instance = null;
     }
 
-    // Reset pending _fields
+    // Reset pending $fields
     // Even if this component is scheduled for another update in ReactUpdates,
-    // it would still be ignored because these _fields are reset.
+    // it would still be ignored because these $fields are reset.
     this._pendingStateQueue = null;
     this._pendingReplaceState = false;
     this._pendingForceUpdate = false;
     this._pendingCallbacks = null;
     this._pendingElement = null;
 
-    // These _fields do not really need to be reset since this object is no
+    // These $fields do not really need to be reset since this object is no
     // longer accessible.
     this._context = null;
     this._rootNodeID = 0;
@@ -13605,7 +13605,7 @@ function constructSelectEvent(nativeEvent, nativeEventTarget) {
  * - contentEditable
  *
  * This differs from native browser implementations in the following ways:
- * - Fires on contentEditable _fields as well as inputs.
+ * - Fires on contentEditable $fields as well as inputs.
  * - Fires for collapsed selection.
  * - Fires after user input.
  */
@@ -16228,7 +16228,7 @@ function instantiateReactComponent(node, shouldHaveDebugID) {
     "production" !== 'production' ? warning(typeof instance.mountComponent === 'function' && typeof instance.receiveComponent === 'function' && typeof instance.getHostNode === 'function' && typeof instance.unmountComponent === 'function', 'Only React Components can be mounted.') : void 0;
   }
 
-  // These two _fields are used by the DOM and ART diffing algorithms
+  // These two $fields are used by the DOM and ART diffing algorithms
   // respectively. Instead of using expandos on components, we should be
   // storing the state needed by the diffing algorithms elsewhere.
   instance._mountIndex = 0;
@@ -16239,7 +16239,7 @@ function instantiateReactComponent(node, shouldHaveDebugID) {
   }
 
   // Internal instances should fully constructed at this point, so they should
-  // not get any new _fields added to them at this point.
+  // not get any new $fields added to them at this point.
   if ("production" !== 'production') {
     if (Object.preventExtensions) {
       Object.preventExtensions(instance);

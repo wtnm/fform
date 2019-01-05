@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {render} from 'react-dom';
-import {FForm, FFormStateAPI, selectorMap, basicObjects, getFieldBlocks,} from './core/components';
+import {FForm, FFormStateAPI, selectorMap, fformObjects} from './core/components';
 
-import {not, getIn, memoize, merge, push2array, isArray, isObject, isUndefined} from './core/commonLib'
+import {getIn, memoize, merge, push2array, isArray, isObject, isUndefined} from './core/commonLib'
 import {stateUpdates, getBindedValue, string2NUpdate, getDefaultFromSchema, SymData} from './core/stateLib'
 
 import {formValues2JSON, formObj2JSON, isFFieldSchema, isFGroupSchema, isFObjectSchema} from './constructorLib';
@@ -144,7 +144,7 @@ class moveToSelectWidget extends React.Component<any, any> {
 }
 
 
-let editFormObjects = basicObjects.extend({
+let editFormObjects = fformObjects.extend({
   methods2chain: {loadOptions: true},
   presets: {
     '*': {
@@ -329,7 +329,7 @@ function objectXtend_isExpandable(value: any) {
   return value == 'array' || value == 'object'
 }
 
-const objectXtendDefinition: { [key: string]: jsJsonSchema; } = {
+const objectXtendDefinition: { [key: string]: JsonSchema; } = {
   objectXtend: {
     type: "object",
 
@@ -344,16 +344,14 @@ const objectXtendDefinition: { [key: string]: jsJsonSchema; } = {
       style: {flexFlow: 'row'}
     }
     ],
-    ff_dataMap: [['./@/expanded', './valueArray/@/controls/hidden', not]],
+    ff_dataMap: [['./@/expanded', './valueArray/@/controls/hidden', '%/functions/not']],
     ff_data: {expanded: false},
     properties: {
       name: {
         type: "string",
         ff_placeholder: 'Enter name...',
         // controls: {hiddenBind: false, omitBind: false},
-        ff_custom: {
-          _blocks: {Array: false}, //false
-        }
+        ff_custom: {Array: false}
 
       },
       type: {
@@ -659,7 +657,7 @@ function presetValuesHandler(presetsValue: string[] = [], props: MapPropsType) {
   let presets = presetsValue.join(',');
   // console.log('curValue', curValue);
   if (!curValue || presets != curValue['presets']) {
-    let fieldBlocks = presets == '' ? {} : getFieldBlocks(presets, editFormObjects, {}, coreFuncs, {}).result;
+    let fieldBlocks = presets == '' ? {} : {};//getFieldBlocks(presets, editFormObjects, {}, coreFuncs, {}).result;
     let res = {};
     objKeys(fieldBlocks).forEach(key => res[key] = {base: fieldBlocks[key]});
     // res['base'] = fieldBlocks;
@@ -1064,7 +1062,7 @@ function fieldObjectSelector(props: any) {
                 parent={pFField} objects={_objects} value={value} onChange={valueOnChange(pFField)}/>
 }
 
-const fieldsObject: jsJsonSchema = {
+const fieldsObject: JsonSchema = {
   type: "array",
   ff_custom: {
     GroupBlocks: {className: 'layout-array-property'},
@@ -1092,7 +1090,7 @@ const fieldsObject: jsJsonSchema = {
 };
 
 
-const objectSchema: jsJsonSchema = {
+const objectSchema: JsonSchema = {
   definitions: objectXtendDefinition,
   $ref: '#/definitions/objectXtend',
   type: "object",
@@ -1117,7 +1115,7 @@ const objectSchema: jsJsonSchema = {
 };
 
 
-const groupSchema: jsJsonSchema = {
+const groupSchema: JsonSchema = {
   definitions: objectXtendDefinition,
   type: "object",
   ff_preset: 'object',
@@ -1131,7 +1129,7 @@ const groupSchema: jsJsonSchema = {
     'xtend',
     'object'
   ],
-  ff_dataMap: [['./@/expanded', './xtend/@/controls/hiddenBind', not]],
+  ff_dataMap: [['./@/expanded', './xtend/@/controls/hiddenBind', '%/functions/not']],
   ff_custom: {Main: {className: 'object-xtend'}, _blocks: {ArrayItem: false}},
   ff_data: {fieldType: 'object'},
   properties: {
@@ -1153,7 +1151,7 @@ const groupSchema: jsJsonSchema = {
   }
 };
 
-const fieldItemDefinition: jsJsonSchema = {
+const fieldItemDefinition: JsonSchema = {
   type: "object",
   ff_preset: 'object',
   ff_fields: [{
@@ -1170,7 +1168,7 @@ const fieldItemDefinition: jsJsonSchema = {
       topMoveButtonObject,
       itemMenuObjectParent]
   }],
-  ff_dataMap: [['./@/expanded', './fieldProps/@/controls/hidden', not]],
+  ff_dataMap: [['./@/expanded', './fieldProps/@/controls/hidden', '%/functions/not']],
   ff_custom: {_blocks: {ArrayItem: false}},
   // expanded:true
   properties: {
@@ -1250,12 +1248,12 @@ const fieldItemDefinition: jsJsonSchema = {
   }
 };
 
-const JSONSchema: jsJsonSchema = {
+const JSONSchema: JsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem'
 };
 
-const JSONSchemaForm: jsJsonSchema = {
+const JSONSchemaForm: JsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem',
   properties: {
@@ -1264,7 +1262,7 @@ const JSONSchemaForm: jsJsonSchema = {
   }
 };
 
-const JSONDefinitionsSchema: jsJsonSchema = {
+const JSONDefinitionsSchema: JsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem',
   ff_preset: 'object',
@@ -1291,7 +1289,7 @@ const JSONDefinitionsSchema: jsJsonSchema = {
   }
 };
 
-const FFormSchema: jsJsonSchema = {
+const FFormSchema: JsonSchema = {
   type: 'object',
   properties: {
     definitions: {

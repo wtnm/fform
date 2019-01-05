@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {basicObjects} from './core/components';
+import {fformObjects} from './core/components';
 
-const ArrayInput = (basicObjects as any).widgets['ArrayInput'];
+const ArrayInput = (fformObjects as any).widgets['ArrayInput'];
 
 class FFView extends React.PureComponent<any, any> {
   FFViewValue = 0;

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component, PureComponent} from 'react';
-import {asNumber, not, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, makeSlice, merge, mergeState, objKeys, push2array} from "./commonLib";
+import {asNumber, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, makeSlice, merge, mergeState, objKeys, push2array} from "./commonLib";
 import {
   arrayStart,
   getBindedValue,
@@ -12,9 +12,10 @@ import {
   SymDelete,
   stateUpdates,
   normalizePath,
-  relativePath,
+  objMap,
 } from './stateLib'
 import {FFormStateAPI, fformCores} from './api'
+import Timeout = NodeJS.Timeout;
 
 const classNames = require('classnames');
 
@@ -34,18 +35,14 @@ const _PRIORITYClassNames = {0: 'danger', 1: 'warning', 2: 'success', 3: 'info',
 //  Main class
 /////////////////////////////////////////////
 class FForm extends Component<any, any> {
-  _FFrormProps: any;
-  _unsubscribe: any;
-  _savedState: any;
-  _savedValue: any;
-  //_setRef: any;
-  //_onSubmit: any;
-  api: any;
-  //rRefs: any = {};
+  private _unsubscribe: any;
+  private _savedState: any;
+  private _savedValue: any;
   _root: any;
+
+  api: any;
   formName: any;
   schema: any;
-  // api: any;
   utils: any;
   objects: any;
   parent: any;
@@ -63,7 +60,6 @@ class FForm extends Component<any, any> {
     self._setRef = self._setRef.bind(self);
     self._submit = self._submit.bind(self);
     self._getPath = self._getPath.bind(self);
-    self._FFrormProps = {api: self.api, objects: props.objects};
   }
 
   _setRef(FField: any) {
@@ -107,23 +103,17 @@ class FForm extends Component<any, any> {
     const self = this;
     self.parent = nextProps.parent;
     let core = nextProps.core;
-    let FFrormPropsUpdate = false;
+    let FFrormApiUpdate = false;
 
     if (core instanceof FFormStateAPI && self.api !== core) {
       self._unsubscribe();
       self.api = core;
       self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
+      FFrormApiUpdate = true;
     }
 
     self._updateValues(nextProps, self.props);
-    // self.api.execute();
-
-    if (self._FFrormProps.api != self.api || self._FFrormProps.objects != nextProps.objects) {
-      self._FFrormProps = {api: self.api, objects: nextProps.objects};
-      FFrormPropsUpdate = true;
-    }
-
-    return FFrormPropsUpdate || !isEqual(self.props, nextProps, {skipKeys: ['core', 'state', 'value', 'inital', 'extData', 'fieldCache', 'flatten', 'noValidate', 'parent', 'onSubmit', 'onChange', 'onStateChange']});
+    return FFrormApiUpdate || !isEqual(self.props, nextProps, {skipKeys: ['core', 'state', 'value', 'inital', 'extData', 'fieldCache', 'flatten', 'noValidate', 'parent', 'onSubmit', 'onChange', 'onStateChange']});
   }
 
   componentWillUnmount() {
@@ -144,7 +134,7 @@ class FForm extends Component<any, any> {
 
     return (
       <UseTag {...rest} onSubmit={self._submit}>
-        <FField ref={self._setRef} pFForm={self} getPath={self._getPath} FFrormProps={self._FFrormProps}/>
+        <FField ref={self._setRef} pFForm={self} getPath={self._getPath} FFrormApi={self.api}/>
       </UseTag>
     )
   }
@@ -155,33 +145,27 @@ class FForm extends Component<any, any> {
 //  FField class
 /////////////////////////////////////////////
 class FField extends Component<any, any> {
-  private _dataProps: any = {};
+  private _mappedData: any = {};
   private _builderData: any = {};
   private _rebuild = true;
-  private _cached: any;
-  private _cachedTimeout: any;
+  private _cached?: { value: any };
+  private _cachedTimeout?: Timeout;
   private _enumOptions: any;
-  // private _stateBranch: StateType;
   private _isNotSelfManaged: boolean | undefined;
+  private _blocks: string[] = [];
+  private _widgets: object;
+  private _ff_components: object;
+  private _schemaProps: object;
+  private _maps: object;
 
-  //_bindObject: any;
-  _blocks: string[] = [];
-
-  liveValidate: boolean;
-  presetProps: any;
+  ff_fields: FFieldsGeneric<jsFFCustomizeType>;
   mainRef: any;
-  funcs: any;
+  liveValidate: boolean;
   schemaPart: jsJsonSchema;
-  widgets: any;
-  schemaProps: any;
-  chains: any;
 
   path: any;
   api: any;
   pFForm: any;
-
-  // pFField: any;
-
 
   constructor(props: any, context: any) {
     super(props, context);
@@ -193,6 +177,8 @@ class FField extends Component<any, any> {
     self.state = {branch};
     self._build();
     self._setDataProps(branch[SymData]);
+    self._selfBind = self._selfBind.bind(self);
+    self._setRef = self._setRef.bind(self)
     //self._setId();
   }
 
@@ -210,20 +196,6 @@ class FField extends Component<any, any> {
   //   self.mainRef && self.mainRef['rebuild'] && self.mainRef['rebuild'](path);
   // }
   //
-  // _setCachedValue(value: any) {
-  //   const self = this;
-  //   self._cached = {value};
-  //   let fieldCache = self.pFForm.props.fieldCache;
-  //   if (isUndefined(fieldCache) || fieldCache === true) fieldCache = 40;
-  //   if (fieldCache) {
-  //     if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
-  //     self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
-  //     const data = merge(self.state.branch[SymData], {value: self._cached.value});
-  //     const dataProps = self._dataProps;
-  //     self._setDataProps(data);
-  //     if (dataProps != self._dataProps) self.forceUpdate();
-  //   } else self._updateCachedValue();
-  // }
 
   _updateCachedValue() {
     const self = this;
@@ -250,9 +222,9 @@ class FField extends Component<any, any> {
         if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
         const data = merge(self.state.branch[SymData], {value: self._cached.value});
-        const dataProps = self._dataProps;
+        const mappedData = self._mappedData;
         self._setDataProps(data);
-        if (dataProps != self._dataProps) self.forceUpdate();
+        if (mappedData != self._mappedData) self.forceUpdate();
         return true;
       }
     }
@@ -282,29 +254,22 @@ class FField extends Component<any, any> {
     ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
   }
 
-  _makePreset(schemaPart: jsJsonSchema) {
-    let {ff_preset = ''} = schemaPart;
-    if (!ff_preset && !isString(schemaPart.type)) throw new Error('For multi-types ff_preset should be defined');
-    if (!ff_preset && isString(schemaPart.type)) ff_preset = schemaPart.type;
-    let {$ref = '', ...custom} = schemaPart.ff_custom || {};
-    custom.$ref = ff_preset.split(':').map(v => v[0] != '%' && '%/presets/' + v).join(':') + $ref ? ':' + $ref : '';
-    return objectResolver(custom, this.pFForm.props.objects)
+  _selfBind(fncs: any) {
+    if (typeof fncs == 'function') return fncs.bind(this);
+    return objMap(fncs, this._selfBind);
   }
 
-  _bindFuncs(fncs: any) {
-    if (typeof fncs == 'function') return fncs.bind(this);
-    if (isMergeable(fncs)) {
-      let res = isArray(fncs) ? [] : {};
-      objKeys(fncs).forEach(key => res[key] = this._bindFuncs(fncs[key]));
-      return res;
-    }
+  _setArrayBlocks() {
+    const self = this;
+    self._widgets['Array'] = self.state.branch[SymData].fData.type == 'array' ? getIn(self._ff_components, 'Array', '_$widget') : false;
+    self._widgets['ArrayItem'] = self.state.branch[SymData].ArrayItem ? getIn(self._ff_components, 'ArrayItem', '_$widget') : false;
   }
 
   _build() {
-    const isMultiSelect = (schema: any) => isArray(schema.items && schema.items.enum) && schema.uniqueItems;
-    const isFilesArray = (schema: any) => schema.items && schema.items.type === "string" && schema.items.format === "data-url";
-    const getPresetName = (schemaPart: any, type: string = 'null') => type == 'array' ? (isMultiSelect(schemaPart) ? 'multiselect' : isFilesArray(schemaPart) ? 'files' : 'array') : type;
-    const getWidget = (objects: any, widget: any) => typeof widget === 'string' ? objects.widgets && objects.widgets[widget] || widget : widget;
+    // const isMultiSelect = (schema: any) => isArray(schema.items && schema.items.enum) && schema.uniqueItems;
+    // const isFilesArray = (schema: any) => schema.items && schema.items.type === "string" && schema.items.format === "data-url";
+    // const getPresetName = (schemaPart: any, type: string = 'null') => type == 'array' ? (isMultiSelect(schemaPart) ? 'multiselect' : isFilesArray(schemaPart) ? 'files' : 'array') : type;
+    // const getWidget = (objects: any, widget: any) => typeof widget === 'string' ? objects._widgets && objects._widgets[widget] || widget : widget;
     const getEnumOptions = (schemaPart: jsJsonSchema) => {
       if (!schemaPart.enum) return undefined;
       let result: any[] = [], vals: any[] = schemaPart.enum, names: any[] = schemaPart.enumNames || [];
@@ -313,55 +278,29 @@ class FField extends Component<any, any> {
     };
 
     const self = this;
-    const pFForm = self.pFForm;
-
-    //const path = string2path(self.path);
-    const schemaPart = self.api.getSchemaPart(self.path);
-    const type = isArray(schemaPart.type) ? schemaPart.type[0] : schemaPart.type;
-    //const x = schemaPart.x || ({} as FFSchemaExtensionType);
-    const objects = pFForm.props.objects;
-    const presets = objects.presets;
-    const presetName = schemaPart.ff_preset || getPresetName(schemaPart, type);
+    const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
     const funcs: any = {};
 
     self.schemaPart = schemaPart;
+    self.ff_fields = merge(schemaPart.ff_fields, self._selfBind(getIn(schemaPart, 'ff_fields', SymData)));
+
     self._isNotSelfManaged = !isSchemaSelfManaged(schemaPart) || undefined;
-
-    //funcs.onChange = self._setCachedValue.bind(self);
-    // funcs.onBlur = (value: any) => {
-    //   self.api.set('./@status/untouched', 0, {noValidation: true});
-    //   self.api.set('/@/active', undefined, {noValidation: true});
-    //   return !self.liveValidate ? self.api.validate() : null;
-    // };
-    // funcs.onFocus = (value: any) => self.api.set('/@/active', self.path, {noValidation: true});
-    // self.funcs = funcs;
-    // self._bindObject = {pFForm, schemaPart, field: self, funcs};
-    // Object.defineProperty(self._bindObject, "path", {get: () => self.path});
-    //let {result, chains} = getFieldBlocks(presetName, objects, schemaPart, {'Main': funcs}, self._bindObject);
-    let result = self._makePreset(schemaPart);
-    if (result[SymData]) result = merge(result, self._bindFuncs(result[SymData]));
-
-    //self.chains = chains;
-    self.presetProps = result;
-
+    let components = schemaPart.ff_components || {};
+    if (components[SymData]) components = merge(components, self._selfBind(components[SymData]));
+    self._ff_components = components;
     self._enumOptions = getEnumOptions(schemaPart);
-    const widgets = {}, schemaProps = {};
-    self._blocks = objKeys(result).filter(key => result[key]);
+    self._widgets = {};
+    self._schemaProps = {};
+    self._maps = {};
+    self._blocks = objKeys(components).filter(key => components[key]);
     self._blocks.forEach((block: string) => {
-      const {_propsMap, widget, ...rest} = result[block];
-      widgets[block] = widget;
-      if (rest._refName) rest[rest._refName] = self._setRef.bind(self); // _refName - name for ref-function, so put it if it exists
-      schemaProps[block] = rest;  // all properties, except for several reserved names
+      const {$propsMap, _$widget, ...rest} = components[block];
+      self._widgets[block] = _$widget;
+      if (rest.$refName) rest[rest.$refName] = self._setRef; // $refName - name for ref-function
+      self._schemaProps[block] = rest;  // all properties, except for several reserved names
+      self._maps[block] = self._selfBind($propsMap);
     });
-
-    // if (self._isNotSelfManaged) {
-    //   widgets['Main'] = FSection;
-    //   self.presetProps['Main'] = {widget: FSection, ...schemaProps['Main']};
-    // }
-
-    self.widgets = widgets;
-    self.schemaProps = schemaProps;
-
+    self._setArrayBlocks();
     self._rebuild = false;
   }
 
@@ -385,10 +324,10 @@ class FField extends Component<any, any> {
   _setDataProps(data: any) {
     const self = this;
     const dataProps = {};
-    self._blocks.forEach((block: string) => dataProps[block] = mapProps(self.presetProps[block]._propsMap, data, self));
+    self._blocks.forEach((block: string) => dataProps[block] = mapProps(self._maps[block], data));
     const upd: any = {};
     let updateComponent = false;
-    upd._dataProps = merge(self._dataProps, dataProps, {diff: true});
+    upd._dataProps = merge(self._mappedData, dataProps, {diff: true});
     upd._liveValidate = data.params && data.params.liveValidate;
     upd._enumOptions = self._enumOptions || data.enum;
     objKeys(upd).forEach(key => {
@@ -403,12 +342,25 @@ class FField extends Component<any, any> {
   shouldComponentUpdate(nextProps: any, nextState: any) {
     const self = this;
     let updateComponent = false;
-    if (nextProps.FFrormProps != self.props.FFrormProps) {
+
+    if (nextProps.FFrormApi != self.props.FFrormApi) {
       self._rebuild = true;
       return true;
     }
-    if (nextState.branch[SymData] !== self.state.branch[SymData]) updateComponent = self._setDataProps(nextState.branch[SymData]);
-    if (self._isNotSelfManaged && nextState.branch !== self.state.branch) updateComponent = true;
+
+    const nextData = nextState.branch[SymData];
+    const currentData = self.state.branch[SymData];
+    if (nextData.oneOf !== currentData.oneOf) {
+      self._rebuild = true;
+      return true;
+    }
+
+    if (nextData !== currentData) updateComponent = self._setDataProps(nextState.branch[SymData]);
+    if (nextData.fData.type !== currentData.fData.type) {
+      updateComponent = true;
+      self._setArrayBlocks();
+    }
+    if (!updateComponent && self._isNotSelfManaged && nextState.branch !== self.state.branch) updateComponent = true;
 
     return updateComponent
   }
@@ -416,9 +368,9 @@ class FField extends Component<any, any> {
   render() {
     const self = this;
     if (self._rebuild) this._build();
-    const BuilderWidget = self.widgets['Builder'];
-    return <BuilderWidget {...self.schemaProps['Builder']} {...self._dataProps['Builder']} enumOptions={self._enumOptions} pFField={self}
-                          dataProps={self._dataProps} stateBranch={self._isNotSelfManaged && self.state.branch} FFormProps={self._isNotSelfManaged && self.props.FFrormProps}/>
+    const BuilderWidget = self._widgets['Builder'];
+    return <BuilderWidget {...self._schemaProps['Builder']} {...self._mappedData['Builder']} enumOptions={self._enumOptions} pFField={self}
+                          mappedData={self._mappedData} stateBranch={self._isNotSelfManaged && self.state.branch} FFormApi={self.props.pFForm.api}/>
   }
 }
 
@@ -434,23 +386,8 @@ class SectionObject extends PureComponent<any, any> { // need to be class, as we
   }
 }
 
-// class SectionField extends PureComponent<any, any> { // need to be class, as we use it's forceUpdate() method
-//   render() {
-//     const {pFForm, path, setRef, fieldName, _keyField} = this.props;
-//     return setFField(pFForm, path, setRef, fieldName, _keyField)
-//   }
-// }
-//
-// function setFField(pFForm: any, path: string, ref: any, fieldName?: string, _keyField?: string) {
-//   let stateBranch = pFForm.api.get(path);
-//   if (fieldName) stateBranch = stateBranch[fieldName];
-//   return <FField ref={ref} key={_keyField ? getIn(stateBranch, SymData, string2path(_keyField || '')) || fieldName : fieldName}
-//                  pFForm={pFForm} path={path + (fieldName ? '/' + fieldName : '')} stateBranch={stateBranch}/>;
-// }
-
 class FSection extends Component<any, any> {
   private _arrayStartIndex: number = 0;
-  private _items4arrayLayout: any[] = [];
   private _rebuild = true;
   private _focusField: string = '';
   private _arrayKey2field: { [key: string]: number };
@@ -473,7 +410,6 @@ class FSection extends Component<any, any> {
     self._setWidRef = (key: number | string) => (item: any) => self._widgets[key] = item;
     self.getDataProps = () => self._dataProps;
     self._build(self.props);
-    // self._makeArrayItems();
   }
 
   focus(path: Path) {
@@ -495,7 +431,7 @@ class FSection extends Component<any, any> {
   //   } else {
   //     let field = path[0];
   //     path = path.slice(1);
-  //     if (self._fields[field] && self._fields[field].rebuild) self._fields[field].rebuild(path);
+  //     if (self.$fields[field] && self.$fields[field].rebuild) self.$fields[field].rebuild(path);
   //   }
   // }
 
@@ -518,19 +454,19 @@ class FSection extends Component<any, any> {
             layout.push(self._makeFField(fieldName));
             keys.splice(idx, 1);
           }
-        } else if (isObject(fieldName)) { // if field is object, then do makeLayouts if prop "_fields" is passed
-          let {_fields: groupFields, _propsMap, _pFField, ...restField} = fieldName as FFGroupGeneric<jsFFCustomizeType>;
+        } else if (isObject(fieldName)) { // if field is object, then do makeLayouts if prop "$fields" is passed
+          let {$fields: groupFields, $propsMap, $pFField, ...restField} = fieldName as FFGroupGeneric<jsFFCustomizeType>;
           let savedCountValue = count; // save count value as it may change in following makeLayouts calls
           count++;
           restField = bindMetods(restField);  // binds onFunctis to field
-          restField = replaceWidgetNamesWithFunctions(restField, pFField.pFForm.props.objects); // replace widget name (that passed as string value) with functions
+          // restField = replaceWidgetNamesWithFunctions(restField, pFField.pFForm.props.objects); // replace widget name (that passed as string value) with functions
           let opts = {};
-          if (_pFField) opts[_pFField === true ? '_pFField' : _pFField] = pFField; // pass FField to widget. If true name 'options' is used, if string, then string value is used
-          if (groupFields) {  // if _fields exists then this is group section and we should map groupPropsMap, pass schemaProps['Layouts'] and use GroupWidget as default if no widget is supplied
-            if (_propsMap || LayoutsPropsMap) self._dataMaps[savedCountValue] = merge(_propsMap || {}, LayoutsPropsMap || {}); // merge _propsMap and LayoutsPropsMap, to pass them every time _props changed
+          if ($pFField) opts[$pFField === true ? '$pFField' : $pFField] = pFField; // pass FField to widget. If true name 'options' is used, if string, then string value is used
+          if (groupFields) {  // if $fields exists then this is group section and we should map groupPropsMap, pass schemaProps['Layouts'] and use GroupWidget as default if no widget is supplied
+            if ($propsMap || LayoutsPropsMap) self._dataMaps[savedCountValue] = merge($propsMap || {}, LayoutsPropsMap || {}); // merge $propsMap and LayoutsPropsMap, to pass them every time _props changed
             Object.assign(opts, schemaProps['Layouts']);
             if (!restField.widget) opts['widget'] = LayoutsWidget
-          } else if (_propsMap) self._dataMaps[savedCountValue] = _propsMap;
+          } else if ($propsMap) self._dataMaps[savedCountValue] = $propsMap;
           layout.push(<SectionObject {...opts} count={savedCountValue} getDataProps={self.getDataProps} ref={self._setWidRef(savedCountValue)}
                                      key={'widget_' + savedCountValue} {...restField} >{groupFields && makeLayouts(keys, groupFields)}</SectionObject>);
         }
@@ -546,7 +482,7 @@ class FSection extends Component<any, any> {
     if (isSchemaSelfManaged(schemaPart)) return;
 
     const LayoutsWidget = widgets['Layouts'] || 'div';
-    const LayoutsPropsMap = pFField.presetProps['Layouts']._propsMap;
+    const LayoutsPropsMap = pFField.presetProps['Layouts'].$propsMap;
     const {properties = {}}: { [key: string]: any } = schemaPart;
     // const {groups = []} = x;
 
@@ -571,7 +507,7 @@ class FSection extends Component<any, any> {
 
     self._objectLayouts = makeLayouts(objectKeys, schemaPart.ff_fields || []);  // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
     objectKeys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));  // so here we have only keys was not used and we add them to _objectLayouts
-    objKeys(self._dataMaps).forEach((key: string) => self._dataProps[key] = mapProps(self._dataMaps[key], stateBranch[SymData], pFField));
+    objKeys(self._dataMaps).forEach((key: string) => self._dataProps[key] = mapProps(self._dataMaps[key], stateBranch[SymData]));
 
     self._makeArrayItems(self.props);
 
@@ -602,7 +538,7 @@ class FSection extends Component<any, any> {
 
   _makeFField(fieldName: string, arrayKey?: string) {
     const self = this;
-    return <FField ref={self._setFieldRef(arrayKey || fieldName)} key={arrayKey || fieldName} pFForm={self.props.pFField.pFForm} FFrormProps={self.props.FFormProps}
+    return <FField ref={self._setFieldRef(arrayKey || fieldName)} key={arrayKey || fieldName} pFForm={self.props.pFField.pFForm} FFormApi={self.props.FFormApi}
                    getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
   }
 
@@ -645,11 +581,6 @@ class FSection extends Component<any, any> {
     return doUpdate;
   }
 
-  _add2arrayLayout() {
-    const self = this;
-    self._items4arrayLayout = [];
-  }
-
   shouldComponentUpdate(nextProps: any) {
     const self = this;
     if (nextProps.FFormProps !== self.props.FFormProps) {
@@ -678,7 +609,7 @@ class FSection extends Component<any, any> {
 
       if (nextBranch[SymData] !== prevBranch[SymData]) {  // update _dataProps
         const dataProps = {};
-        objKeys(self._dataMaps).forEach((key: string) => dataProps[key] = mapProps(self._dataMaps[key], nextBranch[SymData], nextProps.pFField));
+        objKeys(self._dataMaps).forEach((key: string) => dataProps[key] = mapProps(self._dataMaps[key], nextBranch[SymData]));
         let {state: newDataProps, changes} = mergeState(self._dataProps, dataProps);
         self._dataProps = newDataProps;
         if (changes) objKeys(changes).forEach(key => self._widgets[key] && self._widgets[key]['forceUpdate']());
@@ -692,23 +623,44 @@ class FSection extends Component<any, any> {
     const self = this;
     let {funcs, length, enumOptions, pFField, onChange, onFocus, onBlur, stateBranch, FFormProps, _refName, focusField, ...rest} = self.props;
     if (self._rebuild) self._build(self.props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-    // else if (self._items4arrayLayout.length) self._add2arrayLayout();
     return (
       <SectionObject {...pFField.schemaProps['Layouts']} {...rest} count={0} getDataProps={self.getDataProps} ref={self._setWidRef(0)} key={'widget_0'}>{self._objectLayouts}{self._arrayLayouts}</SectionObject>)
   }
 }
 
 
-function replaceWidgetNamesWithFunctions(presetArrays: any, objects: any) {
-  let tmp = presetArrays;
-  if (!isArray(tmp)) tmp = [tmp];
-  for (let i = 0; i < tmp.length; i++) {
-    let presetArray = tmp[i];
-    let widget = presetArray.widget;
-    if (widget) presetArray.widget = typeof widget === 'string' ? objects.widgets && objects.widgets[widget] || widget : widget;
-    objKeys(presetArray).forEach(key => isObject(presetArray[key]) && (presetArray[key] = replaceWidgetNamesWithFunctions(presetArray[key], objects)))
-  }
-  return presetArrays
+/////////////////////////////////////////////
+//  Basic components
+/////////////////////////////////////////////
+
+function Unsupported(props: any) {return <div>Unsupported</div>}
+
+
+function FBuilder(props: any) {
+  const {hidden, mappedData, id, pFField, ...rest} = props;
+  const {_widgets, _schemaProps} = pFField;
+
+  const {Title, Body, Main, Message, Groups, GroupBlocks, ArrayItem, Array, Autosize} = _widgets;
+
+  // const hiddenArray = [];
+  // if (Array) hiddenArray[1] = hidden;
+  // else if (ArrayItem && mappedData['ArrayItem'].itemData) hiddenArray[2] = hidden;
+  // else hiddenArray[0] = hidden;
+
+  let result = (
+    <GroupBlocks hidden={!Array && !ArrayItem && hidden} {..._schemaProps['GroupBlocks']} {...mappedData['GroupBlocks']}>
+      <Title {..._schemaProps['Title']} {...mappedData['Title']}/>
+      <Body {..._schemaProps['Body']} {...mappedData['Body']}>
+      <Main {..._schemaProps['Main']} {...mappedData['Main']} {...rest} id={id} pFField={pFField}/>
+      <Message {..._schemaProps['Message']} {...mappedData['Message']}/>
+      {Autosize ? <Autosize pFField={pFField} hidden={hidden} {..._schemaProps['Autosize']} {...mappedData['Autosize']}/> : ''}
+      </Body>
+    </GroupBlocks>
+  );
+  if (Array) result = <Array pFField={pFField} hidden={!ArrayItem && hidden} {..._schemaProps['Array']} {...mappedData['Array']}>{result}</Array>;
+  if (ArrayItem && mappedData['ArrayItem'].itemData)
+    result = <ArrayItem pFField={pFField} hidden={hidden} {..._schemaProps['ArrayItem']} {...mappedData['ArrayItem']}>{result}</ArrayItem>;
+  return result;
 }
 
 function ArrayBlock(props: any) {
@@ -725,171 +677,28 @@ function ArrayBlock(props: any) {
   else return (<UseTag {...rest}><Empty {...emptyRest}>{canAdd ? <AddButton onClick={onClick} {...addButtonRest} /> : ''}</Empty></UseTag>);
 }
 
-function objectResolver(obj2resolve: any, _objects: any) {
-  function deref(obj: any) {
-    let {$ref = '', restObj} = obj;
-    $ref = $ref.split(':');
-    const objs2merge: any[] = [];
-    for (let i = 0; i < $ref.length; i++) {
-      if (!$ref[i]) continue;
-      let path = string2path($ref[i]);
-      if (path[0] !== '%') throw new Error('Can reffer only to %');
-      let refObj = getIn({'%': _objects}, path);
-      if (refObj.$ref) refObj = deref(refObj);
-      objs2merge.push(refObj);
-    }
-    let result = isArray(obj) ? [] : {};
-    for (let i = objs2merge.length - 1; i >= 0; i--) result = merge(result, objs2merge[i]);
-    return merge(result, restObj);
-  }
-
-  const result = deref(obj2resolve);
-  const retResult = isArray(result) ? [] : {};
-  objKeys(result).forEach((key) => {
-    const resolvedValue = isString(result[key]) && result[key][0] == '%' && result[key][1] == '/' ? getIn({'%': _objects}, string2path(result[key])) : result[key];
-    if (key[0] == '_') retResult[key] = resolvedValue;  //only resolve for keys that begins with _
-    else if (isMergeable(result[key])) {
-      retResult[key] = objectResolver(resolvedValue, _objects);
-      if (retResult[key][SymData]) retResult[SymData][key] = retResult[key][SymData];
-      delete retResult[key][SymData];
-    } else if (typeof resolvedValue == 'function') {
-      retResult[SymData][key] = resolvedValue;
-    } else retResult[key] = resolvedValue;
-  });
-
-  return retResult
-}
-
-function getFieldBlocks(presetsString: string | string[], objects: any = {}, schemaPart: any = {}, initalFuncsObject: any = {}, object2bind: any = {}) {
-
-  function chainMethods(result: any, initalFuncs: any, track: string[] = []) {// initalFuncs is function than should allways at the begginig of chain (the last in execution order)
-    methods2chain.forEach((methodName: string) => {
-      let methods = getArrayOfPropsFromArrayOfObjects(presetArray, track.concat(methodName));
-      let methods_rev = getArrayOfPropsFromArrayOfObjects(presetArray, track.concat('$' + methodName)); // methotds that begins with '$' will be chained in reverse order
-      let prevMethod = initalFuncs && initalFuncs[methodName];
-      if (prevMethod) push2array(methods_rev, prevMethod);
-      // console.log('methods 1:',methods);
-      methods_rev.reverse();
-      methods = methods_rev.concat(methods);
-      // console.log('methods 2:',methods);
-      let chainWidgets = getArrayOfPropsFromArrayOfObjects(presetArray, track.concat('widget'));
-      if (chainWidgets.length) chains = merge(chains, makeSlice('widgets', track, chainWidgets));
-      if (methods.length) chains = merge(chains, makeSlice('funcs', track, methodName, methods.slice()));
-      if (!methods.length) return;
-      for (let i = prevMethod ? 1 : 0; i < methods.length; i++) {
-        let bindObj = {...object2bind};
-        if (prevMethod) bindObj[methodName] = prevMethod;
-        methods[i] = methods[i].bind(bindObj);
-        prevMethod = methods[i]
-      }
-      result = merge(result, makeSlice(methodName, methods.pop()));
-      result = merge(result, makeSlice('$' + methodName, SymDelete), {del: true});
-    });
-    objKeys(result).forEach(key => {
-      if (key[0] !== '_' && isObject(result[key])) { // skip keys that begins with '_'
-        let keyRes: any = chainMethods(result[key], initalFuncs && initalFuncs[key], track.concat(key));
-        result = merge(result, makeSlice(key, keyRes))
-      }
-    });
-    return result;
-  }
-
-  let presets = objects['presets'] || {};
-  let methods2chain = objKeys(objects.methods2chain).filter(key => objects.methods2chain[key]); //get methods than should be chained as array of strings
-  let chains = {methods2chain};
-  let presetArray: any = [];  // here we will push all presets than should be merged in one
-  let presetNames = isArray(presetsString) ? presetsString : presetsString.split(':');
-  presetNames.reverse();
-  presetNames.forEach(presetName => {
-    while (true) {
-      let preset = getIn(presetName[0] == '#' ? schemaPart.ff_custom : presets, string2path(presetName)); // if preset name begins with '#', like '#smthng' look for it in x['custom'], not in presets
-      if (preset) {
-        presetArray.push(preset);
-        if (!preset['_']) break;  // '_' - is parent for this preset
-        presetName = preset['_'];
-      } else break;
-    }
-  });
-  if (presets['*']) presetArray.push(presets['*']); // this will be first after reverse
-  presetArray.reverse();  // reverse to get proper order
-  if (schemaPart.ff_custom) presetArray.push(schemaPart.ff_custom); // and this is last, x['custom'] overwrite all
-  presetArray.push({'_': undefined}); // remove '_' key as we don't want it to be in 'result'
-  presetArray = replaceWidgetNamesWithFunctions(presetArray, objects);  // Now if we have _props with key 'widget' wich value is not function, replace it from objects['widget']
-  let result = merge.all({}, presetArray, {del: true});
-  result = chainMethods(result, initalFuncsObject); // merge in one object, remove undefined values, and make chains for methods that listed in objects.methods2chain with true value
-  return {result, chains, presetArray};
-}
-
-function mapProps(map: FFDataMapGeneric<MapFunctionType>, data: FFieldDataType, field: FField) {
-  if (!map) return {};
-  let result = {};
-  objKeys(map).filter(key => map[key]).forEach((to) => {
-    let item: any = map[to];
-    if (!isArray(item)) item = [item];
-    let value = getIn(data, normalizePath(item[0]));
-    result = merge(result, makeSlice(normalizePath(to), item[1] ? item[1].bind(field)(value) : value));
-  });
-  return result;
-}
-
-/////////////////////////////////////////////
-//  Basic components
-/////////////////////////////////////////////
-
-function Unsupported(props: any) {return <div>Unsupported</div>}
-
-function DefaultBuilder(props: any) {
-  const {hidden, hiddenStyle, omit, dataProps, id, pFField, ...rest} = props;
-  if (omit) return false;
-  const {widgets, schemaProps} = pFField;
-
-  const {Title, Body, Main, Message, Groups, GroupBlocks, ArrayItem, Array, Autosize} = widgets;
-
-  const hiddenArray = [];
-  if (Array) hiddenArray[1] = hidden;
-  else if (ArrayItem && dataProps['ArrayItem'].itemData) hiddenArray[2] = hidden;
-  else hiddenArray[0] = hidden;
-
-  let result = (
-    <GroupBlocks hidden={hiddenArray[0]} hiddenStyle={hiddenStyle} {...schemaProps['GroupBlocks']} {...dataProps['GroupBlocks']}>
-      <Title {...schemaProps['Title']} {...dataProps['Title']}/>
-      <Body {...schemaProps['Body']} {...dataProps['Body']}>
-      <Main {...schemaProps['Main']} {...dataProps['Main']} {...rest} id={id} pFField={pFField}/>
-      <Message {...schemaProps['Message']} {...dataProps['Message']}/>
-      {Autosize ? <Autosize hidden={hidden} {...schemaProps['Autosize']} {...dataProps['Autosize']} pFField={pFField}/> : ''}
-      </Body>
-    </GroupBlocks>
-  );
-  if (Array) result = <Array hidden={hiddenArray[1]} hiddenStyle={hiddenStyle} {...schemaProps['Array']} {...dataProps['Array']} pFField={pFField}>{result}</Array>;
-  if (ArrayItem && dataProps['ArrayItem'].itemData)
-    result = <ArrayItem hidden={hiddenArray[2]} hiddenStyle={hiddenStyle} {...schemaProps['ArrayItem']} {...dataProps['ArrayItem']} pFField={pFField}>{result}</ArrayItem>;
-  return result;
-}
-
 function DivBlock(props: any) {
   const {id, useTag: UseTag = 'div', hidden, hiddenStyle, children, ...rest} = props;
   if (hidden) rest.style = merge(rest.style || {}, hiddenStyle ? hiddenStyle : {display: 'none'});// merge(rest.style || {}, {display: 'none'});
   return (<UseTag {...rest}>{children}</UseTag>)
 }
 
-
-const sizerStyle = {position: 'absolute', top: 0, left: 0, visibility: 'hidden', height: 0, overflow: 'scroll', whiteSpace: 'pre'};
-
 class AutosizeBlock extends PureComponent<any, any> {
-  elem: any;
+  static readonly _sizerStyle: { position: 'absolute', top: 0, left: 0, visibility: 'hidden', height: 0, overflow: 'scroll', whiteSpace: 'pre' };
+  private _elem: any;
 
   componentDidMount() {
     const style = window && window.getComputedStyle(this.props.pFField.mainRef);
-    if (!style || !this.elem) return;
-    ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'letterSpacing'].forEach(key => this.elem.style[key] = style[key]);
+    if (!style || !this._elem) return;
+    ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'letterSpacing'].forEach(key => this._elem.style[key] = style[key]);
   }
 
   render() {
     const self = this;
     const props = self.props;
     const value = (isUndefined(props.value) ? '' : props.value.toString()) || props.placeholder || '';
-    return (<div style={sizerStyle as any} ref={(elem) => {
-      (self.elem = elem) && (props.pFField.mainRef.style.width = ((elem as any).scrollWidth + (props.addWidth || 45)) + 'px')
+    return (<div style={AutosizeBlock._sizerStyle as any} ref={(elem) => {
+      (self._elem = elem) && (props.pFField.mainRef.style.width = ((elem as any).scrollWidth + (props.addWidth || 45)) + 'px')
     }}>{value}</div>)
   }
 }
@@ -1008,8 +817,8 @@ function ArrayInput(props: any) {
                          name={`${name}/${i}`}
                          disabled={disabled}
                          autoFocus={autofocus && i === 0}
-                         onFocus={onFocus.bind(props)}
-                         onBlur={onBlur.bind(props)}
+                         onFocus={onFocus}
+                         onBlur={onBlur}
                          onChange={(event: any) => {
                            const all = enumOptions.map(({value}: any) => value);
                            if (event.target.checked) props.funcs.onChange(selectValue(option.value, value, all));
@@ -1114,6 +923,114 @@ function ArrayItem(props: any) {
   )
 }
 
+function TristateBox(props: any) {
+  const self = this;
+  let {checked, onChange, nullValue, getRef, type, ...rest} = props;
+  return <input type="checkbox" checked={checked === true} {...rest}
+                onChange={(event: any) => {onChange(checked === nullValue ? true : (checked === true ? false : nullValue), event)}}
+                ref={elem => {
+                  getRef && getRef(elem);
+                  elem && (elem.indeterminate = (checked === nullValue))
+                }}/>
+}
+
+///////////////////////////////
+//     Functions
+///////////////////////////////
+
+
+function mapProps(map: FFDataMapGeneric<MapFunctionType>, data: FFieldDataType) {
+  if (!map) return {};
+  let result = {};
+  objKeys(map).filter(key => map[key]).forEach((to) => {
+    let item: any = map[to];
+    if (!isArray(item)) item = [item];
+    let value = getIn(data, normalizePath(item[0]));
+    result = merge(result, makeSlice(normalizePath(to), item[1] ? item[1](value) : value));
+  });
+  return result;
+}
+
+// function replaceWidgetNamesWithFunctions(presetArrays: any, objects: any) {
+//   let tmp = presetArrays;
+//   if (!isArray(tmp)) tmp = [tmp];
+//   for (let i = 0; i < tmp.length; i++) {
+//     let presetArray = tmp[i];
+//     let widget = presetArray.widget;
+//     if (widget) presetArray.widget = typeof widget === 'string' ? objects.widgets && objects.widgets[widget] || widget : widget;
+//     objKeys(presetArray).forEach(key => isObject(presetArray[key]) && (presetArray[key] = replaceWidgetNamesWithFunctions(presetArray[key], objects)))
+//   }
+//   return presetArrays
+// }
+// function getFieldBlocks(presetsString: string | string[], objects: any = {}, schemaPart: any = {}, initalFuncsObject: any = {}, object2bind: any = {}) {
+//
+//   function chainMethods(result: any, initalFuncs: any, track: string[] = []) {// initalFuncs is function than should allways at the begginig of chain (the last in execution order)
+//     methods2chain.forEach((methodName: string) => {
+//       let methods = getArrayOfPropsFromArrayOfObjects(presetArray, track.concat(methodName));
+//       let methods_rev = getArrayOfPropsFromArrayOfObjects(presetArray, track.concat('$' + methodName)); // methotds that begins with '$' will be chained in reverse order
+//       let prevMethod = initalFuncs && initalFuncs[methodName];
+//       if (prevMethod) push2array(methods_rev, prevMethod);
+//       // console.log('methods 1:',methods);
+//       methods_rev.reverse();
+//       methods = methods_rev.concat(methods);
+//       // console.log('methods 2:',methods);
+//       let chainWidgets = getArrayOfPropsFromArrayOfObjects(presetArray, track.concat('widget'));
+//       if (chainWidgets.length) chains = merge(chains, makeSlice('widgets', track, chainWidgets));
+//       if (methods.length) chains = merge(chains, makeSlice('funcs', track, methodName, methods.slice()));
+//       if (!methods.length) return;
+//       for (let i = prevMethod ? 1 : 0; i < methods.length; i++) {
+//         let bindObj = {...object2bind};
+//         if (prevMethod) bindObj[methodName] = prevMethod;
+//         methods[i] = methods[i].bind(bindObj);
+//         prevMethod = methods[i]
+//       }
+//       result = merge(result, makeSlice(methodName, methods.pop()));
+//       result = merge(result, makeSlice('$' + methodName, SymDelete), {del: true});
+//     });
+//     objKeys(result).forEach(key => {
+//       if (key[0] !== '_' && isObject(result[key])) { // skip keys that begins with '_'
+//         let keyRes: any = chainMethods(result[key], initalFuncs && initalFuncs[key], track.concat(key));
+//         result = merge(result, makeSlice(key, keyRes))
+//       }
+//     });
+//     return result;
+//   }
+//
+//   let presets = objects['presets'] || {};
+//   let methods2chain = objKeys(objects.methods2chain).filter(key => objects.methods2chain[key]); //get methods than should be chained as array of strings
+//   let chains = {methods2chain};
+//   let presetArray: any = [];  // here we will push all presets than should be merged in one
+//   let presetNames = isArray(presetsString) ? presetsString : presetsString.split(':');
+//   presetNames.reverse();
+//   presetNames.forEach(presetName => {
+//     while (true) {
+//       let preset = getIn(presetName[0] == '#' ? schemaPart.ff_custom : presets, string2path(presetName)); // if preset name begins with '#', like '#smthng' look for it in x['custom'], not in presets
+//       if (preset) {
+//         presetArray.push(preset);
+//         if (!preset['_']) break;  // '_' - is parent for this preset
+//         presetName = preset['_'];
+//       } else break;
+//     }
+//   });
+//   if (presets['*']) presetArray.push(presets['*']); // this will be first after reverse
+//   presetArray.reverse();  // reverse to get proper order
+//   if (schemaPart.ff_custom) presetArray.push(schemaPart.ff_custom); // and this is last, x['custom'] overwrite all
+//   presetArray.push({'_': undefined}); // remove '_' key as we don't want it to be in 'result'
+//   presetArray = replaceWidgetNamesWithFunctions(presetArray, objects);  // Now if we have _props with key 'widget' wich value is not function, replace it from objects['widget']
+//   let result = merge.all({}, presetArray, {del: true});
+//   result = chainMethods(result, initalFuncsObject); // merge in one object, remove undefined values, and make chains for methods that listed in objects.methods2chain with true value
+//   return {result, chains, presetArray};
+// }
+//
+// function getArrayOfPropsFromArrayOfObjects(arr: any, propPath: string | Path) {
+//   propPath = normalizePath(propPath);
+//   for (let i = (propPath[0] == '#' ? 1 : 0); i < propPath.length; i++) {
+//     arr = arr.filter((item: any) => item.hasOwnProperty(propPath[i])).map((item: any) => item[propPath[i]]);
+//     if (!arr.length) break;
+//   }
+//   return arr
+// }
+
 function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: string]: string } } = {}) { //skipFields: string[] = [], replaceFields: { [key: string]: string } = {}) {
   const skipFields = opts.skipFields || [];
   const replaceFields = opts.replaceFields || {};
@@ -1131,30 +1048,9 @@ function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: stri
   }
 }
 
-function getArrayOfPropsFromArrayOfObjects(arr: any, propPath: string | Path) {
-  propPath = normalizePath(propPath);
-  for (let i = (propPath[0] == '#' ? 1 : 0); i < propPath.length; i++) {
-    arr = arr.filter((item: any) => item.hasOwnProperty(propPath[i])).map((item: any) => item[propPath[i]]);
-    if (!arr.length) break;
-  }
-  return arr
-}
-
-function TristateBox(props: any) {
-  const self = this;
-  let {checked, onChange, nullValue, getRef, type, ...rest} = props;
-  return <input type="checkbox" checked={checked === true} {...rest}
-                onChange={(event: any) => {onChange(checked === nullValue ? true : (checked === true ? false : nullValue), event)}}
-                ref={elem => {
-                  getRef && getRef(elem);
-                  elem && (elem.indeterminate = (checked === nullValue))
-                }}/>
-}
-
 
 function onSelectChange(event: any) {
   function processSelectValue({type, items}: any, value: any) {
-    // if (value === "") return null;
     if (type === "array" && items && (items.type == "number" || items.type == "integer")) return value.map(asNumber);
     else if (type === "boolean") return value === "true";
     else if (type === "number") return asNumber(value);
@@ -1170,11 +1066,11 @@ function onSelectChange(event: any) {
 }
 
 /////////////////////////////////////////////
-//  basicObjects
+//  fformObjects
 /////////////////////////////////////////////
 
 
-const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
+const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   extend: function (obj) {
     return merge(this, obj, {symbol: false}) // merge without symbols, as there (in symbol keys) will be stored cache data which MUST be recalculated after each extend
   },
@@ -1183,7 +1079,7 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
   //   'onBlur': true, 'onMouseOver': true, 'onMouseEnter': true, 'onMouseLeave': true, 'onChange': true, 'onSelect': true, 'onClick': true, 'onSubmit': true, 'onFocus': true, 'onUnload': true, 'onLoad': true
   // },
   widgets: {
-    Builder: DefaultBuilder,
+    Builder: FBuilder,
     Array: ArrayBlock,
     ArrayItem: ArrayItem,
     EmptyArray: EmptyArray,
@@ -1279,7 +1175,7 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
         onChange: function (event: any) {this.api.setValue(event.target.value, {})},
         onBlur: function (value: any) {
           const self = this;
-          self.api.set('./@status/untouched', 0, {noValidation: true});
+          self.api.set('./', 0, {[SymData]: ['status', 'untouched'], noValidation: true});
           self.api.set('/@/active', undefined, {noValidation: true});
           return !self.liveValidate ? self.api.validate() : null;
         },
@@ -1351,7 +1247,7 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
         _widget: '%/widgets/Section',
         _refName: 'ref',
         _propsMap: false,
-        // _propsMap: {
+        // $propsMap: {
         //   value: false,
         //   autoFocus: false,
         //   placeholder: false,
@@ -1367,7 +1263,7 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
     array: {
       $ref: '%/presets/object',
       //_blocks: {'Array': true},
-      //Main: {_propsMap: {length: 'length'}},
+      //Main: {$propsMap: {length: 'length'}},
       //GroupBlocks: {useTag: 'fieldset'},
       //Title: {useTag: 'legend'},
     },
@@ -1415,6 +1311,9 @@ const basicObjects: formObjectsType & { extend: (obj: any) => any } = {
       Array: false,
     }
   },
+  functions: {
+    not: (v: any) => !v
+  },
   presetMap: {
     boolean: ['select', 'radio'],
     string: ['select', 'password', 'email', 'hostname', 'ipv4', 'ipv6', 'uri', 'data-url', 'radio', 'textarea', 'hidden', 'date', 'datetime', 'date-time', 'color', 'file'],
@@ -1449,7 +1348,7 @@ const buttonObject = {
 };
 
 
-export {selectorMap, getFieldBlocks, basicObjects, FForm, FFormStateAPI, fformCores};
+export {selectorMap, fformObjects, FForm, FFormStateAPI, fformCores};
 
 //module.exports = process.env.NODE_ENV === 'test' ? merge(module.exports, {}) : module.exports;
 

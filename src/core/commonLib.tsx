@@ -299,7 +299,6 @@ function isMergeable(val: any) {
     && Object.prototype.toString.call(val) !== '[object Date]'
 }
 
-
 function memoize(fn: any) {
   fn.cache = new Map();
   return function (...args: any[]) {
@@ -315,27 +314,13 @@ function memoize(fn: any) {
   };
 }
 
-
 function getCreateIn(state: any, value: any, ...pathes: any[]) {
   if (!hasIn(state, ...pathes)) setIn(state, value, ...pathes);
   return getIn(state, ...pathes)
 }
 
-//
-// function getOrCreate(obj: any, keys: Array<string | number | symbol> | string | number | symbol, value: any = {}) {
-//   if (!isArray(keys)) keys = [keys];
-//   for (let i = 0; i < keys.length; i++) {
-//     if (keys[i] == '#') continue;
-//     if (!obj.hasOwnProperty(keys[i])) obj[keys[i]] = (i == keys.length - 1) ? value : {};
-//     obj = obj[keys[i]];
-//   }
-//   return obj;
-// }
 
-function not(val: any) {
-  return !val
-}
 
-export {not, mergeState, merge, push2array, asNumber, isEqual, isString, isObject, isMergeable, objKeysNSymb, moveArrayElems, delIn, setIn, hasIn, getIn, getCreateIn, getSlice, makeSlice, memoize};
+export {mergeState, merge, push2array, asNumber, isEqual, isString, isObject, isMergeable, objKeysNSymb, moveArrayElems, delIn, setIn, hasIn, getIn, getCreateIn, getSlice, makeSlice, memoize};
 export {objKeys, isArray, isUndefined}
 

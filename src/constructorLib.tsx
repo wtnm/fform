@@ -327,7 +327,7 @@ function JSONform2js(JSONValues: any) {
       let dataMapResult = xProps['dataMap'].map((dmObj: any) => '[' + JSON.stringify(dmObj[0]) + ',' + JSON.stringify(dmObj[1]) + (dmObj[2] ? ',' + dmObj[2] : '') + ']');
       xResult.push('"dataMap":[' + dataMapResult.join(',') + ']');
     } else if (xkey == 'fields') {
-      xResult.push('"_fields":' + makeJSFields(xProps['fields']))
+      xResult.push('"$fields":' + makeJSFields(xProps['fields']))
 
     } else if (xkey == 'validators') {
       xResult.push('"validators": [' + xProps['validators'].join(',') + ']')

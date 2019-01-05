@@ -19,7 +19,7 @@ import {
   objKeys,
   isArray,
   isUndefined,
-  getCreateIn
+  getCreateIn, isString
 } from "./commonLib";
 
 import {
@@ -39,7 +39,7 @@ import {
   isSelfManaged,
   getKeyMapFromSchema,
   normalizeUpdate,
-  setIfNotDeeper
+  setIfNotDeeper, objMap
 } from "./stateLib";
 
 
@@ -117,7 +117,7 @@ class FFormStateManager {
 
     const self = this;
     self._props = props;
-    self.schema = props.schema;
+    self.schema = isCompiled(props.schema) ? props.schema : schemaCompiler(props.objects || {}, props.schema);
     self.name = props.name || '';
     self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
     self._reducer = formReducer();
@@ -288,11 +288,11 @@ class FFormStateAPI extends FFormStateManager {
   get = (...pathes: Array<string | Path>): any => getFromState(this.getState(), ...pathes);
 
   set = (path: string | Path, value: any, opts: APIOptsType & { replace?: any, macros?: string } = {}) => {
-    let {execute, force, noValidation, ...item} = opts;
-    (item as StateApiUpdateType).path = path;
-    (item as StateApiUpdateType).value = value;
+    let {execute, force, noValidation, ...update} = opts;
+    (update as StateApiUpdateType).path = path;
+    (update as StateApiUpdateType).value = value;
 
-    return this._setExecution((item as StateApiUpdateType), opts);
+    return this._setExecution((update as StateApiUpdateType), opts);
   };
 
   getValue = (opts: APIOptsType & { path?: string | Path, inital?: boolean, flatten?: boolean } = {}): any => {
@@ -607,6 +607,81 @@ function formReducer(name?: string): any {
   }
 }
 
+/////////////////////////////////////////////
+//  Schema compile functions
+/////////////////////////////////////////////
+
+function schemaCompiler(fformObjects: formObjectsType, schema: JsonSchema): jsJsonSchema {
+  if (isCompiled(schema)) return schema;
+
+  let {ff_preset, ff_custom = {}, ff_validators, ff_dataMap, ff_fields, ff_data, ff_params, ff_placeholder, ff_props, ...rest} = schema;
+
+  const result: jsJsonSchema = {ff_data, ff_params, ff_placeholder, ff_props, ff_objects: fformObjects};
+
+  if (!ff_preset && !isString(rest.type) && !ff_custom.$ref) throw new Error('For multi-types "ff_preset" should be defined explicitly');
+  if (!ff_preset && isString(rest.type)) ff_preset = rest.type;
+  let {$ref = '', ...custom} = ff_custom;
+  custom.$ref = (ff_preset || '').split(':').map(v => v[0] != '%' && '%/presets/' + v).join(':') + $ref ? ':' + $ref : '';
+  result.ff_components = objectResolver(fformObjects, custom, true);
+  ff_fields && (result.ff_fields = objectResolver(fformObjects, ff_fields, true));
+  ff_validators && (result.ff_validators = objectResolver(fformObjects, ff_validators, false));
+  ff_dataMap && (result.ff_dataMap = objectResolver(fformObjects, ff_dataMap, false));
+
+  objKeys(rest).forEach(key => {
+    switch (key) {
+      case 'definitions':
+      case 'properties':
+      case 'patternProperties':
+      case 'dependencies':
+        result[key] = objMap(rest[key], schemaCompiler.bind(null, fformObjects));
+        break;
+      default:
+        if (isMergeable(result[key])) result[key] = schemaCompiler(fformObjects, rest[key]);
+        else result[key] = rest[key];
+        break;
+    }
+  });
+  return result;
+}
+
+function isCompiled(schema: any): schema is jsJsonSchema {
+  return getIn(schema, 'ff_objects');
+}
+
+function objectResolver(_objects: any, obj2resolve: any, setFn2SymData?: boolean): any {
+  function deref(obj: any) {
+    let {$ref = '', restObj} = obj;
+    $ref = $ref.split(':');
+    const objs2merge: any[] = [];
+    for (let i = 0; i < $ref.length; i++) {
+      if (!$ref[i]) continue;
+      let path = string2path($ref[i]);
+      if (path[0] !== '%') throw new Error('Can reffer only to %');
+      let refObj = getIn({'%': _objects}, path);
+      if (refObj.$ref) refObj = deref(refObj);
+      objs2merge.push(refObj);
+    }
+    let result = isArray(obj) ? [] : {};
+    for (let i = objs2merge.length - 1; i >= 0; i--) result = merge(result, objs2merge[i]);
+    return merge(result, restObj);
+  }
+
+  const result = deref(obj2resolve);
+  const retResult = isArray(result) ? [] : {};
+  objKeys(result).forEach((key) => {
+    const resolvedValue = isString(result[key]) && result[key][0] == '%' && result[key][1] == '/' ? getIn({'%': _objects}, string2path(result[key])) : result[key];
+    if (key[0] == '_') retResult[key] = resolvedValue;  //only resolve for keys that begins with _
+    else if (isMergeable(result[key])) {
+      retResult[key] = objectResolver(_objects, resolvedValue, setFn2SymData);
+      if (retResult[key][SymData]) retResult[SymData][key] = retResult[key][SymData];
+      delete retResult[key][SymData];
+    } else if (setFn2SymData && typeof resolvedValue == 'function') {
+      retResult[SymData][key] = resolvedValue;
+    } else retResult[key] = resolvedValue;
+  });
+
+  return retResult
+}
 
 /////////////////////////////////////////////
 //  Actions names
