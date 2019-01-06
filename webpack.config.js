@@ -36,10 +36,10 @@ module.exports = {
         exclude: /node_modules/,
         loaders: ['babel-loader']
       },
-// ./_props-loader!
+// ./props-loader!
       {
         test: /\.(ts|tsx)$/,
-        loader: `${process.env.NODE_ENV === 'production' ? './_props-loader!babel-loader!' : ''}ts-loader`
+        loader: `${process.env.NODE_ENV === 'production' ? './props-loader!babel-loader!' : ''}ts-loader`
       },
     ],
   },

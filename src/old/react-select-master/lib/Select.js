@@ -648,7 +648,7 @@ var Select = _react2['default'].createClass({
 	/**
   * Retrieve a value from the given options and valueKey
   * @param	{String|Number|Array}	value	- the selected value(s)
-  * @param	{Object}		props	- the Select component's _props (or nextProps)
+  * @param	{Object}		props	- the Select component's props (or nextProps)
   */
 	expandValue: function expandValue(value, props) {
 		var valueType = typeof value;

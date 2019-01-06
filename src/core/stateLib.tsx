@@ -650,6 +650,11 @@ function updateNormalizationPROCEDURE(state: StateType, schema: jsJsonSchema, UP
   return state;
 }
 
+function setUPDATABLE(UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, update: any, replace: any, ...pathes: any[]) {
+  setIn(UPDATABLE_object, update, 'update', ...pathes);
+  if (replace) setIn(UPDATABLE_object, replace, 'replace', ...pathes);
+}
+
 function mergeStatePROCEDURE(state: StateType, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType) {
   state = merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace});
   UPDATABLE_object.update = {};
@@ -687,8 +692,9 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
       return Macros.setCurrent(state, schema, UPDATABLE_object, {value, replace, path: path.concat(keyPath.slice(1))});
 
     // set data
-    setIn(update, value, path, SymData, keyPath);
-    if (replace) setIn(replace_UPDATABLE, replace, path, SymData, keyPath);
+    setUPDATABLE(UPDATABLE_object, value, replace, path, SymData, keyPath);
+    // setIn(update, value, path, SymData, keyPath);
+    // if (replace) setIn(replace_UPDATABLE, replace, path, SymData, keyPath);
 
     // additional state modifying if required
     if (keyPath[0] == 'value') { // modify current
@@ -720,15 +726,15 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
           let statusValue = getUpdValue([update, state], path, SymData, 'status', key);
           if (statusValue) state = Macros.setStatus(state, schema, UPDATABLE_object, makeNUpdate(path, ['status', key], -1));
         });
-        setIn(update, SymDelete, elemPath);
-        setIn(replace_UPDATABLE, SymDelete, elemPath);
+        setUPDATABLE(UPDATABLE_object, SymDelete, true, elemPath);
+        // setIn(update, SymDelete, elemPath);
+        // setIn(replace_UPDATABLE, SymDelete, elemPath);
       }
 
       let schemaPart = getSchemaPart(schema, path, oneOfFromState(state));
       setIn(update, isArrayCanAdd(schemaPart, end), path, SymData, 'fData', 'canAdd');
-      for (let i = Math.max(Math.min(start, end) - 1, 0); i < end; i++) {
-        setIn(update, getArrayItemData(schemaPart, i, end), path, i, SymData, 'arrayItem')
-      }
+      for (let i = Math.max(Math.min(start, end) - 1, 0); i < end; i++)
+        setUPDATABLE(UPDATABLE_object, getArrayItemData(schemaPart, i, end), true, path, i, SymData, 'arrayItem');
 
       state = mergeStatePROCEDURE(state, UPDATABLE_object);
       state = setDataMapInState(state, schema, maps2disable, true);
@@ -1254,7 +1260,8 @@ export {
   symConv,
   normalizeUpdate,
   setIfNotDeeper,
-  objMap
+  objMap,
+  setUPDATABLE
 }
 
 export {SymData, SymReset, SymClear, SymDelete}

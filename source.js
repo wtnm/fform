@@ -499,7 +499,7 @@ var Form = function (_react_1$PureComponen) {
             self.iface = iface;
             if (self.iface == 'redux') {
                 var store = void 0;
-                if (self.store) store = self.store;else if (self.context.store) store = self.store = self.context.store;else throw new Error('In redux mode store must be provided either in context or in _props.store');
+                if (self.store) store = self.store;else if (self.context.store) store = self.store = self.context.store;else throw new Error('In redux mode store must be provided either in context or in props.store');
                 self.dispatch = store.dispatch;
                 if (self.unsubscribe) self.unsubscribe();
                 self.unsubscribe = store.subscribe(self._handleChange);
@@ -1003,7 +1003,7 @@ var Field = function (_react_1$Component3) {
         key: "focus",
         value: function focus(path) {
             var self = this;
-            self.mainRef && self.mainRef.focus && self.mainRef.focus(path); // path.length ? self.mainRef.focus(path) : self.mainRef.focus();
+            self.mainRef && self.mainRef.focus && self.mainRef.focus(path); // path.length ? self.refs.focus(path) : self.refs.focus();
         }
     }, {
         key: "rebuild",
@@ -1128,7 +1128,7 @@ var Field = function (_react_1$Component3) {
             if (self.forceRebuild) this._build();
             self.forceRebuild = false;
             var api = self.fieldOptions.registry.api;
-            var data = api.getSingle(self.props.path.concat(SymbolData)); // self._props.data; //
+            var data = api.getSingle(self.props.path.concat(SymbolData)); // self.props.data; //
             var enumOptions = self.enumOptions || data.enum; //&& self._makeDynEnum(data);
             self.liveValidate = data.params && data.params._liveValidate;
             var dataProps = {};
@@ -1199,8 +1199,8 @@ function DefaultBuilder(props) {
     if (ArrayItem && dataProps['Main'].itemData) field = React.createElement(ArrayItem, __assign({ hidden: hidden }, schemaProps['ArrayItem'], dataProps['ArrayItem'], { fieldOptions: fieldOptions }), field);
     return field;
 }
-// function LayoutBlock(_props: any): any {
-//   let {style, flexFlow, flex, alignItems, display, hidden, useTag: UseTag = 'div', children, id, ...rest} = _props;
+// function LayoutBlock(props: any): any {
+//   let {style, flexFlow, flex, alignItems, display, hidden, useTag: UseTag = 'div', children, id, ...rest} = props;
 //   if (hidden) rest.style = merge(rest.style || {}, {display: 'none'});
 //   return (
 //     <UseTag style={style} {...rest}>
@@ -1255,7 +1255,7 @@ var AutosizeBlock = function (_React$Component) {
 
     return AutosizeBlock;
 }(React.Component);
-// _props.fieldOptions.field.mainRef
+// props.fieldOptions.field.refs
 
 
 function TitleBlock(props) {
@@ -1288,7 +1288,7 @@ function BaseInput(props) {
     var ref = rest[refName];
     if (refName) delete rest[refName];
     if (typeof UseTag == 'string') refObj.ref = ref;else refObj[refName] = ref;
-    var commonProps = { name: props.id, label: title || props.id.split('/').slice(-1)[0] }; //, onFocus: onFocus.bind(_props), _onChange: _onChange.bind(_props), onBlur: onBlur.bind(_props)};
+    var commonProps = { name: props.id, label: title || props.id.split('/').slice(-1)[0] }; //, onFocus: onFocus.bind(props), _onChange: _onChange.bind(props), onBlur: onBlur.bind(props)};
     var valueObj = {};
     if (type === 'checkbox') valueObj.checked = isUndefined(value) ? false : value;else if (type === 'tristate') valueObj.checked = value;else valueObj.value = isUndefined(value) ? "" : value;
     if (type === 'textarea') return React.createElement(UseTag, __assign({}, rest, refObj, commonProps), valueObj.value);

@@ -45,6 +45,40 @@ export default {
       default: {selfValue: 'selfManagedType.selfValue', stringValue: 'selfManagedType.stringValue', numberValue: 5},
       ff_props: {managed: true}
     },
+    "multiType": {
+      oneOf: [{
+        type: ['array', 'string', 'null'],
+        ff_preset: 'array',
+        items: {type: 'string'},
+      }, {
+        type: ['string', 'array'],
+        ff_preset: 'array',
+        items: {type: 'string'},
+      }, {
+        type: ['object', 'array'],
+        ff_preset: 'array',
+        items: {type: 'string'},
+        properties: {
+          oneString: {
+            type: 'string',
+            default: 'oneString default'
+          }, twoNumber: {
+            type: ['number', 'null'],
+            default: null,
+            ff_preset: 'number'
+          },
+        },
+        default: ['first value', 'second value']
+      }, {
+        type: ['array', 'string', 'number'],
+        ff_preset: 'arrayOf',
+        ff_props: {managed: true},
+        items: {type: ['boolean', 'null'], ff_preset: 'boolean'},
+        default: ''
+      }
+      ]
+    },
+
     'recursiveType': {
       type: 'array',
       items: {
@@ -70,6 +104,9 @@ export default {
           title: 'stringType',
           allOf: [{$ref: '#/definition/stringType'}],
           ff_dataMap: [['../@oneOf', './@stringTypeMappedOneOf'], ['../@length', './@stringTypeMappedLength']],
+        }, {
+          title: 'multiType',
+          allOf: [{$ref: '#/definition/multiType'}],
         }
         ]
       }

@@ -59,7 +59,7 @@ const fieldPropTypes = {
   dispatch: PropTypes.func,
   getRef: PropTypes.func,
 
-  // Calculated _props
+  // Calculated props
   fieldValue: PropTypes.object,
   store: PropTypes.shape({
     subscribe: PropTypes.func,

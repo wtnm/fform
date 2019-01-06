@@ -22,12 +22,12 @@ const defaultStrategy = {
 };
 
 const propTypes = {
-  // Computed _props
+  // Computed props
   modelValue: PropTypes.any,
   formValue: PropTypes.object,
   fieldValue: PropTypes.object,
 
-  // Provided _props
+  // Provided props
   model: PropTypes.string.isRequired,
   messages: PropTypes.objectOf(PropTypes.oneOfType([
     PropTypes.string,

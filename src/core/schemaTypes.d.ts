@@ -70,11 +70,11 @@ interface JsonSchemaGeneric<T> {
 type JsonSchemaTypes = 'string' | 'number' | 'object' | 'array' | 'boolean' | 'null';
 
 interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaType {
-  ff_objects: formObjectsType;
+  ff_compiled: boolean;
   ff_validators?: Function[]; // sync/async validators
   ff_dataMap?: FFDataMapGeneric<MapFunctionType>[]; // mapping values in state
-  ff_fields?: FFieldsGeneric<jsFFCustomizeType>; // fields order and object/group extenion
-  ff_components?: jsFFCustomizeType;
+  // ff_layout?: FFieldsGeneric<jsFFCustomizeType>; // fields order and object/group extenion
+  // ff_custom?: jsFFCustomizeType;
   // ff_preset?: string; // presets for rendering components
   // ff_custom?: jsFFCustomizeType; // components customization
 }
@@ -83,9 +83,6 @@ interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
   ff_objects: undefined;
   ff_validators?: string[]; // sync/async validators
   ff_dataMap?: FFDataMapGeneric<string>[]; // mapping values in state
-  ff_fields?: FFieldsGeneric<FFCustomizeType>; // fields order and object/group extenion
-  ff_preset?: string; // presets for rendering components
-  ff_custom?: FFCustomizeType; // components customization
 }
 
 interface FFCommonSchemaType {
@@ -93,31 +90,32 @@ interface FFCommonSchemaType {
   ff_params?: FFParamsType; // editable in state params
   ff_props?: FFPropsType; // not editable in state params
   ff_data?: { [key: string]: any } | { [key: number]: any };
+  ff_preset?: string; // presets for rendering components
+  ff_custom?: FFCustomizeType; // components customization
+  ff_layout?: FFLayoutGeneric<FFCustomizeType>; // fields order and object/group extenion  
 }
 
 type FFDataMapGeneric<FN> = [string, string, FN] | [string, string]
 
 type PropsMapGeneric<FN> = { [key: string]: false | string | [string, FN] }
 
-type FFieldsGeneric<T> = Array<string | FFGroupGeneric<T>>;
-
-type FFGroupGeneric<T> = T & {
-  $fields?: FFieldsGeneric<T>,
-  $pFField?: true | string
+type FFLayoutGeneric<T> = T & {
+  $fields?: Array<string | FFLayoutGeneric<T>>,
 }
 
 interface FFCustomizeType {
   _$widget?: string,
   $propsMap?: PropsMapGeneric<string>;
-  $ref?: string;
+  $_ref?: string;
+  $reactRef?: string | boolean;
 
-  [key: string]: string | object | undefined;
+  [key: string]: string | object | undefined | boolean | number | null;
 }
 
 interface jsFFCustomizeType {
-  _$widget?: string | Function,
+  _$widget?: Function,
   $propsMap?: PropsMapGeneric<MapFunctionType>;
-  $ref?: string;
+  $reactRef?: string | boolean;
 
   [key: string]: any;
 }

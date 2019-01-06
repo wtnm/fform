@@ -5,7 +5,7 @@ import stripDiacritics from './utils/stripDiacritics';
 const propTypes = {
 	autoload: React.PropTypes.bool.isRequired,       // automatically call the `loadOptions` prop on-mount; defaults to true
 	cache: React.PropTypes.any,                      // object to use to cache results; set to null/false to disable caching
-	children: React.PropTypes.func.isRequired,       // Child function responsible for creating the inner Select component; (_props: Object): PropTypes.element
+	children: React.PropTypes.func.isRequired,       // Child function responsible for creating the inner Select component; (props: Object): PropTypes.element
 	ignoreAccents: React.PropTypes.bool,             // strip diacritics when filtering; defaults to true
 	ignoreCase: React.PropTypes.bool,                // perform case-insensitive filtering; defaults to true
 	loadingPlaceholder: React.PropTypes.oneOfType([  // replaces the placeholder while options are loading

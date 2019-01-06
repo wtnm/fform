@@ -181,7 +181,7 @@ let editFormObjects = fformObjects.extend({
           let vals = values.map((item: any) => item.value);
           this.pFForm.api.set(this.field.path + '/@/value', vals, {execute: 1});
         },
-        _propsMap: {
+        $propsMap: {
           fieldType: 'fieldType'
         }
       }
@@ -211,7 +211,7 @@ const arrayAddButtonObject = {
     return <button {...rest}>{typeof Text == 'function' ? <Text/> : Text}</button>
   },
   type: 'button',
-  _propsMap: {disabled: 'addDisabled'},
+  $propsMap: {disabled: 'addDisabled'},
   className: "white-button array-add-button",
 };
 
@@ -224,9 +224,9 @@ const expandButtonObject = {
     let path = this.field.path + '/@/expanded';
     this.pFForm.api.set(path, !this.pFForm.api.get(path), {execute: true})
   },
-  _propsMap: {expanded: 'expanded', disabled: 'expandedDisabled'},
+  $propsMap: {expanded: 'expanded', disabled: 'expandedDisabled'},
   type: 'button',
-  className: "white-button collapse-_props-button",
+  className: "white-button collapse-props-button",
 };
 
 const addButtonsObject = {
@@ -253,9 +253,9 @@ const addButtonsObject = {
   className: 'property-array-item-menu',
   buttonProps: {
     type: 'button',
-    className: "white-button collapse-_props-button",
+    className: "white-button collapse-props-button",
   },
-  _propsMap: {fieldType: 'fieldType'},
+  $propsMap: {fieldType: 'fieldType'},
 };
 
 function getTopParent(parent: any) {
@@ -291,7 +291,7 @@ const topMoveButtonObject = {
   className: 'property-array-item-menu',
   buttonProps: {
     type: 'button',
-    className: "white-button collapse-_props-button",
+    className: "white-button collapse-props-button",
   }
 };
 
@@ -304,7 +304,7 @@ const itemMenuObject = {
     className: 'white-button',
     titles: {'del': 'delete'}
   },
-  _propsMap: {itemData: 'arrayItem'},
+  $propsMap: {itemData: 'arrayItem'},
   passPFField: 'pFField',
   className: 'property-array-item-menu',
   up: () => <span>&uarr;</span>,
@@ -333,7 +333,7 @@ const objectXtendDefinition: { [key: string]: JsonSchema; } = {
   objectXtend: {
     type: "object",
 
-    ff_fields: [{
+    ff_layout: [{
       fields: [expandButtonObject,
         'name',
         'type',
@@ -392,10 +392,10 @@ const objectXtendDefinition: { [key: string]: JsonSchema; } = {
             isClearable: true,
             isMulti: true,
             className: 'preset-select',
-            _propsMap: {value: 'value'},
+            $propsMap: {value: 'value'},
             // onChange: function (values: any) {
             //   let vals = values.map((item: any) => item.value);
-            //   this.pFForm.api.set(this.field._props.path + '/@/value', vals, {execute: 1});
+            //   this.pFForm.api.set(this.field.props.path + '/@/value', vals, {execute: 1});
             // },
             loadOption: function () {return __EXTERNAL__ && __EXTERNAL__.objects ? objKeys(__EXTERNAL__.objects).map(item => {return {value: item, label: item}}) : []}
           },
@@ -566,7 +566,7 @@ class PresetBlockEditor extends React.Component<any, any> {
     super(props, context);
     const self = this;
     self.switcherCore = new FFormStateAPI({schema: JSONBlockEditorSelect, name: props.id + ' => propSelect'});
-    // self.objectXtendCore = new FFormStateAPI({schema: objectXtend, name: 'objectXtend/' + _props.id});
+    // self.objectXtendCore = new FFormStateAPI({schema: objectXtend, name: 'objectXtend/' + props.id});
     self._onEditorChange = self._onEditorChange.bind(self);
     self._onSwitchChange = self._onSwitchChange.bind(self);
   }
@@ -615,14 +615,14 @@ class fieldPropsWidget extends React.Component<any, any> {
   }
 
   // _onChange(values: any) {
-  //   const {pFForm, path} = this._props.pFField;
+  //   const {pFForm, path} = this.props.pFField;
   //   pFForm.api.set(path + '/@/values', values, {execute: 1, replace: true});
   // }
 
   _makeCore() {
     const self = this;
     if (self.fieldPropsCore) return;
-    // console.log('making api ', self._props.id);
+    // console.log('making api ', self.props.id);
     const props = self.props;
     if (props.hidden === false || props.makeCore)
       self.fieldPropsCore = new FFormStateAPI({schema: fieldPropsSchema, name: props.id + ' => fieldProps'});
@@ -706,7 +706,7 @@ const fieldPropsSchema = {
       ]
     },
     jsonProps: {
-      title: 'JSON Schema _props:',
+      title: 'JSON Schema props:',
       type: "object",
       properties: {
         commonProps: {
@@ -885,7 +885,7 @@ const fieldPropsSchema = {
       }
     },
     xProps: {
-      title: 'Extended _props:',
+      title: 'Extended props:',
       type: "object",
       ff_preset: 'object',
       ff_fields: [{fields: ['preset', 'flattenBool', 'flatten'], style: {flexFlow: 'row'}}],
@@ -957,7 +957,7 @@ const fieldPropsSchema = {
             Main: {
               widget: PresetBlockEditor,
               _objects: editFormObjects,
-              _propsMap: {
+              $propsMap: {
                 values: 'value',
                 propSelected: 'propSelected',
                 presetValues: 'presetValues',
@@ -1079,7 +1079,7 @@ const fieldsObject: JsonSchema = {
       Main: {
         widget: fieldObjectSelector,
         _objects: editFormObjects,
-        _propsMap: {
+        $propsMap: {
           value: 'value',
           arrayItem: 'arrayItem',
         }
@@ -1095,7 +1095,7 @@ const objectSchema: JsonSchema = {
   $ref: '#/definitions/objectXtend',
   type: "object",
 
-  ff_fields: [{
+  ff_layout: [{
     fields: [expandButtonObject,
       'name',
       'type',
@@ -1119,7 +1119,7 @@ const groupSchema: JsonSchema = {
   definitions: objectXtendDefinition,
   type: "object",
   ff_preset: 'object',
-  ff_fields: [{
+  ff_layout: [{
     style: {flexFlow: 'row'},
     fields: [expandButtonObject,
       moveToSelectObject,
@@ -1154,7 +1154,7 @@ const groupSchema: JsonSchema = {
 const fieldItemDefinition: JsonSchema = {
   type: "object",
   ff_preset: 'object',
-  ff_fields: [{
+  ff_layout: [{
     style: {flexFlow: 'row'},
     fields: [merge(expandButtonObject, {
       onMouseEnter: function () {
@@ -1205,7 +1205,7 @@ const fieldItemDefinition: JsonSchema = {
         Main: {
           widget: fieldPropsWidget,
           _objects: editFormObjects,
-          _propsMap: {
+          $propsMap: {
             values: 'values',
             makeCore: 'controls/makeCore',
             hidden: ['controls', (controls: any) => getBindedValue(controls, 'hidden')],
@@ -1229,7 +1229,7 @@ const fieldItemDefinition: JsonSchema = {
           isClearable: true,
           // isMulti: true,
           className: 'preset-select',
-          _propsMap: {
+          $propsMap: {
             value: 'value',
           },
           loadOption: function () {
@@ -1266,7 +1266,7 @@ const JSONDefinitionsSchema: JsonSchema = {
   definitions: {fieldItem: fieldItemDefinition},
   $ref: '#/definitions/fieldItem',
   ff_preset: 'object',
-  ff_fields: [{
+  ff_layout: [{
     style: {flexFlow: 'row'},
     fields: [{widget: () => <legend style={{paddingTop: '0.2em'}}>Definitions:</legend>}, merge(addButtonsObject, {addOnlyFields: true}), 'type']
   }],

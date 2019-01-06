@@ -99,16 +99,13 @@ class FFormStateManager {
   private _validator: any;
   private _unsubscribe: any;
   private _listeners: Array<(state: StateType) => void> = [];
-  _props: any;
 
-  // utils: utilsApiType = utils;
+  props: FFormCoreProps;
   schema: jsJsonSchema;
   keyMap: any;
   dispatch: any;
   JSONValidator: (values: any) => any;
   name?: string;
-
-  // promise: Promise<any>;
 
   constructor(props: FFormCoreProps) {
     // if ((props.getState || props.setState) && props.store) throw new Error('Expected either "store" or "getState & setState" but not all of them.');
@@ -116,8 +113,8 @@ class FFormStateManager {
     if (props.store && !props.name) throw new Error('Expected "name" to be passed together with "store".');
 
     const self = this;
-    self._props = props;
-    self.schema = isCompiled(props.schema) ? props.schema : schemaCompiler(props.objects || {}, props.schema);
+    self.props = props;
+    self.schema = isCompiled(props.schema) ? props.schema : compileSchema(props.objects, props.schema);
     self.name = props.name || '';
     self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
     self._reducer = formReducer();
@@ -125,7 +122,7 @@ class FFormStateManager {
     self.JSONValidator = self._jValidator.bind(self);
     self._getState = self._getState.bind(self);
     self._setState = self._setState.bind(self);
-    if (props.setState && props.store) self._unsubscribe = self._props.store.subscribe(self._handleChange.bind(self));
+    if (props.setState && props.store) self._unsubscribe = self.props.store.subscribe(self._handleChange.bind(self));
     if (props.name) _CORES[props.name] = self;
     self.keyMap = getKeyMapFromSchema(self.schema, self._getState);
     if (!self._getState()) self._setState(makeStateFromSchema(props.schema));
@@ -141,25 +138,25 @@ class FFormStateManager {
   _setState(state: any) {
     const self = this;
     if (state === self._getState()) return;
-    if (self._props.setState) self._props.setState(state);
+    if (self.props.setState) self.props.setState(state);
     else self._currentState = state;
-    if (self._props.store) self._setStoreState(state);
+    if (self.props.store) self._setStoreState(state);
     self._listeners.forEach(fn => fn(state));
   }
 
   _getState() {
     const self = this;
-    if (self._props.store) return self._getStoreState();
-    else if (self._props.getState) return self._props.getState();
+    if (self.props.store) return self._getStoreState();
+    else if (self.props.getState) return self.props.getState();
     else return self._currentState;
   }
 
   private _setStoreState(state: any) {
-    return this._props.store.dispatch({type: actionNameSetState, state, api: this});
+    return this.props.store.dispatch({type: actionNameSetState, state, api: this});
   }
 
   private _getStoreState() {
-    return this._props.store.getState()[getFRVal()][this._props.name];
+    return this.props.name && this.props.store.getState()[getFRVal()][this.props.name];
   }
 
   private _jValidator(data: any) {
@@ -173,14 +170,14 @@ class FFormStateManager {
   private _handleChange() {
     const self = this;
     let nextState = self._getStoreState();
-    let curState = self._props.getState ? self._props.getState() : self._currentState;
+    let curState = self.props.getState ? self.props.getState() : self._currentState;
     if (nextState !== curState) self._setState(nextState);
   }
 
   addListener(fn: (state: StateType) => void) {
     const self = this;
     self._listeners.push(fn);
-    if (self._props.store && !self._unsubscribe) self._unsubscribe = self._props.store.subscribe(self._handleChange.bind(self));
+    if (self.props.store && !self._unsubscribe) self._unsubscribe = self.props.store.subscribe(self._handleChange.bind(self));
     return self.delListener.bind(self, fn);
   }
 
@@ -191,7 +188,7 @@ class FFormStateManager {
       let idx = self._listeners.indexOf(fn);
       if (~idx) self._listeners.splice(idx, 1)
     }
-    if (!self._listeners.length && self._unsubscribe && !self._props.setState) {
+    if (!self._listeners.length && self._unsubscribe && !self.props.setState) {
       self._unsubscribe();
       delete self._unsubscribe;
     }
@@ -597,7 +594,7 @@ function formReducer(name?: string): any {
   }
 
   reducersFunction[actionNameSetState] = (state: any, action: any): any => {
-    if (action.api._props.store) return replaceFormState(state, action.api.name, action.state);
+    if (action.api.props.store) return replaceFormState(state, action.api.name, action.state);
     return action.state
   };
 
@@ -611,24 +608,33 @@ function formReducer(name?: string): any {
 //  Schema compile functions
 /////////////////////////////////////////////
 
-function schemaCompiler(fformObjects: formObjectsType, schema: JsonSchema): jsJsonSchema {
+const compileSchema = memoize((fformObjects: formObjectsType, schema: JsonSchema): jsJsonSchema => schemaCompiler(fformObjects, schema));
+
+function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema): jsJsonSchema {
   if (isCompiled(schema)) return schema;
 
-  let {ff_preset, ff_custom = {}, ff_validators, ff_dataMap, ff_fields, ff_data, ff_params, ff_placeholder, ff_props, ...rest} = schema;
+  let {ff_validators, ff_dataMap, ...rest} = schema;
+  const result: jsJsonSchema = {ff_compiled: true};
 
-  const result: jsJsonSchema = {ff_data, ff_params, ff_placeholder, ff_props, ff_objects: fformObjects};
-
-  if (!ff_preset && !isString(rest.type) && !ff_custom.$ref) throw new Error('For multi-types "ff_preset" should be defined explicitly');
-  if (!ff_preset && isString(rest.type)) ff_preset = rest.type;
-  let {$ref = '', ...custom} = ff_custom;
-  custom.$ref = (ff_preset || '').split(':').map(v => v[0] != '%' && '%/presets/' + v).join(':') + $ref ? ':' + $ref : '';
-  result.ff_components = objectResolver(fformObjects, custom, true);
-  ff_fields && (result.ff_fields = objectResolver(fformObjects, ff_fields, true));
+  // if (!ff_preset && !isString(rest.type) && !ff_custom.$ref) throw new Error('For multi-types "ff_preset" should be defined explicitly');
+  // if (!ff_preset && isString(rest.type)) ff_preset = rest.type;
+  // let {$ref = '', ...custom} = ff_custom;
+  // custom.$ref = (ff_preset || '').split(':').map(v => v[0] != '%' && '%/presets/' + v).join(':') + $ref ? ':' + $ref : '';
+  // result.ff_components = objectResolver(fformObjects, custom, true);
+  // ff_layout && (result.ff_layout = objectResolver(fformObjects, ff_layout, true));
   ff_validators && (result.ff_validators = objectResolver(fformObjects, ff_validators, false));
   ff_dataMap && (result.ff_dataMap = objectResolver(fformObjects, ff_dataMap, false));
 
   objKeys(rest).forEach(key => {
     switch (key) {
+      case 'ff_custom':
+      case 'ff_preset':
+      case 'ff_layout':
+      case 'ff_data':
+      case 'ff_params':
+      case 'ff_placeholder':
+      case 'ff_props':
+        break;
       case 'definitions':
       case 'properties':
       case 'patternProperties':
@@ -648,34 +654,36 @@ function isCompiled(schema: any): schema is jsJsonSchema {
   return getIn(schema, 'ff_objects');
 }
 
-function objectResolver(_objects: any, obj2resolve: any, setFn2SymData?: boolean): any {
-  function deref(obj: any) {
-    let {$ref = '', restObj} = obj;
-    $ref = $ref.split(':');
-    const objs2merge: any[] = [];
-    for (let i = 0; i < $ref.length; i++) {
-      if (!$ref[i]) continue;
-      let path = string2path($ref[i]);
-      if (path[0] !== '%') throw new Error('Can reffer only to %');
-      let refObj = getIn({'%': _objects}, path);
-      if (refObj.$ref) refObj = deref(refObj);
-      objs2merge.push(refObj);
-    }
-    let result = isArray(obj) ? [] : {};
-    for (let i = objs2merge.length - 1; i >= 0; i--) result = merge(result, objs2merge[i]);
-    return merge(result, restObj);
+function objectDerefer(_objects: any, obj2deref: any) {
+  let {$ref = '', restObj} = obj2deref;
+  $ref = $ref.split(':');
+  const objs2merge: any[] = [];
+  for (let i = 0; i < $ref.length; i++) {
+    if (!$ref[i]) continue;
+    let path = string2path($ref[i]);
+    if (path[0] !== '%') throw new Error('Can reffer only to %');
+    let refObj = getIn({'%': _objects}, path);
+    if (refObj.$ref) refObj = objectDerefer(_objects, refObj);
+    objs2merge.push(refObj);
   }
+  let result = isArray(obj2deref) ? [] : {};
+  for (let i = objs2merge.length - 1; i >= 0; i--) result = merge(result, objs2merge[i]);
+  return merge(result, restObj);
+}
 
-  const result = deref(obj2resolve);
+function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boolean): any {
+  const result = objectDerefer(_objects, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
     const resolvedValue = isString(result[key]) && result[key][0] == '%' && result[key][1] == '/' ? getIn({'%': _objects}, string2path(result[key])) : result[key];
-    if (key[0] == '_') retResult[key] = resolvedValue;  //only resolve for keys that begins with _
+    if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _
+    // else if (extract2SymData && key == '$FField' && resolvedValue) {
+    //   retResult[SymData][isString(resolvedValue) ? resolvedValue : key] = true;}
     else if (isMergeable(result[key])) {
-      retResult[key] = objectResolver(_objects, resolvedValue, setFn2SymData);
+      retResult[key] = objectResolver(_objects, resolvedValue, extract2SymData);
       if (retResult[key][SymData]) retResult[SymData][key] = retResult[key][SymData];
       delete retResult[key][SymData];
-    } else if (setFn2SymData && typeof resolvedValue == 'function') {
+    } else if (extract2SymData && typeof resolvedValue == 'function') {
       retResult[SymData][key] = resolvedValue;
     } else retResult[key] = resolvedValue;
   });
@@ -690,4 +698,4 @@ function objectResolver(_objects: any, obj2resolve: any, setFn2SymData?: boolean
 const actionNameSetState = 'FFROM_SET_STATE';
 const actionNameUpdateState = 'FFROM_UPDATE_STATE';
 
-export {getFRVal, FFormStateAPI, formReducer, fformCores}
+export {getFRVal, FFormStateAPI, formReducer, fformCores, objectDerefer, objectResolver}

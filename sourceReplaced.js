@@ -1227,7 +1227,7 @@ var AutosizeBlock = function (_React$Component) {
         value: function componentDidMount() {
             var _this7 = this;
 
-            var style = window && window /__prop#_1508__ (this /__prop#_1509__ .fieldOptions /__prop#_1510__ .mainRef);
+            var style = window && window /__prop#_1508__ (this /__prop#_1509__ .fieldOptions /__prop#_1510__ .refs);
             if (!style || !this /__prop#_1511__ ) return;
             [ /__string#_429__ ,  /__string#_430__ ,  /__string#_431__ ,  /__string#_432__ ,  /__string#_433__ ] /__prop#_1512__ (function (key) {
                 return _this7 /__prop#_1513__ .style[key] = style[key];
