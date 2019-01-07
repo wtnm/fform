@@ -25,8 +25,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/core/components.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="296">
-              <caret line="861" column="82" selection-start-line="861" selection-start-column="82" selection-end-line="861" selection-end-column="82" />
+            <state relative-caret-position="9">
+              <caret line="485" column="16" lean-forward="true" selection-start-line="485" selection-start-column="16" selection-end-line="485" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -352,7 +352,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -387,6 +386,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1133,7 +1133,8 @@
       <workItem from="1546728470266" duration="1790000" />
       <workItem from="1546730373003" duration="582000" />
       <workItem from="1546776133872" duration="22946000" />
-      <workItem from="1546821520418" duration="2330000" />
+      <workItem from="1546821520418" duration="2374000" />
+      <workItem from="1546858007634" duration="2332000" />
     </task>
     <task id="LOCAL-00001" summary="before package update">
       <created>1542772477945</created>
@@ -1219,7 +1220,14 @@
       <option name="project" value="LOCAL" />
       <updated>1546809110699</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="components reworking">
+      <created>1546823888715</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1546823888715</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1255,7 +1263,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2926626000" />
+    <option name="totallyTimeSpent" value="2929002000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1271,8 +1279,8 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.3765324" visible="true" weight="0.11327714" />
-      <window_info active="true" id="Structure" order="2" sideWeight="0.6234676" side_tool="true" visible="true" weight="0.18703899" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.3754386" visible="true" weight="0.11275026" />
+      <window_info active="true" id="Structure" order="2" sideWeight="0.6245614" side_tool="true" visible="true" weight="0.18703899" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.41616163" side_tool="true" weight="0.10795155" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32937366" />
@@ -1344,7 +1352,6 @@
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/src/core/components.tsx</url>
           <line>721</line>
-          <properties lambdaOrdinal="-1" />
           <option name="timeStamp" value="18" />
         </line-breakpoint>
       </breakpoints>
@@ -1719,8 +1726,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/core/components.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="296">
-          <caret line="861" column="82" selection-start-line="861" selection-start-column="82" selection-end-line="861" selection-end-column="82" />
+        <state relative-caret-position="9">
+          <caret line="485" column="16" lean-forward="true" selection-start-line="485" selection-start-column="16" selection-end-line="485" selection-end-column="16" />
         </state>
       </provider>
     </entry>

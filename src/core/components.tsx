@@ -155,7 +155,6 @@ class FField extends Component<any, any> {
   private _blocks: string[] = [];
   private _widgets: object;
   private _ff_components: object;
-  private _schemaProps: object;
   private _maps: object;
   private _maps$: object;
 
@@ -256,9 +255,10 @@ class FField extends Component<any, any> {
   }
 
   _extract$($propsMap: any) {
-    const result = {};
-    objKeys($propsMap).forEach(key => key[0] == '$' && (result[key] = $propsMap[key]));
-    return result
+    const map$ = {};
+    const map = {};
+    objKeys($propsMap).forEach(key => (key[0] == '$' && map$ || map)[key] = $propsMap[key]);
+    return {map, map$}
   }
 
   _build() {
@@ -287,16 +287,16 @@ class FField extends Component<any, any> {
 
     self._enumOptions = getEnumOptions(schemaPart);
     self._widgets = {};
-    self._schemaProps = {};
     self._maps = {};
     self._blocks = objKeys(components).filter(key => components[key]);
     self._blocks.forEach((block: string) => {
       const {_$widget, $reactRef, $propsMap, ...schemaProps} = components[block];
       self._widgets[block] = _$widget;
       if ($reactRef) schemaProps[isString(schemaProps.$reactRef) ? $reactRef : 'ref'] = self._setRef(block); // $reactRef - prop for react ref-function
-      self._maps[block] = $propsMap; // props that should be mapped from state[SymData]
-      self._maps$[block] = self._extract$($propsMap);
-      self._schemaProps[block] = schemaProps;  // properties, without reserved names      
+      const splitted = self._extract$($propsMap);
+      self._maps[block] = splitted.map; // props that should be mapped from state[SymData]
+      self._maps$[block] = splitted.map$;
+      self._mappedData[block] = schemaProps;  // properties, without reserved names      
     });
     self._setArrayBlocks(self.state.branch[SymData]);
     self._setDataProps(self.state.branch[SymData]);
@@ -327,15 +327,15 @@ class FField extends Component<any, any> {
   //   self.id = self.props.pFForm.api.name + '/' + path;
   // };
 
-
   _setDataProps(data: any, fullUpdate = true) {
     const self = this;
     const newUpdates = {update: {}, replace: {}};
-    const maps = fullUpdate ? self._maps : self._maps$;
-    self._blocks.forEach((block: string) => {
-      const {update: u, replace: r} = mapProps(maps[block], data);
-      setUPDATABLE(newUpdates, u, r, block);
-    });
+    const iterMaps = fullUpdate ? [self._maps, self._maps$] : [self._maps$];
+    iterMaps.forEach(maps => self._blocks.forEach((block: string) => {
+      const {update, replace} = mapProps(maps[block], data);
+      setUPDATABLE(newUpdates, update, replace, block);
+    }));
+
     const upd: any = {};
     let updateComponent = false;
     upd._mappedData = mergeStatePROCEDURE(self._mappedData, newUpdates);
@@ -376,7 +376,7 @@ class FField extends Component<any, any> {
     const self = this;
     if (self._rebuild) this._build();
     const BuilderWidget = self._widgets['Builder'];
-    return <BuilderWidget {...self._schemaProps['Builder']} {...self._mappedData['Builder']} mappedData={self._mappedData}/>
+    return <BuilderWidget {...self._mappedData['Builder']} mappedData={self._mappedData}/>
   }
 }
 
@@ -471,7 +471,7 @@ class FSection extends Component<any, any> {
           //if ($pFField) opts[$pFField === true ? '$pFField' : $pFField] = $FField; // pass FField to widget. If true name 'options' is used, if string, then string value is used
           if ($fields) {  // if $fields exists then this is group section and we should map groupPropsMap, pass schemaProps['Layouts'] and use GroupWidget as default if no widget is supplied
             //if ($propsMap) self._dataMaps[savedCountValue] = merge($propsMap || {}, LayoutsPropsMap || {}); // merge $propsMap and LayoutsPropsMap, to pass them every time props changed
-            Object.assign(opts, schemaProps['Layouts']);
+            // Object.assign(opts, schemaProps['Layouts']);
             //if (!rest.widget) opts['widget'] = LayoutsWidget
           } else if ($propsMap) self._dataMaps[savedCountValue] = $propsMap;
           layout.push(<FSectionObject {...opts} count={savedCountValue} getDataProps={self.getDataProps} ref={self._setWidRef(savedCountValue)}
@@ -483,14 +483,14 @@ class FSection extends Component<any, any> {
 
     const self = this;
     const {$FField, $branch} = props;
-    const {schemaProps, schemaPart} = $FField;
+    const {schemaPart} = $FField;
 
     if (!schemaPart) return;
     if (isSchemaSelfManaged(schemaPart)) return;
 
     //const LayoutsWidget = widgets['Layouts'] || 'div';
     //const LayoutsPropsMap = $FField.presetProps['Layouts'].$propsMap;
-    const {properties = {}}: { [key: string]: any } = schemaPart;
+    // const {properties = {}}: { [key: string]: any } = schemaPart;
     // const {groups = []} = x;
 
     self._keyField = schemaPart.ff_props && schemaPart.ff_props.keyField || '/uniqId';
@@ -642,21 +642,21 @@ class FSection extends Component<any, any> {
 /////////////////////////////////////////////
 
 function FBuilder(props: any) {
-  const {hidden, mappedData, widgets, schemaProps} = props;
+  const {hidden, mappedData: mapped, widgets} = props;
   const {Title, Body, Main, Message, GroupBlocks, ArrayItem, Array, Autosize} = widgets;
 
   let result = (
-    <GroupBlocks {...schemaProps['GroupBlocks']} {...mappedData['GroupBlocks']}>
-      <Title {...schemaProps['Title']} {...mappedData['Title']}/>
-      <Body {...schemaProps['Body']} {...mappedData['Body']}>
-      <Main {...schemaProps['Main']} {...mappedData['Main']}/>
-      <Message {...schemaProps['Message']} {...mappedData['Message']}/>
-      {Autosize ? <Autosize {...schemaProps['Autosize']} {...mappedData['Autosize']}/> : ''}
+    <GroupBlocks {...mapped['GroupBlocks']}>
+      <Title {...mapped['Title']}/>
+      <Body {...mapped['Body']}>
+      <Main {...mapped['Main']}/>
+      <Message {...mapped['Message']}/>
+      {Autosize ? <Autosize {...mapped['Autosize']}/> : ''}
       </Body>
     </GroupBlocks>
   );
-  if (Array) result = <Array {...schemaProps['Array']} {...mappedData['Array']}>{result}</Array>;
-  if (ArrayItem) result = <ArrayItem {...schemaProps['ArrayItem']} {...mappedData['ArrayItem']}>{result}</ArrayItem>;
+  if (Array) result = <Array {...mapped['Array']}>{result}</Array>;
+  if (ArrayItem) result = <ArrayItem  {...mapped['ArrayItem']}>{result}</ArrayItem>;
   return result;
 }
 
@@ -1140,7 +1140,6 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         $propsMap: {
           hidden: ['params/hidden', '%/funcs/hidden4Builder'],
           $widgets: ['widgets', '%/funcs/getWidgets'],
-          $schemaProps: ['schemaProps', '%/funcs/getSchemaProps'],
         },
       },
       GroupBlocks: {
