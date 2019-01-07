@@ -19,8 +19,6 @@ import {
 import {FFormStateAPI, fformCores, objectResolver} from './api'
 import Timeout = NodeJS.Timeout;
 
-const classNames = require('classnames');
-
 // function applyMixins(derivedCtor: any, baseCtors: any[]) {
 //   baseCtors.forEach(baseCtor => {
 //     Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
@@ -472,9 +470,9 @@ class FSection extends Component<any, any> {
           let opts = {};
           //if ($pFField) opts[$pFField === true ? '$pFField' : $pFField] = $FField; // pass FField to widget. If true name 'options' is used, if string, then string value is used
           if ($fields) {  // if $fields exists then this is group section and we should map groupPropsMap, pass schemaProps['Layouts'] and use GroupWidget as default if no widget is supplied
-            if ($propsMap || LayoutsPropsMap) self._dataMaps[savedCountValue] = merge($propsMap || {}, LayoutsPropsMap || {}); // merge $propsMap and LayoutsPropsMap, to pass them every time props changed
+            //if ($propsMap) self._dataMaps[savedCountValue] = merge($propsMap || {}, LayoutsPropsMap || {}); // merge $propsMap and LayoutsPropsMap, to pass them every time props changed
             Object.assign(opts, schemaProps['Layouts']);
-            if (!rest.widget) opts['widget'] = LayoutsWidget
+            //if (!rest.widget) opts['widget'] = LayoutsWidget
           } else if ($propsMap) self._dataMaps[savedCountValue] = $propsMap;
           layout.push(<FSectionObject {...opts} count={savedCountValue} getDataProps={self.getDataProps} ref={self._setWidRef(savedCountValue)}
                                       key={'widget_' + savedCountValue} {...rest} >{$fields && makeLayouts_INNER_PROCEDURE(keys_UPDATABLE, $fields)}</FSectionObject>);
@@ -503,7 +501,7 @@ class FSection extends Component<any, any> {
     self._fields = {};
     self._widgets = {};
 
-    if (LayoutsPropsMap) self._dataMaps[0] = LayoutsPropsMap;
+    self._dataMaps[0];
     let count = 1; // 0 reserved for base layout
 
     if (self.isArray) {
@@ -667,24 +665,18 @@ function Unsupported(props: any) {return <div>Unsupported</div>}
 
 
 function ArrayBlock(props: any) {
-  const {useTag: UseTag = 'div', empty, addButton, length, canAdd, id, children, hidden, hiddenStyle, ...rest} = props;
-  const {widget: Empty = 'div', ...emptyRest} = empty;
-  const {widget: AddButton = 'button', onClick, ...addButtonRest} = addButton;
-  // const onClick = () => {
-  //   // console.time('arrayAdd');
-  //   $FField.pFForm.api.arrayAdd($FField.path, 1, {execute: true});
-  //   // console.timeEnd('arrayAdd');
-  // };
-  if (hidden) rest.style = merge(rest.style || {}, hiddenStyle ? hiddenStyle : {display: 'none'});
-  if (length) return (<UseTag {...rest}>{children}{canAdd ? <AddButton onClick={onClick} {...addButtonRest} /> : ''}</UseTag>);
-  else return (<UseTag {...rest}><Empty {...emptyRest}>{canAdd ? <AddButton onClick={onClick} {...addButtonRest} /> : ''}</Empty></UseTag>);
+  const {useTag: UseTag = 'div', empty, AddButton, length, canAdd, children, cx, className, ...rest} = props;
+  const {_$widget: Empty = 'div', ...emptyRest} = empty;
+  const {_$widget: AddButtonW = 'button', onClick, ...addButtonRest} = AddButton;
+  if (length) return (<UseTag className={cx && cx(className)} {...rest}>{children}{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</UseTag>);
+  else return (<UseTag className={cx && cx(className)} {...rest}><Empty {...emptyRest}>{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</Empty></UseTag>);
 }
 
 
-function DivBlock(props: any) {
-  const {id, useTag: UseTag = 'div', hidden, hiddenStyle, children, ...rest} = props;
-  if (hidden) rest.style = merge(rest.style || {}, hiddenStyle ? hiddenStyle : {display: 'none'});// merge(rest.style || {}, {display: 'none'});
-  return (<UseTag {...rest}>{children}</UseTag>)
+function GenericBlock(props: any) {
+  const {useTag: UseTag = 'div', children, cx, className, ...rest} = props;
+  //if (hidden) rest.style = merge(rest.style || {}, hiddenStyle ? hiddenStyle : {display: 'none'});// merge(rest.style || {}, {display: 'none'});
+  return (<UseTag className={cx && cx(className)} {...rest}>{children}</UseTag>)
 }
 
 
@@ -710,10 +702,10 @@ class AutosizeBlock extends PureComponent<any, any> {
 
 
 function TitleBlock(props: any) {
-  const {id, title = '', required, useTag: UseTag = 'label', requireSymbol, emptyTitle, ...rest} = props;
+  const {id, title = '', required, useTag: UseTag = 'label', requireSymbol = '*', cx, className, ...rest} = props;
   return (
-    <UseTag {...(UseTag == 'label' && id ? {htmlFor: id} : {})} {...rest}>
-      {emptyTitle ? typeof emptyTitle == 'string' ? emptyTitle : '' : (required ? title + requireSymbol : title)}
+    <UseTag {...(UseTag == 'label' && id ? {htmlFor: id} : {})} className={cx && cx(className)} {...rest}>
+      {isString(title) && required ? title + requireSymbol : title}
     </UseTag>
   );
 }
@@ -728,8 +720,9 @@ function BaseInput(props: any) {
     $FField,
     enumOptions,
     $reactRef,
-    className,
     priority,
+    cx,
+    className,
     ...rest
   }: { [key: string]: any } = props;
   UseTag = UseTag || (type == 'textarea' || type == 'select' ? type : 'input');
@@ -752,7 +745,7 @@ function BaseInput(props: any) {
         {enumOptions.map(({value, label}: any, i: number) => <option key={i} value={value}>{label}</option>)}
       </UseTag>);
   }// {enumOptions.map(({value, name}:any, i: number) => <option key={i} value={value}>{name}</option>)}
-  else return (<UseTag className={classNames(className, getIn(_PRIORITYClassNames, priority))} {...rest} {...refObj} {...valueObj} type={type} {...commonProps}/>);
+  else return (<UseTag className={cx && cx(className, getIn(_PRIORITYClassNames, priority))} {...rest} {...refObj} {...valueObj} type={type} {...commonProps}/>);
 };
 
 function ArrayInput(props: any) {
@@ -861,22 +854,22 @@ function CheckboxInput(props: any) {
 }
 
 function MessageBlock(props: any) {
-  const {useTag: UseTag = 'div', messageItem, messages = {}, untouched, id, ...rest} = props;
-  const {widget: WidgetMessageItem, ...restMessageItem} = messageItem;
+  const {useTag: UseTag = 'div', MessageItem, messages = {}, untouched, ...rest} = props;
+  const {widget: MessageItemW, ...restMessageItem} = MessageItem;
   let keys = objKeys(messages);
   const result: any[] = [];
   keys.sort((a, b) => parseFloat(a) - parseFloat(b));
-  keys.forEach((key) => result.push(key == '0' && untouched ? null : <WidgetMessageItem key={key} {...messages[key]} {...restMessageItem} />));
+  keys.forEach((key) => result.push(key == '0' && untouched ? null : <MessageItemW key={key} {...messages[key]} {...restMessageItem} />));
   return <UseTag {...rest}>{result}</UseTag>;
 }
 
 
 function MessageItem(props: any) {
-  const {useTag: UseTag = 'div', skip, textGroups, priority, className, ...rest} = props;
+  const {useTag: UseTag = 'div', skip, textGroups, priority, className, cx, ...rest} = props;
   const texts: any[] = [];
   objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey]));
   if (skip || !texts.length) return null;
-  return <UseTag className={classNames(className, _PRIORITYClassNames[priority || 0])} {...rest}>{texts.join('<br/>')}</UseTag>
+  return <UseTag className={cx && cx(className, _PRIORITYClassNames[priority || 0])} {...rest}>{texts.join('<br/>')}</UseTag>
 }
 
 
@@ -914,18 +907,17 @@ function ItemMenu(props: any) {
 
 function ArrayItem(props: any) {
   if (!props.arrayItem) return React.Children.only(props.children);
-  let {children, hidden, hiddenStyle, itemMain, itemBody, itemMenu, ...rest} = props;
-  const {widget: Item = 'div', ...itemRest} = itemMain || {};
-  const {widget: ItemBody = 'div', ...itemBodyRest} = itemBody || {};
-  const {widget: ItemMenu = 'div', ...itemMenuRest} = itemMenu || {};
-  if (hidden) itemRest.style = merge(itemRest.style || {}, hiddenStyle ? hiddenStyle : {display: 'none'});
+  let {useTag: ItemW = 'div', children, cx, className, ItemMenu, ItemBody, ...rest} = props;
+  //const {_$widget: ItemW = 'div', className: itemCN = {}, ...itemRest} = ItemMain || {};
+  const {_$widget: ItemBodyW = 'div', className: ItemBodyCN = {}, ...itemBodyRest} = ItemBody || {};
+  const {_$widget: ItemMenuW = 'div', className: ItemMenuCN = {}, ...itemMenuRest} = ItemMenu || {};
   return (
-    <Item {...itemRest}>
-      <ItemBody {...itemBodyRest}>
+    <ItemW className={cx && cx(className)} {...rest}>
+      <ItemBodyW className={cx && cx(ItemBodyCN)} {...itemBodyRest}>
         {React.Children.only(children)}
-      </ItemBody>
-      <ItemMenu {...itemMenuRest} {...rest}/>
-    </Item>
+      </ItemBodyW>
+      <ItemMenuW className={cx && cx(ItemMenuCN)} {...itemMenuRest} />
+    </ItemW>
   )
 }
 
@@ -1104,10 +1096,10 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     BaseInput: BaseInput,
     CheckboxInput: CheckboxInput,
     ArrayInput: ArrayInput,
-    Section: FSection,
-    DivBlock: DivBlock,
-    Autosize: AutosizeBlock,
+    GenericBlock: GenericBlock,
     TristateBox: TristateBox,
+    Section: FSection,
+    Autosize: AutosizeBlock,
   },
   presets: {
     'base': {
@@ -1117,7 +1109,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Array: {
         _$widget: '%/widgets/Array',
         empty: {_$widget: '%/widgets/EmptyArray'},
-        addButton: {
+        AddButton: {
           _$widget: '%/widgets/Button',
           text: 'Add new item',
           onClick: '%/funcs/ArrayAddClick'
@@ -1131,7 +1123,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       },
       ArrayItem: {
         _$widget: '%/widgets/ArrayItem',
-        itemMenu: {
+        ItemMenu: {
           _$widget: '%/widgets/ItemMenu',
           buttons: ['first', 'last', 'up', 'down', 'del'],
           buttonProps: {onClick: '%/funcs/ArrayItemButtonClick'}
@@ -1140,7 +1132,8 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           arrayItem: 'arrayItem',
           hidden: 'params/hidden',
           // $FField: ['$FField', '%/funcs/getFField'],
-        }
+        },
+        cx: '%/cx'
       },
       Builder: {
         _$widget: '%/widgets/Builder',
@@ -1151,11 +1144,11 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         },
       },
       GroupBlocks: {
-        _$widget: '%/widgets/DivBlock',
+        _$widget: '%/widgets/GenericBlock',
         className: 'fform-layout-block',
       },
       Body: {
-        _$widget: '%/widgets/DivBlock',
+        _$widget: '%/widgets/GenericBlock',
         className: 'fform-body-block',
       },
       Title: {
@@ -1173,7 +1166,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           messages: 'messages',
           untouched: 'status/untouched',
         },
-        messageItem: {
+        MessageItem: {
           _$widget: '%/widgets/MessageItem',
         },
       },
@@ -1348,8 +1341,9 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       }
     },
     Layouts: {
-      _$widget: '%/widgets/DivBlock',
-      className: 'fform-group-block',
+      _$widget: '%/widgets/GenericBlock',
+      className: {'fform-group-block': true},
+      cx: '%/cx'
     },
   },
   presetMap: {
@@ -1359,6 +1353,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     integer: ['select', 'updown', 'range', 'radio'],
     array: ['select', 'checkboxes', 'files'],
   },
+  cx: require('classnames/bind')
   // presetsCombineAfter: {
   //   radio: ['inlineItems', 'buttons'],
   //   checkboxes: ['inlineItems', 'buttons'],
