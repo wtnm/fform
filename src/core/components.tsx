@@ -6,6 +6,7 @@ import {
   getBindedValue,
   getSchemaPart,
   isSchemaSelfManaged,
+  isSelfManaged,
   path2string,
   string2path,
   SymData,
@@ -14,7 +15,8 @@ import {
   normalizePath,
   objMap,
   setUPDATABLE,
-  mergeStatePROCEDURE
+  mergeStatePROCEDURE,
+  branchKeys
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver} from './api'
 import Timeout = NodeJS.Timeout;
@@ -376,7 +378,7 @@ class FField extends Component<any, any> {
     const self = this;
     if (self._rebuild) this._build();
     const BuilderWidget = self._widgets['Builder'];
-    return <BuilderWidget {...self._mappedData['Builder']} mappedData={self._mappedData}/>
+    return <BuilderWidget {...self._mappedData['Builder']} mapped={self._mappedData}/>
   }
 }
 
@@ -388,13 +390,13 @@ class FField extends Component<any, any> {
 class FSectionObject extends PureComponent<any, any> { // need to be class, as we use it's forceUpdate() method
   render() {
     const {widget: Widget = 'div', getDataProps, count, ...rest} = this.props;
-    const dataMaped = getDataProps()[count] || {};
-    return <Widget {...rest} {...dataMaped}/>
+    const mapped = getDataProps()[count] || {};
+    return <Widget {...rest} {...mapped}/>
   }
 }
 
 class FSection extends Component<any, any> {
-  private _arrayStartIndex: number = 0;
+  private _arrayStart: number = 0;
   private _rebuild = true;
   private _focusField: string = '';
   private _arrayKey2field: { [key: string]: number };
@@ -404,9 +406,9 @@ class FSection extends Component<any, any> {
   private _arrayLayouts: any[] = [];
   private _setWidRef: any;
   private _setFieldRef: any;
-  private _keyField: string;
-  private _dataMaps: { [key: string]: any };
-  private _dataProps: { [key: string]: any };
+  private _uniqKey: string;
+  private _maps: { [key: string]: any };
+  private _mappedData: { [key: string]: any };
   isArray: boolean = false;
   getDataProps: any;
 
@@ -415,7 +417,7 @@ class FSection extends Component<any, any> {
     const self = this;
     self._setFieldRef = (field: number | string) => (item: any) => self._fields[field] = item;
     self._setWidRef = (key: number | string) => (item: any) => self._widgets[key] = item;
-    self.getDataProps = () => self._dataProps;
+    self.getDataProps = () => self._mappedData;
     self._build(self.props);
   }
 
@@ -430,27 +432,8 @@ class FSection extends Component<any, any> {
     if (self._fields[field] && self._fields[field].focus) self._fields[field].focus(path)
   }
 
-  // rebuild(path: Path) {
-  //   const self = this;
-  //   if (!path.length) {
-  //     self._reset();
-  //     self.forceUpdate()
-  //   } else {
-  //     let field = path[0];
-  //     path = path.slice(1);
-  //     if (self.$fields[field] && self.$fields[field].rebuild) self.$fields[field].rebuild(path);
-  //   }
-  // }
 
   _build(props: any) {
-    // function bindMetods(restField: any, track: Path = []) {
-    //   let result = {...restField};
-    //   chains.methods2chain.forEach((methodName: string) => {
-    //     if (typeof result[methodName] == 'function') result[methodName] = result[methodName].bind($FField)
-    //   });
-    //   objKeys(result).forEach(key => isObject(result[key]) && (result[key] = bindMetods(result[key], track.concat(key))));
-    //   return result
-    // }
 
     function makeLayouts_INNER_PROCEDURE(keys_UPDATABLE: string[], fields: Array<string | FFLayoutGeneric<jsFFCustomizeType>>) {
       const layout: any[] = [];
@@ -473,7 +456,7 @@ class FSection extends Component<any, any> {
             //if ($propsMap) self._dataMaps[savedCountValue] = merge($propsMap || {}, LayoutsPropsMap || {}); // merge $propsMap and LayoutsPropsMap, to pass them every time props changed
             // Object.assign(opts, schemaProps['Layouts']);
             //if (!rest.widget) opts['widget'] = LayoutsWidget
-          } else if ($propsMap) self._dataMaps[savedCountValue] = $propsMap;
+          } else if ($propsMap) self._maps[savedCountValue] = $propsMap;
           layout.push(<FSectionObject {...opts} count={savedCountValue} getDataProps={self.getDataProps} ref={self._setWidRef(savedCountValue)}
                                       key={'widget_' + savedCountValue} {...rest} >{$fields && makeLayouts_INNER_PROCEDURE(keys_UPDATABLE, $fields)}</FSectionObject>);
         }
@@ -482,39 +465,37 @@ class FSection extends Component<any, any> {
     }
 
     const self = this;
-    const {$FField, $branch} = props;
-    const {schemaPart} = $FField;
+    const {$branch, LayoutDefaultWidget = 'div', LayoutDefaultClass = 'layout', uniqKey, arrayStart, focusField, ff_layout} = props;
+    //const {schemaPart} = $FField;
 
-    if (!schemaPart) return;
-    if (isSchemaSelfManaged(schemaPart)) return;
+    // if (!schemaPart) return;
+    if (isSelfManaged($branch)) return;
 
     //const LayoutsWidget = widgets['Layouts'] || 'div';
     //const LayoutsPropsMap = $FField.presetProps['Layouts'].$propsMap;
     // const {properties = {}}: { [key: string]: any } = schemaPart;
     // const {groups = []} = x;
 
-    self._keyField = schemaPart.ff_props && schemaPart.ff_props.keyField || '/uniqId';
-    if (self._keyField[0] !== '/') self._keyField = './' + self._keyField;
-    self.isArray = schemaPart.type == 'array';
-    self._dataMaps = {};
-    self._dataProps = {};
+    self.isArray = $branch[SymData].fData.type == 'array';
+    self._maps = {};
+    self._mappedData = {};
     self._fields = {};
     self._widgets = {};
 
-    self._dataMaps[0];
+    //self._mappedData[0];
     let count = 1; // 0 reserved for base layout
 
     if (self.isArray) {
-      self._arrayStartIndex = arrayStart(schemaPart) || 0;
-      if (!props._focusField) self._focusField = '0';
+      self._arrayStart = arrayStart || 0;
+      if (!focusField) self._focusField = '0';
     }
 
-    let objectKeys: string[] = self._getObjectKeys($branch, self.props);
-    if (!self._focusField) self._focusField = props._focusField || objectKeys[0] || '';
+    let keys_UPDATABLE: string[] = self._getObjectKeys($branch);
+    self._focusField = self._focusField || focusField || keys_UPDATABLE[0] || '';
 
-    self._objectLayouts = makeLayouts_INNER_PROCEDURE(objectKeys, schemaPart.ff_layout || []);  // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
-    objectKeys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));  // so here we have only keys was not used and we add them to _objectLayouts
-    objKeys(self._dataMaps).forEach((key: string) => self._dataProps[key] = mapProps(self._dataMaps[key], $branch[SymData]));
+    self._objectLayouts = makeLayouts_INNER_PROCEDURE(keys_UPDATABLE, ff_layout.$fields);  // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
+    keys_UPDATABLE.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));  // so here we have only keys was not used and we add them to _objectLayouts
+    objKeys(self._maps).forEach((key: string) => self._mappedData[key] = mapProps(self._maps[key], $branch[SymData]));
 
     self._makeArrayItems(self.props);
 
@@ -527,10 +508,10 @@ class FSection extends Component<any, any> {
     self._arrayLayouts = [];
     self._arrayKey2field = {};
     if (self.isArray)
-      for (let i = self._arrayStartIndex; i < props.length; i++) {
+      for (let i = self._arrayStart; i < props.length; i++) {
         let arrayKey = self._arrayIndex2key(self.props.stateBranch[i]);
         self._arrayLayouts.push(self._makeFField(i.toString(), arrayKey));
-        self._arrayKey2field[arrayKey] = i;
+        arrayKey && (self._arrayKey2field[arrayKey] = i);
       }
     return self._arrayLayouts.length
   }
@@ -550,14 +531,14 @@ class FSection extends Component<any, any> {
   }
 
   _arrayIndex2key(stateBranch: any) {
-    return getIn(stateBranch[SymData], string2path(this._keyField));
+    return this.props.uniqKey ? getIn(stateBranch[SymData], string2path(this.props.uniqKey)) : undefined;
   }
 
-  _getObjectKeys(stateBranch: StateType, props: any) {
+  _getObjectKeys(stateBranch: StateType) {
     const self = this;
     let keys: string[] = [];
-    if (self.isArray) for (let i = 0; i < Math.min(self._arrayStartIndex, props.length); i++) keys.push(i.toString());
-    else keys = objKeys(stateBranch);
+    if (self.isArray) for (let i = 0; i < Math.min(self._arrayStart, stateBranch[SymData].length); i++) keys.push(i.toString());
+    else keys = branchKeys(stateBranch);
     return keys;
   }
 
@@ -573,7 +554,7 @@ class FSection extends Component<any, any> {
     const self = this;
     const updArray = [];
     let doUpdate = false;
-    for (let i = self._arrayStartIndex; i < nextBranch[SymData].length; i++) {
+    for (let i = self._arrayStart; i < nextBranch[SymData].length; i++) {
       let arrayKey = self._arrayIndex2key(nextBranch[i]);
       if (self._fields[arrayKey]) self._fields[arrayKey].setState({branch: nextBranch[i]});
       let prevIndex = self._arrayKey2field[arrayKey];
@@ -581,7 +562,7 @@ class FSection extends Component<any, any> {
         self._arrayKey2field[arrayKey] = i;
         doUpdate = true
       }
-      updArray.push(!isUndefined(prevIndex) ? self._arrayLayouts[prevIndex - self._arrayStartIndex] : self._makeFField(i.toString(), arrayKey));
+      updArray.push(!isUndefined(prevIndex) ? self._arrayLayouts[prevIndex - self._arrayStart] : self._makeFField(i.toString(), arrayKey));
     }
     if (self._arrayLayouts.length !== updArray.length) doUpdate = true;
     if (doUpdate) self._arrayLayouts = updArray;
@@ -604,7 +585,7 @@ class FSection extends Component<any, any> {
       if (self.isArray) {
         const prevLength = prevBranch[SymData].length;
         const nextLength = nextBranch[SymData].length;
-        if (prevLength != nextLength && (nextLength < self._arrayStartIndex || prevLength < self._arrayStartIndex - 1)) { // need to rebuild, length changed within turple range
+        if (prevLength != nextLength && (nextLength < self._arrayStart || prevLength < self._arrayStart - 1)) { // need to rebuild, length changed within turple range
           self._reset();
           return true;
         }
@@ -616,9 +597,9 @@ class FSection extends Component<any, any> {
 
       if (nextBranch[SymData] !== prevBranch[SymData]) {  // update _dataProps
         const dataProps = {};
-        objKeys(self._dataMaps).forEach((key: string) => dataProps[key] = mapProps(self._dataMaps[key], nextBranch[SymData]));
-        let {state: newDataProps, changes} = mergeState(self._dataProps, dataProps);
-        self._dataProps = newDataProps;
+        objKeys(self._maps).forEach((key: string) => dataProps[key] = mapProps(self._maps[key], nextBranch[SymData]));
+        let {state: newDataProps, changes} = mergeState(self._mappedData, dataProps);
+        self._mappedData = newDataProps;
         if (changes) objKeys(changes).forEach(key => self._widgets[key] && self._widgets[key]['forceUpdate']());
       }
     }
@@ -642,7 +623,7 @@ class FSection extends Component<any, any> {
 /////////////////////////////////////////////
 
 function FBuilder(props: any) {
-  const {hidden, mappedData: mapped, widgets} = props;
+  const {mapped, widgets} = props;
   const {Title, Body, Main, Message, GroupBlocks, ArrayItem, Array, Autosize} = widgets;
 
   let result = (
@@ -1098,7 +1079,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     ArrayInput: ArrayInput,
     GenericBlock: GenericBlock,
     TristateBox: TristateBox,
-    Section: FSection,
+    FSection: FSection,
     Autosize: AutosizeBlock,
   },
   presets: {
@@ -1253,8 +1234,9 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     object: {
       $_ref: '%/presets/base',
       Main: {
-        _$widget: '%/widgets/Section',
+        _$widget: '%/widgets/FSection',
         $reactRef: true,
+        uniqKey: 'arrayItem/uniqKey',
         $propsMap: {
           value: false,
           autoFocus: false,

@@ -362,9 +362,9 @@ const arrayStart = memoize(function (schemaPart: jsJsonSchema) {
 );
 
 const basicStatus = {invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true, touched: false, pristine: true};
-const basicArrayItem = {canUp: false, canDown: false, canDel: false};
+// const basicArrayItem = {canUp: false, canDown: false, canDel: false};
 
-const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, type: string, required: boolean, arrayItem: boolean, value?: any) {
+const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, type: string, value?: any) {
   // const x = schemaPart.x || ({} as FFSchemaExtensionType);
   const {ff_params = {}, ff_data = {}} = schemaPart;
   const result: any = Object.assign({params: ff_params}, ff_data);
@@ -373,22 +373,23 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, type: string
   result.status = basicStatus;
   result.fData = {};
   result.fData.type = type;
-  result.fData.required = required || !!schemaPart.required;
+  result.fData.required = schemaPart.required;
   result.fData.title = schemaPart.title;
   result.fData.placeholder = schemaPart.ff_placeholder;
+
   if (isSchemaSelfManaged(schemaPart)) result.value = isUndefined(value) ? schemaPart.default : value;
   else delete result.value;
-  // if (type != 'object' && type != 'array') {
-  //   if (!isUndefined(value)) result.value = value;
-  //   else if (isSchemaSelfManaged(schemaPart)) result.value = schemaPart.default;
-  //   else delete result.value;
-  // }
+  let untouched = 1;
   if (type == 'array') {
     result.length = getIn(value, 'length') || 0;
     if (!isUndefined(schemaPart.minItems) && result.length < schemaPart.minItems) result.length = schemaPart.minItems;
     result.fData.canAdd = isArrayCanAdd(schemaPart, result.length);
+    untouched = result.length;
+  } else if (type == 'object') untouched = objKeys(schemaPart.properties || {}).length;
+  if (untouched != 1) {
+    result.status = {...basicStatus};
+    result.status.untouched = untouched;
   }
-  if (arrayItem) result.arrayItem = basicArrayItem;
   return result;
 });
 
@@ -398,31 +399,19 @@ function makeDataMap(dataMap: FFDataMapGeneric<MapFunctionType>[], path: Path): 
   })
 }
 
-//from: ((item[0][0] == '.' && path2string(path) + '/') || '') + item[0],
-//       to: ((item[1][0] == '.' && path2string(path) + '/') || '') + item[1],
-
-
-function getParentSchema(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path) => number) {
-  if (!path.length || path.length == 1 && path[0] === '#') return false;
-  return getSchemaPart(schema, path.slice(0, -1), getOneOf);
-}
 
 function isPropRequired(schema: jsJsonSchema, path: Path) {
   return !!(schema.type == 'object' && isArray(schema.required) && ~schema.required.indexOf(path[path.length - 1]))
 }
 
-function getUniqId() {return Date.now().toString(36) + Math.random().toString(36) }
+function getUniqKey() {return Date.now().toString(36) + Math.random().toString(36) }
 
-function makeStateBranch(schema: jsJsonSchema, getOneOf: (path: Path, value?: number) => number, path: Path = [], value?: any) { //: { state: StateType, dataMap: StateType } {
+function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, value?: number) => number, path: Path = [], value?: any) { //: { state: StateType, dataMap: StateType } {
   const result = {};
-  //const schemaPart = getSchemaPart(schema, path, getOneOf);
-  const parentSchemaPart = getParentSchema(schema, path, getOneOf);
-  const isArrayItem = getIn(parentSchemaPart, 'type') == 'array'; // && !getIn(parentSchemaPart, 'x', 'managed');
-  const isReqiured = parentSchemaPart ? isPropRequired(parentSchemaPart, path[path.length - 1]) : false;
   const dataMapObjects: DataMapStateType[] = [];
   let defaultValues: any;
-  const currentOneOf = getOneOf(path);
-  const schemaPartsOneOf = getSchemaPart(schema, path, getOneOf, true);
+  const currentOneOf = getNSetOneOf(path);
+  const schemaPartsOneOf = getSchemaPart(schema, path, getNSetOneOf, true);
   let {schemaPart, oneOf, type} = findOneOf(schemaPartsOneOf, value, currentOneOf);
   if (!isUndefined(currentOneOf) && currentOneOf != oneOf) { // keep existing structure of one of
     value = schemaPartsOneOf[currentOneOf].default;
@@ -432,10 +421,9 @@ function makeStateBranch(schema: jsJsonSchema, getOneOf: (path: Path, value?: nu
     type = tmp.type;
   }
   push2array(dataMapObjects, makeDataMap(schemaPart.ff_dataMap || [], path));
-  result[SymData] = makeDataStorage(schemaPart, type, isReqiured, isArrayItem, value);
-  if (isArrayItem) result[SymData] = merge(result[SymData], {uniqId: getUniqId()});
+  result[SymData] = makeDataStorage(schemaPart, type, value);
   if (!isUndefined(oneOf)) {
-    getOneOf(path, oneOf);
+    getNSetOneOf(path, oneOf);
     result[SymData] = merge(result[SymData], {oneOf});
   }
 
@@ -444,24 +432,29 @@ function makeStateBranch(schema: jsJsonSchema, getOneOf: (path: Path, value?: nu
     defaultValues = [];
     defaultValues.length = result[SymData].length;
     for (let i = 0; i < defaultValues.length; i++) {
-      let dataObj = makeStateBranch(schema, getOneOf, path.concat(i), getIn(isUndefined(value) ? schemaPart.default : value, i));
-      if (dataObj.dataMap) push2array(dataMapObjects, dataObj.dataMap);
-      dataObj.state = merge(dataObj.state, setIn({}, getArrayItemData(schemaPart, i, defaultValues.length), SymData, 'arrayItem'));
-      result[i] = dataObj.state;
-      defaultValues[i] = dataObj.defaultValues
+      let {state: branch, dataMap, defaultValues: dValue} = makeStateBranch(schema, getNSetOneOf, path.concat(i), getIn(isUndefined(value) ? schemaPart.default : value, i));
+      defaultValues[i] = dValue;
+      push2array(dataMapObjects, dataMap);
+      let arrayItemUpdate = {};
+      setIn(arrayItemUpdate, getArrayItemData(schemaPart, i, defaultValues.length), SymData, 'arrayItem');
+      setIn(arrayItemUpdate, getUniqKey(), SymData, 'arrayItem', 'uniqKey');
+      branch = merge(branch, arrayItemUpdate, {replace: {[SymData]: {ArrayItem: true}}});
+      result[i] = branch;
+
     }
-    result[SymData] = merge(result[SymData], {status: {untouched: defaultValues.length}})
   } else if (type == 'object') {
     defaultValues = {};
+    let arrayOfRequired = result[SymData].fData.required;
+    arrayOfRequired = isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
     objKeys(schemaPart.properties || {}).forEach(field => {
-      let dataObj = makeStateBranch(schema, getOneOf, path.concat(field), value && value[field]);
-      if (dataObj.dataMap) push2array(dataMapObjects, dataObj.dataMap);
-      result[field] = dataObj.state;
-      defaultValues[field] = dataObj.defaultValues
+      let {state: branch, dataMap, defaultValues: dValue} = makeStateBranch(schema, getNSetOneOf, path.concat(field), value && value[field]);
+      defaultValues[field] = dValue;
+      push2array(dataMapObjects, dataMap);
+      if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {fData: {required: true}});
+      result[field] = branch;
     });
-    result[SymData] = merge(result[SymData], {status: {untouched: objKeys(defaultValues).length}})
   }
-  return {state: result, defaultValues, dataMap: dataMapObjects.length ? dataMapObjects : undefined}
+  return {state: result, defaultValues, dataMap: dataMapObjects}
 }
 
 const makeStateFromSchema = memoize(function (schema: jsJsonSchema) {
@@ -771,17 +764,23 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
           const {value, length, oneOf, fData, status, ...rest} = oldBranch[SymData];
           branch = merge(branch, makeSlice(SymData, {...rest}));
         }
-        state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});
-        state = setDataMapInState(state, schema, maps2enable);
-        state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], push2array(['current'], path), defaultValues, true));
+
         if (path.length) {
-          const topPath = path.slice(0, -1);
+          const topPath = path.slice();
+          const field = topPath.pop();
           ['invalid', 'dirty', 'untouched', 'pending'].forEach(key => {
             let oldStatusValue = getIn(oldBranch, SymData, 'status', key);
             let newStatusValue = getIn(branch, SymData, 'status', key);
             if (!oldStatusValue != !newStatusValue) state = Macros.setStatus(state, schema, UPDATABLE_object, makeNUpdate(topPath, ['status', key], newStatusValue ? 1 : -1));
           });
+          let arrayOfRequired = getIn(state, topPath, SymData, 'fData', 'required');
+          arrayOfRequired = isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
+          if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {fData: {required: true}});
         }
+        
+        state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});
+        state = setDataMapInState(state, schema, maps2enable);
+        state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], push2array(['current'], path), defaultValues, true));
       }
     }
   }
