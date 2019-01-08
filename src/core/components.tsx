@@ -179,7 +179,7 @@ class FField extends Component<any, any> {
     const branch = self.api.get(self.path);
     self.state = {branch};
     self._selfBind = self._selfBind.bind(self);
-    self._setRef = self._setRef.bind(self); 
+    self._setRef = self._setRef.bind(self);
     self._build();
   }
 
@@ -365,8 +365,8 @@ class FField extends Component<any, any> {
 /////////////////////////////////////////////
 class FSectionWidget extends PureComponent<any, any> { // need to be class, as we use it's forceUpdate() method
   render() {
-    const {_$widget: Widget = 'div', getMappedData, cx, className, ...rest} = this.props;
-    return <Widget className={cx ? cx(className) : className} {...getMappedData()} {...rest}/>
+    const {_$widget: Widget = 'div', getMappedData, $cx, className, ...rest} = this.props;
+    return <Widget className={$cx ? $cx(className) : className} {...getMappedData()} {...rest}/>
   }
 }
 
@@ -429,7 +429,7 @@ class FSection extends Component<any, any> {
           let {_$widget, $fields, map, map$} = normalizeLayout(fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>);
           self._maps[counter] = map;
           self._maps$[counter] = map$;
-          layout.push(<FSectionWidget _$widget={_$widget} cx={cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
+          layout.push(<FSectionWidget _$widget={_$widget} $cx={$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
                                       getMappedData={self._getMappedData(counter)}>{$fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $fields)}</FSectionWidget>)
         }
       });
@@ -445,7 +445,7 @@ class FSection extends Component<any, any> {
 
     const self = this;
 
-    const {$branch, $layout, cx, arrayStart, LayoutDefaultWidget = 'div', LayoutDefaultClass = 'layout', uniqKey, focusField} = props;
+    const {$branch, $layout, $cx, arrayStart, LayoutDefaultWidget = 'div', LayoutDefaultClass = 'layout', uniqKey, focusField} = props;
 
     if (isSelfManaged($branch)) return;
 
@@ -572,7 +572,7 @@ class FSection extends Component<any, any> {
   render() {
     const self = this;
     if (self._rebuild) self._build(self.props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-    return <FSectionWidget _$widget={self._$widget} cx={self.props.cx} key={'widget_0'} ref={self._setWidRef((0))}
+    return <FSectionWidget _$widget={self._$widget} $cx={self.props.$cx} key={'widget_0'} ref={self._setWidRef((0))}
                            getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
 
   }
@@ -607,18 +607,18 @@ function Unsupported(props: any) {return <div>Unsupported</div>}
 
 
 function ArrayBlock(props: any) {
-  const {useTag: UseTag = 'div', empty, AddButton, length, canAdd, children, cx, className, ...rest} = props;
+  const {useTag: UseTag = 'div', empty, AddButton, length, canAdd, children, $cx, className, ...rest} = props;
   const {_$widget: Empty = 'div', ...emptyRest} = empty;
   const {_$widget: AddButtonW = 'button', onClick, ...addButtonRest} = AddButton;
-  if (length) return (<UseTag className={cx ? cx(className) : className} {...rest}>{children}{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</UseTag>);
-  else return (<UseTag className={cx ? cx(className) : className} {...rest}><Empty {...emptyRest}>{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</Empty></UseTag>);
+  if (length) return (<UseTag className={$cx ? $cx(className) : className} {...rest}>{children}{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</UseTag>);
+  else return (<UseTag className={$cx ? $cx(className) : className} {...rest}><Empty {...emptyRest}>{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</Empty></UseTag>);
 }
 
 
 function GenericBlock(props: any) {
-  const {useTag: UseTag = 'div', children, cx, className, ...rest} = props;
+  const {useTag: UseTag = 'div', children, $cx, className, ...rest} = props;
   //if (hidden) rest.style = merge(rest.style || {}, hiddenStyle ? hiddenStyle : {display: 'none'});// merge(rest.style || {}, {display: 'none'});
-  return (<UseTag className={cx ? cx(className) : className} {...rest}>{children}</UseTag>)
+  return (<UseTag className={$cx ? $cx(className) : className} {...rest}>{children}</UseTag>)
 }
 
 
@@ -627,7 +627,7 @@ class AutosizeBlock extends PureComponent<any, any> {
   private _elem: any;
 
   componentDidMount() {
-    const style = window && window.getComputedStyle(this.props.$FField.refs);
+    const style = window && window.getComputedStyle(this.props.$FField.refs.Main);
     if (!style || !this._elem) return;
     ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'letterSpacing'].forEach(key => this._elem.style[key] = style[key]);
   }
@@ -637,16 +637,16 @@ class AutosizeBlock extends PureComponent<any, any> {
     const props = self.props;
     const value = (isUndefined(props.value) ? '' : props.value.toString()) || props.placeholder || '';
     return (<div style={AutosizeBlock._sizerStyle as any} ref={(elem) => {
-      (self._elem = elem) && (props.$FField.refs.style.width = ((elem as any).scrollWidth + (props.addWidth || 45)) + 'px')
+      (self._elem = elem) && (props.$FField.refs.Main.style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
     }}>{value}</div>)
   }
 }
 
 
 function TitleBlock(props: any) {
-  const {id, title = '', required, useTag: UseTag = 'label', requireSymbol = '*', cx, className, ...rest} = props;
+  const {id, title = '', required, useTag: UseTag = 'label', requireSymbol = '*', $cx, className, ...rest} = props;
   return (
-    <UseTag {...(UseTag == 'label' && id ? {htmlFor: id} : {})} className={cx ? cx(className) : className} {...rest}>
+    <UseTag {...(UseTag == 'label' && id ? {htmlFor: id} : {})} className={$cx ? $cx(className) : className} {...rest}>
       {isString(title) && required ? title + requireSymbol : title}
     </UseTag>
   );
@@ -663,7 +663,7 @@ function BaseInput(props: any) {
     enumOptions,
     $reactRef,
     priority,
-    cx,
+    $cx,
     className,
     ...rest
   }: { [key: string]: any } = props;
@@ -687,7 +687,7 @@ function BaseInput(props: any) {
         {enumOptions.map(({value, label}: any, i: number) => <option key={i} value={value}>{label}</option>)}
       </UseTag>);
   }// {enumOptions.map(({value, name}:any, i: number) => <option key={i} value={value}>{name}</option>)}
-  else return (<UseTag className={cx && cx(className, getIn(_PRIORITYClassNames, priority))} {...rest} {...refObj} {...valueObj} type={type} {...commonProps}/>);
+  else return (<UseTag className={$cx ? $cx(className) : className} {...rest} {...refObj} {...valueObj} type={type} {...commonProps}/>);
 };
 
 function ArrayInput(props: any) {
@@ -807,11 +807,11 @@ function MessageBlock(props: any) {
 
 
 function MessageItem(props: any) {
-  const {useTag: UseTag = 'div', skip, textGroups, priority, className, cx, ...rest} = props;
+  const {useTag: UseTag = 'div', skip, textGroups, priority, className, $cx, ...rest} = props;
   const texts: any[] = [];
   objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey]));
   if (skip || !texts.length) return null;
-  return <UseTag className={cx && cx(className, _PRIORITYClassNames[priority || 0])} {...rest}>{texts.join('<br/>')}</UseTag>
+  return <UseTag className={$cx ? $cx(className) : className} {...rest}>{texts.join('<br/>')}</UseTag>
 }
 
 
@@ -849,16 +849,16 @@ function ItemMenu(props: any) {
 
 function ArrayItem(props: any) {
   if (!props.arrayItem) return React.Children.only(props.children);
-  let {useTag: ItemW = 'div', children, cx, className, ItemMenu, ItemBody, ...rest} = props;
+  let {useTag: ItemW = 'div', children, $cx, className, ItemMenu, ItemBody, ...rest} = props;
   //const {_$widget: ItemW = 'div', className: itemCN = {}, ...itemRest} = ItemMain || {};
   const {_$widget: ItemBodyW = 'div', className: ItemBodyCN = {}, ...itemBodyRest} = ItemBody || {};
   const {_$widget: ItemMenuW = 'div', className: ItemMenuCN = {}, ...itemMenuRest} = ItemMenu || {};
   return (
-    <ItemW className={cx ? cx(className) : className} {...rest}>
-      <ItemBodyW className={cx && cx(ItemBodyCN)} {...itemBodyRest}>
+    <ItemW className={$cx ? $cx(className) : className} {...rest}>
+      <ItemBodyW className={$cx && $cx(ItemBodyCN)} {...itemBodyRest}>
         {React.Children.only(children)}
       </ItemBodyW>
-      <ItemMenuW className={cx && cx(ItemMenuCN)} {...itemMenuRest} />
+      <ItemMenuW className={$cx && $cx(ItemMenuCN)} {...itemMenuRest} />
     </ItemW>
   )
 }
@@ -1069,36 +1069,26 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Array: {
         _$widget: '%/widgets/Array',
         empty: {_$widget: '%/widgets/EmptyArray'},
-        AddButton: {
-          _$widget: '%/widgets/Button',
-          text: 'Add new item',
-          onClick: '%/funcs/ArrayAddClick'
-        },
+        AddButton: '%/parts/ArrayAddButton',
         $propsMap: {
           length: 'length',
           canAdd: 'fData/canAdd',
-          hidden: ['params/hidden', '%/funcs/hidden4Array'],
-          //$FField: ['$FField', '%/funcs/getFField'],
+          'className/hidden': ['params/hidden', '%/funcs/hidden4Array'],
         },
       },
       ArrayItem: {
         _$widget: '%/widgets/ArrayItem',
-        ItemMenu: {
-          _$widget: '%/widgets/ItemMenu',
-          buttons: ['first', 'last', 'up', 'down', 'del'],
-          buttonProps: {onClick: '%/funcs/ArrayItemButtonClick'}
-        },
+        ItemMenu: '%/parts/ArrayItemMenu',
         $propsMap: {
           arrayItem: 'arrayItem',
-          hidden: 'params/hidden',
-          // $FField: ['$FField', '%/funcs/getFField'],
+          'className/hidden': 'params/hidden',
         },
-        cx: '%/cx'
+        $cx: '%/$cx'
       },
       Builder: {
         _$widget: '%/widgets/Builder',
         $propsMap: {
-          hidden: ['params/hidden', '%/funcs/hidden4Builder'],
+          'className/hidden': ['params/hidden', '%/funcs/hidden4Builder'],
           $widgets: ['widgets', '%/funcs/getWidgets'],
         },
       },
@@ -1142,27 +1132,22 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           readOnly: 'params/readonly',
           disabled: 'params/disabled',
         },
-        onChange: function (event: any) {this.api.setValue(event.target.value, {})},
-        onBlur: function (value: any) {
-          const self = this;
-          self.api.set('./', 0, {[SymData]: ['status', 'untouched'], noValidation: true});
-          self.api.set('/@/active', undefined, {noValidation: true});
-          return !self.liveValidate ? self.api.validate() : null;
-        },
-        onFocus: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})}
+        onChange: '%/on/changeBasic',
+        onBlur: '%/on/blurBasic',
+        onFocus: '%/on/focusBasic',
       }
     },
     string: {
       $_ref: '%/presets/base', Main: {
         type: 'text',
-        onChange: function (event: any) {this.api.setValue(event.target.value, {})}
+        onChange: '%/on/changeString'
       }
     },
     integer: {
       $_ref: '%/presets/base',
       Main: {
         type: 'number',
-        onChange: function (event: any) {this.setValue(event.target.value == '' ? undefined : parseInt(event.target.value))}
+        onChange: '%/on/changeInteger'
       }
     },
     number: {
@@ -1170,7 +1155,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Main: {
         type: 'number',
         step: 'any',
-        onChange: function (event: any) {this.setValue(event.target.value == '' ? undefined : parseFloat(event.target.value))}
+        onChange: '%/on/changeNumber'
       }
     },
     range: {$_ref: '%/presets/base', Main: {type: 'range'}},
@@ -1186,7 +1171,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '%/presets/base',
       Main: {
         type: 'checkbox',
-        onChange: function (event: any) {this.onChange(event.target.checked)}
+        onChange: '%/on/changeBoolean'
       }
     },
     boolean: {
@@ -1230,19 +1215,13 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           arrayStart: ['fData/type', '%/funcs/getArrayStart'],
           LayoutDefaultClass: 'layout',
           LayoutDefaultWidget: 'div',
-          cx: '%/cx',
+          $cx: '%/$cx',
         }
       },
       GroupBlocks: {useTag: 'fieldset'},
       Title: {useTag: 'legend'},
     },
-    array: {
-      $_ref: '%/presets/object',
-      //_blocks: {'Array': true},
-      //Main: {$propsMap: {length: 'length'}},
-      //GroupBlocks: {useTag: 'fieldset'},
-      //Title: {useTag: 'legend'},
-    },
+    array: '%/presets/object',
     inlineTitle: {
       GroupBlocks: {
         style: {flexFlow: 'row'},
@@ -1261,7 +1240,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       },
     },
     radio: {$_ref: '%/presets/arrayOf', Main: {type: 'radio'}},
-    checkboxes: {$_ref: '%/presets/arrayOf', Main: {type: 'checkbox'}, 'Layouts': false, 'Array': false},
+    checkboxes: {$_ref: '%/presets/arrayOf', Main: {type: 'checkbox'}, 'Array': false},
 
     inlineItems: {Main: {stackedProps: false}},
     buttons: {Main: {inputProps: {className: 'button'}, labelProps: {className: 'button'}}},
@@ -1283,34 +1262,55 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   },
   funcs: {
     not: function (v: any) {return !v},
+    bool: function (v: any) {return !!v},
+    hidden4Array: function (hidden: any) {return !this._widgets['ArrayItem'] && !!hidden},
+    hidden4Builder: function (hidden: any) {return !this._widgets['Array'] && !this._widgets['ArrayItem'] && !!hidden},
     getFField: function () {return this},
-    getEnum: function () {return this._enumOptions},
     getBranch: function () {return this.state.branch},
     getLayout: function () {return this.ff_layout},
     getFFormApi: function () {return this.props.pFForm.api},
     getWidgets: function () {return this._widgets},
-    getSchemaProps: function () {return this._schemaProps},
     getArrayStart: function (type: string) {return type == 'array' && arrayStart(this.schemaPart) || undefined},
-    hidden4Array: function (hidden: boolean) {return !this._widgets['ArrayItem'] && hidden},
-    hidden4Builder: function (hidden: boolean) {return !this._widgets['Array'] && !this._widgets['ArrayItem'] && hidden},
-    ArrayItemButtonClick: function (key: string) {this.api.arrayItemOps('./', key)},
-    ArrayAddClick: function () {this.api.arrayAdd('./', 1)}
+
+  },
+  on: {
+    clickArrayAdd: function () {this.api.arrayAdd('./', 1)},
+    clickArrayItemOps: function (key: string) {this.api.arrayItemOps('./', key)},
+    changeBasic: function (event: any) {this.api.setValue(event.target.value, {})},
+    changeString: function (event: any) {this.api.setValue(event.target.value, {})},
+    changeInteger: function (event: any) {this.setValue(event.target.value == '' ? undefined : parseInt(event.target.value))},
+    changeNumber: function (event: any) {this.setValue(event.target.value == '' ? undefined : parseFloat(event.target.value))},
+    changeBoolean: function (event: any) {this.onChange(event.target.checked)},
+    focusBasic: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
+    blurBasic: function (value: any) {
+      const self = this;
+      self.api.set('./', 0, {[SymData]: ['status', 'untouched'], noValidation: true});
+      self.api.set('/@/active', undefined, {noValidation: true});
+      return !self.liveValidate ? self.api.validate() : null;
+    }
   },
   parts: {
     Autosize: {
       _$widget: '%/widgets/Autosize',
       $propsMap: {
+        addWidth: 45,
+        minWidth: 60,
         value: 'value',
         placeholder: 'params/placeholder',
-        hidden: 'params/hidden',
+        'className/hidden': 'params/hidden',
         $FField: ['$FField', '%/funcs/getFField'],
       }
     },
-    // Layouts: {
-    //   _$widget: '%/widgets/GenericBlock',
-    //   className: {'fform-group-block': true},
-    //   cx: '%/cx'
-    // },
+    ArrayAddButton: {
+      _$widget: '%/widgets/Button',
+      text: 'Add new item',
+      onClick: '%/funcs/on/clickArrayAdd'
+    },
+    ArrayItemMenu: {
+      _$widget: '%/widgets/ItemMenu',
+      buttons: ['first', 'last', 'up', 'down', 'del'],
+      buttonProps: {onClick: '%/funcs/on/clickArrayItemOps'}
+    }
   },
   presetMap: {
     boolean: ['select', 'radio'],
@@ -1319,7 +1319,8 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     integer: ['select', 'updown', 'range', 'radio'],
     array: ['select', 'checkboxes', 'files'],
   },
-  cx: require('classnames/bind')
+  $cx: classNames
+
   // presetsCombineAfter: {
   //   radio: ['inlineItems', 'buttons'],
   //   checkboxes: ['inlineItems', 'buttons'],
@@ -1338,16 +1339,35 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   // },
 };
 
-//
-// const buttonObject = {
-//   _$widget: function (props: any) {
-//     let {text = 'Submit', ...rest} = props;
-//     return <button {...rest}>{text}</button>
-//   }
-// };
+
+function classNames(...styles: any) {
+  const classes = [];
+
+  for (let i = 0; i < styles.length; i++) {
+    let arg = styles[i];
+    if (!arg) continue;
+
+    const argType = typeof arg;
+
+    if (argType === 'string' || argType === 'number') {
+      classes.push(this && this[arg] || arg);
+    } else if (isArray(arg)) {
+      classes.push(classNames.apply(this, arg));
+    } else if (argType === 'object') {
+      for (let key in arg) {
+        if (arg.hasOwnProperty(key) && arg[key]) {
+          if (arg[key] === true) classes.push(this && this[key] || key);
+          else classes.push(classNames.call(this, arg[key]));
+        }
+      }
+    }
+  }
+
+  return classes.join(' ');
+}
 
 
-export {selectorMap, fformObjects, FForm, FFormStateAPI, fformCores};
+export {selectorMap, fformObjects, FForm, FFormStateAPI, fformCores, classNames};
 
 //module.exports = process.env.NODE_ENV === 'test' ? merge(module.exports, {}) : module.exports;
 

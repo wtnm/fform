@@ -69,7 +69,7 @@ interface MessagesDataType {
 type MessageType = 'danger' | 'warning' | 'success' | 'info' | 'notice' | '';
 
 interface formObjectsType {
-  "presets"?: { [key: string]: jsFFCustomizeType };
+  "presets"?: { [key: string]: jsFFCustomizeType | string };
   "widgets"?: { [key: string]: any };
   "types"?: string[];
   "presetMap"?: { [key: string]: string[] };
