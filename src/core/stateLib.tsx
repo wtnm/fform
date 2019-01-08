@@ -361,8 +361,13 @@ const arrayStart = memoize(function (schemaPart: jsJsonSchema) {
   }
 );
 
+const getEnumOptions = (schemaPart: jsJsonSchema) => {
+  if (!schemaPart.enum) return undefined;
+  let exten: any[] = schemaPart.ff_enumExten || [];
+  return schemaPart.enum.map((value, i) => isObject(exten[i]) ? merge(exten[i], {value}) : {value, label: exten[i] || value});
+};
+
 const basicStatus = {invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true, touched: false, pristine: true};
-// const basicArrayItem = {canUp: false, canDown: false, canDel: false};
 
 const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, type: string, value?: any) {
   // const x = schemaPart.x || ({} as FFSchemaExtensionType);
@@ -376,6 +381,7 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, type: string
   result.fData.required = schemaPart.required;
   result.fData.title = schemaPart.title;
   result.fData.placeholder = schemaPart.ff_placeholder;
+  result.fData.enum = getEnumOptions(schemaPart);
 
   if (isSchemaSelfManaged(schemaPart)) result.value = isUndefined(value) ? schemaPart.default : value;
   else delete result.value;
@@ -397,11 +403,6 @@ function makeDataMap(dataMap: FFDataMapGeneric<MapFunctionType>[], path: Path): 
   return dataMap.map((item) => {  // item is array where item[0] - from, item[1] - to
     return {emitter: path, from: item[0], to: item[1], fn: typeof item[2] == 'function' && item[2] || true} as DataMapStateType;
   })
-}
-
-
-function isPropRequired(schema: jsJsonSchema, path: Path) {
-  return !!(schema.type == 'object' && isArray(schema.required) && ~schema.required.indexOf(path[path.length - 1]))
 }
 
 function getUniqKey() {return Date.now().toString(36) + Math.random().toString(36) }
@@ -757,14 +758,10 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
         state = setDataMapInState(state, schema, getIn(state, path, SymDataMapTree, SymData) || [], true);
 
         let {state: branch, dataMap: maps2enable = [], defaultValues} = makeStateBranch(schema, oneOfStructure(state, path), path, item.setValue);
-        if (isSelfManaged(oldBranch) && isSelfManaged(branch)) {  // keep status values for self-managed branch
-          const {value, length, oneOf, fData, ...rest} = oldBranch[SymData];
-          branch = merge(branch, makeSlice(SymData, {...rest}));
-        } else {
-          const {value, length, oneOf, fData, status, ...rest} = oldBranch[SymData];
-          branch = merge(branch, makeSlice(SymData, {...rest}));
-        }
+        const {value: v1, length: v2, oneOf: v3, fData: v4, ...previousBranchData} = oldBranch[SymData]; // remove data that should be replaced by new branch
+        if (!isSelfManaged(oldBranch) || !isSelfManaged(branch)) delete previousBranchData.status; // keep status values only for self-managed branch, that keeps to be self-managed
 
+        branch = merge(branch, {[SymData]: previousBranchData}, {arrays: 'replace'});
         if (path.length) {
           const topPath = path.slice();
           const field = topPath.pop();
@@ -777,7 +774,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
           arrayOfRequired = isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
           if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {fData: {required: true}});
         }
-        
+
         state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});
         state = setDataMapInState(state, schema, maps2enable);
         state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], push2array(['current'], path), defaultValues, true));
@@ -983,7 +980,7 @@ function getBindedValue(obj: any, valueName: string) {
 //     value = rest[1];
 //   }
 //   updateItem = makePathItem(path);
-//   if (keyPath) updateItem.keyPath = isArray(keyPath) ? keyPath : string2path(keyPath);
+//   if (keyPath) updateItem.keyPath = _isArray(keyPath) ? keyPath : string2path(keyPath);
 //   (updateItem as NormalizedUpdateType).value = value;
 //   return updateItem as NormalizedUpdateType;
 // }
@@ -1027,7 +1024,7 @@ function getBindedValue(obj: any, valueName: string) {
 //     } else if (typeof value == 'function') {
 //       result.forEach(pathPart => {
 //         let tmp = value(pathPart);
-//         if (!isArray(tmp)) tmp = [tmp];
+//         if (!_isArray(tmp)) tmp = [tmp];
 //         tmp.forEach((tmpVal: string | number | false) => tmpVal === false ? false : tmpVal.toString().split(',').forEach(key => res.push(pathPart.concat(key))))
 //       });
 //     } else throw new Error('not allowed type');
@@ -1190,14 +1187,14 @@ function objMap(obj: any, fn: Function, symbol = false) {
 
 // function objKeysMap(obj: any, fn: Function, symbol = false) {
 //   if (!isMergeable(obj)) return obj;
-//   const result = isArray(obj) ? [] : {};
+//   const result = _isArray(obj) ? [] : {};
 //   (symbol ? objKeys : objKeysNSymb)(obj).forEach(key => result[fn(key)] = obj[key]);
 //   return result;
 // };
 
 // function without(obj: {}, symbol = false, ...rest: any[]) {
 //   //const args = arrFrom(rest); // [].slice.call(arguments);
-//   const result = isArray(obj) ? [] : {};
+//   const result = _isArray(obj) ? [] : {};
 //   const fn = symbol ? objKeys : objKeysNSymb;
 //   fn(obj).forEach(key => {
 //     if (!~rest.indexOf(key)) result[key] = obj[key]
@@ -1222,7 +1219,7 @@ function objMap(obj: any, fn: Function, symbol = false) {
 //
 // function replaceDeep(obj: any, value: any) {
 //   if (!isMergeable(obj)) return value;
-//   const result = isArray(obj) ? [] : {};
+//   const result = _isArray(obj) ? [] : {};
 //   objKeys(obj).forEach(field => result[field] = replaceDeep(obj[field], value));
 //   return result;
 // }

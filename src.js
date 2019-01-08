@@ -575,9 +575,9 @@ var SectionWidget = function (_react_1$Component) {
         value: function render() {
             var _a = this[__$_43__] ,
                 Widget = _a[__$_8__] ,
-                getDataProps = _a.getDataProps,
+                getDataProps = _a._getMappedData,
                 wid = _a.wid,
-                rest = __rest(_a, ["widget", "getDataProps", "wid"]);
+                rest = __rest(_a, ["widget", "_getMappedData", "wid"]);
             var dataMaped = getDataProps()[wid] || {};
             return React[__$_0__] (Widget, __assign({}, rest, dataMaped));
         }

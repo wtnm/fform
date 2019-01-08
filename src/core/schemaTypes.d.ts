@@ -58,7 +58,6 @@ interface JsonSchemaGeneric<T> {
   type?: JsonSchemaTypes | JsonSchemaTypes[];
   // Enumerates the values that this schema can be  e.g. {"type": "string",   "enum": ["red", "green", "blue"]}
   'enum'?: any[];
-  'enumNames'?: any[];
   // Combining Schemas
   allOf?: T[];
   anyOf?: T[];
@@ -92,7 +91,8 @@ interface FFCommonSchemaType {
   ff_data?: { [key: string]: any } | { [key: number]: any };
   ff_preset?: string; // presets for rendering components
   ff_custom?: FFCustomizeType; // components customization
-  ff_layout?: FFLayoutGeneric<FFCustomizeType>; // fields order and object/group extenion  
+  ff_layout?: FFLayoutGeneric<FFCustomizeType>; // fields order and object/group extenion
+  ff_enumExten?: Array<undefined | string | object>; // enum extension value taken from enum, string turn to label
 }
 
 type FFDataMapGeneric<FN> = [string, string, FN] | [string, string]

@@ -582,9 +582,9 @@ var SectionWidget = function (_react_1$Component) {
         value: function render() {
             var _a = this.props,
                 Widget = _a.widget,
-                getDataProps = _a.getDataProps,
+                getDataProps = _a._getMappedData,
                 wid = _a.wid,
-                rest = __rest(_a, ["widget", "getDataProps", "wid"]);
+                rest = __rest(_a, ["widget", "_getMappedData", "wid"]);
             var dataMaped = getDataProps()[wid] || {};
             return React.createElement(Widget, __assign({}, rest, dataMaped));
         }
@@ -769,7 +769,7 @@ var Section = function (_react_1$Component2) {
             var length = 0;
             if (schemaPart.type == 'array') {
                 if (!self.focusField) self._focusField = '0';
-                // self.isArray = true;
+                // self._isArray = true;
                 // self.arrayAddable = !(schemaPart.additionalItems === false);
                 length = props.length; // getValue(getSingle(path.concat(SymData, 'length'))) || 0;
                 arrayStartIndex = getSingle(path.concat(SymbolData, 'array', 'arrayStartIndex'));
@@ -2189,7 +2189,7 @@ function formReducer(name) {
     //   for (let i = 0; i < hooks.length; i++) {
     //     let res = hooks[i](mainItem, state, data, utils, hookType);
     //     if (!res) return false;
-    //     if (isArray(res)) res = {result: true, changes: {afterThis: res}};
+    //     if (_isArray(res)) res = {result: true, changes: {afterThis: res}};
     //     if (res.changes) {
     //       for (let j = 0; j < changesHookNames.length; j++) {
     //         let name = changesHookNames[j];
@@ -2436,7 +2436,7 @@ function apiCreator(dispath, getState, setState, keyMap, hooks, JSONValidator, s
         });
         arrayValues['current'] = getIn(api.getValues(true), path);
         // console.log('getValues', arrayValues['current']);
-        // if (!isArray(array)) return;
+        // if (!_isArray(array)) return;
         for (var i = Math.min(from, to); i <= Math.max(from, to); i++) {
             delStateObject[i] = SymbolDelete;
             stateObject[i] = getIn(state, path.concat(i));
@@ -3373,7 +3373,7 @@ function replaceDeep(obj, value) {
 //   if (path.length == 0) return value;
 //   let keys: any = path[0];
 //   if (typeof keys === 'function') keys = keys(path, track);
-//   if (!isArray(keys)) keys = [keys];
+//   if (!_isArray(keys)) keys = [keys];
 //   let result = {};
 //   keys.forEach((key: string | number) => {
 //     let newTrack = track.slice();
@@ -3388,7 +3388,7 @@ function replaceDeep(obj, value) {
 //   else {
 //     let keys: any = path[0];
 //     if (typeof keys === 'function') keys = keys(store, path, track);
-//     if (!isArray(keys)) keys = [keys];
+//     if (!_isArray(keys)) keys = [keys];
 //     let result = {};
 //     keys.forEach((key: string | number) => {
 //       let newTrack = track.slice();
@@ -3440,7 +3440,7 @@ function replaceDeep(obj, value) {
 //   function recursivelySetValues(cur: any, prop = '') {
 //     if (Object(cur) !== cur) {
 //       result[prop] = cur;
-//     } else if (isArray(cur)) {
+//     } else if (_isArray(cur)) {
 //       if (!cur.length) result[prop] = [];
 //
 //       cur.forEach((item, i) => {
@@ -3466,16 +3466,16 @@ function replaceDeep(obj, value) {
 // }
 //
 // function del(state: any, symbol = false) { // remove undefined values and empty objects or arrays
-//   let result: any, isArray: boolean;
+//   let result: any, _isArray: boolean;
 //   if (state === undefined) result = undefined;
-//   else if (isArray(state) || isObject(state)) {
-//     isArray = isArray(state);
-//     result = isArray ? [] : {};
+//   else if (_isArray(state) || isObject(state)) {
+//     _isArray = _isArray(state);
+//     result = _isArray ? [] : {};
 //     const fn = symbol ? objKeys : objKeysNSymb;
 //     fn(state).forEach(key => {
 //       let val = del(state[key]);
 //       if (val !== undefined) {
-//         if (isArray) result.push(val); else result[key] = val;
+//         if (_isArray) result.push(val); else result[key] = val;
 //       }
 //     });
 //     if (fn(result).length == 0) result = undefined;
@@ -3505,7 +3505,7 @@ function replaceDeep(obj, value) {
  const merge: any = function () {
 
  function emptyTarget(val: any) {
- return isArray(val) ? [] : {}
+ return _isArray(val) ? [] : {}
  }
 
  function cloneIfNecessary(value: any, optionsArgument?: DeepmergeOptionsArgument) {
@@ -3546,12 +3546,12 @@ function replaceDeep(obj, value) {
  }
 
  const deepmerge: any = function (target: any, source: any, optionsArgument?: DeepmergeOptionsArgument) {
- const array = isArray(source);
+ const array = _isArray(source);
  const options = optionsArgument || {arrayMerge: defaultArrayMerge};
  const arrayMerge = options.arrayMerge || defaultArrayMerge;
 
  if (array) {
- return isArray(target) ? arrayMerge(target, source, optionsArgument) : cloneIfNecessary(source, optionsArgument)
+ return _isArray(target) ? arrayMerge(target, source, optionsArgument) : cloneIfNecessary(source, optionsArgument)
  } else {
  return mergeObject(target, source, optionsArgument)
  }
