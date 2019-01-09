@@ -92,11 +92,11 @@ types.boolean = function (name) {
 }
 
 types.array = function (name) {
-  return 'Array._isArray(' + name + ')'
+  return 'Array.isArray(' + name + ')'
 }
 
 types.object = function (name) {
-  return 'typeof ' + name + ' === "object" && ' + name + ' && !Array._isArray(' + name + ')'
+  return 'typeof ' + name + ' === "object" && ' + name + ' && !Array.isArray(' + name + ')'
 }
 
 types.number = function (name) {

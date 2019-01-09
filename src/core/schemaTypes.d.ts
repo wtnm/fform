@@ -67,6 +67,9 @@ interface JsonSchemaGeneric<T> {
 }
 
 type JsonSchemaTypes = 'string' | 'number' | 'object' | 'array' | 'boolean' | 'null';
+type JsonAny = anyObject | string | object | undefined | boolean | number | null;
+
+
 
 interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaType {
   ff_compiled: boolean;
@@ -97,7 +100,7 @@ interface FFCommonSchemaType {
 
 type FFDataMapGeneric<FN> = [string, string, FN] | [string, string]
 
-type PropsMapGeneric<FN> = { [key: string]: false | string | [string, FN] }
+type PropsMapGeneric<FN> = { [key: string]: false | string | [FN, ...JsonAny[]] | { $: FN, args: JsonAny[] } }
 
 type FFLayoutGeneric<T> = T & {
   $fields?: Array<string | FFLayoutGeneric<T>>,
@@ -109,12 +112,12 @@ interface FFCustomizeType {
   $_ref?: string;
   $reactRef?: string | boolean;
 
-  [key: string]: string | object | undefined | boolean | number | null;
+  [key: string]: JsonAny;
 }
 
 interface jsFFCustomizeType {
   _$widget?: Function,
-  $propsMap?: PropsMapGeneric<MapFunctionType>;
+  $propsMap?: PropsMapGeneric<Function>;
   $reactRef?: string | boolean;
 
   [key: string]: any;

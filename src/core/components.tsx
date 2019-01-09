@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component, PureComponent} from 'react';
-import {asNumber, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, makeSlice, merge, mergeState, objKeys, push2array, memoize} from "./commonLib";
+import {asNumber, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, isFunction, makeSlice, merge, mergeState, objKeys, push2array, memoize, objKeysNSymb} from "./commonLib";
 import {
   arrayStart,
   getBindedValue,
@@ -16,7 +16,8 @@ import {
   objMap,
   setUPDATABLE,
   mergeStatePROCEDURE,
-  branchKeys
+  branchKeys,
+  isNPath
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver} from './api'
 import Timeout = NodeJS.Timeout;
@@ -178,7 +179,7 @@ class FField extends Component<any, any> {
     self._apiWrapper();
     const branch = self.api.get(self.path);
     self.state = {branch};
-    self._selfBind = self._selfBind.bind(self);
+    self._bind2self = self._bind2self.bind(self);
     self._setRef = self._setRef.bind(self);
     self._build();
   }
@@ -245,10 +246,17 @@ class FField extends Component<any, any> {
     ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
   }
 
-  _selfBind(fncs: any) {
-    if (typeof fncs == 'function') return fncs.bind(this);
-    if (fncs === true) return this;
-    return objMap(fncs, this._selfBind);
+  _bind2self(obj: any) {
+    // if (typeof fncs == 'function') return fncs.bind(this);
+    //     // if (fncs === true) return this;
+    //     // return objMap(fncs, this._bind2self);
+
+    const result = isArray(obj) ? [] : {};
+    objKeys(obj).forEach(key => {
+      if (typeof obj[key] == 'function') result[key] = obj[key].bind(this, ...(isArray(obj[key + '.bind']) ? obj[key + '.bind'] : []));
+      else if (isMergeable(obj[key])) result[key] = this._bind2self(obj[key])
+    });
+    return result
   }
 
   _setRef(block: string) {
@@ -271,9 +279,9 @@ class FField extends Component<any, any> {
 
     self._isNotSelfManaged = !isSchemaSelfManaged(schemaPart) || undefined;
     const components = resolveComponents(self.api.props.objects, schemaPart.ff_custom, schemaPart.ff_preset);
-    self._ff_components = components[SymData] ? merge(components, self._selfBind(components[SymData])) : components;
+    self._ff_components = components[SymData] ? merge(components, self._bind2self(components[SymData])) : components;
     const ff_layout = resolveComponents(self.api.props.objects, schemaPart.ff_layout);
-    self.ff_layout = ff_layout[SymData] ? merge(ff_layout, self._selfBind(ff_layout[SymData])) : ff_layout;
+    self.ff_layout = ff_layout[SymData] ? merge(ff_layout, self._bind2self(ff_layout[SymData])) : ff_layout;
 
     // self._enumOptions = getEnumOptions(schemaPart);
     self._widgets = {};
@@ -297,7 +305,7 @@ class FField extends Component<any, any> {
     const self = this;
     let _widgets = self._widgets;
     _widgets = merge(_widgets, {Array: data.fData.type == 'array' ? getIn(self._ff_components, 'Array', '_$widget') : false});
-    _widgets = merge(_widgets, {ArrayItem: data.ArrayItem ? getIn(self._ff_components, 'ArrayItem', '_$widget') : false});
+    // _widgets = merge(_widgets, {ArrayItem: data.ArrayItem ? getIn(self._ff_components, 'ArrayItem', '_$widget') : false});
     if (self._widgets !== _widgets) {
       self._widgets = _widgets;
       return true
@@ -583,42 +591,21 @@ class FSection extends Component<any, any> {
 //  Basic components
 /////////////////////////////////////////////
 
-function FBuilder(props: any) {
-  const {mapped, widgets} = props;
-  const {Title, Body, Main, Message, GroupBlocks, ArrayItem, Array, Autosize} = widgets;
+class GenericWidget extends PureComponent<any, any> {
+  private _saved: any;
+  private _mapped: any[];
 
-  let result = (
-    <GroupBlocks {...mapped['GroupBlocks']}>
-      <Title {...mapped['Title']}/>
-      <Body {...mapped['Body']}>
-      <Main {...mapped['Main']}/>
-      <Message {...mapped['Message']}/>
-      {Autosize ? <Autosize {...mapped['Autosize']}/> : ''}
-      </Body>
-    </GroupBlocks>
-  );
-  if (Array) result = <Array {...mapped['Array']}>{result}</Array>;
-  if (ArrayItem) result = <ArrayItem  {...mapped['ArrayItem']}>{result}</ArrayItem>;
-  return result;
-}
-
-
-function Unsupported(props: any) {return <div>Unsupported</div>}
-
-
-function ArrayBlock(props: any) {
-  const {useTag: UseTag = 'div', empty, AddButton, length, canAdd, children, $cx, className, ...rest} = props;
-  const {_$widget: Empty = 'div', ...emptyRest} = empty;
-  const {_$widget: AddButtonW = 'button', onClick, ...addButtonRest} = AddButton;
-  if (length) return (<UseTag className={$cx ? $cx(className) : className} {...rest}>{children}{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</UseTag>);
-  else return (<UseTag className={$cx ? $cx(className) : className} {...rest}><Empty {...emptyRest}>{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</Empty></UseTag>);
-}
-
-
-function GenericBlock(props: any) {
-  const {useTag: UseTag = 'div', children, $cx, className, ...rest} = props;
-  //if (hidden) rest.style = merge(rest.style || {}, hiddenStyle ? hiddenStyle : {display: 'none'});// merge(rest.style || {}, {display: 'none'});
-  return (<UseTag className={$cx ? $cx(className) : className} {...rest}>{children}</UseTag>)
+  render() {
+    if (this.props.norender) return null;
+    const {useTag: UseTag = 'div', $cx, className, children, ...rest} = this.props;
+    if (children !== this._saved) {
+      const pSaved = isArray(this._saved) ? this._saved : [this._saved];
+      this._saved = children;
+      const nSaved = isArray(this._saved) ? this._saved : [this._saved];
+      this._mapped = nSaved.map((ch: any, i: number) => isObject(ch) ? (pSaved[i] !== nSaved[i] ? new GenericWidget(ch) : this._mapped[i]) : ch);
+    }
+    return (<UseTag children={this._mapped} className={$cx ? $cx(className) : className} {...rest} />)
+  }
 }
 
 
@@ -642,15 +629,43 @@ class AutosizeBlock extends PureComponent<any, any> {
   }
 }
 
+function FBuilder(props: any) {
+  const {mapped, widgets} = props;
+  const {Title, Body, Main, Message, Wrapper, ArrayItem, Array, Autosize} = widgets;
 
-function TitleBlock(props: any) {
-  const {id, title = '', required, useTag: UseTag = 'label', requireSymbol = '*', $cx, className, ...rest} = props;
-  return (
-    <UseTag {...(UseTag == 'label' && id ? {htmlFor: id} : {})} className={$cx ? $cx(className) : className} {...rest}>
-      {isString(title) && required ? title + requireSymbol : title}
-    </UseTag>
+  let result = (
+    <Wrapper {...mapped['Wrapper']}>
+      {Title ? <Title {...mapped['Title']}/> : ''}
+      <Body {...mapped['Body']}>
+      <Main {...mapped['Main']}/>
+      {Message ? <Message {...mapped['Message']}/> : ''}
+      {Autosize ? <Autosize {...mapped['Autosize']}/> : ''}
+      </Body>
+    </Wrapper>
   );
+  if (Array) result = <Array {...mapped['Array']}>{result}</Array>;
+  // if (ArrayItem) result = <ArrayItem  {...mapped['ArrayItem']}>{result}</ArrayItem>;
+  return result;
 }
+
+
+function ArrayWidget(props: any) {
+  const {useTag: UseTag = 'div', Empty, AddButton, length, canAdd, children, $cx, className, ...rest} = props;
+  const {_$widget: EmptyW = 'div', ...emptyRest} = Empty;
+  const {_$widget: AddButtonW = 'button', onClick, ...addButtonRest} = AddButton;
+  if (length) return (<UseTag className={$cx ? $cx(className) : className} {...rest}>{children}{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</UseTag>);
+  else return (<UseTag className={$cx ? $cx(className) : className} {...rest}><EmptyW {...emptyRest}>{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</EmptyW></UseTag>);
+}
+
+
+// function TitleBlock(props: any) {
+//   const {title = '', required, useTag: UseTag = 'label', requireSymbol = '*', $cx, className, ...rest} = props;
+//   return (
+//     <UseTag {...(UseTag == 'label' && rest.id ? {htmlFor: rest.id} : {})} className={$cx ? $cx(className) : className} {...rest}>
+//       {isString(title) && required ? title + requireSymbol : title}
+//     </UseTag>
+//   );
+// }
 
 
 function BaseInput(props: any) {
@@ -795,73 +810,54 @@ function CheckboxInput(props: any) {
   return <label {...labelProps}><BaseInput {...rest}/><span>{props.title}</span></label>;
 }
 
-function MessageBlock(props: any) {
-  const {useTag: UseTag = 'div', MessageItem, messages = {}, untouched, ...rest} = props;
-  const {widget: MessageItemW, ...restMessageItem} = MessageItem;
-  let keys = objKeys(messages);
-  const result: any[] = [];
-  keys.sort((a, b) => parseFloat(a) - parseFloat(b));
-  keys.forEach((key) => result.push(key == '0' && untouched ? null : <MessageItemW key={key} {...messages[key]} {...restMessageItem} />));
-  return <UseTag {...rest}>{result}</UseTag>;
-}
 
+function MessagesWidget(props: any) {
+  const {useTag: UseTag = 'div', MessageItem, messages = {}, $cx = classNames, className, ...rest} = props;
+  const {_$widget: MIW, ...restMI} = MessageItem;
+  let keys = objKeys(messages);
+  keys.sort((a, b) => parseFloat(a) - parseFloat(b));
+  return <UseTag className={$cx(className)} {...rest}>{keys.map(key => <MIW key={key} $cx={$cx} messageData={messages[key]} {...restMI} />)}</UseTag>;
+}
 
 function MessageItem(props: any) {
-  const {useTag: UseTag = 'div', skip, textGroups, priority, className, $cx, ...rest} = props;
+  const {useTag: UseTag = 'div', messageData, $cx = classNames, className, ...rest} = props;
+  const {priority, norender, textGroups, className: groupCN, ...restMG} = messageData;
   const texts: any[] = [];
   objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey]));
-  if (skip || !texts.length) return null;
-  return <UseTag className={$cx ? $cx(className) : className} {...rest}>{texts.join('<br/>')}</UseTag>
+  if (norender || !texts.length) return null;
+  return <UseTag className={$cx(className, groupCN, 'priority_' + priority)} {...rest} {...restMG}>{texts.join('<br/>')}</UseTag>
 }
 
 
-function EmptyArray(props: any) {
-  const {useTag: UseTag = 'div', text = 'This array is empty.', ...rest} = props;
-  return <UseTag {...rest}>{text} {props.children}</UseTag>;
-}
-
-function ButtonWidget(props: any) {
-  const {useTag: UseTag = 'button', text = '', type = 'button', ...rest} = props;
-  return ((text as any) === false) ? false : <UseTag type={type} {...rest}>{text}</UseTag>;
+function WrapperWidget(props: any) {
+  let {useTag: Wrapper = 'div', children, $cx = classNames, className, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
+  const {_$widget: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
+  const {_$widget: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
+  if (arrayItem) {
+    return (
+      <Wrapper className={$cx ? $cx(className) : className} {...rest}>
+        <IBodyW className={$cx && $cx(IBodyCN)} {...IBodyRest} children={children}/>
+        <IMenuW className={$cx && $cx(IMenuCN)} {...IMenuRest}/>
+      </Wrapper>
+    )
+  } else return <Wrapper className={$cx ? $cx(className) : className} {...rest} children={children}/>
 }
 
 function ItemMenu(props: any) {
-  const {useTag: UseTag = 'div', buttonProps = {}, buttons, arrayItem, ...rest}: { [key: string]: any } = props;
-  if (!arrayItem) return false;
-  const {canUp, canDown, canDel} = arrayItem;
-  // const {path, pFForm} = $FField;
-  let {useTag: UseButtonTag = 'button', type = 'button', onClick, titles, ...restButton} = buttonProps;
-  const canChecks = {'first': canUp, 'last': canDown, 'up': canUp, 'down': canDown, 'del': canDel};
+  const {useTag: UseTag = 'div', $cx = classNames, className, buttonsProps = {}, buttons, onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
+  // if (!arrayItem) return false;
+  // const {canUp, canDown, canDel} = arrayItem;
+  // const canChecks = {'first': canUp, 'last': canDown, 'up': canUp, 'down': canDown, 'del': canDel};
   buttons.forEach((key: string) => delete rest[key]);
   return (
-    <UseTag {...rest}>
+    <UseTag className={$cx ? $cx(className) : className} {...rest}>
       {buttons.map((key: string) => {
-        let KeyWidget = props[key];
-        if (KeyWidget === false || isUndefined(canChecks[key])) return '';
-        return (
-          <UseButtonTag key={key} type={type} title={titles && titles[key] ? titles[key] : key} data-bType={key} disabled={!canChecks[key]} {...restButton} onClick={() => onClick(key)}>
-            {typeof KeyWidget === 'function' ? <KeyWidget/> : KeyWidget || key}
-          </UseButtonTag>
-        )
+        const {_$widget: ButW = 'button', type = 'button', className: ButCN = {}, onClick = defaultOnClick, ...restBut} = buttonsProps[key] || {};
+        return (<ButW key={key} type={type} className={$cx ? $cx(ButCN) : ButCN}  {...restBut} onClick={() => onClick(key)}/>)
       })}
     </UseTag>);
 }
 
-function ArrayItem(props: any) {
-  if (!props.arrayItem) return React.Children.only(props.children);
-  let {useTag: ItemW = 'div', children, $cx, className, ItemMenu, ItemBody, ...rest} = props;
-  //const {_$widget: ItemW = 'div', className: itemCN = {}, ...itemRest} = ItemMain || {};
-  const {_$widget: ItemBodyW = 'div', className: ItemBodyCN = {}, ...itemBodyRest} = ItemBody || {};
-  const {_$widget: ItemMenuW = 'div', className: ItemMenuCN = {}, ...itemMenuRest} = ItemMenu || {};
-  return (
-    <ItemW className={$cx ? $cx(className) : className} {...rest}>
-      <ItemBodyW className={$cx && $cx(ItemBodyCN)} {...itemBodyRest}>
-        {React.Children.only(children)}
-      </ItemBodyW>
-      <ItemMenuW className={$cx && $cx(ItemMenuCN)} {...itemMenuRest} />
-    </ItemW>
-  )
-}
 
 function TristateBox(props: any) {
   const self = this;
@@ -887,9 +883,12 @@ const resolveComponents = memoize((fformObjects: formObjectsType, customizeField
 });
 
 function splitMaps($propsMap: any) {
-  const map$ = {};
   const map = {};
-  objKeys($propsMap).forEach(key => (key[0] == '$' && map$ || map)[key] = $propsMap[key]);
+  const map$ = {};
+  objKeys($propsMap).forEach(key => {
+    if (isObject($propsMap[key])) map$[key] = $propsMap[key];
+    else map[key] = isArray($propsMap[key]) ? [$propsMap[0], $propsMap.slice(1).map((arg: any) => isString(arg) && arg[0] == '@' ? normalizePath(arg.substr(1)) : arg)] : normalizePath($propsMap[key]);
+  });
   return {map, map$}
 }
 
@@ -904,97 +903,18 @@ function updateProps(prevMappedData: any, iterMaps: any, newData: any) {
 }
 
 
-function mapProps(map: FFDataMapGeneric<MapFunctionType>, data: FFieldDataType) {
+function mapProps(map: PropsMapGeneric<MapFunctionType>, data: FFieldDataType) {
   const result = {update: {}, replace: {}};
   if (!map) return result;
+  const getFromData = (arg: any) => isNPath(arg) ? getIn(data, arg) : arg;
   objKeys(map).filter(key => map[key]).forEach((to) => {
     let item: any = map[to];
-    if (!isArray(item)) item = [item];
-    const value = item[0][0] == '$' ? item[1]() : item[1] && item[1](getIn(data, normalizePath(item[0]))) || getIn(data, normalizePath(item[0]));
+    const value = isObject(item) ? item.$(...item.args) : (isNPath(item) ? getFromData(item) : item[0](item[1].map(getFromData)));
     setUPDATABLE(result, value, true, normalizePath(to));
   });
   return result;
 }
 
-// function replaceWidgetNamesWithFunctions(presetArrays: any, objects: any) {
-//   let tmp = presetArrays;
-//   if (!_isArray(tmp)) tmp = [tmp];
-//   for (let i = 0; i < tmp.length; i++) {
-//     let presetArray = tmp[i];
-//     let widget = presetArray.widget;
-//     if (widget) presetArray.widget = typeof widget === 'string' ? objects.widgets && objects.widgets[widget] || widget : widget;
-//     objKeys(presetArray).forEach(key => isObject(presetArray[key]) && (presetArray[key] = replaceWidgetNamesWithFunctions(presetArray[key], objects)))
-//   }
-//   return presetArrays
-// }
-// function getFieldBlocks(presetsString: string | string[], objects: any = {}, schemaPart: any = {}, initalFuncsObject: any = {}, object2bind: any = {}) {
-//
-//   function chainMethods(result: any, initalFuncs: any, track: string[] = []) {// initalFuncs is function than should allways at the begginig of chain (the last in execution order)
-//     methods2chain.forEach((methodName: string) => {
-//       let methods = getArrayOfPropsFromArrayOfObjects(presetArray, track.concat(methodName));
-//       let methods_rev = getArrayOfPropsFromArrayOfObjects(presetArray, track.concat('$' + methodName)); // methotds that begins with '$' will be chained in reverse order
-//       let prevMethod = initalFuncs && initalFuncs[methodName];
-//       if (prevMethod) push2array(methods_rev, prevMethod);
-//       // console.log('methods 1:',methods);
-//       methods_rev.reverse();
-//       methods = methods_rev.concat(methods);
-//       // console.log('methods 2:',methods);
-//       let chainWidgets = getArrayOfPropsFromArrayOfObjects(presetArray, track.concat('widget'));
-//       if (chainWidgets.length) chains = merge(chains, makeSlice('widgets', track, chainWidgets));
-//       if (methods.length) chains = merge(chains, makeSlice('funcs', track, methodName, methods.slice()));
-//       if (!methods.length) return;
-//       for (let i = prevMethod ? 1 : 0; i < methods.length; i++) {
-//         let bindObj = {...object2bind};
-//         if (prevMethod) bindObj[methodName] = prevMethod;
-//         methods[i] = methods[i].bind(bindObj);
-//         prevMethod = methods[i]
-//       }
-//       result = merge(result, makeSlice(methodName, methods.pop()));
-//       result = merge(result, makeSlice('$' + methodName, SymDelete), {del: true});
-//     });
-//     objKeys(result).forEach(key => {
-//       if (key[0] !== '_' && isObject(result[key])) { // skip keys that begins with '_'
-//         let keyRes: any = chainMethods(result[key], initalFuncs && initalFuncs[key], track.concat(key));
-//         result = merge(result, makeSlice(key, keyRes))
-//       }
-//     });
-//     return result;
-//   }
-//
-//   let presets = objects['presets'] || {};
-//   let methods2chain = objKeys(objects.methods2chain).filter(key => objects.methods2chain[key]); //get methods than should be chained as array of strings
-//   let chains = {methods2chain};
-//   let presetArray: any = [];  // here we will push all presets than should be merged in one
-//   let presetNames = _isArray(presetsString) ? presetsString : presetsString.split(':');
-//   presetNames.reverse();
-//   presetNames.forEach(presetName => {
-//     while (true) {
-//       let preset = getIn(presetName[0] == '#' ? schemaPart.ff_custom : presets, string2path(presetName)); // if preset name begins with '#', like '#smthng' look for it in x['custom'], not in presets
-//       if (preset) {
-//         presetArray.push(preset);
-//         if (!preset['_']) break;  // '_' - is parent for this preset
-//         presetName = preset['_'];
-//       } else break;
-//     }
-//   });
-//   if (presets['*']) presetArray.push(presets['*']); // this will be first after reverse
-//   presetArray.reverse();  // reverse to get proper order
-//   if (schemaPart.ff_custom) presetArray.push(schemaPart.ff_custom); // and this is last, x['custom'] overwrite all
-//   presetArray.push({'_': undefined}); // remove '_' key as we don't want it to be in 'result'
-//   presetArray = replaceWidgetNamesWithFunctions(presetArray, objects);  // Now if we have props with key 'widget' wich value is not function, replace it from objects['widget']
-//   let result = merge.all({}, presetArray, {del: true});
-//   result = chainMethods(result, initalFuncsObject); // merge in one object, remove undefined values, and make chains for methods that listed in objects.methods2chain with true value
-//   return {result, chains, presetArray};
-// }
-//
-// function getArrayOfPropsFromArrayOfObjects(arr: any, propPath: string | Path) {
-//   propPath = normalizePath(propPath);
-//   for (let i = (propPath[0] == '#' ? 1 : 0); i < propPath.length; i++) {
-//     arr = arr.filter((item: any) => item.hasOwnProperty(propPath[i])).map((item: any) => item[propPath[i]]);
-//     if (!arr.length) break;
-//   }
-//   return arr
-// }
 
 function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: string]: string } } = {}) { //skipFields: string[] = [], replaceFields: { [key: string]: string } = {}) {
   const skipFields = opts.skipFields || [];
@@ -1044,19 +964,16 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   //   'onBlur': true, 'onMouseOver': true, 'onMouseEnter': true, 'onMouseLeave': true, 'onChange': true, 'onSelect': true, 'onClick': true, 'onSubmit': true, 'onFocus': true, 'onUnload': true, 'onLoad': true
   // },
   widgets: {
+    Generic: GenericWidget,
     Builder: FBuilder,
-    Array: ArrayBlock,
-    ArrayItem: ArrayItem,
-    EmptyArray: EmptyArray,
-    Button: ButtonWidget,
+    Array: ArrayWidget,
+    Wrapper: WrapperWidget,
     ItemMenu: ItemMenu,
-    Title: TitleBlock,
-    Messages: MessageBlock,
+    Messages: MessagesWidget,
     MessageItem: MessageItem,
     BaseInput: BaseInput,
     CheckboxInput: CheckboxInput,
     ArrayInput: ArrayInput,
-    GenericBlock: GenericBlock,
     TristateBox: TristateBox,
     FSection: FSection,
     Autosize: AutosizeBlock,
@@ -1068,52 +985,61 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
 
       Array: {
         _$widget: '%/widgets/Array',
-        empty: {_$widget: '%/widgets/EmptyArray'},
-        AddButton: '%/parts/ArrayAddButton',
+        $cx: '%/$cx',
+        Empty: {
+          _$widget: '%/widgets/Generic',
+          children: 'This array is empty'
+        },
+        AddButton: {
+          $_ref: '%/parts/ArrayAddButton'
+        },
         $propsMap: {
-          length: 'length',
-          canAdd: 'fData/canAdd',
-          'className/hidden': ['params/hidden', '%/funcs/hidden4Array'],
+          length: '@/length',
+          canAdd: '@/fData/canAdd',
         },
       },
-      ArrayItem: {
-        _$widget: '%/widgets/ArrayItem',
-        ItemMenu: '%/parts/ArrayItemMenu',
-        $propsMap: {
-          arrayItem: 'arrayItem',
-          'className/hidden': 'params/hidden',
+      Wrapper: {
+        _$widget: '%/widgets/Wrapper',
+        ArrayItemMenu: {
+          $_ref: '%/parts/ArrayItemMenu'
         },
-        $cx: '%/$cx'
+        $cx: '%/$cx',
+        $propsMap: {
+          'arrayItem': ['%/funcs/bool', '@/arrayItem'],
+          'className/hidden': 'params/hidden',
+          'ArrayItemMenu/buttonProps/canUp,first/disabled': ['%/funcs/not', '@/arrayItem/canUp'],
+          'ArrayItemMenu/buttonProps/canDown,last/disabled': ['%/funcs/not', '@/arrayItem/canDown'],
+          'ArrayItemMenu/buttonProps/canDel/disabled': ['%/funcs/not', '@/arrayItem/canDel'],
+        }
       },
       Builder: {
         _$widget: '%/widgets/Builder',
+        $cx: '%/$cx',
         $propsMap: {
-          'className/hidden': ['params/hidden', '%/funcs/hidden4Builder'],
-          $widgets: ['widgets', '%/funcs/getWidgets'],
+          widgets: ['%/funcs/getFFieldProperty', '_widgets'],
         },
       },
-      GroupBlocks: {
-        _$widget: '%/widgets/GenericBlock',
-        className: 'fform-layout-block',
-      },
       Body: {
-        _$widget: '%/widgets/GenericBlock',
-        className: 'fform-body-block',
+        _$widget: '%/widgets/Generic',
+        $cx: '%/$cx',
+        className: 'body',
       },
       Title: {
-        _$widget: '%/widgets/Title',
+        _$widget: '%/widgets/Generic',
         useTag: 'label',
-        requireSymbol: '*',
+        $cx: '%/$cx',
         $propsMap: {
-          required: 'fData/required',
-          title: 'fData/title',
+          'className/required': '@/fData/required',
+          children: '@/fData/title',
+          htmlFor: ['%/funcs/getFFieldProperty', 'id']
         },
       },
       Message: {
         _$widget: '%/widgets/Messages',
+        $cx: '%/$cx',
         $propsMap: {
-          messages: 'messages',
-          untouched: 'status/untouched',
+          messages: '@/messages',
+          untouched: '@/status/untouched',
         },
         MessageItem: {
           _$widget: '%/widgets/MessageItem',
@@ -1122,15 +1048,16 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Main: {
         _$widget: '%/widgets/BaseInput',
         $reactRef: 'getRef',
+        $cx: '%/$cx',
         $propsMap: {
-          priority: 'status/priority',
-          value: 'value',
-          autoFocus: 'params/autofocus',
-          placeholder: 'params/placeholder',
-          required: 'fData/required',
-          title: 'fData/title',
-          readOnly: 'params/readonly',
-          disabled: 'params/disabled',
+          priority: '@/status/priority',
+          value: '@/value',
+          autoFocus: '@/params/autofocus',
+          placeholder: '@/params/placeholder',
+          required: '@/fData/required',
+          title: '@/fData/title',
+          readOnly: '@/params/readonly',
+          disabled: '@/params/disabled',
         },
         onChange: '%/on/changeBasic',
         onBlur: '%/on/blurBasic',
@@ -1161,39 +1088,28 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     range: {$_ref: '%/presets/base', Main: {type: 'range'}},
     'null': {$_ref: '%/presets/base', Main: {type: 'hidden'}},
     hidden: {
-      $_ref: '%/presets/base',
       Builder: {
-        hidden: true,
-        $propsMap: {hidden: false}
-      }
-    },
-    booleanBase: {
-      $_ref: '%/presets/base',
-      Main: {
-        type: 'checkbox',
-        onChange: '%/on/changeBoolean'
+        className: {hidden: true},
+        $propsMap: {'className/hidden': false}
       }
     },
     boolean: {
-      $_ref: '%/presets/booleanBase',
-      Main: {
-        _$widget: '%/widgets/CheckboxInput',
-      },
-      Title: {emptyTitle: true},
-    },
-    tristateBase: {
       $_ref: '%/presets/base',
       Main: {
-        type: 'tristate',
-        useTag: '%/widgets/TristateBox'
-      }
+        _$widget: '%/widgets/CheckboxInput',
+        type: 'checkbox',
+        onChange: '%/on/changeBoolean'
+      },
+      Title: false,
     },
     tristate: {
-      $_ref: '%/presets/tristateBase',
+      $_ref: '%/presets/base',
       Main: {
         _$widget: '%/widgets/CheckboxInput',
+        type: 'tristate',
+        useTag: '%/widgets/TristateBox'
       },
-      Title: {emptyTitle: true},
+      Title: false,
     },
     object: {
       $_ref: '%/presets/base',
@@ -1201,6 +1117,9 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         _$widget: '%/widgets/FSection',
         $reactRef: true,
         uniqKey: 'arrayItem/uniqKey',
+        $cx: '%/$cx',
+        LayoutDefaultClass: 'layout',
+        LayoutDefaultWidget: 'div',
         $propsMap: {
           value: false,
           autoFocus: false,
@@ -1209,13 +1128,10 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           title: false,
           readOnly: false,
           disabled: false,
-          $FFormApi: ['$FField', '%/funcs/getFFormApi'],
-          $branch: ['$branch', '%/funcs/getBranch'],
-          $layout: ['$layout', '%/funcs/getLayout'],
-          arrayStart: ['fData/type', '%/funcs/getArrayStart'],
-          LayoutDefaultClass: 'layout',
-          LayoutDefaultWidget: 'div',
-          $cx: '%/$cx',
+          arrayStart: ['%/funcs/getArrayStart', '@/fData/type'],
+          FFormApi: ['%/funcs/getFFieldProperty', 'props/pFForm/api'],
+          $layout: ['%/funcs/getFFieldProperty', 'ff_layout'],
+          $branch: {'$': '%/funcs/getFFieldProperty', args: ['state/branch']},
         }
       },
       GroupBlocks: {useTag: 'fieldset'},
@@ -1243,7 +1159,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     checkboxes: {$_ref: '%/presets/arrayOf', Main: {type: 'checkbox'}, 'Array': false},
 
     inlineItems: {Main: {stackedProps: false}},
-    buttons: {Main: {inputProps: {className: 'button'}, labelProps: {className: 'button'}}},
+    buttons: {Main: {inputProps: {className: {'button': true}}, labelProps: {className: {'button': true}}}},
     //selector: {dataMap: [['./@/value', './', selectorOnChange(false)]]}, // {onChange: selectorOnChange(false)}},
     //tabs: {dataMap: [['./@/value', './', selectorOnChange(true)]]}, //{Main: {onChange: selectorOnChange(true)}},
     autosize: {
@@ -1265,17 +1181,15 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     bool: function (v: any) {return !!v},
     hidden4Array: function (hidden: any) {return !this._widgets['ArrayItem'] && !!hidden},
     hidden4Builder: function (hidden: any) {return !this._widgets['Array'] && !this._widgets['ArrayItem'] && !!hidden},
-    getFField: function () {return this},
-    getBranch: function () {return this.state.branch},
-    getLayout: function () {return this.ff_layout},
-    getFFormApi: function () {return this.props.pFForm.api},
-    getWidgets: function () {return this._widgets},
+    //getFField: function () {return this},
+    //getBranch: function () {return this.state.branch},
+    // getFFormApi: function () {return this.props.pFForm.api},
     getArrayStart: function (type: string) {return type == 'array' && arrayStart(this.schemaPart) || undefined},
-
+    getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
   },
   on: {
-    clickArrayAdd: function () {this.api.arrayAdd('./', 1)},
-    clickArrayItemOps: function (key: string) {this.api.arrayItemOps('./', key)},
+    clickArrayAdd: function (path: any) {this.api.arrayAdd(path, 1)},
+    clickArrayItemOps: function (path: any, key: string) {this.api.arrayItemOps(path, key)},
     changeBasic: function (event: any) {this.api.setValue(event.target.value, {})},
     changeString: function (event: any) {this.api.setValue(event.target.value, {})},
     changeInteger: function (event: any) {this.setValue(event.target.value == '' ? undefined : parseInt(event.target.value))},
@@ -1296,20 +1210,39 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         addWidth: 45,
         minWidth: 60,
         value: 'value',
-        placeholder: 'params/placeholder',
-        'className/hidden': 'params/hidden',
-        $FField: ['$FField', '%/funcs/getFField'],
+        placeholder: '@/params/placeholder',
+        'className/hidden': '@/params/hidden',
+        $FField: ['%/funcs/getFFieldProperty'],
       }
     },
+    Button: {
+      _$widget: '%/widgets/Generic',
+      useTag: 'button',
+      type: 'button',
+    },
     ArrayAddButton: {
-      _$widget: '%/widgets/Button',
-      text: 'Add new item',
-      onClick: '%/funcs/on/clickArrayAdd'
+      $_ref: '%/parts/Button',
+      children: 'Add new item',
+      onClick: '%/funcs/on/clickArrayAdd',
+      'onClick.bind': ['./']
     },
     ArrayItemMenu: {
       _$widget: '%/widgets/ItemMenu',
       buttons: ['first', 'last', 'up', 'down', 'del'],
-      buttonProps: {onClick: '%/funcs/on/clickArrayItemOps'}
+      onClick: '%/funcs/on/clickArrayItemOps',
+      'onClick.bind': ['./'],
+      buttonProps: {
+        $propsMap: {
+          'canUp,first/disabled': ['%/funcs/not', '@/arrayItem/canUp'],
+          'canDown,last/disabled': ['%/funcs/not', '@/arrayItem/canDown'],
+          'canDel/disabled': ['%/funcs/not', '@/arrayItem/canDel'],
+        }
+      },
+      // $propsMap: {
+      //   'buttonProps/canUp,first/disabled': ['%/funcs/not', '@/arrayItem/canUp'],
+      //   'buttonProps/canDown,last/disabled': ['%/funcs/not', '@/arrayItem/canDown'],
+      //   'buttonProps/canDel/disabled': ['%/funcs/not', '@/arrayItem/canDel'],
+      // }
     }
   },
   presetMap: {

@@ -1,5 +1,5 @@
-import {getCreateIn, setIn, hasIn, getIn, isEqual, isMergeable, isObject, makeSlice, memoize, merge, objKeysNSymb, push2array} from "./commonLib";
-import {objKeys, isArray, isUndefined, moveArrayElems} from "./commonLib";
+import {getCreateIn, setIn, hasIn, getIn, objKeys, moveArrayElems, makeSlice, memoize, merge, objKeysNSymb, push2array} from "./commonLib";
+import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject} from "./commonLib";
 import {number} from "prop-types";
 
 const SymData: any = Symbol.for('FFormData');
@@ -36,11 +36,11 @@ const types: any = {};
 types.any = () => true;
 types.null = (value: any) => value === null;
 types.boolean = (value: any) => typeof value === "boolean";
-types.array = (value: any) => isArray(value);
-types.object = (value: any) => typeof value === "object" && value && !isArray(value);// isObject(value);  //
-types.number = (value: any) => typeof value === "number";
-types.integer = (value: any) => typeof value === "number" && (Math.floor(value) === value || value > 9007199254740992 || value < -9007199254740992);
-types.string = (value: any) => typeof value === "string";
+types.array = isArray;
+types.object = isObject; //(value: any) => typeof value === "object" && value && !isArray(value);// isObject(value);  //
+types.number = isNumber;// (value: any) => typeof value === "number";
+types.integer = isInteger; //(value: any) => typeof value === "number" && (Math.floor(value) === value || value > 9007199254740992 || value < -9007199254740992);
+types.string = isString; //(value: any) => typeof value === "string";
 
 
 /////////////////////////////////////////////
@@ -1046,8 +1046,14 @@ function object2PathValues(vals: { [key: string]: any }, options: object2PathVal
   return result
 }
 
+function isNPath(path: any) {
+  return getIn(path, SymData) === 'nPath';
+}
+
 function normalizePath(path: string | Path, base: string | Path = []): Path {
-  return resolvePath(flattenPath(path), base.length ? flattenPath(base) : []);
+  let result = resolvePath(flattenPath(path), base.length ? flattenPath(base) : []);
+  result[SymData] = 'nPath';
+  return result;
 }
 
 function normalizeUpdate(update: StateApiUpdateType, state: StateType): NormalizedUpdateType[] {
@@ -1257,7 +1263,8 @@ export {
   normalizeUpdate,
   setIfNotDeeper,
   objMap,
-  setUPDATABLE
+  setUPDATABLE,
+  isNPath
 }
 
 export {SymData, SymReset, SymClear, SymDelete}

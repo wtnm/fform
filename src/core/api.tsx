@@ -675,10 +675,9 @@ function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boole
   const result = objectDerefer(_objects, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
-    const resolvedValue = isString(result[key]) && result[key][0] == '%' && result[key][1] == '/' ? getIn({'%': _objects}, string2path(result[key])) : result[key];
+    const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '%/' ? getIn({'%': _objects}, string2path(result[key])) : result[key];
     if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _
-    // else if (extract2SymData && key == '$FField' && resolvedValue) {
-    //   retResult[SymData][isString(resolvedValue) ? resolvedValue : key] = true;}
+    else if (extract2SymData && key.substr(-5) == '.bind') retResult[SymData][key] = resolvedValue; //&& result[key.substr(0, key.length - 5)]
     else if (isMergeable(result[key])) {
       retResult[key] = objectResolver(_objects, resolvedValue, extract2SymData);
       if (retResult[key][SymData]) retResult[SymData][key] = retResult[key][SymData];

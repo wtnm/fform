@@ -1,15 +1,28 @@
 import flatten from "../old/rrf/utils/flatten";
 
-const objKeys = Object.keys;
-const isArray = Array.isArray;
+
 const isUndefined = (value: any): value is undefined => typeof value === 'undefined';
+const isNumber = (value: any): value is number => typeof value === "number";
+const isInteger = (value: any) => typeof value === "number" && (Math.floor(value) === value || value > 9007199254740992 || value < -9007199254740992);
 const isString = (value: any): value is string => typeof value === 'string';
+const isArray = Array.isArray;
+const isObject = (value: any) => isMergeable(value) && !isArray(value);
+const isFunction = (value: any): value is Function => typeof value === 'function';
+
+function isMergeable(val: any) {
+  const nonNullObject = val && typeof val === 'object';
+  return nonNullObject
+    && Object.prototype.toString.call(val) !== '[object RegExp]'
+    && Object.prototype.toString.call(val) !== '[object Date]'
+}
+
+const objKeys = Object.keys;
+const objKeysNSymb = (obj: any): any[] => (objKeys(obj) as any[]).concat(Object.getOwnPropertySymbols(obj));
+
 
 const _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol"
   ? (obj: any) => typeof obj
-  : (obj: any) => obj && typeof Symbol === "function" && obj.constructor === Symbol
-    ? "symbol"
-    : typeof obj;
+  : (obj: any) => obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
 function is(x: any, y: any) {
@@ -48,15 +61,6 @@ function isEqual(objA: any, objB: any, options: IsEqualOptions = {}) {
   return true;
 }
 
-function objKeysNSymb(obj: any): Array<string> {
-  let result: any[] = objKeys(obj);
-  return result.concat(Object.getOwnPropertySymbols(obj))
-}
-
-function getSlice(store: any, path: PathSlice, track: PathSlice = []): StateType {
-  return makeSlice(path, getIn(store, path))
-}
-
 
 function asNumber(value: any) {
   if (value === "") return null;
@@ -67,6 +71,23 @@ function asNumber(value: any) {
   if (/\.\d*0$/.test(value)) return value; // It's a number, that's cool - but we need it as a string so it doesn't screw with the user when entering dollar amounts or other values (such as those with specific precision or number of significant digits)
   return valid ? n : value;
 }
+
+
+function memoize(fn: any) {
+  fn.cache = new Map();
+  return function (...args: any[]) {
+    let newArgs = [args.length].concat(args);
+    let cache = fn.cache;
+    let last = newArgs.pop();
+    for (let i = 0; i < newArgs.length; i++) {
+      cache.has(newArgs[i]) || cache.set(newArgs[i], new Map());
+      cache = cache.get(newArgs[i]);
+    }
+    if (!cache.has(last)) cache.set(last, fn.apply(this, args));
+    return cache.get(last);
+  };
+}
+
 
 function push2array(array: any[], ...vals: any[]): any {
   for (let i = 0; i < vals.length; i++) {
@@ -89,6 +110,10 @@ function moveArrayElems(arr: any, from: number, to: number): Array<any> {
   arr[to] = elem;
   return arr
 }
+
+//////////////////////////////
+//  object get/set functions
+/////////////////////////////
 
 function makeSlice(...pathValues: any[]): StateType {
   let path: any[] = [];
@@ -177,6 +202,16 @@ function getIn(state: any, ...paths: any[]): any {
   return res;
 };
 
+
+function getCreateIn(state: any, value: any, ...pathes: any[]) {
+  if (!hasIn(state, ...pathes)) setIn(state, value, ...pathes);
+  return getIn(state, ...pathes)
+}
+
+
+//////////////////////////////
+//  object merge functions
+/////////////////////////////
 
 function mergeState(state: any, source: any, options: MergeStateOptionsArgument = {}): MergeStateResult {
   const fn = options.noSymbol ? objKeys : objKeysNSymb;
@@ -282,45 +317,13 @@ function mergeState(state: any, source: any, options: MergeStateOptionsArgument 
 
 const merge: any = (a: any, b: any, opts: MergeStateOptionsArgument = {}) => mergeState(a, b, opts).state;
 
+
 merge.all = function (state: any, obj2merge: any[], options: MergeStateOptionsArgument = {}) {
   if (obj2merge.length == 0) return state;  // no changes should be done
   else return obj2merge.reduce((prev, next) => merge(prev, next, options), state);  // merge
 };
 
-function isObject(val: any) {
-  return isMergeable(val) && !isArray(val)
-}
 
-function isMergeable(val: any) {
-  const nonNullObject = val && typeof val === 'object';
-
-  return nonNullObject
-    && Object.prototype.toString.call(val) !== '[object RegExp]'
-    && Object.prototype.toString.call(val) !== '[object Date]'
-}
-
-function memoize(fn: any) {
-  fn.cache = new Map();
-  return function (...args: any[]) {
-    let newArgs = [args.length].concat(args);
-    let cache = fn.cache;
-    let last = newArgs.pop();
-    for (let i = 0; i < newArgs.length; i++) {
-      cache.has(newArgs[i]) || cache.set(newArgs[i], new Map());
-      cache = cache.get(newArgs[i]);
-    }
-    if (!cache.has(last)) cache.set(last, fn.apply(this, args));
-    return cache.get(last);
-  };
-}
-
-function getCreateIn(state: any, value: any, ...pathes: any[]) {
-  if (!hasIn(state, ...pathes)) setIn(state, value, ...pathes);
-  return getIn(state, ...pathes)
-}
-
-
-
-export {mergeState, merge, push2array, asNumber, isEqual, isString, isObject, isMergeable, objKeysNSymb, moveArrayElems, delIn, setIn, hasIn, getIn, getCreateIn, getSlice, makeSlice, memoize};
-export {objKeys, isArray, isUndefined}
+export {mergeState, merge, push2array, asNumber, isEqual, objKeys, objKeysNSymb, moveArrayElems, delIn, setIn, hasIn, getIn, getCreateIn, makeSlice, memoize};
+export {isMergeable, isUndefined, isNumber, isInteger, isString, isObject, isArray, isFunction}
 
