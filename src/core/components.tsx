@@ -17,7 +17,8 @@ import {
   setUPDATABLE,
   mergeStatePROCEDURE,
   branchKeys,
-  isNPath
+  isNPath,
+  multiplyPath
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver} from './api'
 import Timeout = NodeJS.Timeout;
@@ -288,13 +289,14 @@ class FField extends Component<any, any> {
     self._maps = {};
     self._blocks = objKeys(components).filter(key => components[key]);
     self._blocks.forEach((block: string) => {
-      const {_$widget, $reactRef, $propsMap, ...schemaProps} = components[block];
+      let {$propsMap, rest} = extractMaps(components[block]);
+      const {_$widget, $reactRef, ...staticProps} = rest;
       self._widgets[block] = _$widget;
-      if ($reactRef) schemaProps[isString(schemaProps.$reactRef) ? $reactRef : 'ref'] = self._setRef(block); // $reactRef - prop for react ref-function
+      if ($reactRef) staticProps[isString(staticProps.$reactRef) ? $reactRef : 'ref'] = self._setRef(block); // $reactRef - prop for react ref-function
       const splitted = splitMaps($propsMap);
       self._maps[block] = splitted.map; // props that should be mapped from state[SymData]
       self._maps$[block] = splitted.map$;
-      self._mappedData[block] = schemaProps;  // properties, without reserved names      
+      self._mappedData[block] = staticProps;  // properties, without reserved names      
     });
     self._setArrayBlocks(self.state.branch[SymData]);
     self._setMappedData(self.state.branch[SymData]);
@@ -445,7 +447,8 @@ class FSection extends Component<any, any> {
     }
 
     function normalizeLayout(layout: FFLayoutGeneric<jsFFCustomizeType>) {
-      let {$fields, $propsMap, $reactRef, _$widget = LayoutDefaultWidget, className = LayoutDefaultClass, ...staticProps} = layout;
+      let {$propsMap, rest} = extractMaps(layout);
+      let {$fields, $reactRef, _$widget = LayoutDefaultWidget, className = LayoutDefaultClass, ...staticProps} = rest;
       const {map, map$} = splitMaps($propsMap);
       staticProps.className = className;
       return {_$widget, mappedData: staticProps, $fields, map, map$}
@@ -882,6 +885,21 @@ const resolveComponents = memoize((fformObjects: formObjectsType, customizeField
   return objectResolver(fformObjects, customizeFields, true);
 });
 
+function extractMaps(obj: any) {
+  let {$propsMap, ...rest2extract} = obj;
+  $propsMap = {...$propsMap};
+  const rest: any = {};
+  objKeys(rest2extract).forEach(key => {
+    if (isObject(rest2extract[key])) {
+      let res = extractMaps(rest2extract[key]);
+      rest[key] = res.rest;
+      objKeys(res.$propsMap).forEach((nk) => $propsMap[key + '/' + nk] = res.$propsMap[nk]);
+    } else rest[key] = rest2extract[key]
+  });
+
+  return {$propsMap, rest};
+}
+
 function splitMaps($propsMap: any) {
   const map = {};
   const map$ = {};
@@ -910,7 +928,8 @@ function mapProps(map: PropsMapGeneric<MapFunctionType>, data: FFieldDataType) {
   objKeys(map).filter(key => map[key]).forEach((to) => {
     let item: any = map[to];
     const value = isObject(item) ? item.$(...item.args) : (isNPath(item) ? getFromData(item) : item[0](item[1].map(getFromData)));
-    setUPDATABLE(result, value, true, normalizePath(to));
+    const pathes = multiplyPath(normalizePath(to));
+    objKeys(pathes).forEach(k => setUPDATABLE(result, value, true, pathes[k]))
   });
   return result;
 }
@@ -1179,11 +1198,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   funcs: {
     not: function (v: any) {return !v},
     bool: function (v: any) {return !!v},
-    hidden4Array: function (hidden: any) {return !this._widgets['ArrayItem'] && !!hidden},
-    hidden4Builder: function (hidden: any) {return !this._widgets['Array'] && !this._widgets['ArrayItem'] && !!hidden},
-    //getFField: function () {return this},
-    //getBranch: function () {return this.state.branch},
-    // getFFormApi: function () {return this.props.pFForm.api},
+    // hidden4Array: function (hidden: any) {return !this._widgets['ArrayItem'] && !!hidden},
     getArrayStart: function (type: string) {return type == 'array' && arrayStart(this.schemaPart) || undefined},
     getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
   },

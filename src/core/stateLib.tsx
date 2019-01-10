@@ -1264,7 +1264,8 @@ export {
   setIfNotDeeper,
   objMap,
   setUPDATABLE,
-  isNPath
+  isNPath,
+  multiplyPath
 }
 
 export {SymData, SymReset, SymClear, SymDelete}
