@@ -70,7 +70,6 @@ type JsonSchemaTypes = 'string' | 'number' | 'object' | 'array' | 'boolean' | 'n
 type JsonAny = anyObject | string | object | undefined | boolean | number | null;
 
 
-
 interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaType {
   ff_compiled: boolean;
   ff_validators?: Function[]; // sync/async validators
@@ -100,7 +99,9 @@ interface FFCommonSchemaType {
 
 type FFDataMapGeneric<FN> = [string, string, FN] | [string, string]
 
-type PropsMapGeneric<FN> = { [key: string]: false | string | [FN, ...JsonAny[]] | { $: FN, args: JsonAny[] } }
+type PropsMapGeneric<FN> = { [key: string]: false | string | [FN, ...JsonAny[]] | { $: FN, args: JsonAny[], update?: 'build' | 'data' | 'every' } }
+type NormalizedPropsMapType = { $?: Function, args: any[], dataRequest: boolean, to: { [key: string]: Path } };
+type NPM4WidgetsType = { [key: string]: NormalizedPropsMapType[] }
 
 type FFLayoutGeneric<T> = T & {
   $fields?: Array<string | FFLayoutGeneric<T>>,

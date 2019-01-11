@@ -159,8 +159,9 @@ class FField extends Component<any, any> {
   private _blocks: string[] = [];
   private _widgets: object;
   private _ff_components: object;
-  private _maps: object;
-  private _maps$: object;
+  private _mapsB: NPM4WidgetsType;
+  private _mapsD: NPM4WidgetsType;
+  private _mapsE: NPM4WidgetsType;
 
   ff_layout: FFLayoutGeneric<jsFFCustomizeType>;
   refs: any = {};
@@ -216,7 +217,7 @@ class FField extends Component<any, any> {
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
         const data = merge(self.state.branch[SymData], {value: self._cached.value});
         const mappedData = self._mappedData;
-        self._setMappedData(data);
+        self._setMappedData(data, true);
         if (mappedData != self._mappedData) self.forceUpdate();
         return true;
       }
@@ -286,20 +287,23 @@ class FField extends Component<any, any> {
 
     // self._enumOptions = getEnumOptions(schemaPart);
     self._widgets = {};
-    self._maps = {};
+    self._mapsB = {};
+    self._mapsD = {};
+    self._mapsE = {};
     self._blocks = objKeys(components).filter(key => components[key]);
     self._blocks.forEach((block: string) => {
       let {$propsMap, rest} = extractMaps(components[block]);
       const {_$widget, $reactRef, ...staticProps} = rest;
       self._widgets[block] = _$widget;
       if ($reactRef) staticProps[isString(staticProps.$reactRef) ? $reactRef : 'ref'] = self._setRef(block); // $reactRef - prop for react ref-function
-      const splitted = splitMaps($propsMap);
-      self._maps[block] = splitted.map; // props that should be mapped from state[SymData]
-      self._maps$[block] = splitted.map$;
+      const normalized = normalizeMaps($propsMap);
+      self._mapsB[block] = normalized.build;
+      self._mapsD[block] = normalized.data; // props that should be mapped from state[SymData]
+      self._mapsE[block] = normalized.every;
       self._mappedData[block] = staticProps;  // properties, without reserved names      
     });
     self._setArrayBlocks(self.state.branch[SymData]);
-    self._setMappedData(self.state.branch[SymData]);
+    self._setMappedData(self.state.branch[SymData], 'build');
     self._rebuild = false;
   }
 
@@ -327,9 +331,9 @@ class FField extends Component<any, any> {
   //   self.id = self.props.pFForm.api.name + '/' + path;
   // };
 
-  _setMappedData(data: any, fullUpdate = true) {
+  _setMappedData(data: any, fullUpdate: boolean | 'build') {
     const self = this;
-    const _mappedData = updateProps(self._mappedData, fullUpdate ? [self._maps, self._maps$] : [self._maps$], data);
+    const _mappedData = updateProps(self._mappedData, data, fullUpdate == 'build' && self._mapsB, fullUpdate && self._mapsD, self._mapsE);
     if (self._mappedData != _mappedData) {
       self._mappedData = _mappedData;
       return true
@@ -338,6 +342,8 @@ class FField extends Component<any, any> {
   }
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
+    if (!nextState.branch) return true;
+    
     const self = this;
     let updateComponent = false;
 
@@ -361,6 +367,7 @@ class FField extends Component<any, any> {
 
   render() {
     const self = this;
+    if (!self.state.branch) return null;
     if (self.state.branch[SymData].params.norender) return false;
     if (self._rebuild) this._build();
     const BuilderWidget = self._widgets['Builder'];
@@ -391,8 +398,9 @@ class FSection extends Component<any, any> {
   private _arrayLayouts: any[] = [];
   private _setWidRef: any;
   private _setFieldRef: any;
-  private _maps: { [key: string]: any };
-  private _maps$: { [key: string]: any };
+  private _mapsB: { [key: string]: any };
+  private _mapsD: { [key: string]: any };
+  private _mapsE: { [key: string]: any };
   private _mappedData: { [key: string]: any };
   private _$widget: any;
   private _isArray: boolean = false;
@@ -436,9 +444,10 @@ class FSection extends Component<any, any> {
           }
         } else if (isObject(fieldOrLayout)) { // layout
           const counter = UPDATABLE.counter++;
-          let {_$widget, $fields, map, map$} = normalizeLayout(fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>);
-          self._maps[counter] = map;
-          self._maps$[counter] = map$;
+          let {_$widget, $fields, $propsMap} = normalizeLayout(fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>);
+          self._mapsB[counter] = $propsMap.build;
+          self._mapsD[counter] = $propsMap.data;
+          self._mapsE[counter] = $propsMap.every;
           layout.push(<FSectionWidget _$widget={_$widget} $cx={$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
                                       getMappedData={self._getMappedData(counter)}>{$fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $fields)}</FSectionWidget>)
         }
@@ -449,9 +458,8 @@ class FSection extends Component<any, any> {
     function normalizeLayout(layout: FFLayoutGeneric<jsFFCustomizeType>) {
       let {$propsMap, rest} = extractMaps(layout);
       let {$fields, $reactRef, _$widget = LayoutDefaultWidget, className = LayoutDefaultClass, ...staticProps} = rest;
-      const {map, map$} = splitMaps($propsMap);
       staticProps.className = className;
-      return {_$widget, mappedData: staticProps, $fields, map, map$}
+      return {_$widget, mappedData: staticProps, $fields, $propsMap: normalizeMaps($propsMap)}
     }
 
     const self = this;
@@ -460,8 +468,9 @@ class FSection extends Component<any, any> {
 
     if (isSelfManaged($branch)) return;
 
-    self._maps = {};
-    self._maps$ = {};
+    self._mapsB = {};
+    self._mapsD = {};
+    self._mapsE = {};
     self._fields = {};
     self._widgets = {};
     self._mappedData = {};
@@ -474,8 +483,9 @@ class FSection extends Component<any, any> {
 
     const N_layout = normalizeLayout(isArray($layout) ? {$fields: $layout} : $layout);
     self._$widget = N_layout._$widget;
-    self._maps[0] = N_layout.map;
-    self._maps$[0] = N_layout.map$;
+    self._mapsB[0] = N_layout.$propsMap.build;
+    self._mapsD[0] = N_layout.$propsMap.data;
+    self._mapsE[0] = N_layout.$propsMap.every;
 
     if (N_layout.$fields) self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, N_layout.$fields);  // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
     UPDATABLE.keys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));  // so here we have only keys was not used and we add them to _objectLayouts
@@ -489,7 +499,7 @@ class FSection extends Component<any, any> {
         arrayKey && (self._arrayKey2field[arrayKey] = i);
       }
     }
-    self._mappedData = self._updateMappedData($branch[SymData]);
+    self._mappedData = self._updateMappedData($branch[SymData], 'build');
     self._rebuild = false;
   }
 
@@ -538,9 +548,9 @@ class FSection extends Component<any, any> {
     return doUpdate;
   }
 
-  _updateMappedData(data: any, fullUpdate = true) {
+  _updateMappedData(data: any, fullUpdate: boolean | 'build') {
     const self = this;
-    return updateProps(self._mappedData, fullUpdate ? [self._maps, self._maps$] : [self._maps$], data);
+    return updateProps(self._mappedData, data, fullUpdate == 'build' && self._mapsB, fullUpdate && self._mapsD, self._mapsE);
   }
 
   shouldComponentUpdate(nextProps: any) {
@@ -840,23 +850,20 @@ function WrapperWidget(props: any) {
     return (
       <Wrapper className={$cx ? $cx(className) : className} {...rest}>
         <IBodyW className={$cx && $cx(IBodyCN)} {...IBodyRest} children={children}/>
-        <IMenuW className={$cx && $cx(IMenuCN)} {...IMenuRest}/>
+        <IMenuW className={$cx && $cx(IMenuCN)} {...IMenuRest} arrayItem={arrayItem}/>
       </Wrapper>
     )
   } else return <Wrapper className={$cx ? $cx(className) : className} {...rest} children={children}/>
 }
 
 function ItemMenu(props: any) {
-  const {useTag: UseTag = 'div', $cx = classNames, className, buttonsProps = {}, buttons, onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
-  // if (!arrayItem) return false;
-  // const {canUp, canDown, canDel} = arrayItem;
-  // const canChecks = {'first': canUp, 'last': canDown, 'up': canUp, 'down': canDown, 'del': canDel};
+  const {useTag: UseTag = 'div', $cx = classNames, className, buttonsProps = {}, arrayItem = {}, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
   buttons.forEach((key: string) => delete rest[key]);
   return (
-    <UseTag className={$cx ? $cx(className) : className} {...rest}>
+    <UseTag className={$cx(className)} {...rest}>
       {buttons.map((key: string) => {
-        const {_$widget: ButW = 'button', type = 'button', className: ButCN = {}, onClick = defaultOnClick, ...restBut} = buttonsProps[key] || {};
-        return (<ButW key={key} type={type} className={$cx ? $cx(ButCN) : ButCN}  {...restBut} onClick={() => onClick(key)}/>)
+        const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, ...restBut} = buttonsProps[key] || {};
+        return (<ButW key={key} type={type} className={$cx ? $cx(ButCN) : ButCN} disabled={disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
       })}
     </UseTag>);
 }
@@ -900,38 +907,48 @@ function extractMaps(obj: any) {
   return {$propsMap, rest};
 }
 
-function splitMaps($propsMap: any) {
-  const map = {};
-  const map$ = {};
+function normalizeMaps($propsMap: any) {
+  function normalizeArgs(args: any) {
+    if (!isArray(args)) args = [args];
+    let dataRequest = false;
+    args.map((arg: any) => isString(arg) && arg[0] == '@' ? (dataRequest = true) && normalizePath(arg.substr(1)) : arg);
+    return {dataRequest, args}
+  }
+
+  const result: { data: NormalizedPropsMapType[], every: NormalizedPropsMapType[], build: NormalizedPropsMapType[] } = {data: [], every: [], build: []};
   objKeys($propsMap).forEach(key => {
-    if (isObject($propsMap[key])) map$[key] = $propsMap[key];
-    else map[key] = isArray($propsMap[key]) ? [$propsMap[0], $propsMap.slice(1).map((arg: any) => isString(arg) && arg[0] == '@' ? normalizePath(arg.substr(1)) : arg)] : normalizePath($propsMap[key]);
+    const map = $propsMap[key];
+    if (!map) return;
+    const to = multiplyPath(normalizePath(key));
+    if (isObject(map)) {
+      const {update = 'every', args = [], $} = map;
+      result[update].push({$, to, ...normalizeArgs(args)});
+    } else if (isArray(map)) {
+      const res: any = {to, ...normalizeArgs(map.slice(1))};
+      res.$ = map[0];
+      if (!isFunction(res.$)) throw new Error('Expected zero element of array to be a function');
+      result.data.push(res);
+    } else {
+      let path = map;
+      if (!isString(path)) throw new Error('$propsMap value is not recognized');
+      if (path[0] !== '@') console.warn('Expected "@" at the begining of string');
+      else path = path.substr(1);
+      result.data.push({to, dataRequest: true, args: normalizePath(path)})
+    }
   });
-  return {map, map$}
+  return result
 }
 
-function updateProps(prevMappedData: any, iterMaps: any, newData: any) {
-  const newUpdates = {update: {}, replace: {}};
-  if (!isArray(iterMaps)) iterMaps = [iterMaps];
-  iterMaps.forEach((maps: any) => objKeys(maps).forEach((key: string | number) => {
-    const {update, replace} = mapProps(maps[key], newData);
-    setUPDATABLE(newUpdates, update, replace, key);
+function updateProps(mappedData: any, dataItem: any, ...iterMaps: Array<NPM4WidgetsType | false>) {
+  const getFromData = (arg: any) => isNPath(arg) ? getIn(dataItem, arg) : arg;
+  const dataUpdates = {update: {}, replace: {}};
+  iterMaps.forEach(maps4widgets => maps4widgets && objKeys(maps4widgets).forEach(widget => {
+    maps4widgets[widget].forEach((map) => {
+      const value = map.$ ? map.$(...(map.dataRequest ? map.args.map(getFromData) : map.args)) : getFromData(map.args);
+      objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, true, widget, map.to[k]))
+    });
   }));
-  return mergeStatePROCEDURE(prevMappedData, newUpdates);
-}
-
-
-function mapProps(map: PropsMapGeneric<MapFunctionType>, data: FFieldDataType) {
-  const result = {update: {}, replace: {}};
-  if (!map) return result;
-  const getFromData = (arg: any) => isNPath(arg) ? getIn(data, arg) : arg;
-  objKeys(map).filter(key => map[key]).forEach((to) => {
-    let item: any = map[to];
-    const value = isObject(item) ? item.$(...item.args) : (isNPath(item) ? getFromData(item) : item[0](item[1].map(getFromData)));
-    const pathes = multiplyPath(normalizePath(to));
-    objKeys(pathes).forEach(k => setUPDATABLE(result, value, true, pathes[k]))
-  });
-  return result;
+  return mergeStatePROCEDURE(mappedData, dataUpdates);
 }
 
 
@@ -999,7 +1016,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   },
   presets: {
     'base': {
-      //_blocks: {'Builder': true, 'Title': true, 'Body': true, 'Main': true, 'Message': true, 'GroupBlocks': true, 'ArrayItem': true, 'Autosize': false},
+      //_blocks: {'Builder': true, 'Title': true, 'Body': true, 'Main': true, 'Message': true, 'Wrapper': true, 'Autosize': false},
       // childrenBlocks: {},
 
       Array: {
@@ -1024,11 +1041,8 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         },
         $cx: '%/$cx',
         $propsMap: {
-          'arrayItem': ['%/funcs/bool', '@/arrayItem'],
+          'arrayItem': '@/arrayItem',
           'className/hidden': 'params/hidden',
-          'ArrayItemMenu/buttonProps/canUp,first/disabled': ['%/funcs/not', '@/arrayItem/canUp'],
-          'ArrayItemMenu/buttonProps/canDown,last/disabled': ['%/funcs/not', '@/arrayItem/canDown'],
-          'ArrayItemMenu/buttonProps/canDel/disabled': ['%/funcs/not', '@/arrayItem/canDel'],
         }
       },
       Builder: {
@@ -1065,9 +1079,17 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         },
       },
       Main: {
+        $cx: '%/$cx',
+      }
+    },
+    nBase: {
+      $_ref: '%/presets/base',
+      Main: {
         _$widget: '%/widgets/BaseInput',
         $reactRef: 'getRef',
-        $cx: '%/$cx',
+        onChange: '%/on/changeBase',
+        onBlur: '%/on/blurBase',
+        onFocus: '%/on/focusBase',
         $propsMap: {
           priority: '@/status/priority',
           value: '@/value',
@@ -1077,35 +1099,34 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           title: '@/fData/title',
           readOnly: '@/params/readonly',
           disabled: '@/params/disabled',
-        },
-        onChange: '%/on/changeBasic',
-        onBlur: '%/on/blurBasic',
-        onFocus: '%/on/focusBasic',
+
+        }
       }
     },
     string: {
-      $_ref: '%/presets/base', Main: {
+      $_ref: '%/presets/nBase',
+      Main: {
         type: 'text',
-        onChange: '%/on/changeString'
+        //onChange: '%/on/changeString'
       }
     },
     integer: {
-      $_ref: '%/presets/base',
+      $_ref: '%/presets/nBase',
       Main: {
         type: 'number',
         onChange: '%/on/changeInteger'
       }
     },
     number: {
-      $_ref: '%/presets/base',
+      $_ref: '%/presets/nBase',
       Main: {
         type: 'number',
         step: 'any',
         onChange: '%/on/changeNumber'
       }
     },
-    range: {$_ref: '%/presets/base', Main: {type: 'range'}},
-    'null': {$_ref: '%/presets/base', Main: {type: 'hidden'}},
+    range: {$_ref: '%/presets/nBase', Main: {type: 'range'}},
+    'null': {$_ref: '%/presets/nBase', Main: {type: 'hidden'}},
     hidden: {
       Builder: {
         className: {hidden: true},
@@ -1113,7 +1134,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       }
     },
     boolean: {
-      $_ref: '%/presets/base',
+      $_ref: '%/presets/nBase',
       Main: {
         _$widget: '%/widgets/CheckboxInput',
         type: 'checkbox',
@@ -1122,7 +1143,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Title: false,
     },
     tristate: {
-      $_ref: '%/presets/base',
+      $_ref: '%/presets/nBase',
       Main: {
         _$widget: '%/widgets/CheckboxInput',
         type: 'tristate',
@@ -1140,32 +1161,25 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
         $propsMap: {
-          value: false,
-          autoFocus: false,
-          placeholder: false,
-          required: false,
-          title: false,
-          readOnly: false,
-          disabled: false,
           arrayStart: ['%/funcs/getArrayStart', '@/fData/type'],
-          FFormApi: ['%/funcs/getFFieldProperty', 'props/pFForm/api'],
-          $layout: ['%/funcs/getFFieldProperty', 'ff_layout'],
-          $branch: {'$': '%/funcs/getFFieldProperty', args: ['state/branch']},
+          FFormApi: {$: '%/funcs/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
+          $layout: {$: '%/funcs/getFFieldProperty', args: 'ff_layout', update: 'build'},
+          $branch: {$: '%/funcs/getFFieldProperty', args: 'state/branch', update: 'all'},
         }
       },
-      GroupBlocks: {useTag: 'fieldset'},
+      Wrapper: {useTag: 'fieldset'},
       Title: {useTag: 'legend'},
     },
     array: '%/presets/object',
     inlineTitle: {
-      GroupBlocks: {
+      Wrapper: {
         style: {flexFlow: 'row'},
       }
     },
-    select: {$_ref: '%/presets/base', Main: {type: 'select', onChange: onSelectChange}},
+    select: {$_ref: '%/presets/nBase', Main: {type: 'select', onChange: onSelectChange}},
     multiselect: {$_ref: '%/presets/select', Main: {multiply: true}},
     arrayOf: {
-      $_ref: '%/presets/base',
+      $_ref: '%/presets/nBase',
       Main: {
         _$widget: '%/widgets/ArrayInput',
         inputProps: {},
@@ -1183,7 +1197,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     //tabs: {dataMap: [['./@/value', './', selectorOnChange(true)]]}, //{Main: {onChange: selectorOnChange(true)}},
     autosize: {
       Autosize: '%/parts/Autosize',
-      GroupBlocks: {style: {flexGrow: 0}},
+      Wrapper: {style: {flexGrow: 0}},
     },
     flexRow: {
       Layouts: {style: {flexFlow: 'row'}}
@@ -1203,15 +1217,15 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
   },
   on: {
-    clickArrayAdd: function (path: any) {this.api.arrayAdd(path, 1)},
+    clickArrayAdd: function (path: any = './') {this.api.arrayAdd(path, 1)},
     clickArrayItemOps: function (path: any, key: string) {this.api.arrayItemOps(path, key)},
-    changeBasic: function (event: any) {this.api.setValue(event.target.value, {})},
-    changeString: function (event: any) {this.api.setValue(event.target.value, {})},
-    changeInteger: function (event: any) {this.setValue(event.target.value == '' ? undefined : parseInt(event.target.value))},
-    changeNumber: function (event: any) {this.setValue(event.target.value == '' ? undefined : parseFloat(event.target.value))},
-    changeBoolean: function (event: any) {this.onChange(event.target.checked)},
-    focusBasic: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
-    blurBasic: function (value: any) {
+    changeBase: function (event: any) {this.api.setValue(event.target.value, {})},
+    // changeString: function (event: any) {this.api.setValue(event.target.value, {})},
+    changeInteger: function (event: any) {this.api.setValue(event.target.value == '' ? undefined : parseInt(event.target.value), {})},
+    changeNumber: function (event: any) {this.api.setValue(event.target.value == '' ? undefined : parseFloat(event.target.value), {})},
+    changeBoolean: function (event: any) {this.api.setValue(event.target.checked, {})},
+    focusBase: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
+    blurBase: function (value: any) {
       const self = this;
       self.api.set('./', 0, {[SymData]: ['status', 'untouched'], noValidation: true});
       self.api.set('/@/active', undefined, {noValidation: true});
@@ -1247,17 +1261,17 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       onClick: '%/funcs/on/clickArrayItemOps',
       'onClick.bind': ['./'],
       buttonProps: {
-        $propsMap: {
-          'canUp,first/disabled': ['%/funcs/not', '@/arrayItem/canUp'],
-          'canDown,last/disabled': ['%/funcs/not', '@/arrayItem/canDown'],
-          'canDel/disabled': ['%/funcs/not', '@/arrayItem/canDel'],
-        }
+        first: {disabledCheck: 'canUp'},
+        last: {disabledCheck: 'canDown'},
+        up: {disabledCheck: 'canUp'},
+        down: {disabledCheck: 'canDown'},
+        del: {disabledCheck: 'canDel'},
+        // $propsMap: {
+        //   'canUp,first/disabled': ['%/funcs/not', '@/arrayItem/canUp'],
+        //   'canDown,last/disabled': ['%/funcs/not', '@/arrayItem/canDown'],
+        //   'canDel/disabled': ['%/funcs/not', '@/arrayItem/canDel'],
+        // }
       },
-      // $propsMap: {
-      //   'buttonProps/canUp,first/disabled': ['%/funcs/not', '@/arrayItem/canUp'],
-      //   'buttonProps/canDown,last/disabled': ['%/funcs/not', '@/arrayItem/canDown'],
-      //   'buttonProps/canDel/disabled': ['%/funcs/not', '@/arrayItem/canDel'],
-      // }
     }
   },
   presetMap: {

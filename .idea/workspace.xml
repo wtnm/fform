@@ -4,7 +4,7 @@
     <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="components fixes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/core/components.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/components.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/core/stateLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/stateLib.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/core/schemaTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/schemaTypes.d.ts" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -26,8 +26,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="223">
-              <caret line="680" column="4" lean-forward="true" selection-start-line="680" selection-start-column="4" selection-end-line="680" selection-end-column="4" />
+            <state relative-caret-position="10170">
+              <caret line="680" column="4" selection-start-line="680" selection-start-column="4" selection-end-line="680" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -44,7 +44,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="523">
+            <state relative-caret-position="19005">
               <caret line="1267" column="14" selection-start-line="1267" selection-start-column="14" selection-end-line="1267" selection-end-column="14" />
             </state>
           </provider>
@@ -53,8 +53,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/core/components.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="339">
-              <caret line="932" column="5" lean-forward="true" selection-start-line="932" selection-start-column="5" selection-end-line="932" selection-end-column="5" />
+            <state relative-caret-position="185">
+              <caret line="949" column="6" lean-forward="true" selection-start-line="949" selection-start-column="6" selection-end-line="949" selection-end-column="6" />
             </state>
           </provider>
         </entry>
@@ -71,7 +71,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/dataTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="409">
+            <state relative-caret-position="27">
               <caret line="62" column="10" selection-start-line="62" selection-start-column="2" selection-end-line="62" selection-end-column="10" />
             </state>
           </provider>
@@ -80,8 +80,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/schemaTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="468">
-              <caret line="103" selection-start-line="103" selection-end-line="103" />
+            <state relative-caret-position="483">
+              <caret line="103" column="20" selection-start-line="103" selection-start-column="5" selection-end-line="103" selection-end-column="20" />
             </state>
           </provider>
         </entry>
@@ -112,15 +112,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>$</find>
-      <find>$cx</find>
-      <find>isFunction</find>
-      <find>isObject</find>
-      <find>_isArray</find>
-      <find>isNPath</find>
-      <find>getWidgets</find>
-      <find>getLayout</find>
-      <find>getBranch</find>
       <find>getFFormApi</find>
       <find>getFField</find>
       <find>$FField</find>
@@ -142,12 +133,17 @@
       <find>extractMaps</find>
       <find>splitMaps</find>
       <find>multiplyPath</find>
+      <find>focusBasic</find>
+      <find>changeString</find>
+      <find>%/presets/base</find>
+      <find>nBase</find>
+      <find>Wrapper</find>
+      <find>GroupBlocks</find>
+      <find>normalizeMaps</find>
+      <find>_setMappedData</find>
+      <find>updateProps</find>
     </findStrings>
     <replaceStrings>
-      <replace>fData</replace>
-      <replace>[]</replace>
-      <replace>_refName</replace>
-      <replace>_propsMap</replace>
       <replace>_blocks</replace>
       <replace>$ref: '%/presets/</replace>
       <replace>_widget</replace>
@@ -174,6 +170,10 @@
       <replace>focusBasic</replace>
       <replace>getFFieldProperty</replace>
       <replace>_$widget:</replace>
+      <replace>focusBase</replace>
+      <replace>%/presets/nBase</replace>
+      <replace>sBase</replace>
+      <replace>Wrapper</replace>
     </replaceStrings>
     <dirStrings>
       <dir>C:\workspace\nodejs\FForm\src\tacit</dir>
@@ -230,12 +230,12 @@
         <option value="$PROJECT_DIR$/src/core/fnTypes.d.ts" />
         <option value="$PROJECT_DIR$/__tests__/schemaOneOf.js" />
         <option value="$PROJECT_DIR$/src/core/commonLib.tsx" />
-        <option value="$PROJECT_DIR$/src/core/schemaTypes.d.ts" />
         <option value="$PROJECT_DIR$/src/core/is-my-json-valid/index.js" />
         <option value="$PROJECT_DIR$/src/core/styling/style.js" />
         <option value="$PROJECT_DIR$/src/core/dataTypes.d.ts" />
         <option value="$PROJECT_DIR$/src/core/api.tsx" />
         <option value="$PROJECT_DIR$/src/core/stateLib.tsx" />
+        <option value="$PROJECT_DIR$/src/core/schemaTypes.d.ts" />
         <option value="$PROJECT_DIR$/src/core/components.tsx" />
       </list>
     </option>
@@ -1129,7 +1129,8 @@
       <workItem from="1546956300724" duration="15408000" />
       <workItem from="1546985705812" duration="933000" />
       <workItem from="1546989087092" duration="1526000" />
-      <workItem from="1547034975175" duration="26886000" />
+      <workItem from="1547034975175" duration="26920000" />
+      <workItem from="1547152560735" duration="7498000" />
     </task>
     <task id="LOCAL-00001" summary="before package update">
       <created>1542772477945</created>
@@ -1257,7 +1258,14 @@
       <option name="project" value="LOCAL" />
       <updated>1547076629348</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="components fixes">
+      <created>1547082285120</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1547082285120</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1293,7 +1301,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2981118000" />
+    <option name="totallyTimeSpent" value="2988650000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1309,8 +1317,8 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.36891386" visible="true" weight="0.103793465" />
-      <window_info active="true" id="Structure" order="2" sideWeight="0.6310862" side_tool="true" visible="true" weight="0.17702845" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.36772984" visible="true" weight="0.1032666" />
+      <window_info active="true" id="Structure" order="2" sideWeight="0.63227016" side_tool="true" visible="true" weight="0.17702845" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.41616163" side_tool="true" weight="0.10795155" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32937366" />
@@ -1755,32 +1763,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/__tests__/schema.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="15" column="6" selection-start-line="15" selection-start-column="6" selection-end-line="15" selection-end-column="6" />
-          <folding>
-            <element signature="e#93#366#0" />
-            <element signature="e#384#442#0" />
-            <element signature="e#462#3337#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/commonLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="14" selection-start-line="8" selection-start-column="6" selection-end-line="8" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/schemaTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="468">
-          <caret line="103" selection-start-line="103" selection-end-line="103" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/core/is-my-json-valid/genfn.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -1794,10 +1776,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/dataTypes.d.ts">
+    <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="409">
-          <caret line="62" column="10" selection-start-line="62" selection-start-column="2" selection-end-line="62" selection-end-column="10" />
+        <state relative-caret-position="10170">
+          <caret line="680" column="4" selection-start-line="680" selection-start-column="4" selection-end-line="680" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/commonLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="120">
+          <caret line="8" column="14" selection-start-line="8" selection-start-column="6" selection-end-line="8" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="19005">
+          <caret line="1267" column="14" selection-start-line="1267" selection-start-column="14" selection-end-line="1267" selection-end-column="14" />
         </state>
       </provider>
     </entry>
@@ -1808,24 +1804,36 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
+    <entry file="file://$PROJECT_DIR$/__tests__/schema.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="223">
-          <caret line="680" column="4" lean-forward="true" selection-start-line="680" selection-start-column="4" selection-end-line="680" selection-end-column="4" />
+        <state relative-caret-position="75">
+          <caret line="15" column="6" selection-start-line="15" selection-start-column="6" selection-end-line="15" selection-end-column="6" />
+          <folding>
+            <element signature="e#93#366#0" />
+            <element signature="e#384#442#0" />
+            <element signature="e#462#3337#0" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
+    <entry file="file://$PROJECT_DIR$/src/core/dataTypes.d.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="523">
-          <caret line="1267" column="14" selection-start-line="1267" selection-start-column="14" selection-end-line="1267" selection-end-column="14" />
+        <state relative-caret-position="27">
+          <caret line="62" column="10" selection-start-line="62" selection-start-column="2" selection-end-line="62" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/schemaTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="483">
+          <caret line="103" column="20" selection-start-line="103" selection-start-column="5" selection-end-line="103" selection-end-column="20" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/core/components.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="339">
-          <caret line="932" column="5" lean-forward="true" selection-start-line="932" selection-start-column="5" selection-end-line="932" selection-end-column="5" />
+        <state relative-caret-position="185">
+          <caret line="949" column="6" lean-forward="true" selection-start-line="949" selection-start-column="6" selection-end-line="949" selection-end-column="6" />
         </state>
       </provider>
     </entry>
