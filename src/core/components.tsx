@@ -343,7 +343,7 @@ class FField extends Component<any, any> {
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
     if (!nextState.branch) return true;
-    
+
     const self = this;
     let updateComponent = false;
 
@@ -516,7 +516,7 @@ class FSection extends Component<any, any> {
   _getObjectKeys(stateBranch: StateType) {
     const self = this;
     let keys: string[] = [];
-    if (self._isArray) for (let i = 0; i < Math.min(self._arrayStart, stateBranch[SymData].length); i++) keys.push(i.toString());
+    if (self._isArray) for (let i = 0; i < self._arrayStart; i++) keys.push(i.toString()); // Math.min(self._arrayStart, stateBranch[SymData].length)
     else keys = branchKeys(stateBranch);
     return keys;
   }
@@ -559,25 +559,16 @@ class FSection extends Component<any, any> {
       self._rebuild = true;
       return true;
     }
+    let doUpdate = false;
 
     let prevBranch = self.props.stateBranch;
     let nextBranch = nextProps.stateBranch;
 
-    let doUpdate = false;
-
     if (prevBranch != nextBranch) {
-      if (self._isArray) {
-        const prevLength = prevBranch[SymData].length;
-        const nextLength = nextBranch[SymData].length;
-        if (prevLength != nextLength && (nextLength < self._arrayStart || prevLength < self._arrayStart - 1)) { // need to rebuild, length changed within turple range
-          self._rebuild = true;
-          return true;
-        }
-        doUpdate = self._reorderArrayLayout(prevBranch, nextBranch); // updates and reorders elements greater/equal than self._arrayStart
-      }
+      // update object elements or if it _isArray elements that lower than self._arrayStart
+      self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self._fields[field] && self._fields[field].setState({branch: nextBranch[field]}));
 
-      // update object elements or if it _isArray update elements that lower than self._arrayStartIndex
-      self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self._fields[field].setState({branch: nextBranch[field]}));
+      if (self._isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch); // updates and reorders elements greater/equal than self._arrayStart
 
       const newMapped = self._updateMappedData(nextBranch[SymData], nextBranch[SymData] !== prevBranch[SymData]);
       if (newMapped != self._mappedData) { // update self._widgets
