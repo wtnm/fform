@@ -141,6 +141,7 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PR
   return state
 };
 
+// todo: make SymReset processing
 Macros.switch = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   let keyPath = item[SymData] || [];
   let switches = makeSlice(keyPath, item.value);
@@ -159,7 +160,6 @@ Macros.setExtraStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE_objec
   return state
 };
 
-// todo: make SymReset processing
 Macros.setStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   const keyPath = item[SymData] || [];
   if (keyPath.length > 2) return Macros.setExtraStatus(state, schema, UPDATABLE_object, item);
@@ -217,8 +217,12 @@ function isTopPath(path: Path) {
 }
 
 function recursivelyUpdate(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) {
-  state = updateStatePROCEDURE(state, schema, UPDATABLE_object, item);
   const keys = branchKeys(getIn(state, item.path));
+  if (item.value == SymReset && item[SymData][0] == 'status') {
+    let i = {...item};
+    i.value = item[SymData][1] == 'untouched' ? keys.length : 0;
+    state = updateStatePROCEDURE(state, schema, UPDATABLE_object, i);
+  } else state = updateStatePROCEDURE(state, schema, UPDATABLE_object, item);
   keys.forEach(key => state = recursivelyUpdate(state, schema, UPDATABLE_object, merge(item, {path: item.path.concat(key)})));
   return state
 };
@@ -424,6 +428,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   const schemaPartsOneOf = getSchemaPart(schema, path, getNSetOneOf, true);
   let {schemaPart, oneOf, type} = findOneOf(schemaPartsOneOf, value, currentOneOf);
   if (!isUndefined(currentOneOf) && currentOneOf != oneOf) { // value type is not that currentOneOf supports 
+    console.info('Passed value is not supported by schema.type in path "' + path.join('/') + '" and oneOfIndex "' + currentOneOf + '". Reset value to default.\n');
     value = schemaPartsOneOf[currentOneOf].default; // so, reset value to default, cause keeping oneOf is in prior (if currentOneOf exists, otherwise oneOf is changed)
     const tmp = findOneOf(schemaPartsOneOf, value, currentOneOf);
     schemaPart = tmp.schemaPart;
@@ -557,10 +562,11 @@ function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
     let oneOf = oneOfKeys[k];
     let schemaTypes = oneOfShemas[oneOf].type || types;
     if (!isArray(schemaTypes)) schemaTypes = [schemaTypes];
-    let checkValue = isUndefined(value) ? oneOfShemas[oneOf].default : value;
-    for (let j = 0; j < schemaTypes.length; j++) {
-      if (types[schemaTypes[j]](checkValue) || isUndefined(checkValue)) return {schemaPart: oneOfShemas[oneOf], oneOf, type: schemaTypes[j]}
-    }
+    let defaultUsed;
+    let checkValue = isUndefined(value) ? (defaultUsed = true) && oneOfShemas[oneOf].default : value;
+    for (let j = 0; j < schemaTypes.length; j++)
+      if (types[schemaTypes[j]](checkValue) || isUndefined(checkValue)) return {schemaPart: oneOfShemas[oneOf], oneOf, type: schemaTypes[j]};
+    if (defaultUsed && !isUndefined(oneOfShemas[oneOf].default)) throw new Error('Type of schema.default is not supported by schema.type');
   }
   return {};
 }
@@ -777,7 +783,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
         if (path.length) {
           const topPath = path.slice();
           const field = topPath.pop();
-          ['invalid', 'dirty', 'untouched', 'pending'].forEach(key => {
+          ['invalid', 'dirty', 'pending'].forEach(key => { // 'untouched',
             let oldStatusValue = getIn(oldBranch, SymData, 'status', key);
             let newStatusValue = getIn(branch, SymData, 'status', key);
             if (!oldStatusValue != !newStatusValue) state = Macros.setStatus(state, schema, UPDATABLE_object, makeNUpdate(topPath, ['status', key], newStatusValue ? 1 : -1));
@@ -787,8 +793,10 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
           if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {[SymData]: {fData: {required: true}}});
         }
 
+        if (getIn(oldBranch, SymData, 'status', 'untouched') == 0) branch = merge(branch, {[SymData]: {status: {untouched: 0}}});// stick untouched to zero
         state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});
         state = setDataMapInState(state, schema, maps2enable);
+        if (getIn(branch, SymData, 'status', 'untouched') == 0) state = Macros.switch(state, schema, UPDATABLE_object, makeNUpdate(path, ['status', 'untouched'], 0));
         state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], push2array(['current'], path), defaultValues, true));
       }
     }

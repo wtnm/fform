@@ -688,13 +688,83 @@ describe('FForm state functions tests', function () {
     expect(state[0].propThree[SymData].fData.required).not.toBeTruthy();
     expect(state[0].propFour[SymData].fData.required).toBe(true);
 
-    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne'], value: 2, macros: 'setOneOf'});
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne'], value: 2, macros: 'setOneOf', setValue: 'not compatible type'});
     state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
     expect(state[0].propOne[SymData].oneOf).toBe(2);
     expect(state[0].propOne[SymData].length).toBe(2);
     expect(state[0].propOne[SymData].fData.type).toBe('array');
     expect(state[0].propOne[SymData].fData.required).toBe(true);
+    expect(state[0].propOne[0][SymData].value).toBe('first value');
+    expect(state[0].propOne[1][SymData].value).toBe('second value');
+    expect(state[0][SymData].params.uniqKey).toBe(uniqKey);
 
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propTwo'], value: 2, setValue: ['set propTwo value'], macros: 'setOneOf'});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0].propTwo[SymData].oneOf).toBe(2);
+    expect(state[0].propTwo[SymData].length).toBe(1);
+    expect(state[0].propTwo[SymData].fData.type).toBe('array');
+    expect(state[0].propTwo[SymData].fData.required).toBe(true);
+    expect(state[0].propTwo[0][SymData].value).toBe('set propTwo value');
+
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne', '@', 'value'], value: ['set propOne Value']});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0].propOne[SymData].oneOf).toBe(2);
+    expect(state[0].propOne[SymData].length).toBe(1);
+    expect(state[0].propOne[SymData].fData.type).toBe('array');
+    expect(state[0].propOne[SymData].fData.required).toBe(true);
+    expect(state[0].propOne[0][SymData].value).toBe('set propOne Value');
+
+    expect(state[0].propThree[SymData].oneOf).toBe(0);
+    expect(state[0].propThree[SymData].fData.required).not.toBeTruthy();
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propThree', '@', 'value'], value: 'set propThree Value', setOneOf: 1});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0].propThree[SymData].oneOf).toBe(1);
+    expect(state[0].propThree[SymData].fData.type).toBe('string');
+    expect(state[0].propThree[SymData].fData.required).toBe(true);
+    expect(state[0].propThree[SymData].value).toBe('set propThree Value');
+
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propThree'], value: 3, macros: 'setOneOf'});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0].propThree[SymData].oneOf).toBe(3);
+    expect(state[0].propThree[SymData].fData.type).toBe('string');
+    expect(state[0].propThree[SymData].fData.required).not.toBeTruthy();
+    expect(state[0].propThree[SymData].value).toBe('set propThree Value');
+
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propThree', '@', 'value'], value: null});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0].propThree[SymData].oneOf).toBe(0);
+    expect(state[0].propThree[SymData].fData.type).toBe('null');
+    expect(state[0].propThree[SymData].fData.required).not.toBeTruthy();
+    expect(state[0].propThree[SymData].value).toBe(null);
+
+    expect(state[0][SymData].status.untouched).toBe(0);
+    expect(state[0].propOne[SymData].status.untouched).toBe(0);
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [], [SymData]: ['status', 'untouched'], value: SymReset, macros: 'switch'});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0][SymData].status.untouched).toBe(4);
+    expect(state[0].propOne[SymData].status.untouched).toBe(1);
+    expect(state[SymData].status.untouched).toBe(2);
+
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne'], [SymData]: ['status', 'untouched'], value: -1, macros: 'setStatus'});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0].propOne[SymData].status.untouched).toBe(0);
+    expect(state[0].propOne[SymData].fData.type).toBe('array');
+
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne'], [SymData]: ['status', 'invalid'], value: 1, macros: 'setStatus'});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0].propOne[SymData].status.invalid).toBe(1);
+    expect(state[0][SymData].status.invalid).toBe(1);
+    expect(state[SymData].status.invalid).toBe(1);
+    expect(state[0][SymData].status.untouched).toBe(3);
+
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne'], value: 3, macros: 'setOneOf', setValue: ''});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0].propOne[SymData].fData.type).toBe('string');
+    expect(state[0].propOne[SymData].status.invalid).toBe(0);
+    expect(state[0][SymData].status.invalid).toBe(0);
+    expect(state[SymData].status.invalid).toBe(0);
+    expect(state[0].propOne[SymData].status.untouched).toBe(0);
+    expect(state[0][SymData].status.untouched).toBe(3);
   })
 });
 

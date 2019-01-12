@@ -282,11 +282,10 @@ class FFormStateAPI extends FFormStateManager {
 
   get = (...pathes: Array<string | Path>): any => getFromState(this.getState(), ...pathes);
 
-  set = (path: string | Path, value: any, opts: APIOptsType & { replace?: any, macros?: string } = {}) => {
+  set = (path: string | Path, value: any, opts: APIOptsType & { replace?: any, setOneOf?: number, macros?: string } = {}) => {
     let {execute, force, noValidation, ...update} = opts;
     (update as StateApiUpdateType).path = path;
     (update as StateApiUpdateType).value = value;
-
     return this._setExecution((update as StateApiUpdateType), opts);
   };
 
@@ -295,28 +294,26 @@ class FFormStateAPI extends FFormStateManager {
     return getIn(this.getState(), SymData, opts.inital ? 'inital' : 'current', path);
   };
 
-  setValue = (value: any, opts: APIOptsType & { path?: string | Path, setOneOf?: number, inital?: boolean } = {}) => {
+  setValue = (value: any, opts: APIOptsType & { path?: string | Path, replace?: any, setOneOf?: number, inital?: boolean } = {}) => {
     const path = normalizePath(opts.path || []);
     return this._setExecution({path: [opts.inital ? '@inital' : '@current'].concat(path), value}, opts);
   };
 
   getDefaultValue = (opts: { path?: string | Path, flatten?: boolean } = {}) => getDefaultFromSchema(this.schema);
 
-  reset = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymReset, opts);
-
   clear = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymClear, opts);
 
-  arrayAdd = (path: string | Path, value: number | any[] = 1, opts: APIOptsType = {}) => {
-    return this._setExecution({path, value: value, macros: 'array'}, opts);
-  };
+  reset = (opts: APIOptsType & { path?: string | Path, status?: string } = {}) =>
+    opts.status ? this.set([(opts.path || '/'), '@status/' + opts.status], SymReset, {macros: 'switch'}) : this.setValue(SymReset, opts);
 
-  arrayItemOps = (path: string | Path, op: 'up' | 'down' | 'first' | 'last' | 'del' | 'move' | 'shift', opts: APIOptsType & { value?: number } = {}) => {
-    return this._setExecution({path, op: op, value: opts.value || 0, macros: 'arrayItem'}, opts);
-  };
+  arrayAdd = (path: string | Path, value: number | any[] = 1, opts: APIOptsType = {}) =>
+    this._setExecution({path, value: value, macros: 'array'}, opts);
 
-  setHidden = (path: string | Path, value = true, opts: APIOptsType = {}) => {
-    return this._setExecution([{path: path + '@' + '/params/hidden', value}], opts);
-  };
+  arrayItemOps = (path: string | Path, op: 'up' | 'down' | 'first' | 'last' | 'del' | 'move' | 'shift', opts: APIOptsType & { value?: number } = {}) =>
+    this._setExecution({path, op: op, value: opts.value || 0, macros: 'arrayItem'}, opts);
+
+  setHidden = (path: string | Path, value = true, opts: APIOptsType = {}) =>
+    this._setExecution([{path: path + '@' + '/params/hidden', value}], opts);
 
   showOnly = (path: string | Path, opts: APIOptsType & { skipFields?: string[] } = {}) => {
     path = normalizePath(path);

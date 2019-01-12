@@ -1165,8 +1165,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           {children: '(array is empty)'}],
         $propsMap: {
           'className/required': '@/fData/required',
-          'children/1/className/hidden': ['%/funcs/notEqual', 'array', '@/fData/type'],
-          'children/2/className/hidden': ['%/funcs/notEqual', 'array', '@/fData/type'],
+          'children/1,2/className/hidden': ['%/funcs/notEqual', 'array', '@/fData/type'],
           'children/3/className/hidden': ['%/funcs/notEqual', 0, '@/length'],
         },
       },
