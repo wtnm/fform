@@ -648,24 +648,27 @@ function isCompiled(schema: any): schema is jsJsonSchema {
   return getIn(schema, 'ff_objects');
 }
 
-function objectDerefer(_objects: any, obj2deref: any) {
-  let {$ref = '', restObj} = obj2deref;
-  $ref = $ref.split(':');
+function objectDerefer(_objects: any, obj2deref: any) { // todo: test
+  if (!isMergeable(obj2deref)) return obj2deref;
+  let {$_ref = '', ...restObj} = obj2deref;
+  $_ref = $_ref.split(':');
   const objs2merge: any[] = [];
-  for (let i = 0; i < $ref.length; i++) {
-    if (!$ref[i]) continue;
-    let path = string2path($ref[i]);
+  for (let i = 0; i < $_ref.length; i++) {
+    if (!$_ref[i]) continue;
+    let path = string2path($_ref[i]);
     if (path[0] !== '%') throw new Error('Can reffer only to %');
     let refObj = getIn({'%': _objects}, path);
-    if (refObj.$ref) refObj = objectDerefer(_objects, refObj);
+    if (refObj.$_ref) refObj = objectDerefer(_objects, refObj);
     objs2merge.push(refObj);
   }
   let result = isArray(obj2deref) ? [] : {};
+
   for (let i = objs2merge.length - 1; i >= 0; i--) result = merge(result, objs2merge[i]);
-  return merge(result, restObj);
+  return merge(result, objMap(restObj, objectDerefer.bind(null, _objects)));
+  //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
 }
 
-function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boolean): any {
+function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boolean): any { // todo: test
   const result = objectDerefer(_objects, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
@@ -677,6 +680,7 @@ function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boole
       if (retResult[key][SymData]) retResult[SymData][key] = retResult[key][SymData];
       delete retResult[key][SymData];
     } else if (extract2SymData && typeof resolvedValue == 'function') {
+      if (!retResult[SymData]) retResult[SymData] = {};
       retResult[SymData][key] = resolvedValue;
     } else retResult[key] = resolvedValue;
   });

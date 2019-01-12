@@ -317,7 +317,7 @@ class FField extends Component<any, any> {
   //   }
   //   return false
   // }
- 
+
   // _setId() {
   //   const self = this;
   //   const id = getIn(self.props.stateBranch, SymData, 'uniqId');
@@ -528,7 +528,7 @@ class FSection extends Component<any, any> {
     return this.props.$FField.path + '/' + this._arrayKey2field[key];
   }
 
-  _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType) { // todo: rework needed
+  _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType) {
     const self = this;
     const updatedArray = [];
     let doUpdate = false;
@@ -652,15 +652,60 @@ function FBuilder(props: any) {
 }
 
 
-function ArrayWidget(props: any) {
-  const {useTag: UseTag = 'div', Empty, AddButton, length, canAdd, children, $cx, className, ...rest} = props;
-  const {_$widget: EmptyW = 'div', ...emptyRest} = Empty;
-  const {_$widget: AddButtonW = 'button', onClick, ...addButtonRest} = AddButton;
-  if (length) return (<UseTag className={$cx ? $cx(className) : className} {...rest}>{children}{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</UseTag>);
-  else return (<UseTag className={$cx ? $cx(className) : className} {...rest}><EmptyW {...emptyRest}>{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</EmptyW></UseTag>);
+function WrapperWidget(props: any) {
+  let {useTag: Wrapper = 'div', children, $cx = classNames, className, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
+  const {_$widget: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
+  const {_$widget: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
+  if (arrayItem) {
+    return (
+      <Wrapper className={$cx ? $cx(className) : className} {...rest}>
+        <IBodyW className={$cx && $cx(IBodyCN)} {...IBodyRest} children={children}/>
+        <IMenuW className={$cx && $cx(IMenuCN)} {...IMenuRest} arrayItem={arrayItem}/>
+      </Wrapper>
+    )
+  } else return <Wrapper className={$cx ? $cx(className) : className} {...rest} children={children}/>
+}
+
+function ItemMenu(props: any) {
+  const {useTag: UseTag = 'div', $cx = classNames, className, buttonsProps = {}, arrayItem = {}, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
+  buttons.forEach((key: string) => delete rest[key]);
+  return (
+    <UseTag className={$cx(className)} {...rest}>
+      {buttons.map((key: string) => {
+        const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, ...restBut} = buttonsProps[key] || {};
+        return (<ButW key={key} type={type} className={$cx ? $cx(ButCN) : ButCN} disabled={disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
+      })}
+    </UseTag>);
+}
+
+function MessagesWidget(props: any) {
+  const {useTag: UseTag = 'div', MessageItem, messages = {}, $cx = classNames, className, ...rest} = props;
+  const {_$widget: MIW, ...restMI} = MessageItem;
+  let keys = objKeys(messages);
+  keys.sort((a, b) => parseFloat(a) - parseFloat(b));
+  return <UseTag className={$cx(className)} {...rest}>{keys.map(key => <MIW key={key} $cx={$cx} messageData={messages[key]} {...restMI} />)}</UseTag>;
 }
 
 
+function MessageItem(props: any) {
+  const {useTag: UseTag = 'div', messageData, $cx = classNames, className, ...rest} = props;
+  const {priority, norender, textGroups, className: groupCN, ...restMG} = messageData;
+  const texts: any[] = [];
+  objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey]));
+  if (norender || !texts.length) return null;
+  return <UseTag className={$cx(className, groupCN, 'priority_' + priority)} {...rest} {...restMG}>{texts.join('<br/>')}</UseTag>
+}
+
+
+// function ArrayWidget(props: any) {
+//   const {useTag: UseTag = 'div', Empty, AddButton, length, canAdd, children, $cx, className, ...rest} = props;
+//   const {_$widget: EmptyW = 'div', ...emptyRest} = Empty;
+//   const {_$widget: AddButtonW = 'button', onClick, ...addButtonRest} = AddButton;
+//   if (length) return (<UseTag className={$cx ? $cx(className) : className} {...rest}>{children}{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</UseTag>);
+//   else return (<UseTag className={$cx ? $cx(className) : className} {...rest}><EmptyW {...emptyRest}>{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</EmptyW></UseTag>);
+// }
+//
+//
 // function TitleBlock(props: any) {
 //   const {title = '', required, useTag: UseTag = 'label', requireSymbol = '*', $cx, className, ...rest} = props;
 //   return (
@@ -707,6 +752,7 @@ function BaseInput(props: any) {
   }// {enumOptions.map(({value, name}:any, i: number) => <option key={i} value={value}>{name}</option>)}
   else return (<UseTag className={$cx ? $cx(className) : className} {...rest} {...refObj} {...valueObj} type={type} {...commonProps}/>);
 };
+
 
 function ArrayInput(props: any) {
   function selectValue(value: any, selected: any, all: any) {
@@ -808,54 +854,10 @@ function ArrayInput(props: any) {
   );
 }
 
+
 function CheckboxInput(props: any) {
   const {labelProps, ...rest} = props;
   return <label {...labelProps}><BaseInput {...rest}/><span>{props.title}</span></label>;
-}
-
-
-function MessagesWidget(props: any) {
-  const {useTag: UseTag = 'div', MessageItem, messages = {}, $cx = classNames, className, ...rest} = props;
-  const {_$widget: MIW, ...restMI} = MessageItem;
-  let keys = objKeys(messages);
-  keys.sort((a, b) => parseFloat(a) - parseFloat(b));
-  return <UseTag className={$cx(className)} {...rest}>{keys.map(key => <MIW key={key} $cx={$cx} messageData={messages[key]} {...restMI} />)}</UseTag>;
-}
-
-function MessageItem(props: any) {
-  const {useTag: UseTag = 'div', messageData, $cx = classNames, className, ...rest} = props;
-  const {priority, norender, textGroups, className: groupCN, ...restMG} = messageData;
-  const texts: any[] = [];
-  objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey]));
-  if (norender || !texts.length) return null;
-  return <UseTag className={$cx(className, groupCN, 'priority_' + priority)} {...rest} {...restMG}>{texts.join('<br/>')}</UseTag>
-}
-
-
-function WrapperWidget(props: any) {
-  let {useTag: Wrapper = 'div', children, $cx = classNames, className, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
-  const {_$widget: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
-  const {_$widget: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
-  if (arrayItem) {
-    return (
-      <Wrapper className={$cx ? $cx(className) : className} {...rest}>
-        <IBodyW className={$cx && $cx(IBodyCN)} {...IBodyRest} children={children}/>
-        <IMenuW className={$cx && $cx(IMenuCN)} {...IMenuRest} arrayItem={arrayItem}/>
-      </Wrapper>
-    )
-  } else return <Wrapper className={$cx ? $cx(className) : className} {...rest} children={children}/>
-}
-
-function ItemMenu(props: any) {
-  const {useTag: UseTag = 'div', $cx = classNames, className, buttonsProps = {}, arrayItem = {}, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
-  buttons.forEach((key: string) => delete rest[key]);
-  return (
-    <UseTag className={$cx(className)} {...rest}>
-      {buttons.map((key: string) => {
-        const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, ...restBut} = buttonsProps[key] || {};
-        return (<ButW key={key} type={type} className={$cx ? $cx(ButCN) : ButCN} disabled={disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
-      })}
-    </UseTag>);
 }
 
 
@@ -990,9 +992,10 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   //   'onBlur': true, 'onMouseOver': true, 'onMouseEnter': true, 'onMouseLeave': true, 'onChange': true, 'onSelect': true, 'onClick': true, 'onSubmit': true, 'onFocus': true, 'onUnload': true, 'onLoad': true
   // },
   widgets: {
+    FSection: FSection,
     Generic: GenericWidget,
-    Builder: FBuilder,  // todo: move to FField
-    // Array: ArrayWidget, // replace with Title
+    Autosize: AutosizeBlock,
+    Builder: FBuilder,
     Wrapper: WrapperWidget,
     ItemMenu: ItemMenu,
     Messages: MessagesWidget,
@@ -1001,8 +1004,6 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     CheckboxInput: CheckboxInput,
     ArrayInput: ArrayInput,
     TristateBox: TristateBox,
-    FSection: FSection,
-    Autosize: AutosizeBlock,
   },
   presets: {
     'base': {

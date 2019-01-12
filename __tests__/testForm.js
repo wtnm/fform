@@ -600,6 +600,26 @@ describe('FForm state functions tests', function () {
     expect(items[12][2] === "mcf 0").toBeTruthy();
   });
 
+
+  it('test setIfNotDeeper', function () {
+    const val = {};
+    stateFuncs.setIfNotDeeper(val, true, [0, 1]);
+    expect(val[0][1]).toBe(true);
+    stateFuncs.setIfNotDeeper(val, true, [0, 2]);
+    expect(val[0][1]).toBe(true);
+    expect(val[0][2]).toBe(true);
+    stateFuncs.setIfNotDeeper(val, true, [1, 1]);
+    stateFuncs.setIfNotDeeper(val, true, [1, 2]);
+    stateFuncs.setIfNotDeeper(val, true, [0]);
+    expect(val[0]).toBe(true);
+    expect(val[1][1]).toBe(true);
+    expect(val[1][2]).toBe(true);
+    stateFuncs.setIfNotDeeper(val, true, [0, 1]);
+    expect(val[0]).toBe(true);
+    expect(val[1][1]).toBe(true);
+    expect(val[1][2]).toBe(true);
+  });
+
   it('test getSchemaPart', function () {
     const schemaOneOf = require('./schemaOneOf').default;
     let state = stateFuncs.makeStateFromSchema(schemaOneOf);
@@ -770,42 +790,66 @@ describe('FForm state functions tests', function () {
 
 describe('FForm api tests', function () {
 
-  it('test getFieldBlocks', function () {
-    // let testObject = JSON.parse(JSON.stringify(require('./schema.js').default));
-    return;
-    let basicMainOnChange = () => {};
-    let directMainOnChange = () => {};
-    let reverseMainOnChange = () => {};
-    let mainWidget = () => {};
-    let schemaPart = {'ff_custom': {'Main': {widget: mainWidget, onChange: directMainOnChange, $onChange: reverseMainOnChange}}};
-    let {result, chains} = formFuncs.getFieldBlocks('string:inlineTitle', formFuncs.fformObjects, {}, {'Main': {onChange: basicMainOnChange}}, {});
+  const objects = {
+    preset: {first: {one: 'one value'}, second: {two: 'two value'}},
+    funcs: {one: function (...a) {return a}, two: function (...a) {return a}},
+    parts: {
+      first: {
+        $_ref: '%/preset',
+        f1: '%/funcs/one',
+        'f1.bind': [2]
+      },
+      second: {
+        $_ref: '%/parts/first',
+        'f1.bind': [4],
+        f2: '%/funcs/two',
+        'f2.bind': [6, 10],
+      }
+    }
+  };
+  let exampleObj = {
+    func: '%/funcs/two',
+    part: {
+      $_ref: '%/parts/second',
+      'f1.bind': [1],
+      first: {three: 'three value'},
+      _some: '%/funcs/two',
+      _more: {f3: '%/funcs/three',}
+    }
+  };
 
-    expect(commonFuncs.isEqual(result['_blocks'], {'Builder': true, 'Title': true, 'Body': true, 'Main': true, 'Message': true, 'GroupBlocks': true, 'ArrayItem': true, 'Autosize': false})).toBeTruthy();
-    expect(commonFuncs.isEqual(chains['methods2chain'], ["onBlur", "onMouseOver", "onMouseEnter", "onMouseLeave", "onChange", "onSelect", "onClick", "onSubmit", "onFocus", "onUnload", "onLoad"])).toBeTruthy();
-    expect(Object.keys(chains['widgets']).length > 5).toBeTruthy();
+  it('test api.objectDerefer', function () {
+    let obj = apiFuncs.objectDerefer(objects, exampleObj);
+    expect(obj.func).toBe('%/funcs/two');
+    expect(obj.part.f1).toBe('%/funcs/one');
+    expect(obj.part['f1.bind']).toEqual([1]);
+    expect(obj.part.f2).toBe('%/funcs/two');
+    expect(obj.part['f2.bind']).toEqual([6, 10]);
+    expect(obj.part.first.one).toBe('one value');
+    expect(obj.part.first.three).toBe('three value');
+  });
 
-    expect(chains['funcs'].Main).toBeTruthy();
-    expect(chains['funcs'].Main['onChange'].length === 2).toBeTruthy();
-    expect(chains['funcs'].Main['onChange'][0] === basicMainOnChange).toBeTruthy();
+  it('test api.objectResolver', function () {
 
-    let res = formFuncs.getFieldBlocks(['string', 'inlineTitle'], formFuncs.fformObjects, schemaPart, {'Main': {onChange: basicMainOnChange}}, {});
-    result = res.result;
-    chains = res.chains;
-    expect(chains['funcs'].Main['onChange'].length === 4).toBeTruthy();
-    expect(chains['funcs'].Main['onChange'][0] === basicMainOnChange).toBeTruthy();
-    expect(chains['funcs'].Main['onChange'][1] === reverseMainOnChange).toBeTruthy();
-    expect(chains['funcs'].Main['onChange'][3] === directMainOnChange).toBeTruthy();
-    expect(chains['widgets'].Main.length === 2).toBeTruthy();
-    expect(chains['widgets'].Main[1] === mainWidget).toBeTruthy();
-    expect(result.Main['onChange']).toBeTruthy();
-    let fn = result['Main']['onChange'];
-    expect(fn.name === 'bound directMainOnChange').toBeTruthy();
+    let obj = apiFuncs.objectResolver(objects, exampleObj);
+    expect(obj.func).toBe(objects.funcs.two);
+    expect(obj.part.f1).toBe(objects.funcs.one);
+    expect(obj.part['f1.bind']).toEqual([1]);
+    expect(obj.part.f2).toBe(objects.funcs.two);
+    expect(obj.part['f2.bind']).toEqual([6, 10]);
+    expect(obj.part._some).toBe(objects.funcs.two);
+    expect(obj.part._more.f3).toBe('%/funcs/three');
 
-    res = formFuncs.getFieldBlocks(['radio', 'buttons'], formFuncs.fformObjects, {}, {'Main': {onChange: basicMainOnChange}}, {});
-    result = res.result;
-    chains = res.chains;
-    expect(chains['funcs'].Main['onChange'].length === 1).toBeTruthy();
-    expect(result.Main['onChange']).toBeTruthy();
+    let obj2SymData = apiFuncs.objectResolver(objects, exampleObj, true);
+    expect(obj2SymData[SymData].func).toBe(objects.funcs.two);
+    expect(obj2SymData[SymData].part.f1).toBe(objects.funcs.one);
+    expect(obj2SymData[SymData].part['f1.bind']).toEqual([1]);
+    expect(obj2SymData[SymData].part.f2).toBe(objects.funcs.two);
+    expect(obj2SymData[SymData].part['f2.bind']).toEqual([6, 10]);
+    expect(obj2SymData.part.first.one).toBe('one value');
+    expect(obj2SymData.part.first.three).toBe('three value');
+    expect(obj2SymData.part._some).toBe(objects.funcs.two);
+    expect(obj2SymData.part._more.f3).toBe('%/funcs/three');
   });
 
 });
@@ -958,14 +1002,10 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
 
     const simpleReduxCore = new formFuncs.FFormStateAPI({name: 'simpleReduxCore', store, schema: require('./schemaArray').default});
     const externalReduxCore = new formFuncs.FFormStateAPI({getState: extStoreRedux.getState, setState: extStoreRedux.setState, name: 'externalReduxCore', store, schema: require('./schemaArray').default});
-
-    await testApi(simpleCore);
-    await testApi(externalCore);
-    await testApi(simpleReduxCore);
-    await testApi(externalReduxCore);
+    const notExist = {};
 
     async function testApi(core) {
-      it('test .get, .set ' + core.name, async function () {
+      it('test api.get, api.set simple usage' + core.name, async function () {
         expect(core.get('@/status/pristine')).toBe(true);
         expect(core.get('0/@/status/pristine')).toBe(true);
         expect(core.get('0/0/@/status/pristine')).toBe(true);
@@ -996,7 +1036,9 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/1/@/status/pristine')).toBe(true);
         expect(core.getValue()).toBe(core.getValue({inital: true}));
         expect(core.getValue()[0][0]).toBe(core.getValue({inital: true})[0][0]);
+      });
 
+      it('test api.arrayAdd ' + core.name, async function () {
         core.arrayAdd('0', 1, {execute: true});
         expect(core.get('@/status/pristine')).toBe(false);
         expect(core.get('0/@/status/pristine')).toBe(false);
@@ -1010,7 +1052,9 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/0/@/status/pristine')).toBe(true);
         expect(core.get('0/1/@/status/pristine')).toBe(true);
         expect(core.getValue()).toBe(core.getValue({inital: true}));
+      });
 
+      it('test api.setValue ' + core.name, async function () {
         core.setValue({}, {execute: true});
         expect(core.getValue()).toBe(core.getValue({inital: true}));
 
@@ -1031,8 +1075,9 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         core.setValue(newVal, {execute: true});
         expect(core.get('@/status/pristine')).toBe(true);
         expect(core.getValue()).toBe(core.getValue({inital: true}));
+      });
 
-        let notExist = {};
+      it('test api.setValue with non-existing schema property' + core.name, async function () {
         let moreNewVal = [];
         moreNewVal.length = core.getValue().length;
         moreNewVal.notExist = notExist;
@@ -1044,6 +1089,8 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.getValue()).not.toBe(core.getValue({inital: true}));
         expect(core.getValue().notExist).toBe(notExist);
 
+        let newVal = [];
+        newVal.length = 3;
         newVal[0] = [{strValue: 'setValue test 0 0'}, {strValue: 'setValue test 0 1'}];
         core.setValue(newVal, {execute: true});
         expect(core.get('@/status/pristine')).toBe(false);
@@ -1061,6 +1108,8 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/0/mapArrValue/1@value')).toBe('setValue test 0 0');
         expect(core.getValue().notExist).toBe(notExist);
 
+        let val0 = core.get('@inital/0/0/strValue');
+        let val1 = core.get('@inital/0/1/strValue');
         newVal[0] = [{strValue: val0}, {strValue: val1}];
         core.setValue(newVal);
         core.setValue(undefined, {path: ['notExist'], execute: true});
@@ -1072,7 +1121,12 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/1/@/status/pristine')).toBe(true);
         expect(core.getValue().notExist).toBe(undefined);
         expect(core.getValue()).toBe(core.getValue({inital: true}));
+      });
 
+      it('test api.setValue to set inital value' + core.name, async function () {
+
+        let val0 = core.get('@inital/0/0/strValue');
+        let val1 = core.get('@inital/0/1/strValue');
         let initNewVal = [{strValue: 'inital setValue test 0 0', mapValue: 'inital setValue test 0 0', mapArrValue: [], arrValue: [], turpleValue: []},
           {strValue: 'inital setValue test 0 1', mapValue: 'inital setValue test 0 1', mapArrValue: ['inital setValue test 0 1']}];
         core.setValue(initNewVal, {path: '0', inital: true, execute: true});
@@ -1090,7 +1144,8 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/0/turpleValue/2')).not.toBe(undefined);
         expect(core.get('0/0/turpleValue/@/messages/0/textGroups/0/0')).toBe(undefined);
 
-
+        let newVal = [];
+        newVal.length = 3;
         newVal[0] = [{strValue: 'inital setValue test 0 0', mapArrValue: [], arrValue: [], turpleValue: []},
           {strValue: 'inital setValue test 0 1', arrValue: [], turpleValue: []}];
         core.setValue(newVal, {execute: true});
@@ -1118,6 +1173,11 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/1/strValue@value')).toBe('inital setValue test 0 1');
         expect(core.getValue().notExist).toBe(undefined);
 
+      });
+
+
+      it('test api.setValue to set non-existing in schema to inital value' + core.name, async function () {
+
         core.setValue(notExist, {path: 'notExist', inital: true, execute: true});
         expect(core.get('@/status/pristine')).toBe(false);
         expect(core.get('0/@/status/pristine')).toBe(true);
@@ -1134,6 +1194,9 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.getValue()).toBe(core.getValue({inital: true}));
         expect(core.getValue().notExist).toBe(notExist);
 
+      });
+
+      it('test api.clear ' + core.name, async function () {
         core.clear({execute: true});
         expect(core.get('@/status/pristine')).toBe(false);
         expect(core.get('0/@/status/pristine')).toBe(false);
@@ -1142,7 +1205,9 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.getValue()).not.toBe(core.getValue({inital: true}));
         expect(commonFuncs.isEqual(commonFuncs.merge(core.getDefaultValue(), {notExist}), core.getValue(), {deep: true})).toBe(true);
         expect(core.getValue().notExist).toBe(notExist);
+      });
 
+      it('test reset.clear ' + core.name, async function () {
         core.reset({execute: true});
         expect(core.get('@/status/pristine')).toBe(true);
         expect(core.get('0/@/status/pristine')).toBe(true);
@@ -1151,7 +1216,19 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.getValue()).toBe(core.getValue({inital: true}));
         expect(core.getValue().notExist).toBe(notExist);
 
+      });
 
+      it('test api.arrayAdd with sync validation' + core.name, async function () {
+        expect(core.get('0/0/turpleValue/@/messages/0/textGroups/0/0')).toBe('has less items than allowed');
+        core.arrayAdd('0/0/turpleValue', ['te'], {execute: 1});
+        core.arrayAdd('0/0/turpleValue', [5, 8], {execute: true});
+        expect(core.get('0/0/turpleValue/@/messages/0/textGroups/0/0')).toBe(undefined);
+        expect(core.get('0/0/turpleValue/0@value')).toBe('te');
+        expect(core.get('0/0/turpleValue/1@value')).toBe(5);
+        expect(core.get('0/0/turpleValue/2@value')).toBe(8);
+      });
+
+      it('test async validation' + core.name, async function () {
         expect(core.get('0/0/strValue@messages/0/1/0')).toBe(undefined);
         expect(core.get('0/@/messages/0/textGroups/1/0')).toBe(undefined);
         core.set('0/0/strValue@value', 'test validation', {execute: true});
@@ -1167,22 +1244,18 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/0/arrValue@messages/0/textGroups/2/0')).toBe('async text message for arrValue test validation');
         await sleep(10);
         expect(core.get('0/0/arrValue@messages/0/textGroups/2/0')).toBe(undefined);
+      });
 
+      it('test async validation with changing validated value during the validation' + core.name, async function () {
         core.set('0/0/strValue@value', 'test validation', {execute: true});
         expect(core.get('0/0/arrValue@messages/0/textGroups/2/0')).toBe(undefined);
         core.set('0/0/strValue@value', 'another validation', {execute: true});
         await sleep(10);
         expect(core.get('0/0/arrValue@messages/0/textGroups/2/0')).toBe('async text message for arrValue another validation');
         expect(core.get('0/@/messages/0/textGroups/1/0')).toBe(undefined);
+      });
 
-        expect(core.get('0/0/turpleValue/@/messages/0/textGroups/0/0')).toBe('has less items than allowed');
-        core.arrayAdd('0/0/turpleValue', ['te'], {execute: 1});
-        core.arrayAdd('0/0/turpleValue', [5, 8], {execute: true});
-        expect(core.get('0/0/turpleValue/@/messages/0/textGroups/0/0')).toBe(undefined);
-        expect(core.get('0/0/turpleValue/0@value')).toBe('te');
-        expect(core.get('0/0/turpleValue/1@value')).toBe(5);
-        expect(core.get('0/0/turpleValue/2@value')).toBe(8);
-
+      it('test deffered execution ' + core.name, async function () {
         core.set('0/0/strValue@value', 'deff', {execute: true});
         expect(core.get('0/0/strValue@value')).toBe('deff');
         let promise = core.set('0/0/strValue@value', 'more deff', {execute: 30});
@@ -1196,398 +1269,10 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
 
     }
 
-    // let flatDataInital = {
-    //   "array_1": [
-    //     [{"favBook": "inital favBook 0 0"}],
-    //     [{"favBook": "inital favBook 1 0"}, {"favBook": "inital favBook 1 1"}, {"favBook": "inital favBook 1 2"}],
-    //     [{"favBook": "inital favBook 2 0"}, {"favBook": "inital favBook 2 1"}, {"favBook": "inital favBook 2 2"}],
-    //     [{"favBook": "inital favBook 3 0"}, {"favBook": "inital favBook 3 1"}, {"favBook": "inital favBook 3 2"}, {"favBook": "inital favBook 3 3"}, {"favBook": "inital favBook 3 4"}]
-    //   ],
-    //   "movies": {"mc_favBook": "def"},
-    //   "color_cinema_favBook": "def"
-    // };
-    // let flatDataDefault = {
-    //   "array_1": [
-    //     [{"favBook": "default favBook 0 0"}, {"favBook": "default favBook 0 1"}, {"favBook": "default favBook 0 2"}, {"favBook": "default favBook 0 3"}, {"favBook": "default favBook 0 4"}],
-    //   ]
-    // };
-    // let flatDataCurrent = {
-    //   "array_1": [
-    //     [{"favBook": "default favBook 0 0"}],
-    //   ],
-    //   "movies": {"mc_favCinema": "current"},
-    // };
-    // let stateData = new formFuncs.FFormStateAPI({name: 'test_FFormCoreAPI_init', store, schema: require('./schema').default, opts: {flatValues: true}, current: flatDataCurrent, inital: flatDataInital, default: flatDataDefault});
-    // let state = stateData.getState();
-    // let initalVals = stateData.getValue({inital: true, flatten: true});
-    // let currentVals = stateData.getValue({flatten: true});
-    // let defaultVals = stateData.getDefaultValue({flatten: true});
-    // expect(state.objLevel_1.objLevel_2.array_1[0][4].bazingaCinema.favBook[Symbol.for('FFormData')].values.default === "default favBook 0 4").toBeTruthy();
-    // expect(state.objLevel_1.objLevel_2.array_1[0][0].bazingaCinema.favBook[Symbol.for('FFormData')].values.default === "default favBook 0 0").toBeTruthy();
-    // expect(state.objLevel_1.objLevel_2.array_1[0][0].bazingaCinema.favBook[Symbol.for('FFormData')].values.inital === "inital favBook 0 0").toBeTruthy();
-    // expect(state.objLevel_1.objLevel_2.array_1[2][2].bazingaCinema.favBook[Symbol.for('FFormData')].values.inital === "inital favBook 2 2").toBeTruthy();
-    // expect(state.objLevel_1.objLevel_2.array_1[3][4].bazingaCinema.favBook[Symbol.for('FFormData')].values.inital === "inital favBook 3 4").toBeTruthy();
-    // expect(state.color.cinema.favBook[Symbol.for('FFormData')].messages[0].textArray.length === 0).toBeTruthy();
-    // expect(state.color.cinema.favCinema[Symbol.for('FFormData')].messages[0].textArray.length === 1).toBeTruthy();
-    // expect(state.color.cinema.favCinema[Symbol.for('FFormData')].messages[1].textArray.length === 1).toBeTruthy();
-    // stateData.set('color/cinema/favCinema/@/value', 'test', {execute: true, noValidation: true});
-    // state = stateData.getState();
-    // expect(state.color.cinema.favCinema[Symbol.for('FFormData')].messages[0].textArray.length === 1).toBeTruthy();
-    // expect(state.color.cinema.favCinema[Symbol.for('FFormData')].messages[1].textArray.length === 1).toBeTruthy();
-    // stateData.set('color/cinema/favCinema/@/value', 'test', {execute: true});
-    // state = stateData.getState();
-    // expect(state.color.cinema.favCinema[Symbol.for('FFormData')].messages[0].textArray.length === 1).toBeTruthy();
-    // expect(state.color.cinema.favCinema[Symbol.for('FFormData')].messages[1].textArray.length === 1).toBeTruthy();
-    // await stateData.validate('color/cinema/favCinema').vAsync;
-    // state = stateData.getState();
-    // expect(state.color.cinema.favCinema[Symbol.for('FFormData')].messages[0].textArray.length === 0).toBeTruthy();
-    // expect(state.color.cinema.favCinema[Symbol.for('FFormData')].messages[1].textArray.length === 0).toBeTruthy();
+    describe('#simpleCore', async function () {await testApi(simpleCore);});
+    describe('#externalCore', async function () {await testApi(externalCore);});
+    describe('#simpleReduxCore', async function () {await testApi(simpleReduxCore);});
+    describe('#externalReduxCore', async function () {await testApi(externalReduxCore);});
+
   }
 );
-
-function test_api_setValues(store) {
-  return async function () {
-    let stateData = new formFuncs.FFormStateAPI({name: 'test_api_setValues', store, schema: require('./schema').default});
-    await stateData.promise.vAsync;
-    let oldState = stateData.getState();
-    stateData.set('/favMovie/@/value', 'test', {execute: true, noValidation: true});
-    let state = stateData.getState();
-    expect(state.favMovie[Symbol.for('FFormData')].value === 'test').toBe(true);
-
-    stateData.set([], oldState, {execute: true, replace: true});
-    state = stateData.getState();
-    expect(commonFuncs.isEqual(state, oldState, {deep: true})).toBe(true);
-
-    stateData.setState(oldState, {execute: true});
-    state = stateData.getState();
-    expect(state === oldState).toBe(true);
-    let curVals = {moreNotExist: 3, array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]]};
-    let initVals = {notExist: {v1: 2}, array_1: [[{v5: 5, v2: 4}, {t5: 3, t2: 1}, {t7: 3, t1: 1}]], array_2: [{value: 1, notExistValue: 1}]};
-    stateData = new formFuncs.FFormStateAPI({name: 'test_api_setValues2', store, schema: require('./schema3').default, current: curVals, inital: initVals});
-    await stateData.promise.vAsync;
-    let current = stateData.getValue();
-    expect(commonFuncs.isEqual(current, {
-      notExist: {v1: 2},
-      moreNotExist: 3,
-      array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]],
-      array_2: [{"value": 1, notExistValue: 1, "more_value": {"inner": "", "more_inner": undefined}}]
-    }, {deep: true})).toBe(true);
-
-    stateData.setValue({notExist: {v12: 4}, array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]], array_2: [{"value": 1, notExistValue: 4, "more_value": {"inner": "", "more_inner": undefined}}]}, {execute: true});
-    current = stateData.getValue();
-    expect(commonFuncs.isEqual(current, {notExist: {v12: 4}, array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]], array_2: [{"value": 1, notExistValue: 4, "more_value": {"inner": "", "more_inner": undefined}}]}, {deep: true})).toBe(true);
-
-    stateData.set('/array_1/0/0/@/value', {v5: 1, v22: 2}, {replace: true, execute: true});
-    current = stateData.getValue();
-    expect(commonFuncs.isEqual(current, {notExist: {v12: 4}, array_1: [[{v5: 1, v22: 2}, {t1: 4, t2: 5}]], array_2: [{"value": 1, notExistValue: 4, "more_value": {"inner": "", "more_inner": undefined}}]}, {deep: true})).toBe(true);
-
-    stateData.setValue({}, {execute: true});
-    current = stateData.getValue();
-    expect(commonFuncs.isEqual(current, {array_1: [], array_2: [],}, {deep: true})).toBe(true);
-
-    stateData.setValue({}, {inital: true, execute: true});
-    stateData.setValue({}, {inital: true, execute: true});
-    stateData.setValue({notExist: 1}, {execute: true});
-    let inital = stateData.getValue({inital: true});
-    expect(commonFuncs.isEqual(inital, {array_1: [], array_2: [],}, {deep: true})).toBe(true);
-    current = stateData.getValue();
-    expect(commonFuncs.isEqual(current, {notExist: 1, array_1: [], array_2: [],}, {deep: true})).toBe(true);
-  }
-}
-
-function test_coreApiFunctions(store) {
-  return async function () {
-    let curVals = {array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]], array_2: []};
-    let stateData = new formFuncs.FFormStateAPI({store, name: 'test_coreApiFunctions', schema: require('./schema3').default});
-    await stateData.promise.vAsync;
-    let current = stateData.getValue();
-    expect(commonFuncs.isEqual(current, curVals, {deep: true})).toBe(true);
-
-    await stateData.setValue(curVals, {inital: true, execute: true}).vAsync;
-    let inital = stateData.getValue({inital: true});
-    let state = stateData.getState();
-    current = stateData.getValue();
-    expect(current === inital).toBe(true);
-    expect(state[SymData].status.pristine).toBe(true);
-
-    await stateData.arrayOps(['array_1', 0], 'add', {execute: true}).vAsync;
-    current = stateData.getValue();
-    state = stateData.getState();
-    let array_1 = [[{v1: 1, v2: 2}, {t1: 4, t2: 5}, undefined]];
-    // array_1.length = 3;
-    expect(commonFuncs.isEqual(current, {array_1, array_2: []}, {deep: true})).toBe(true);
-    expect(state[SymData].status.pristine).toBe(false);
-
-    await stateData.arrayItemOps(['array_1', 0, 2], 'del', {execute: true}).vAsync;
-    current = stateData.getValue();
-    inital = stateData.getValue({inital: true});
-    state = stateData.getState();
-    expect(commonFuncs.isEqual(current, {array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]], array_2: []}, {deep: true})).toBe(true);
-    expect(state[SymData].status.pristine).toBe(true);
-    expect(current === inital).toBe(true);
-
-    await stateData.arrayItemOps(['array_1', 0, 1], 'up', {execute: true}).vAsync;
-    current = stateData.getValue();
-    inital = stateData.getValue({inital: true});
-    state = stateData.getState();
-    expect(state[SymData].status.pristine).toBe(false);
-    // console.log('current', current.array_1[0][0]);
-    expect(commonFuncs.isEqual(current, {array_1: [[{t1: 4, t2: 5}, {v1: 1, v2: 2}]], array_2: []}, {deep: true})).toBe(true);
-    expect(commonFuncs.isEqual(inital, {array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]], array_2: []}, {deep: true})).toBe(true);
-    expect(current !== inital).toBe(true);
-
-    let newVals = {array_1: [], array_2: [{value: 1, more_value: {inner: 2, more_inner: undefined}}, {value: 4, more_value: {inner: 5, more_inner: undefined}}]};
-    let newDefaultVals = {array_1: []};
-    await stateData.setValues(newVals, {valueType: 'current', execute: true}).vAsync;
-    await stateData.setValues(newDefaultVals, {valueType: 'default', execute: true}).vAsync;
-    current = stateData.getValue();
-    let defaultVal = stateData.getDefaultValue();
-    expect(current === newVals).toBe(true);
-    expect(defaultVal !== newDefaultVals).toBe(true);
-
-    await stateData.setValues({array_1: [[{t5: 4, t7: 5}, {v5: 1, v7: 2}]], array_2: []}, {valueType: 'inital', execute: true}).vAsync;
-    inital = stateData.getValue({inital: true});
-    // console.log(inital);
-    expect(commonFuncs.isEqual(inital, {array_1: [[{t5: 4, t7: 5}, {v5: 1, v7: 2}]], array_2: []}, {deep: true})).toBe(true);
-
-    newVals.array_1 = [];
-    await stateData.setValues(newVals, {valueType: 'current', execute: true}).vAsync;
-    current = stateData.getValue();
-    expect(commonFuncs.isEqual(current, {
-      array_1: [],
-      array_2: [{"value": 1, "more_value": {"inner": 2, "more_inner": undefined}}, {"value": 4, "more_value": {"inner": 5, "more_inner": undefined}}]
-    }, {deep: true})).toBe(true);
-
-    await stateData.arrayOps(['array_1'], 'add', {num: 1, values: [[{t4: 1}, {t5: 5}]], execute: true}).vAsync;
-    current = stateData.getValue();
-    expect(commonFuncs.isEqual(current, {
-      array_1: [[{t4: 1}, {t5: 5}]],
-      array_2: [{"value": 1, "more_value": {"inner": 2, "more_inner": undefined}}, {"value": 4, "more_value": {"inner": 5, "more_inner": undefined}}]
-    }, {deep: true})).toBe(true);
-
-    await stateData.arrayOps(['array_1', 0], 'add', {num: 2, values: [{t8: 81}, {t45: 45}], execute: true}).vAsync;
-    current = stateData.getValue();
-    expect(commonFuncs.isEqual(current, {
-      array_1: [[{t4: 1}, {t5: 5}, {t8: 81}, {t45: 45}]],
-      array_2: [{"value": 1, "more_value": {"inner": 2, "more_inner": undefined}}, {"value": 4, "more_value": {"inner": 5, "more_inner": undefined}}]
-    }, {deep: true})).toBe(true);
-
-    let moreStateData = new formFuncs.FFormStateAPI({opts: {keepEqualRawValues: true, flatValues: true}, store, name: 'test_recursivelySetItems2', schema: require('./schema3').default});
-    current = moreStateData.getValue();
-    inital = moreStateData.getValue({inital: true});
-    defaultVal = moreStateData.getDefaultValue();
-
-    expect(commonFuncs.isEqual(current, {array_1: [], array_2: []}, {deep: true})).toBe(true);
-
-    expect(commonFuncs.isEqual(inital, {array_1: [], array_2: []}, {deep: true})).toBe(true);
-    expect(commonFuncs.isEqual(defaultVal, {array_1: [], array_2: []}, {deep: true})).toBe(true);
-
-    await moreStateData.arrayOps(['array_1'], 'add', {execute: true}).vAsync;
-    current = moreStateData.getValue();
-    array_1 = [];
-    array_1.length = 1;
-    // console.log('current', current);
-    expect(commonFuncs.isEqual(current, {array_1: [[]], array_2: []}, {deep: true})).toBe(true);
-
-    await moreStateData.arrayOps(['array_1', 0], 'add', {execute: true}).vAsync;
-    current = moreStateData.getValue();
-    array_1[0] = [undefined];
-    array_1[0].length = 1;
-    expect(commonFuncs.isEqual(current, {array_1, array_2: []}, {deep: true})).toBe(true);
-
-    await moreStateData.arrayItemOps(['array_1', 0], 'del', {execute: true}).vAsync;
-    current = moreStateData.getValue();
-    inital = moreStateData.getValue({inital: true});
-    expect(commonFuncs.isEqual(current, {array_1: [], array_2: []}, {deep: true})).toBe(true);
-    expect(commonFuncs.isEqual(inital, {array_1: [], array_2: []}, {deep: true})).toBe(true);
-    // expect(current === inital).toBe(true);
-
-    await moreStateData.arrayOps(['array_2'], 'add', {num: 1}).vAsync;
-    await moreStateData.arrayOps(['array_2'], 'add', {num: 1}).vAsync;
-    await moreStateData.set('/array_2/1/more_value/more_inner/@/values/current', 'more_inner 2', {execute: true}).vAsync;
-    current = moreStateData.getValue({flatten: true});
-    expect(commonFuncs.isEqual(current, {array_1: [], array_2: [{value: undefined, inner: '', "more_inner": undefined}, {value: undefined, inner: '', more_inner: 'more_inner 2'}]}, {deep: true})).toBe(true);
-
-    await moreStateData.setValues(current, {valueType: 'inital', flatten: true, execute: true}).vAsync;
-    current = moreStateData.getValue();
-    inital = moreStateData.getValue({inital: true});
-    state = moreStateData.getState();
-    expect(state[SymData].status.pristine).toBe(true);
-    expect(current === inital).toBe(true);
-
-    await moreStateData.arrayOps(['array_2'], 'add', {num: -10, execute: true}).vAsync;
-    current = moreStateData.getValue();
-    expect(commonFuncs.isEqual(current, {array_1: [], array_2: []}, {deep: true})).toBe(true);
-
-  }
-}
-
-function test_deffered_execution(store) {
-  return async function () {
-    let curVals = {array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]], array_2: []};
-    let stateData = new formFuncs.FFormStateAPI({name: 'test_deffered_execution', store, schema: require('./schema3').default, current: curVals});
-    await stateData.promise.vAsync;
-    let promises = stateData.arrayItemOps(['array_1', 0, 1], 'up', {execute: 25});
-    expect(commonFuncs.isEqual(stateData.getValue(), {array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]], array_2: []}, {deep: true})).toBe(true);
-    await sleep(50);
-    expect(commonFuncs.isEqual(stateData.getValue(), {array_1: [[{t1: 4, t2: 5}, {v1: 1, v2: 2}]], array_2: []}, {deep: true})).toBe(true);
-
-    promises = stateData.arrayItemOps(['array_1', 0, 1], 'up', {execute: 25});
-    expect(commonFuncs.isEqual(stateData.getValue(), {array_1: [[{t1: 4, t2: 5}, {v1: 1, v2: 2}]], array_2: []}, {deep: true})).toBe(true);
-    await promises;
-    expect(commonFuncs.isEqual(stateData.getValue(), {array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]], array_2: []}, {deep: true})).toBe(true);
-
-    promises = stateData.arrayItemOps(['array_1', 0, 1], 'up', {execute: 25});
-    expect(commonFuncs.isEqual(stateData.getValue(), {array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]], array_2: []}, {deep: true})).toBe(true);
-    stateData.execute({execute: 0});  // cancel deffered execution
-    await sleep(50);
-    expect(commonFuncs.isEqual(stateData.getValue(), {array_1: [[{v1: 1, v2: 2}, {t1: 4, t2: 5}]], array_2: []}, {deep: true})).toBe(true);
-    let newPromises = stateData.execute({execute: true});
-    expect(newPromises).toBe(promises); // test that promises are the same object
-    expect(commonFuncs.isEqual(stateData.getValue(), {array_1: [[{t1: 4, t2: 5}, {v1: 1, v2: 2}]], array_2: []}, {deep: true})).toBe(true);
-
-    promises = stateData.arrayItemOps(['array_1', 0, 1], 'up', {execute: 25});
-    expect(newPromises !== promises).toBe(true);
-    stateData.set('array_1/0/0/@/values/current/v1', 55, {execute: 25});
-    await promises;
-    let state = stateData.getState();
-    expect(commonFuncs.isEqual(stateData.getValue(), {array_1: [[{v1: 55, v2: 2}, {t1: 4, t2: 5}]], array_2: []}, {deep: true})).toBe(true);
-
-    stateData.set('array_1/0/0/@/values/current/v1', 5, {execute: 25});
-    let items = stateData.set('array_1/0/0/@/values/current/v1', 5, {execute: true, returnItems: true});
-    expect(items.length).toBe(2);
-    items = stateData.execute({execute: true, returnItems: true});
-    expect(items.length).toBe(0);
-  }
-}
-
-function test_async_validation(store) {
-  return async function () {  // state.objLevel_1.objLevel_2.array_1[0][0].bazinga[Symbol.for('FFormData')]
-
-    let stateData = new formFuncs.FFormStateAPI({name: 'test_async_validation', store, schema: require('./schema').default});
-    let state = stateData.getState();
-    expect(state.movies.cinema[Symbol.for('FFormData')].messages[1].textArray.length === 1).toBeTruthy();
-    expect(state.movies.cinema.favCinema[Symbol.for('FFormData')].messages[1].textArray.length === 1).toBeTruthy();
-    expect(state.movies.favMovie[Symbol.for('FFormData')].messages[1].textArray.length === 1).toBeTruthy();
-    expect(state.color.cinema.favCinema[Symbol.for('FFormData')].messages[1].textArray.length === 1).toBeTruthy();
-    expect(state.color.cinema.favBook[Symbol.for('FFormData')].messages[0].textArray.length === 1).toBeTruthy();
-    expect(state.mapFavBook[Symbol.for('FFormData')].messages[3] === undefined).toBeTruthy();
-    await stateData.promise.vAsync;  // state.movies.cinema[Symbol.for('FFormData')]
-    state = stateData.getState();
-    expect(state.movies.cinema[Symbol.for('FFormData')].messages[2].textArray.length === 1).toBeTruthy();
-    expect(state.mapFavBook[Symbol.for('FFormData')].messages[3].textArray.length === 1).toBeTruthy();
-    let flatDataObj = {
-      "array_1": [
-        [{"favBook": "inital 0 0"}],
-        [{"favBook": "inital 1 0"}, {"favBook": "inital 1 1"}, {"favBook": "inital 1 2"}],
-        [{"favBook": "inital 2 0"}, {"favBook": "inital 2 1"}, {"favBook": "inital 2 2"}],
-        [{"favBook": "inital 3 0"}, {"favBook": "inital 3 1"}, {"favBook": "favBook 3 2"}]
-      ],
-      "movies": {"mc_favCinema": "inital mc_favCinema", "mc_favBook": "inital movies_cinema_favBook"},
-      "color_cinema_favBook": "inital color_cinema_favBook",
-      "color_cinema_favCinema": "inital color_cinema_favCinema",
-    };
-
-    let actualValues_1 = stateData.getValue({flatten: true});
-    let promise = stateData.setValues(flatDataObj, {valueType: 'inital', execute: true, flatten: true});
-    state = stateData.getState();
-    let defaultValues = stateData.getDefaultValue({flatten: true});
-    let initalValues = stateData.getValue({inital: true, flatten: true});
-    // console.log(initalValues);
-    let actualValues_2 = stateData.getValue({flatten: true});
-    expect(actualValues_1.array_1.length === 2).toBeTruthy();
-    expect(actualValues_2.array_1.length === 2).toBeTruthy();
-    expect(defaultValues.array_1.length === 2).toBeTruthy();
-    expect(initalValues.array_1.length === 4).toBeTruthy();
-    expect(state.objLevel_1.objLevel_2.array_1[0][0] !== undefined).toBeTruthy();
-    expect(state.objLevel_1.objLevel_2.array_1[0][1] !== undefined).toBeTruthy();
-    expect(state.objLevel_1.objLevel_2.array_1[1][1] !== undefined).toBeTruthy();
-    expect(state.mapFavBook[Symbol.for('FFormData')].values.inital === 'inital movies_cinema_favBook').toBeTruthy();
-
-    expect(state.color.cinema.favCinema[Symbol.for('FFormData')].messages[0].textArray.length === 1).toBeTruthy();
-    expect(state.color.cinema.favBook[Symbol.for('FFormData')].messages[0].textArray.length === 1).toBeTruthy();
-    expect(state.movies.cinema[Symbol.for('FFormData')].messages[0].textArray.length === 0).toBeTruthy();
-    expect(state.mapFavBook[Symbol.for('FFormData')].messages[3].textArray.length === 1).toBeTruthy();
-    await promise.vAsync;
-    expect(state.movies.cinema[Symbol.for('FFormData')].messages[0].textArray.length === 0).toBeTruthy();
-    expect(state.mapFavBook[Symbol.for('FFormData')].messages[3].textArray.length === 1).toBeTruthy();
-    stateData.set('objLevel_1/@/switch/params/_liveValidate', true, {execute: true});
-    state = stateData.getState();
-
-    // expect(state.objLevel_1.objLevel_2[Symbol.for('FFormData')].params._liveValidate).toBe(true);
-    // expect(state.objLevel_1.objLevel_2.array_1[Symbol.for('FFormData')].params._liveValidate).toBe(true);
-    // expect(state.objLevel_1.objLevel_2.array_1[0][Symbol.for('FFormData')].params._liveValidate).toBe(true);
-    // expect(state.objLevel_1.objLevel_2.array_1[0][0][Symbol.for('FFormData')].params._liveValidate).toBe(true);
-    expect(state.objLevel_1.favMovie2[Symbol.for('FFormData')].params._liveValidate).toBe(true);
-    expect(state.objLevel_1.objLevel_2.array_1[1][0].bazingaCinema.favBook[Symbol.for('FFormData')].params._liveValidate).toBe(true);
-    expect(state.objLevel_1.objLevel_2.array_1[0][2].bazingaCinema.favBook[Symbol.for('FFormData')].params._liveValidate).toBe(true);
-
-    stateData.set('objLevel_1/objLevel_2/@/switch/params/_liveValidate', false, {execute: true});
-    state = stateData.getState();
-    // expect(state.objLevel_1.objLevel_2[Symbol.for('FFormData')].params._liveValidate).toBe(false);
-    // expect(state.objLevel_1.objLevel_2.array_1[Symbol.for('FFormData')].params._liveValidate).toBe(false);
-    // expect(state.objLevel_1.objLevel_2.array_1[0][Symbol.for('FFormData')].params._liveValidate).toBe(false);
-    // expect(state.objLevel_1.objLevel_2.array_1[0][0][Symbol.for('FFormData')].params._liveValidate).toBe(false);
-    expect(state.objLevel_1.favMovie2[Symbol.for('FFormData')].params._liveValidate).toBe(true);
-    expect(state.objLevel_1.objLevel_2.array_1[1][0].bazingaCinema.favBook[Symbol.for('FFormData')].params._liveValidate).toBe(false);
-    expect(state.objLevel_1.objLevel_2.array_1[0][2].bazingaCinema.favBook[Symbol.for('FFormData')].params._liveValidate).toBe(false);
-
-    stateData.set('objLevel_1/objLevel_2/@/status/pristine', false, {execute: true});
-    state = stateData.getState();
-    expect(state.objLevel_1[Symbol.for('FFormData')].status.pristine).toBe(false);
-    expect(state.objLevel_1.objLevel_2[Symbol.for('FFormData')].status.pristine).toBe(false);
-    stateData.set('objLevel_1/objLevel_2/@/status/pristine', true, {execute: true});
-    state = stateData.getState();
-    expect(state.objLevel_1[Symbol.for('FFormData')].status.pristine).toBe(true);
-    expect(state.objLevel_1.objLevel_2[Symbol.for('FFormData')].status.pristine).toBe(true);
-    // stateData.set('objLevel_1/objLevel_2/@/status/pristine', null);
-    // state = stateData.getState();
-    // expect(state.objLevel_1[Symbol.for('FFormData')].status.pristine).toBe(null);
-    // expect(state.objLevel_1.objLevel_2[Symbol.for('FFormData')].status.pristine).toBe(null);
-    stateData.set('objLevel_1/objLevel_2/@/status/pristine', true, {execute: true});
-    state = stateData.getState();
-    expect(state.objLevel_1[Symbol.for('FFormData')].status.pristine).toBe(true);
-    expect(state.objLevel_1.objLevel_2[Symbol.for('FFormData')].status.pristine).toBe(true);
-    // console.log(stateData)
-  }
-}
-
-// describe('FForm api tests with redux', function () {
-//   const formReducer = apiFuncs.formReducer;
-//   const rootReducer = combineReducers({fforms: formReducer()});
-//   const store = createStore(rootReducer, applyMiddleware(thunk));
-//
-//   //it('test getRawValuesChanges with redux', test_getRawValuesChanges(store));
-//
-//   //it('test omit with getValue and recalculation', test_omit_getValue(store));
-//
-//   it('test api.set api.setValues', test_api_setValues(store));
-//
-//   //it('test FFormStateAPI init and force validate', test_FFormCoreAPI(store));
-//
-//   it('test recursivelySetItems', test_coreApiFunctions(store));
-//
-//   it('test deffered execution', test_deffered_execution(store));
-//
-//   it('test FFormStateAPI async validation', test_async_validation(store));
-//
-// });
-//
-// describe('FForm api tests', function () {
-//
-//   //it('test getRawValuesChanges', test_getRawValuesChanges());
-//
-//   //it('test omit with getValue and recalculation', test_omit_getValue());
-//
-//   it('test api.set api.setValues', test_api_setValues());
-//
-//   //it('test FFormStateAPI init and force validate', test_FFormCoreAPI());
-//
-//   it('test recursivelySetItems', test_coreApiFunctions());
-//
-//   it('test deffered execution', test_deffered_execution());
-//
-//   it('test FFormStateAPI async validation', test_async_validation());
-//
-//
-// });

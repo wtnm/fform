@@ -1,5 +1,3 @@
-import flatten from "../old/rrf/utils/flatten";
-
 
 const isUndefined = (value: any): value is undefined => typeof value === 'undefined';
 const isNumber = (value: any): value is number => typeof value === "number";

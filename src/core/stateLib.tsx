@@ -141,7 +141,6 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PR
   return state
 };
 
-// todo: make SymReset processing
 Macros.switch = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   let keyPath = item[SymData] || [];
   let switches = makeSlice(keyPath, item.value);
@@ -964,11 +963,12 @@ function resolvePath(path: Path, base?: Path) {
 }
 
 function setIfNotDeeper(state: any, value: any, ...pathes: any[]) {
+  if (state === value) return state;
   const path = flattenPath(pathes);
   let result = state;
   for (let i = 0; i < path.length - 1; i++) {
-    if (result === value) return state;
-    result[path[i]] = {};
+    if (result[path[i]] === value) return state;
+    if (!isObject(result[path[i]])) result[path[i]] = {};
     result = result[path[i]];
   }
   if (path.length) result[path[path.length - 1]] = value;
@@ -1004,7 +1004,8 @@ function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
 function objMap(obj: any, fn: Function, symbol = false) {
   if (!isMergeable(obj)) return obj;
   const result = isArray(obj) ? [] : {};
-  (symbol ? objKeys : objKeysNSymb)(obj).forEach(key => result[key] = fn(obj[key]));
+  (symbol ? objKeysNSymb : objKeys)(obj).forEach(key =>
+    result[key] = fn(obj[key]));
   return result
 };
 
