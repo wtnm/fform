@@ -105,11 +105,32 @@ export default {
           allOf: [{$ref: '#/definition/stringType'}],
           ff_dataMap: [['../@oneOf', './@stringTypeMappedOneOf'], ['../@length', './@stringTypeMappedLength']],
         }, {
-          title: 'multiType',
-          allOf: [{$ref: '#/definition/multiType'}],
+          title: 'multitypeObject',
+          required: ['propOne', 'propTwo'],
+          properties: {
+            propOne: {
+              title: 'multiType',
+              allOf: [{$ref: '#/definition/multiType'}],
+            },
+            propTwo: {
+              title: 'multiType',
+              required: true,
+              allOf: [{$ref: '#/definition/multiType'}],
+            },
+            propThree: {
+              title: 'multiType',
+              allOf: [{$ref: '#/definition/multiType'}],
+            },
+            propFour: {
+              title: 'multiType',
+              required: true,
+              allOf: [{$ref: '#/definition/multiType'}],
+            }
+          }
         }
         ]
       }
+
     }
   },
   title: 'oneOf schema test',

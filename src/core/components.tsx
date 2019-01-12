@@ -302,23 +302,23 @@ class FField extends Component<any, any> {
       self._mapsE[block] = normalized.every;
       self._mappedData[block] = staticProps;  // properties, without reserved names      
     });
-    self._setArrayBlocks(self.state.branch[SymData]);
+    // self._setArrayBlocks(self.state.branch[SymData]);
     self._setMappedData(self.state.branch[SymData], 'build');
     self._rebuild = false;
   }
 
-  _setArrayBlocks(data: any) {
-    const self = this;
-    let _widgets = self._widgets;
-    _widgets = merge(_widgets, {Array: data.fData.type == 'array' ? getIn(self._ff_components, 'Array', '_$widget') : false});
-    // _widgets = merge(_widgets, {ArrayItem: data.ArrayItem ? getIn(self._ff_components, 'ArrayItem', '_$widget') : false});
-    if (self._widgets !== _widgets) {
-      self._widgets = _widgets;
-      return true
-    }
-    return false
-  }
-
+  // _setArrayBlocks(data: any) {
+  //   const self = this;
+  //   let _widgets = self._widgets;
+  //   _widgets = merge(_widgets, {Array: data.fData.type == 'array' ? getIn(self._ff_components, 'Array', '_$widget') : false});
+  //   // _widgets = merge(_widgets, {ArrayItem: data.ArrayItem ? getIn(self._ff_components, 'ArrayItem', '_$widget') : false});
+  //   if (self._widgets !== _widgets) {
+  //     self._widgets = _widgets;
+  //     return true
+  //   }
+  //   return false
+  // }
+ 
   // _setId() {
   //   const self = this;
   //   const id = getIn(self.props.stateBranch, SymData, 'uniqId');
@@ -359,7 +359,7 @@ class FField extends Component<any, any> {
       return true;
     }
 
-    if (nextData.fData.type !== currentData.fData.type) updateComponent = self._setArrayBlocks(nextData);
+    // if (nextData.fData.type !== currentData.fData.type) updateComponent = self._setArrayBlocks(nextData);
     updateComponent = self._setMappedData(nextState.branch[SymData], nextData !== currentData) || updateComponent;
     updateComponent = updateComponent || nextData.params.norender != currentData.params.norender;
     return updateComponent
@@ -476,7 +476,7 @@ class FSection extends Component<any, any> {
     self._mappedData = {};
     self._objectLayouts = [];
 
-    self._isArray = !isUndefined(arrayStart);
+    // self.props.isArray = !isUndefined(arrayStart);
 
     const UPDATABLE = {keys: self._getObjectKeys($branch), counter: 1};
     self._focusField = focusField || UPDATABLE.keys[0] || '';
@@ -492,7 +492,7 @@ class FSection extends Component<any, any> {
 
     self._arrayLayouts = [];
     self._arrayKey2field = {};
-    if (self._isArray) {  // _makeArrayLayouts
+    if (self.props.isArray) {  // _makeArrayLayouts
       for (let i = arrayStart; i < $branch[SymData].length; i++) {
         let arrayKey = self._arrayIndex2key($branch[i]);
         self._arrayLayouts.push(self._makeFField(i.toString(), arrayKey));
@@ -516,7 +516,7 @@ class FSection extends Component<any, any> {
   _getObjectKeys(stateBranch: StateType) {
     const self = this;
     let keys: string[] = [];
-    if (self._isArray) for (let i = 0; i < self._arrayStart; i++) keys.push(i.toString()); // Math.min(self._arrayStart, stateBranch[SymData].length)
+    if (self.props.isArray) for (let i = 0; i < self.props.arrayStart; i++) keys.push(i.toString()); // Math.min(self.props.arrayStart, stateBranch[SymData].length)
     else keys = branchKeys(stateBranch);
     return keys;
   }
@@ -529,11 +529,11 @@ class FSection extends Component<any, any> {
     return this.props.$FField.path + '/' + this._arrayKey2field[key];
   }
 
-  _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType) {
+  _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType) { // todo: rework needed
     const self = this;
-    const updArray = [];
+    const updatedArray = [];
     let doUpdate = false;
-    for (let i = self._arrayStart; i < nextBranch[SymData].length; i++) {
+    for (let i = self.props.arrayStart; i < nextBranch[SymData].length; i++) {
       let arrayKey = self._arrayIndex2key(nextBranch[i]);
       if (self._fields[arrayKey]) self._fields[arrayKey].setState({branch: nextBranch[i]});
       let prevIndex = self._arrayKey2field[arrayKey];
@@ -541,10 +541,10 @@ class FSection extends Component<any, any> {
         self._arrayKey2field[arrayKey] = i;
         doUpdate = true
       }
-      updArray.push(!isUndefined(prevIndex) ? self._arrayLayouts[prevIndex - self._arrayStart] : self._makeFField(i.toString(), arrayKey));
+      updatedArray.push(!isUndefined(prevIndex) ? self._arrayLayouts[prevIndex - self.props.arrayStart] : self._makeFField(i.toString(), arrayKey));
     }
-    if (self._arrayLayouts.length !== updArray.length) doUpdate = true;
-    if (doUpdate) self._arrayLayouts = updArray;
+    if (self._arrayLayouts.length !== updatedArray.length) doUpdate = true;
+    if (doUpdate) self._arrayLayouts = updatedArray;
     return doUpdate;
   }
 
@@ -565,10 +565,10 @@ class FSection extends Component<any, any> {
     let nextBranch = nextProps.stateBranch;
 
     if (prevBranch != nextBranch) {
-      // update object elements or if it _isArray elements that lower than self._arrayStart
+      // update object elements or if it _isArray elements that lower than self.props.arrayStart
       self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self._fields[field] && self._fields[field].setState({branch: nextBranch[field]}));
 
-      if (self._isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch); // updates and reorders elements greater/equal than self._arrayStart
+      if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch); // updates and reorders elements greater/equal than self.props.arrayStart
 
       const newMapped = self._updateMappedData(nextBranch[SymData], nextBranch[SymData] !== prevBranch[SymData]);
       if (newMapped != self._mappedData) { // update self._widgets
@@ -992,8 +992,8 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   // },
   widgets: {
     Generic: GenericWidget,
-    Builder: FBuilder,
-    Array: ArrayWidget,
+    Builder: FBuilder,  // todo: move to FField
+    // Array: ArrayWidget, // replace with Title
     Wrapper: WrapperWidget,
     ItemMenu: ItemMenu,
     Messages: MessagesWidget,
@@ -1009,22 +1009,21 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     'base': {
       //_blocks: {'Builder': true, 'Title': true, 'Body': true, 'Main': true, 'Message': true, 'Wrapper': true, 'Autosize': false},
       // childrenBlocks: {},
-
-      Array: {
-        _$widget: '%/widgets/Array',
-        $cx: '%/$cx',
-        Empty: {
-          _$widget: '%/widgets/Generic',
-          children: 'This array is empty'
-        },
-        AddButton: {
-          $_ref: '%/parts/ArrayAddButton'
-        },
-        $propsMap: {
-          length: '@/length',
-          canAdd: '@/fData/canAdd',
-        },
-      },
+      // Array: {
+      //   _$widget: '%/widgets/Array',
+      //   $cx: '%/$cx',
+      //   Empty: {
+      //     _$widget: '%/widgets/Generic',
+      //     children: 'This array is empty'
+      //   },
+      //   AddButton: {
+      //     $_ref: '%/parts/ArrayAddButton'
+      //   },
+      //   $propsMap: {
+      //     length: '@/length',
+      //     canAdd: '@/fData/canAdd',
+      //   },
+      // },
       Wrapper: {
         _$widget: '%/widgets/Wrapper',
         ArrayItemMenu: {
@@ -1043,20 +1042,24 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           widgets: ['%/funcs/getFFieldProperty', '_widgets'],
         },
       },
+      Title: {
+        _$widget: '%/widgets/Generic',
+        useTag: 'label',
+        $cx: '%/$cx',
+        children: [],
+        $propsMap: {
+          'className/required': '@/fData/required',
+          'children/0': '@/fData/title',
+          htmlFor: {$: '%/funcs/getFFieldProperty', args: ['id'], update: 'build'}
+        },
+      },
       Body: {
         _$widget: '%/widgets/Generic',
         $cx: '%/$cx',
         className: 'body',
       },
-      Title: {
-        _$widget: '%/widgets/Generic',
-        useTag: 'label',
+      Main: {
         $cx: '%/$cx',
-        $propsMap: {
-          'className/required': '@/fData/required',
-          children: '@/fData/title',
-          htmlFor: ['%/funcs/getFFieldProperty', 'id']
-        },
       },
       Message: {
         _$widget: '%/widgets/Messages',
@@ -1068,9 +1071,6 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         MessageItem: {
           _$widget: '%/widgets/MessageItem',
         },
-      },
-      Main: {
-        $cx: '%/$cx',
       }
     },
     nBase: {
@@ -1090,9 +1090,8 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           title: '@/fData/title',
           readOnly: '@/params/readonly',
           disabled: '@/params/disabled',
-
         }
-      }
+      },
     },
     string: {
       $_ref: '%/presets/nBase',
@@ -1152,14 +1151,27 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
         $propsMap: {
-          arrayStart: ['%/funcs/getArrayStart', '@/fData/type'],
+          isArray: ['%/funcs/equal', 'array', '@/fData/type'],
+          arrayStart: {$: '%/funcs/getArrayStart', args: [], update: 'build'},
           FFormApi: {$: '%/funcs/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
           $layout: {$: '%/funcs/getFFieldProperty', args: 'ff_layout', update: 'build'},
           $branch: {$: '%/funcs/getFFieldProperty', args: 'state/branch', update: 'all'},
         }
       },
+      Title: {
+        useTag: 'legend',
+        children: ['',
+          {$_ref: '%/pars/ArrayAddButton'},
+          {$_ref: '%/pars/ArrayDelButton'},
+          {children: '(array is empty)'}],
+        $propsMap: {
+          'className/required': '@/fData/required',
+          'children/1/className/hidden': ['%/funcs/notEqual', 'array', '@/fData/type'],
+          'children/2/className/hidden': ['%/funcs/notEqual', 'array', '@/fData/type'],
+          'children/3/className/hidden': ['%/funcs/notEqual', 0, '@/length'],
+        },
+      },
       Wrapper: {useTag: 'fieldset'},
-      Title: {useTag: 'legend'},
     },
     array: '%/presets/object',
     inlineTitle: {
@@ -1203,12 +1215,13 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   funcs: {
     not: function (v: any) {return !v},
     bool: function (v: any) {return !!v},
-    // hidden4Array: function (hidden: any) {return !this._widgets['ArrayItem'] && !!hidden},
-    getArrayStart: function (type: string) {return type == 'array' && arrayStart(this.schemaPart) || undefined},
+    equal: function (a: any, b: any) {return a === b},
+    notEqual: function (a: any, b: any) {return a !== b},
+    getArrayStart: function () {return arrayStart(this.schemaPart)},
     getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
   },
   on: {
-    clickArrayAdd: function (path: any = './') {this.api.arrayAdd(path, 1)},
+    clickArrayAdd: function (path: any, value: number) {this.api.arrayAdd(path, value)},
     clickArrayItemOps: function (path: any, key: string) {this.api.arrayItemOps(path, key)},
     changeBase: function (event: any) {this.api.setValue(event.target.value, {})},
     // changeString: function (event: any) {this.api.setValue(event.target.value, {})},
@@ -1237,14 +1250,21 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     },
     Button: {
       _$widget: '%/widgets/Generic',
+      $cx: 'cx',
       useTag: 'button',
       type: 'button',
     },
     ArrayAddButton: {
       $_ref: '%/parts/Button',
-      children: 'Add new item',
+      children: ['+'],
       onClick: '%/funcs/on/clickArrayAdd',
-      'onClick.bind': ['./']
+      'onClick.bind': ['./', 1]
+    },
+    ArrayDelButton: {
+      $_ref: '%/parts/Button',
+      children: ['-'],
+      onClick: '%/funcs/on/clickArrayAdd',
+      'onClick.bind': ['./', -1]
     },
     ArrayItemMenu: {
       _$widget: '%/widgets/ItemMenu',

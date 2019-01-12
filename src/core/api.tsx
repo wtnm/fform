@@ -37,7 +37,6 @@ import {
   updateStatePROCEDURE,
   mergeStatePROCEDURE,
   isSelfManaged,
-  getKeyMapFromSchema,
   normalizeUpdate,
   setIfNotDeeper, objMap
 } from "./stateLib";
@@ -102,7 +101,6 @@ class FFormStateManager {
 
   props: FFormCoreProps;
   schema: jsJsonSchema;
-  keyMap: any;
   dispatch: any;
   JSONValidator: (values: any) => any;
   name?: string;
@@ -124,7 +122,7 @@ class FFormStateManager {
     self._setState = self._setState.bind(self);
     if (props.setState && props.store) self._unsubscribe = self.props.store.subscribe(self._handleChange.bind(self));
     if (props.name) _CORES[props.name] = self;
-    self.keyMap = getKeyMapFromSchema(self.schema, self._getState);
+    // self.keyMap = getKeyMapFromSchema(self.schema, self._getState);
     if (!self._getState()) self._setState(makeStateFromSchema(props.schema));
   }
 
@@ -292,18 +290,17 @@ class FFormStateAPI extends FFormStateManager {
     return this._setExecution((update as StateApiUpdateType), opts);
   };
 
-  getValue = (opts: APIOptsType & { path?: string | Path, inital?: boolean, flatten?: boolean } = {}): any => {
+  getValue = (opts: APIOptsType & { path?: string | Path, inital?: boolean } = {}): any => {
     const path = normalizePath(opts.path || []);
-    let value = getIn(this.getState(), SymData, opts.inital ? 'inital' : 'current', path);
-    return opts.flatten ? this.keyMap.flatten(value/*, path*/) : value;
+    return getIn(this.getState(), SymData, opts.inital ? 'inital' : 'current', path);
   };
 
-  setValue = (value: any, opts: APIOptsType & { path?: string | Path, setOneOf?: number, inital?: boolean, flatten?: boolean } = {}) => {
+  setValue = (value: any, opts: APIOptsType & { path?: string | Path, setOneOf?: number, inital?: boolean } = {}) => {
     const path = normalizePath(opts.path || []);
-    return this._setExecution({path: [opts.inital ? '@inital' : '@current'].concat(path), value: opts.flatten ? this.keyMap.unflatten(value/*, path*/) : value}, opts);
+    return this._setExecution({path: [opts.inital ? '@inital' : '@current'].concat(path), value}, opts);
   };
 
-  getDefaultValue = (opts: { path?: string | Path, flatten?: boolean } = {}) => opts.flatten ? this.keyMap.flatten(getDefaultFromSchema(this.schema)) : getDefaultFromSchema(this.schema);
+  getDefaultValue = (opts: { path?: string | Path, flatten?: boolean } = {}) => getDefaultFromSchema(this.schema);
 
   reset = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymReset, opts);
 

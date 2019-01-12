@@ -542,60 +542,6 @@ describe('FForm state functions tests', function () {
   });
 
 
-  it('test flattenObject getKeyMapFromSchema', function () {
-    let testObject = require('./schema.js').default;
-    let mapData = stateFuncs.getKeyMapFromSchema(testObject);
-    // console.log(mapData);
-    let flatDataObj = {
-      "array_1": [
-        [{"favBook": "favBook 0 0"}, {"favBook": "favBook 0 1"}, {"favBook": "favBook 0 2"}],
-        [{"favBook": "favBook 1 0"}, {"favBook": "favBook 1 1"}, {"favBook": "favBook 1 2"}],
-        [{"favBook": "favBook 2 0"}, {"favBook": "favBook 2 1"}, {"favBook": "favBook 2 2"}],
-        [{"favBook": "favBook 3 0"}, {"favBook": "favBook 3 1"}, {"favBook": "favBook 3 2"}]
-      ],
-      "movies": {"mc_favBook": "mcf 0"},
-      "color_cinema_favBook": "ccf 1"
-    };
-
-    let unflatDataObj = {
-      'objLevel_1': {
-        'objLevel_2': {
-          'array_1': [
-            [{bazingaCinema: {'favBook': 'favBook 0 0'}}, {bazingaCinema: {'favBook': 'favBook 0 1'}}, {bazingaCinema: {'favBook': 'favBook 0 2'}}],
-            [{bazingaCinema: {'favBook': 'favBook 1 0'}}, {bazingaCinema: {'favBook': 'favBook 1 1'}}, {bazingaCinema: {'favBook': 'favBook 1 2'}}],
-            [{bazingaCinema: {'favBook': 'favBook 2 0'}}, {bazingaCinema: {'favBook': 'favBook 2 1'}}, {bazingaCinema: {'favBook': 'favBook 2 2'}}],
-            [{bazingaCinema: {'favBook': 'favBook 3 0'}}, {bazingaCinema: {'favBook': 'favBook 3 1'}}, {bazingaCinema: {'favBook': 'favBook 3 2'}}],
-          ]
-        }
-      },
-      'movies': {'cinema': {'favBook': 'mcf 0'}},
-      'color': {'cinema': {'favBook': 'ccf 1'}},
-    };
-    let flatObj = mapData.flatten(unflatDataObj);
-    expect(commonFuncs.isEqual(flatObj, flatDataObj));
-    let unflatObj = mapData.unflatten(flatDataObj);
-    expect(commonFuncs.isEqual(unflatObj, unflatDataObj));
-  });
-
-
-  it('test getKeyMapFromSchema', function () {
-    let testObject = require('./schema.js').default;
-    let mapData = stateFuncs.getKeyMapFromSchema(testObject);
-    // console.log(mapData);
-    let keys1 = mapData.path2key(['color', 'cinema', 'favBook']);
-    let keys2 = mapData.path2key(['movies', 'cinema', 'favBook']);
-    let path1 = mapData.key2path('color_cinema_favBook');
-    let path2 = mapData.key2path(['movies', 'mc_favBook']);
-    let path3 = mapData.key2path(['array_1', '3', '2', 'favBook']);
-    let keys3 = mapData.path2key(["objLevel_1", "objLevel_2", "array_1", "3", "2", "bazingaCinema", "favBook"]);
-    expect(commonFuncs.isEqual(keys1, ['color_cinema_favBook'])).toBeTruthy();
-    expect(commonFuncs.isEqual(keys2, ['movies', 'mc_favBook'])).toBeTruthy();
-    expect(commonFuncs.isEqual(keys3, ['array_1', '3', '2', 'favBook'])).toBeTruthy();
-    expect(commonFuncs.isEqual(path1, ['color', 'cinema', 'favBook'])).toBeTruthy();
-    expect(commonFuncs.isEqual(path2, ['movies', 'cinema', 'favBook'])).toBeTruthy();
-    expect(commonFuncs.isEqual(path3, ["objLevel_1", "objLevel_2", "array_1", "3", "2", "bazingaCinema", "favBook"])).toBeTruthy();
-  });
-
 
   it('test string2NUpdate', function () {
     let res = stateFuncs.string2NUpdate('');
@@ -702,12 +648,38 @@ describe('FForm state functions tests', function () {
     expect(state[SymDataMapTree].length[SymDataMap]['./1/@/stringTypeMappedLength']).toBeTruthy();
     expect(state[SymDataMapTree].oneOf[SymDataMap]['./1/@/stringTypeMappedOneOf']).toBeTruthy();
 
+
     state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [1], op: 'up', value: 0, macros: 'arrayItem'});
     state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
     expect(state[SymDataMapTree].length[SymDataMap]['./1/@/stringTypeMappedLength']).not.toBeTruthy();
     expect(state[SymDataMapTree].oneOf[SymDataMap]['./1/@/stringTypeMappedOneOf']).not.toBeTruthy();
     expect(state[SymDataMapTree].length[SymDataMap]['./0/@/stringTypeMappedLength']).toBeTruthy();
     expect(state[SymDataMapTree].oneOf[SymDataMap]['./0/@/stringTypeMappedOneOf']).toBeTruthy();
+
+    expect(state[0][SymData].oneOf).toBe(2);
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {
+      path: '0@value',
+      value: {
+        propOne: 'one',
+        propTwo: 11,
+        propThree: null,
+        propFour: {oneString: 'oneString value'},
+      }
+    });
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0][SymData].oneOf).toBe(0);
+    expect(state[0].recusion[SymData].length).toBe(0);
+    expect(state[SymData].current[0].propTwo).toBe(11);
+    expect(state[0].propTwo).toBe(undefined);
+
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0], value: 3, macros: 'setOneOf'});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0][SymData].oneOf).toBe(3);
+    expect(state[0].recusion).toBe(undefined);
+    expect(state[SymData].current[0].propTwo).toBe(11);
+    expect(state[SymData].current[0].recusion.length).toBe(0);
+    expect(state[0].propTwo[SymData].oneOf).toBe(3);
+    expect(state[0].propTwo[SymData].fData.type).toBe('number');
   })
 });
 
