@@ -54,6 +54,7 @@ export default {
         type: ['string', 'array'],
         ff_preset: 'array',
         items: {type: 'string'},
+        required: true
       }, {
         type: ['object', 'array'],
         ff_preset: 'array',

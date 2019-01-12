@@ -1,5 +1,5 @@
 import {getCreateIn, setIn, hasIn, getIn, objKeys, moveArrayElems, makeSlice, memoize, merge, objKeysNSymb, push2array} from "./commonLib";
-import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject} from "./commonLib";
+import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction} from "./commonLib";
 import {number} from "prop-types";
 
 const SymData: any = Symbol.for('FFormData');
@@ -223,9 +223,11 @@ function recursivelyUpdate(state: StateType, schema: jsJsonSchema, UPDATABLE_obj
   return state
 };
 
-function oneOfFromState(state: StateType | Function): (path: Path) => number {
-  if (typeof state == 'function') return (path: Path) => getIn(state(), path, SymData, 'oneOf');
-  return (path: Path) => getIn(state, path, SymData, 'oneOf')
+function oneOfFromState(state: StateType | Function): (path: Path) => oneOfStructureType {
+  return (path: Path) => {
+    let s = getIn(isFunction(state) ? state() : state, path, SymData);
+    return {oneOf: getIn(s, 'oneOf'), type: getIn(s, 'fData', 'type')}
+  };
 }
 
 function oneOfStructure(state: StateType | Function, path: Path) { // makes object than copies the structure of state[SymData].oneOf limited to path
@@ -233,15 +235,17 @@ function oneOfStructure(state: StateType | Function, path: Path) { // makes obje
   const result = {};
   let tmp = result;
   setIn(tmp, getIn(state, SymData, 'oneOf'), SymData, 'oneOf');
+  setIn(tmp, getIn(state, SymData, 'fData', 'type'), SymData, 'type');
   for (let i = 0; i < path.length; i++) {
     if (isUndefined(path[i]) || path[i] === '') continue;
     tmp[path[i]] = {};
     tmp = tmp[path[i]];
     state = getIn(state, path[i]);
     setIn(tmp, getIn(state, SymData, 'oneOf'), SymData, 'oneOf');
+    setIn(tmp, getIn(state, SymData, 'fData', 'type'), SymData, 'type');
   }
   //return result
-  const fn = function (path: Path, oneOf?: number) {return isUndefined(oneOf) ? getIn(result, path, SymData, 'oneOf') : setIn(result, oneOf, path, SymData, 'oneOf')};
+  const fn = function (path: Path, oneOf?: oneOfStructureType) {return isUndefined(oneOf) ? getIn(result, path, SymData) : setIn(result, oneOf, path, SymData)};
   fn._canSet = true;
   return fn
 }
@@ -255,7 +259,7 @@ function branchKeys(branch: StateType) {
 }
 
 
-function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path) => number, fullOneOf?: boolean): jsJsonSchema {
+function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf: (path: Path) => oneOfStructureType, fullOneOf?: boolean): jsJsonSchema {
 
   function getArrayItemSchemaPart(index: number, schemaPart: jsJsonSchema): jsJsonSchema {
     let items: jsJsonSchema[] = [];
@@ -317,13 +321,14 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path)
   const errorText = 'Schema path not found: ';
   let schemaPart: jsJsonSchema | jsJsonSchema[] = schema;
   const combinedSchemas = getCreateIn(schemaStorage(schema), new Map(), 'combinedSchemas');
-
+  let type;
   for (let i = path[0] == '#' ? 1 : 0; i < path.length; i++) {
     if (!schemaPart) throw new Error(errorText + path.join('/'));
     schemaPart = combineSchemasINNER_PROCEDURE(schemaPart);
-    if (isArray(schemaPart)) schemaPart = schemaPart[getOneOf && getOneOf(path.slice(0, i)) || 0];
+    let {oneOf, type} = getOneOf(path.slice(0, i));
+    if (isArray(schemaPart)) schemaPart = schemaPart[oneOf || 0];
 
-    if (schemaPart.type == 'array') {
+    if (type == 'array') {
       if (isNaN(parseInt(path[i]))) throw new Error(errorText + path.join('/'));
       schemaPart = getArrayItemSchemaPart(path[i], schemaPart)
     } else {
@@ -333,7 +338,7 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf?: (path: Path)
   }
   schemaPart = combineSchemasINNER_PROCEDURE(schemaPart);
   if (fullOneOf) return schemaPart as any;
-  if (isArray(schemaPart)) schemaPart = schemaPart[getOneOf && getOneOf(path) || 0];
+  if (isArray(schemaPart)) schemaPart = schemaPart[getOneOf(path).oneOf || 0];
   return schemaPart;
 }
 
@@ -377,7 +382,7 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   const {ff_params = {}, ff_data = {}} = schemaPart;
   const result: any = Object.assign({params: ff_params}, ff_data);
   if (!isObject(result.messages)) result.messages = {};
-  
+
   result.oneOf = oneOf;
   result.status = basicStatus;
   result.fData = {};
@@ -411,11 +416,11 @@ function makeDataMap(dataMap: FFDataMapGeneric<MapFunctionType>[], path: Path): 
 
 function getUniqKey() {return Date.now().toString(36) + Math.random().toString(36) }
 
-function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: number) => number, path: Path = [], value?: any) { //: { state: StateType, dataMap: StateType } {
+function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: oneOfStructureType) => oneOfStructureType, path: Path = [], value?: any) { //: { state: StateType, dataMap: StateType } {
   const result = {};
   const dataMapObjects: DataMapStateType[] = [];
   let defaultValues: any;
-  const currentOneOf = getNSetOneOf(path);
+  const currentOneOf = (getNSetOneOf(path) || {}).oneOf;
   const schemaPartsOneOf = getSchemaPart(schema, path, getNSetOneOf, true);
   let {schemaPart, oneOf, type} = findOneOf(schemaPartsOneOf, value, currentOneOf);
   if (!isUndefined(currentOneOf) && currentOneOf != oneOf) { // value type is not that currentOneOf supports 
@@ -427,7 +432,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   }
   push2array(dataMapObjects, makeDataMap(schemaPart.ff_dataMap || [], path));
   result[SymData] = makeDataStorage(schemaPart, oneOf, type, value);
-  getNSetOneOf(path, oneOf);
+  getNSetOneOf(path, {oneOf, type});
   // if (!isUndefined(oneOf)) {
   //   getNSetOneOf(path, oneOf);
   //   result[SymData] = merge(result[SymData], {oneOf});
@@ -442,10 +447,8 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
         let {state: branch, dataMap, defaultValues: dValue} = makeStateBranch(schema, getNSetOneOf, path.concat(i), getIn(isUndefined(value) ? schemaPart.default : value, i));
         defaultValues[i] = dValue;
         push2array(dataMapObjects, dataMap);
-        let arrayItemUpdate = {};
-        setIn(arrayItemUpdate, getArrayItemData(schemaPart, i, defaultValues.length), SymData, 'arrayItem');
-        setIn(arrayItemUpdate, getUniqKey(), SymData, 'arrayItem', 'uniqKey');
-        branch = merge(branch, arrayItemUpdate, {replace: {[SymData]: {ArrayItem: true}}});
+        branch = merge(branch, {[SymData]: {arrayItem: getArrayItemData(schemaPart, i, defaultValues.length)}}, {replace: {[SymData]: {ArrayItem: true}}});
+        branch = merge(branch, {[SymData]: {params: getUniqKey()}});
         result[i] = branch;
 
       }
@@ -457,7 +460,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
         let {state: branch, dataMap, defaultValues: dValue} = makeStateBranch(schema, getNSetOneOf, path.concat(field), value && value[field]);
         defaultValues[field] = dValue;
         push2array(dataMapObjects, dataMap);
-        if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {fData: {required: true}});
+        if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {[SymData]: {fData: {required: true}}});
         result[field] = branch;
       });
     }
@@ -541,7 +544,7 @@ function isSelfManaged(state: StateType, ...pathes: any[]) {
   return hasIn(state, ...pathes, SymData, 'value')
 }
 
-function isSchemaSelfManaged(schemaPart: jsJsonSchema, type:string) {
+function isSchemaSelfManaged(schemaPart: jsJsonSchema, type: string) {
   return type !== 'array' && type !== 'object' || hasIn(schemaPart, 'ff_props', 'managed')
 }
 
@@ -781,7 +784,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
           });
           let arrayOfRequired = getIn(state, topPath, SymData, 'fData', 'required');
           arrayOfRequired = isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
-          if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {fData: {required: true}});
+          if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {[SymData]: {fData: {required: true}}});
         }
 
         state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});

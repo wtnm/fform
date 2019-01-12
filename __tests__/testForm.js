@@ -222,21 +222,21 @@ describe('FForm state functions tests', function () {
     expect(state[SymData].current[0][0].mapArrValue[0]).toBe(state[SymData].current[0][0].mapValue);
     expect(state[0][0].mapArrValue[0][SymData].value).toBe(state[0][0].mapValue[SymData].value);
 
-    state = stateFuncs.makeStateFromSchema(require('./schema').default);
-    expect(state.objLevel_1.objLevel_2.array_1[Symbol.for('FFormData')].length === 0).toBe(true);
-    state = stateFuncs.makeStateFromSchema(require('./schema').default);
-    expect(state === state).toBe(true);
-    let array_1_00 = stateFuncs.makeStateBranch(require('./schema').default, stateFuncs.oneOfStructure({}, []), ['objLevel_1', 'objLevel_2', 'array_1', 0, 0]);
-    expect(array_1_00.defaultValues.bazinga).toBe('bazinga default');
-    expect(array_1_00.state.bazinga[Symbol.for('FFormData')].value === 'bazinga default').toBe(true);
-
-    let array_1_10 = stateFuncs.makeStateBranch(require('./schema').default, stateFuncs.oneOfStructure({}, []), ['objLevel_1', 'objLevel_2', 'array_1', 1, 0], {bazinga: 'test value'});
-    expect(array_1_10.defaultValues.bazinga === 'test value').toBe(true);
-    expect(array_1_10.state.bazinga[Symbol.for('FFormData')].value === 'test value').toBe(true);
-    expect(array_1_10.defaultValues.bazingaCinema.favBook === 'favBook default').toBe(true);
-    expect(array_1_10.state.bazingaCinema.favBook[Symbol.for('FFormData')].value === 'favBook default').toBe(true);
-    expect(array_1_10.defaultValues.bazingaCinema.favCinema === 'favCinema default').toBe(true);
-    expect(array_1_10.state.bazingaCinema.favCinema[Symbol.for('FFormData')].value === 'favCinema default').toBe(true);
+    // state = stateFuncs.makeStateFromSchema(require('./schema').default);
+    // expect(state.objLevel_1.objLevel_2.array_1[Symbol.for('FFormData')].length === 0).toBe(true);
+    // state = stateFuncs.makeStateFromSchema(require('./schema').default);
+    // expect(state === state).toBe(true);
+    // let array_1_00 = stateFuncs.makeStateBranch(require('./schema').default, stateFuncs.oneOfStructure(state, ['objLevel_1', 'objLevel_2', 'array_1', 0, 0]), ['objLevel_1', 'objLevel_2', 'array_1', 0, 0]);
+    // expect(array_1_00.defaultValues.bazinga).toBe('bazinga default');
+    // expect(array_1_00.state.bazinga[Symbol.for('FFormData')].value === 'bazinga default').toBe(true);
+    //
+    // let array_1_10 = stateFuncs.makeStateBranch(require('./schema').default, stateFuncs.oneOfStructure(state, ['objLevel_1', 'objLevel_2', 'array_1', 1, 0]), ['objLevel_1', 'objLevel_2', 'array_1', 1, 0], {bazinga: 'test value'});
+    // expect(array_1_10.defaultValues.bazinga === 'test value').toBe(true);
+    // expect(array_1_10.state.bazinga[Symbol.for('FFormData')].value === 'test value').toBe(true);
+    // expect(array_1_10.defaultValues.bazingaCinema.favBook === 'favBook default').toBe(true);
+    // expect(array_1_10.state.bazingaCinema.favBook[Symbol.for('FFormData')].value === 'favBook default').toBe(true);
+    // expect(array_1_10.defaultValues.bazingaCinema.favCinema === 'favCinema default').toBe(true);
+    // expect(array_1_10.state.bazingaCinema.favCinema[Symbol.for('FFormData')].value === 'favCinema default').toBe(true);
   });
 
   it('test updateStatePROCEDURE', function () {
@@ -542,7 +542,6 @@ describe('FForm state functions tests', function () {
   });
 
 
-
   it('test string2NUpdate', function () {
     let res = stateFuncs.string2NUpdate('');
     expect(commonFuncs.isEqual(res.path, [])).toBe(true);
@@ -648,13 +647,14 @@ describe('FForm state functions tests', function () {
     expect(state[SymDataMapTree].length[SymDataMap]['./1/@/stringTypeMappedLength']).toBeTruthy();
     expect(state[SymDataMapTree].oneOf[SymDataMap]['./1/@/stringTypeMappedOneOf']).toBeTruthy();
 
-
+    let uniqKey = state[1][SymData].params.uniqKey;
     state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [1], op: 'up', value: 0, macros: 'arrayItem'});
     state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
     expect(state[SymDataMapTree].length[SymDataMap]['./1/@/stringTypeMappedLength']).not.toBeTruthy();
     expect(state[SymDataMapTree].oneOf[SymDataMap]['./1/@/stringTypeMappedOneOf']).not.toBeTruthy();
     expect(state[SymDataMapTree].length[SymDataMap]['./0/@/stringTypeMappedLength']).toBeTruthy();
     expect(state[SymDataMapTree].oneOf[SymDataMap]['./0/@/stringTypeMappedOneOf']).toBeTruthy();
+
 
     expect(state[0][SymData].oneOf).toBe(2);
     state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {
@@ -671,15 +671,30 @@ describe('FForm state functions tests', function () {
     expect(state[0].recusion[SymData].length).toBe(0);
     expect(state[SymData].current[0].propTwo).toBe(11);
     expect(state[0].propTwo).toBe(undefined);
+    expect(state[0][SymData].params.uniqKey).toBe(uniqKey);
 
     state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0], value: 3, macros: 'setOneOf'});
     state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
     expect(state[0][SymData].oneOf).toBe(3);
+    expect(state[0].propOne[SymData].oneOf).toBe(0);
     expect(state[0].recusion).toBe(undefined);
     expect(state[SymData].current[0].propTwo).toBe(11);
     expect(state[SymData].current[0].recusion.length).toBe(0);
     expect(state[0].propTwo[SymData].oneOf).toBe(3);
     expect(state[0].propTwo[SymData].fData.type).toBe('number');
+    expect(state[0][SymData].params.uniqKey).toBe(uniqKey);
+    expect(state[0].propOne[SymData].fData.required).toBe(true);
+    expect(state[0].propTwo[SymData].fData.required).toBe(true);
+    expect(state[0].propThree[SymData].fData.required).not.toBeTruthy();
+    expect(state[0].propFour[SymData].fData.required).toBe(true);
+
+    state = stateFuncs.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne'], value: 2, macros: 'setOneOf'});
+    state = stateFuncs.mergeStatePROCEDURE(state, UPDATABLE_object);
+    expect(state[0].propOne[SymData].oneOf).toBe(2);
+    expect(state[0].propOne[SymData].length).toBe(2);
+    expect(state[0].propOne[SymData].fData.type).toBe('array');
+    expect(state[0].propOne[SymData].fData.required).toBe(true);
+
   })
 });
 

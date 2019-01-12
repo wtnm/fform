@@ -94,3 +94,5 @@ type vPromisesType = Promise<any> & {
   path: Path,
   selfManaged: boolean;
 }
+
+type oneOfStructureType = { oneOf: number, type: string };

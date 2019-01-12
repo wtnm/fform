@@ -3,7 +3,6 @@ import {Component, PureComponent} from 'react';
 import {asNumber, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, isFunction, makeSlice, merge, mergeState, objKeys, push2array, memoize, objKeysNSymb} from "./commonLib";
 import {
   arrayStart,
-  getBindedValue,
   getSchemaPart,
   isSchemaSelfManaged,
   isSelfManaged,
@@ -279,7 +278,7 @@ class FField extends Component<any, any> {
 
     self.schemaPart = schemaPart;
 
-    self._isNotSelfManaged = !isSchemaSelfManaged(schemaPart) || undefined;
+    self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
     const components = resolveComponents(self.api.props.objects, schemaPart.ff_custom, schemaPart.ff_preset);
     self._ff_components = components[SymData] ? merge(components, self._bind2self(components[SymData])) : components;
     const ff_layout = resolveComponents(self.api.props.objects, schemaPart.ff_layout);
@@ -1146,7 +1145,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Main: {
         _$widget: '%/widgets/FSection',
         $reactRef: true,
-        uniqKey: 'arrayItem/uniqKey',
+        uniqKey: 'params/uniqKey',
         $cx: '%/$cx',
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
