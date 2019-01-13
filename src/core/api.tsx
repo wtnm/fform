@@ -677,12 +677,10 @@ function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boole
     else if (extract2SymData && key.substr(-5) == '.bind') retResult[SymData][key] = resolvedValue; //&& result[key.substr(0, key.length - 5)]
     else if (isMergeable(result[key])) {
       retResult[key] = objectResolver(_objects, resolvedValue, extract2SymData);
-      if (retResult[key][SymData]) retResult[SymData][key] = retResult[key][SymData];
+      if (retResult[key][SymData]) setIn(retResult, retResult[key][SymData], SymData, key);
       delete retResult[key][SymData];
-    } else if (extract2SymData && typeof resolvedValue == 'function') {
-      if (!retResult[SymData]) retResult[SymData] = {};
-      retResult[SymData][key] = resolvedValue;
-    } else retResult[key] = resolvedValue;
+    } else if (extract2SymData && typeof resolvedValue == 'function') setIn(retResult, resolvedValue, SymData, key);
+    else retResult[key] = resolvedValue;
   });
 
   return retResult

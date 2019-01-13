@@ -1,229 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="tests for oneOf">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="more tests">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/__tests__/testForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/testForm.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/core/api.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/api.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/core/commonLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/commonLib.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/core/components.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/components.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/core/stateLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/core/stateLib.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/deref/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/deref/util/clone-obj.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/deref/util/find-reference.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/deref/util/helpers.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/deref/util/normalize-schema.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/deref/util/resolve-schema.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/formObjects/reactstrap.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/alternative.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/fields/checkbox.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/fields/file.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/fields/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/fields/input.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/fields/make.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/fields/selection.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/fields/user_defined.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/fields/utils/normalizer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/fields/utils/parser.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/fields/utils/wrapped.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/form.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/normalise.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/objectUtils.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/resolve.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/types.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/jsf/validate.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/.coveralls.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/.editorconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/.eslintignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/.eslintrc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/.npmignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/.travis.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/CHANGES.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/CONTRIBUTING.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/HISTORY.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/ISSUE_TEMPLATE.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/TODO.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/bower.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/dist/react-select.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/dist/react-select.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/dist/react-select.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/dist/react-select.min.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/dist/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/dist/app.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/dist/bundle.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/dist/common.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/dist/example.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/dist/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/dist/standalone.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/dist/standalone.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/.npmignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/app.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/components/BooleanSelect.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/components/Contributors.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/components/Creatable.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/components/CustomComponents.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/components/CustomRender.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/components/GithubUsers.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/components/Multiselect.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/components/NumericSelect.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/components/States.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/components/Virtualized.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/data/cities.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/data/contributors.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/data/states.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/data/users.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/example.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/favicon.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/examples/src/standalone.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/gulpfile.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/less/control.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/less/default.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/less/menu.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/less/mixins.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/less/multi.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/less/select.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/less/spinner.less" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/Async.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/AsyncCreatable.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/Creatable.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/Option.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/Select.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/Value.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/utils/defaultArrowRenderer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/utils/defaultClearRenderer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/utils/defaultFilterOptions.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/utils/defaultMenuRenderer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/lib/utils/stripDiacritics.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/scss/components.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/scss/control.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/scss/default.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/scss/menu.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/scss/mixins.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/scss/multi.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/scss/select.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/scss/spinner.scss" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/Async.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/AsyncCreatable.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/Creatable.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/Option.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/Select.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/Value.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/utils/defaultArrowRenderer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/utils/defaultClearRenderer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/utils/defaultFilterOptions.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/utils/defaultMenuRenderer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/src/utils/stripDiacritics.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/test/Async-test.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/test/AsyncCreatable-test.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/test/Creatable-test.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/test/Select-test.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/test/Value-test.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/testHelpers/jsdomHelper.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/testHelpers/nodeListType.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/react-select-master/wallaby.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/action-types.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/actions/batch-actions.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/actions/field-actions.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/actions/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/actions/model-actions.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/combineForms.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/components/control-component.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/components/errors-component.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/components/field-component.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/components/fieldset-component.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/components/form-component.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/components/local-form-component.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/constants/control-props-map.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/constants/initial-field-state.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/constants/null-action.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/constants/validity-keys.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/enhancers/batched-enhancer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/enhancers/modeled-enhancer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/form/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/form/is-pending.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/form/is-pristine.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/form/is-retouched.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/form/is-touched.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/form/is-valid.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/immutable.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/reducers/form-actions-reducer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/reducers/form-reducer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/reducers/form/change-action-reducer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/reducers/forms-reducer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/reducers/model-reducer.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/arrays-equal.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/capitalize.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/compose-reducers.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/contains-event.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/deep-compare-children.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/ends-with.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/find-key.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/find.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/flatten.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/get-field-form.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/get-field-from-state.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/get-field.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/get-form.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/get-from-immutable-state.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/get-model.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/get-validity.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/get-value.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/get.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/identity.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/inverse.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/invert-validators.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/invert-validity.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/is-multi.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/is-native.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/is-plain-object.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/is-validity-invalid.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/is-validity-valid.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/iteratee.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/map-values.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/map.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/merge.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/omit.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/partition.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/path-starts-with.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/persist-event-with-callback.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/pick.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/resolve-model.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/shallow-compare-without-children.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/shallow-equal.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/to-path.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/track.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/update-field.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/update-parent-forms.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/rrf/utils/update-sub-fields.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/AltDateTimeWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/AltDateWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/BaseInput.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/CheckboxWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/CheckboxesWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/ColorWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/DateTimeWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/DateWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/EmailWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/FileWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/HiddenWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/PasswordWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/RadioWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/RangeWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/SelectWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/TextWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/TextareaWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/URLWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/UpDownWidget.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/old/widgets/index.js" beforeDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -245,8 +28,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="499">
-              <caret line="685" column="2" selection-start-line="685" selection-start-column="2" selection-end-line="685" selection-end-column="2" />
+            <state relative-caret-position="197">
+              <caret line="449" column="18" selection-start-line="449" selection-start-column="18" selection-end-line="449" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -254,8 +37,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/commonLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="17" column="66" selection-start-line="17" selection-start-column="66" selection-end-line="17" selection-end-column="66" />
+            <state relative-caret-position="60">
+              <caret line="4" column="62" selection-start-line="4" selection-start-column="62" selection-end-line="4" selection-end-column="62" />
             </state>
           </provider>
         </entry>
@@ -263,20 +46,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="212">
-              <caret line="1008" column="2" selection-start-line="1008" selection-start-column="2" selection-end-line="1008" selection-end-column="2" />
+            <state relative-caret-position="249">
+              <caret line="1006" column="56" selection-start-line="1006" selection-start-column="56" selection-end-line="1006" selection-end-column="56" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/core/components.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1986">
-              <caret line="717" lean-forward="true" selection-start-line="717" selection-end-line="717" />
-              <folding>
-                <element signature="e#25779#25816#0" />
-              </folding>
+            <state relative-caret-position="189">
+              <caret line="439" column="114" selection-start-line="439" selection-start-column="114" selection-end-line="439" selection-end-column="114" />
             </state>
           </provider>
         </entry>
@@ -284,8 +64,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/dataTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1455">
-              <caret line="97" column="23" selection-start-line="97" selection-start-column="5" selection-end-line="97" selection-end-column="23" />
+            <state relative-caret-position="579">
+              <caret line="94" column="23" lean-forward="true" selection-start-line="94" selection-start-column="23" selection-end-line="94" selection-end-column="23" />
             </state>
           </provider>
         </entry>
@@ -293,7 +73,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/core/schemaTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1545">
+            <state relative-caret-position="204">
               <caret line="103" column="20" selection-start-line="103" selection-start-column="5" selection-end-line="103" selection-end-column="20" />
             </state>
           </provider>
@@ -313,14 +93,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="429">
-              <caret line="853" lean-forward="true" selection-start-line="853" selection-end-line="853" />
-              <folding>
-                <element signature="e#58638#73050#0" />
-              </folding>
+            <state relative-caret-position="399">
+              <caret line="914" column="50" lean-forward="true" selection-start-line="914" selection-start-column="50" selection-end-line="914" selection-end-column="50" />
             </state>
           </provider>
         </entry>
@@ -328,7 +105,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/__tests__/schemaOneOf.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
+            <state relative-caret-position="840">
               <caret line="56" column="22" lean-forward="true" selection-start-line="56" selection-start-column="22" selection-end-line="56" selection-end-column="22" />
             </state>
           </provider>
@@ -346,9 +123,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>tristateBase</find>
-      <find>booleanBase</find>
-      <find>MessagesWidget</find>
       <find>WrapperWidget</find>
       <find>hidden4Array</find>
       <find>hidden4Builder</find>
@@ -376,6 +150,9 @@
       <find>setOneOf</find>
       <find>setIfNotDeeper</find>
       <find>turpleValue</find>
+      <find>components</find>
+      <find>update: 'all'</find>
+      <find>every</find>
     </findStrings>
     <replaceStrings>
       <replace>_widget</replace>
@@ -466,11 +243,11 @@
         <option value="$PROJECT_DIR$/src/keyMap.tsx" />
         <option value="$PROJECT_DIR$/__tests__/schemaOneOf.js" />
         <option value="$PROJECT_DIR$/src/core/dataTypes.d.ts" />
-        <option value="$PROJECT_DIR$/src/core/components.tsx" />
         <option value="$PROJECT_DIR$/src/core/commonLib.tsx" />
         <option value="$PROJECT_DIR$/src/core/stateLib.tsx" />
         <option value="$PROJECT_DIR$/src/core/api.tsx" />
         <option value="$PROJECT_DIR$/__tests__/testForm.js" />
+        <option value="$PROJECT_DIR$/src/core/components.tsx" />
       </list>
     </option>
   </component>
@@ -1367,7 +1144,8 @@
       <workItem from="1547152560735" duration="10314000" />
       <workItem from="1547215194722" duration="14617000" />
       <workItem from="1547254565260" duration="4668000" />
-      <workItem from="1547294172876" duration="17854000" />
+      <workItem from="1547294172876" duration="17885000" />
+      <workItem from="1547404869006" duration="7329000" />
     </task>
     <task id="LOCAL-00001" summary="before package update">
       <created>1542772477945</created>
@@ -1537,43 +1315,50 @@
       <option name="project" value="LOCAL" />
       <updated>1547316569191</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="more tests">
+      <created>1547335210611</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1547335210611</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="testCore - 2019.01.13 at 01h 50m 45s.xml">
+    <history-entry file="testCore - 2019.01.14 at 02h 02m 14s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.01.13 at 01h 51m 15s.xml">
+    <history-entry file="testCore - 2019.01.14 at 02h 02m 17s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.01.13 at 01h 51m 30s.xml">
+    <history-entry file="testCore - 2019.01.14 at 02h 03m 27s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.01.13 at 01h 59m 14s.xml">
+    <history-entry file="testCore - 2019.01.14 at 02h 04m 40s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.01.13 at 01h 59m 48s.xml">
+    <history-entry file="testCore - 2019.01.14 at 02h 04m 43s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.01.13 at 02h 00m 08s.xml">
+    <history-entry file="testCore - 2019.01.14 at 02h 04m 54s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.01.13 at 02h 00m 44s.xml">
+    <history-entry file="testCore - 2019.01.14 at 02h 06m 03s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.01.13 at 02h 01m 01s.xml">
+    <history-entry file="testCore - 2019.01.14 at 02h 06m 13s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.01.13 at 02h 01m 31s.xml">
+    <history-entry file="testCore - 2019.01.14 at 02h 07m 26s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.01.13 at 02h 01m 45s.xml">
+    <history-entry file="testCore - 2019.01.14 at 02h 08m 07s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3028605000" />
+    <option name="totallyTimeSpent" value="3035965000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1589,8 +1374,8 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.36363637" visible="true" weight="0.10115912" />
-      <window_info id="Structure" order="2" sideWeight="0.6363636" side_tool="true" visible="true" weight="0.17650159" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.36242884" visible="true" weight="0.10063224" />
+      <window_info active="true" id="Structure" order="2" sideWeight="0.63757116" side_tool="true" visible="true" weight="0.17650159" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.41616163" side_tool="true" weight="0.10795155" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
@@ -1598,7 +1383,7 @@
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="Terminal" order="3" sideWeight="0.4919972" weight="0.32683983" />
       <window_info anchor="bottom" id="DB Execution Console" order="4" />
-      <window_info active="true" anchor="bottom" id="Run" order="5" sideWeight="0.48835462" visible="true" weight="0.28246754" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48835462" visible="true" weight="0.28246754" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.24675325" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4885396" weight="0.3030303" />
@@ -1638,7 +1423,8 @@
     <MESSAGE value="some tests for oneOf" />
     <MESSAGE value="more tests for oneOf" />
     <MESSAGE value="tests for oneOf" />
-    <option name="LAST_COMMIT_MESSAGE" value="tests for oneOf" />
+    <MESSAGE value="more tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="more tests" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1661,9 +1447,9 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/__tests__/testForm.js</url>
-          <line>833</line>
+          <line>885</line>
           <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="40" />
+          <option name="timeStamp" value="53" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -2042,20 +1828,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/dataTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1455">
-          <caret line="97" column="23" selection-start-line="97" selection-start-column="5" selection-end-line="97" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/schemaTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1545">
-          <caret line="103" column="20" selection-start-line="103" selection-start-column="5" selection-end-line="103" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/src/old/rrf/components/field-component.js" />
     <entry file="file://$PROJECT_DIR$/__tests__/schema.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
@@ -2070,56 +1843,57 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/__tests__/schemaOneOf.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
+        <state relative-caret-position="840">
           <caret line="56" column="22" lean-forward="true" selection-start-line="56" selection-start-column="22" selection-end-line="56" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/components.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1986">
-          <caret line="717" lean-forward="true" selection-start-line="717" selection-end-line="717" />
-          <folding>
-            <element signature="e#25779#25816#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/old/rrf/components/field-component.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="197">
-          <caret line="136" column="5" selection-start-line="136" selection-start-column="5" selection-end-line="136" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/core/commonLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="66" selection-start-line="17" selection-start-column="66" selection-end-line="17" selection-end-column="66" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/core/stateLib.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="212">
-          <caret line="1008" column="2" selection-start-line="1008" selection-start-column="2" selection-end-line="1008" selection-end-column="2" />
+        <state relative-caret-position="249">
+          <caret line="1006" column="56" selection-start-line="1006" selection-start-column="56" selection-end-line="1006" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/dataTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="579">
+          <caret line="94" column="23" lean-forward="true" selection-start-line="94" selection-start-column="23" selection-end-line="94" selection-end-column="23" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/core/api.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="499">
-          <caret line="685" column="2" selection-start-line="685" selection-start-column="2" selection-end-line="685" selection-end-column="2" />
+        <state relative-caret-position="197">
+          <caret line="449" column="18" selection-start-line="449" selection-start-column="18" selection-end-line="449" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/commonLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="60">
+          <caret line="4" column="62" selection-start-line="4" selection-start-column="62" selection-end-line="4" selection-end-column="62" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="429">
-          <caret line="853" lean-forward="true" selection-start-line="853" selection-end-line="853" />
-          <folding>
-            <element signature="e#58638#73050#0" />
-          </folding>
+        <state relative-caret-position="399">
+          <caret line="914" column="50" lean-forward="true" selection-start-line="914" selection-start-column="50" selection-end-line="914" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/schemaTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="103" column="20" selection-start-line="103" selection-start-column="5" selection-end-line="103" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/core/components.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="189">
+          <caret line="439" column="114" selection-start-line="439" selection-start-column="114" selection-end-line="439" selection-end-column="114" />
         </state>
       </provider>
     </entry>

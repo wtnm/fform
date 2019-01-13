@@ -158,9 +158,8 @@ class FField extends Component<any, any> {
   private _blocks: string[] = [];
   private _widgets: object;
   private _ff_components: object;
-  private _mapsB: NPM4WidgetsType;
-  private _mapsD: NPM4WidgetsType;
-  private _mapsE: NPM4WidgetsType;
+  private _maps: NPM4WidgetsType;
+
 
   ff_layout: FFLayoutGeneric<jsFFCustomizeType>;
   refs: any = {};
@@ -286,19 +285,16 @@ class FField extends Component<any, any> {
 
     // self._enumOptions = getEnumOptions(schemaPart);
     self._widgets = {};
-    self._mapsB = {};
-    self._mapsD = {};
-    self._mapsE = {};
-    self._blocks = objKeys(components).filter(key => components[key]);
+    const {$propsMap, rest: comps} = extractMaps(components);
+    self._maps = normalizeMaps($propsMap);
+
+    self._blocks = objKeys(comps).filter(key => comps[key]);
     self._blocks.forEach((block: string) => {
-      let {$propsMap, rest} = extractMaps(components[block]);
-      const {_$widget, $reactRef, ...staticProps} = rest;
+      //let {$propsMap, rest} = extractMaps(comps[block]);
+      const {_$widget, $reactRef, ...staticProps} = comps[block];
       self._widgets[block] = _$widget;
       if ($reactRef) staticProps[isString(staticProps.$reactRef) ? $reactRef : 'ref'] = self._setRef(block); // $reactRef - prop for react ref-function
-      const normalized = normalizeMaps($propsMap);
-      self._mapsB[block] = normalized.build;
-      self._mapsD[block] = normalized.data; // props that should be mapped from state[SymData]
-      self._mapsE[block] = normalized.every;
+
       self._mappedData[block] = staticProps;  // properties, without reserved names      
     });
     // self._setArrayBlocks(self.state.branch[SymData]);
@@ -332,7 +328,7 @@ class FField extends Component<any, any> {
 
   _setMappedData(data: any, fullUpdate: boolean | 'build') {
     const self = this;
-    const _mappedData = updateProps(self._mappedData, data, fullUpdate == 'build' && self._mapsB, fullUpdate && self._mapsD, self._mapsE);
+    const _mappedData = updateProps(self._mappedData, data, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
     if (self._mappedData != _mappedData) {
       self._mappedData = _mappedData;
       return true
@@ -397,9 +393,7 @@ class FSection extends Component<any, any> {
   private _arrayLayouts: any[] = [];
   private _setWidRef: any;
   private _setFieldRef: any;
-  private _mapsB: { [key: string]: any };
-  private _mapsD: { [key: string]: any };
-  private _mapsE: { [key: string]: any };
+  private _maps: NPM4WidgetsType = {};
   private _mappedData: { [key: string]: any };
   private _$widget: any;
   private _isArray: boolean = false;
@@ -443,10 +437,7 @@ class FSection extends Component<any, any> {
           }
         } else if (isObject(fieldOrLayout)) { // layout
           const counter = UPDATABLE.counter++;
-          let {_$widget, $fields, $propsMap} = normalizeLayout(fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>);
-          self._mapsB[counter] = $propsMap.build;
-          self._mapsD[counter] = $propsMap.data;
-          self._mapsE[counter] = $propsMap.every;
+          let {_$widget, $fields} = normalizeLayout(counter, fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>);
           layout.push(<FSectionWidget _$widget={_$widget} $cx={$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
                                       getMappedData={self._getMappedData(counter)}>{$fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $fields)}</FSectionWidget>)
         }
@@ -454,11 +445,14 @@ class FSection extends Component<any, any> {
       return layout
     }
 
-    function normalizeLayout(layout: FFLayoutGeneric<jsFFCustomizeType>) {
-      let {$propsMap, rest} = extractMaps(layout);
+    function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
+      let {$propsMap, rest} = extractMaps(layout, ['$fields']);
       let {$fields, $reactRef, _$widget = LayoutDefaultWidget, className = LayoutDefaultClass, ...staticProps} = rest;
       staticProps.className = className;
-      return {_$widget, mappedData: staticProps, $fields, $propsMap: normalizeMaps($propsMap)}
+      let maps = normalizeMaps($propsMap, counter.toString());
+      mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
+      self._mappedData[counter] = staticProps;
+      return {_$widget, $fields}
     }
 
     const self = this;
@@ -466,27 +460,20 @@ class FSection extends Component<any, any> {
     const {$branch, $layout, $cx, arrayStart, LayoutDefaultWidget = 'div', LayoutDefaultClass = 'layout', uniqKey, focusField} = props;
 
     if (isSelfManaged($branch)) return;
-
-    self._mapsB = {};
-    self._mapsD = {};
-    self._mapsE = {};
+    const mapsKeys = ['build', 'data', 'every'];
+    mapsKeys.forEach(k => self._maps[k] = []);
     self._fields = {};
     self._widgets = {};
     self._mappedData = {};
     self._objectLayouts = [];
 
-    // self.props.isArray = !isUndefined(arrayStart);
-
     const UPDATABLE = {keys: self._getObjectKeys($branch), counter: 1};
     self._focusField = focusField || UPDATABLE.keys[0] || '';
 
-    const N_layout = normalizeLayout(isArray($layout) ? {$fields: $layout} : $layout);
-    self._$widget = N_layout._$widget;
-    self._mapsB[0] = N_layout.$propsMap.build;
-    self._mapsD[0] = N_layout.$propsMap.data;
-    self._mapsE[0] = N_layout.$propsMap.every;
+    let {_$widget, $fields} = normalizeLayout(0, isArray($layout) ? {$fields: $layout} : $layout);
+    self._$widget = _$widget;
 
-    if (N_layout.$fields) self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, N_layout.$fields);  // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
+    if ($fields) self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $fields);  // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
     UPDATABLE.keys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));  // so here we have only keys was not used and we add them to _objectLayouts
 
     self._arrayLayouts = [];
@@ -549,7 +536,7 @@ class FSection extends Component<any, any> {
 
   _updateMappedData(data: any, fullUpdate: boolean | 'build') {
     const self = this;
-    return updateProps(self._mappedData, data, fullUpdate == 'build' && self._mapsB, fullUpdate && self._mapsD, self._mapsE);
+    return updateProps(self._mappedData, data, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
   }
 
   shouldComponentUpdate(nextProps: any) {
@@ -884,12 +871,12 @@ const resolveComponents = memoize((fformObjects: formObjectsType, customizeField
   return objectResolver(fformObjects, customizeFields, true);
 });
 
-function extractMaps(obj: any) {
+function extractMaps(obj: any, skip: string[] = []) {
   let {$propsMap, ...rest2extract} = obj;
   $propsMap = {...$propsMap};
   const rest: any = {};
   objKeys(rest2extract).forEach(key => {
-    if (isObject(rest2extract[key])) {
+    if (isObject(rest2extract[key]) && !~skip.indexOf(key)) {
       let res = extractMaps(rest2extract[key]);
       rest[key] = res.rest;
       objKeys(res.$propsMap).forEach((nk) => $propsMap[key + '/' + nk] = res.$propsMap[nk]);
@@ -899,11 +886,11 @@ function extractMaps(obj: any) {
   return {$propsMap, rest};
 }
 
-function normalizeMaps($propsMap: any) {
+function normalizeMaps($propsMap: any, prePath = '') {
   function normalizeArgs(args: any) {
     if (!isArray(args)) args = [args];
     let dataRequest = false;
-    args.map((arg: any) => isString(arg) && arg[0] == '@' ? (dataRequest = true) && normalizePath(arg.substr(1)) : arg);
+    args = args.map((arg: any) => isString(arg) && arg[0] == '@' ? (dataRequest = true) && normalizePath(arg.substr(1)) : arg);
     return {dataRequest, args}
   }
 
@@ -911,7 +898,7 @@ function normalizeMaps($propsMap: any) {
   objKeys($propsMap).forEach(key => {
     const map = $propsMap[key];
     if (!map) return;
-    const to = multiplyPath(normalizePath(key));
+    const to = multiplyPath(normalizePath((prePath ? prePath + '/' : '') + key));
     if (isObject(map)) {
       const {update = 'every', args = [], $} = map;
       result[update].push({$, to, ...normalizeArgs(args)});
@@ -931,15 +918,16 @@ function normalizeMaps($propsMap: any) {
   return result
 }
 
-function updateProps(mappedData: any, dataItem: any, ...iterMaps: Array<NPM4WidgetsType | false>) {
+function updateProps(mappedData: any, dataItem: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
   const getFromData = (arg: any) => isNPath(arg) ? getIn(dataItem, arg) : arg;
   const dataUpdates = {update: {}, replace: {}};
-  iterMaps.forEach(maps4widgets => maps4widgets && objKeys(maps4widgets).forEach(widget => {
-    maps4widgets[widget].forEach((map) => {
+  // iterMaps.forEach(maps4widgets => maps4widgets && objKeys(maps4widgets).forEach(widget => {
+  //   maps4widgets[widget].forEach((map) => {
+  iterMaps.forEach(m => m && m.forEach(map => {
       const value = map.$ ? map.$(...(map.dataRequest ? map.args.map(getFromData) : map.args)) : getFromData(map.args);
-      objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, true, widget, map.to[k]))
-    });
-  }));
+      objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, true, map.to[k]))
+    })
+  );
   return mergeStatePROCEDURE(mappedData, dataUpdates);
 }
 
@@ -1155,7 +1143,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           arrayStart: {$: '%/funcs/getArrayStart', args: [], update: 'build'},
           FFormApi: {$: '%/funcs/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
           $layout: {$: '%/funcs/getFFieldProperty', args: 'ff_layout', update: 'build'},
-          $branch: {$: '%/funcs/getFFieldProperty', args: 'state/branch', update: 'all'},
+          $branch: {$: '%/funcs/getFFieldProperty', args: 'state/branch', update: 'every'},
         }
       },
       Title: {
@@ -1341,5 +1329,6 @@ function classNames(...styles: any) {
 
 export {selectorMap, fformObjects, FForm, FFormStateAPI, fformCores, classNames};
 
+export {extractMaps, normalizeMaps, updateProps}
 //module.exports = process.env.NODE_ENV === 'test' ? merge(module.exports, {}) : module.exports;
 

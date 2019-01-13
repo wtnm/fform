@@ -1004,8 +1004,7 @@ function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
 function objMap(obj: any, fn: Function, symbol = false) {
   if (!isMergeable(obj)) return obj;
   const result = isArray(obj) ? [] : {};
-  (symbol ? objKeysNSymb : objKeys)(obj).forEach(key =>
-    result[key] = fn(obj[key]));
+  (symbol ? objKeysNSymb : objKeys)(obj).forEach(key => result[key] = fn(obj[key]));
   return result
 };
 
