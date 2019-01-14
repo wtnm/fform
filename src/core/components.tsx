@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component, PureComponent} from 'react';
-import {asNumber, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, isFunction, makeSlice, merge, mergeState, objKeys, push2array, memoize, objKeysNSymb} from "./commonLib";
+import {asNumber, toArray, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, isFunction, makeSlice, merge, mergeState, objKeys, push2array, memoize, objKeysNSymb} from "./commonLib";
 import {
   arrayStart,
   getSchemaPart,
@@ -63,6 +63,7 @@ class FForm extends Component<any, any> {
     self._setRef = self._setRef.bind(self);
     self._submit = self._submit.bind(self);
     self._getPath = self._getPath.bind(self);
+    Object.defineProperty(self, "objects", {get: () => self.api.props.objects});
   }
 
   _setRef(FField: any) {
@@ -189,6 +190,12 @@ class FField extends Component<any, any> {
     self.refs['Main'] && self.refs['Main'].focus && self.refs['Main'].focus(path); // path.length ? self.refs.focus(path) : self.refs.focus();
   }
 
+  _resolver(obj: any) {
+    const self = this;
+    let result = objectResolver(self.pFForm.objects, obj, true);
+    return result[SymData] ? merge(result, self._bind2self(result[SymData])) : result;
+  }
+
   _updateCachedValue() {
     const self = this;
     self._cachedTimeout = undefined;
@@ -215,7 +222,7 @@ class FField extends Component<any, any> {
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
         const data = merge(self.state.branch[SymData], {value: self._cached.value});
         const mappedData = self._mappedData;
-        self._setMappedData(data, true);
+        self._setMappedData(self.state.branch[SymData], data, true);
         if (mappedData != self._mappedData) self.forceUpdate();
         return true;
       }
@@ -298,7 +305,7 @@ class FField extends Component<any, any> {
       self._mappedData[block] = staticProps;  // properties, without reserved names      
     });
     // self._setArrayBlocks(self.state.branch[SymData]);
-    self._setMappedData(self.state.branch[SymData], 'build');
+    self._setMappedData(undefined, self.state.branch[SymData], 'build');
     self._rebuild = false;
   }
 
@@ -326,9 +333,9 @@ class FField extends Component<any, any> {
   //   self.id = self.props.pFForm.api.name + '/' + path;
   // };
 
-  _setMappedData(data: any, fullUpdate: boolean | 'build') {
+  _setMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build') {
     const self = this;
-    const _mappedData = updateProps(self._mappedData, data, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
+    const _mappedData = updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
     if (self._mappedData != _mappedData) {
       self._mappedData = _mappedData;
       return true
@@ -348,15 +355,15 @@ class FField extends Component<any, any> {
     }
 
     const nextData = nextState.branch[SymData];
-    const currentData = self.state.branch[SymData];
-    if (nextData.oneOf !== currentData.oneOf) {
+    const prevData = self.state.branch[SymData];
+    if (nextData.oneOf !== prevData.oneOf) {
       self._rebuild = true;
       return true;
     }
 
     // if (nextData.fData.type !== currentData.fData.type) updateComponent = self._setArrayBlocks(nextData);
-    updateComponent = self._setMappedData(nextState.branch[SymData], nextData !== currentData) || updateComponent;
-    updateComponent = updateComponent || nextData.params.norender != currentData.params.norender;
+    updateComponent = self._setMappedData(prevData, nextData, nextData !== prevData) || updateComponent;
+    updateComponent = updateComponent || nextData.params.norender != prevData.params.norender;
     return updateComponent
   }
 
@@ -409,11 +416,14 @@ class FSection extends Component<any, any> {
   focus(path: Path) {
     const self = this;
     let field;
-    if (!path.length) field = self._focusField;
-    else {
-      field = path[0];
+    if (!path.length) {
+      field = self.props.focusField;
+      if (isUndefined(field)) field = self.props.isArray ? '0' : (branchKeys(self.props.$branch)[0] || '');
+    } else {
+      field = path[0].toString();
       path = path.slice(1);
     }
+    if (self.props.isArray && field >= self.props.arrayStart) field = self._arrayIndex2key(self.props.$branch[field]) || field;
     if (self._fields[field] && self._fields[field].focus) self._fields[field].focus(path)
   }
 
@@ -485,7 +495,7 @@ class FSection extends Component<any, any> {
         arrayKey && (self._arrayKey2field[arrayKey] = i);
       }
     }
-    self._mappedData = self._updateMappedData($branch[SymData], 'build');
+    self._mappedData = self._updateMappedData(undefined, $branch[SymData], 'build');
     self._rebuild = false;
   }
 
@@ -534,9 +544,9 @@ class FSection extends Component<any, any> {
     return doUpdate;
   }
 
-  _updateMappedData(data: any, fullUpdate: boolean | 'build') {
+  _updateMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build') {
     const self = this;
-    return updateProps(self._mappedData, data, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
+    return updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
   }
 
   shouldComponentUpdate(nextProps: any) {
@@ -556,7 +566,7 @@ class FSection extends Component<any, any> {
 
       if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch); // updates and reorders elements greater/equal than self.props.arrayStart
 
-      const newMapped = self._updateMappedData(nextBranch[SymData], nextBranch[SymData] !== prevBranch[SymData]);
+      const newMapped = self._updateMappedData(prevBranch[SymData], nextBranch[SymData], nextBranch[SymData] !== prevBranch[SymData]);
       if (newMapped != self._mappedData) { // update self._widgets
         const oldMapped = self._mappedData;
         self._mappedData = newMapped;
@@ -582,24 +592,30 @@ class FSection extends Component<any, any> {
 /////////////////////////////////////////////
 
 class GenericWidget extends PureComponent<any, any> {
-  private _saved: any;
+  private _children: any;
   private _mapped: any[];
 
+  _newWidget(obj: any) {
+    const {_$widget: Widget = GenericWidget, className, ...rest} = obj;
+    return <Widget className={isString(Widget) && this.props.$cx ? this.props.$cx(className) : className} {...rest}/>
+  }
+
   render() {
-    if (this.props.norender) return null;
-    const {useTag: UseTag = 'div', $cx, className, children, ...rest} = this.props;
-    if (children !== this._saved) {
-      const pSaved = isArray(this._saved) ? this._saved : [this._saved];
-      this._saved = children;
-      const nSaved = isArray(this._saved) ? this._saved : [this._saved];
-      this._mapped = nSaved.map((ch: any, i: number) => isObject(ch) ? (pSaved[i] !== nSaved[i] ? new GenericWidget(ch) : this._mapped[i]) : ch);
+    const self = this;
+    if (self.props.norender) return null;
+    const {useTag: UseTag = 'div', $cx, className, children, ...rest} = self.props;
+    if (children !== self._children) {
+      const prev = toArray(self._children);
+      const next = toArray(children);
+      self._mapped = next.map((ch: any, i: number) => !isObject(ch) ? ch : (prev[i] !== next[i] ? self._newWidget(ch) : self._mapped[i]));
+      self._children = children;
     }
-    return (<UseTag children={this._mapped} className={$cx ? $cx(className) : className} {...rest} />)
+    return (<UseTag children={self._mapped} className={$cx ? $cx(className) : className} {...rest} />)
   }
 }
 
 
-class AutosizeBlock extends PureComponent<any, any> {
+class AutosizeWidget extends PureComponent<any, any> {
   static readonly _sizerStyle: { position: 'absolute', top: 0, left: 0, visibility: 'hidden', height: 0, overflow: 'scroll', whiteSpace: 'pre' };
   private _elem: any;
 
@@ -613,7 +629,7 @@ class AutosizeBlock extends PureComponent<any, any> {
     const self = this;
     const props = self.props;
     const value = (isUndefined(props.value) ? '' : props.value.toString()) || props.placeholder || '';
-    return (<div style={AutosizeBlock._sizerStyle as any} ref={(elem) => {
+    return (<div style={AutosizeWidget._sizerStyle as any} ref={(elem) => {
       (self._elem = elem) && (props.$FField.refs.Main.style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
     }}>{value}</div>)
   }
@@ -684,60 +700,38 @@ function MessageItem(props: any) {
 }
 
 
-// function ArrayWidget(props: any) {
-//   const {useTag: UseTag = 'div', Empty, AddButton, length, canAdd, children, $cx, className, ...rest} = props;
-//   const {_$widget: EmptyW = 'div', ...emptyRest} = Empty;
-//   const {_$widget: AddButtonW = 'button', onClick, ...addButtonRest} = AddButton;
-//   if (length) return (<UseTag className={$cx ? $cx(className) : className} {...rest}>{children}{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</UseTag>);
-//   else return (<UseTag className={$cx ? $cx(className) : className} {...rest}><EmptyW {...emptyRest}>{canAdd ? <AddButtonW onClick={onClick} {...addButtonRest} /> : ''}</EmptyW></UseTag>);
-// }
-//
-//
-// function TitleBlock(props: any) {
-//   const {title = '', required, useTag: UseTag = 'label', requireSymbol = '*', $cx, className, ...rest} = props;
-//   return (
-//     <UseTag {...(UseTag == 'label' && rest.id ? {htmlFor: rest.id} : {})} className={$cx ? $cx(className) : className} {...rest}>
-//       {isString(title) && required ? title + requireSymbol : title}
-//     </UseTag>
-//   );
-// }
-
-
 function BaseInput(props: any) {
   let {
     value,
     useTag: UseTag,
     type = 'text',
     title,
-    $FField,
     enumOptions,
     $reactRef,
-    priority,
     $cx,
     className,
     ...rest
   }: { [key: string]: any } = props;
   UseTag = UseTag || (type == 'textarea' || type == 'select' ? type : 'input');
-  const refObj: any = {};
   let ref = rest[$reactRef];
   if ($reactRef) delete rest[$reactRef];
-  if (typeof UseTag == 'string') refObj.ref = ref; else refObj[$reactRef] = ref; // if "simple" tag then use ref else pass further in $reactRef property
-  const commonProps = title ? {label: title} : {}; //{name: props.id, label: title || props.id.split('/').slice(-1)[0]}; 
+  const calcProps: any = {}; //{name: props.id, label: title || props.id.split('/').slice(-1)[0]}; 
+  if (isString(UseTag)) calcProps.ref = ref; else calcProps[$reactRef] = ref; // if "simple" tag then use ref else pass further in $reactRef property
   let valueObj: any = {};
   if (type === 'checkbox') valueObj.checked = !!value;
   else if (type === 'tristate') valueObj.checked = isUndefined(value) ? undefined : value;
   else valueObj.value = isUndefined(value) ? "" : value;
 
-  if (type === 'textarea') return (<UseTag {...rest} {...refObj} {...commonProps}>{valueObj.value}</UseTag>);
+  if (type === 'textarea') return (<UseTag {...rest} {...calcProps}>{valueObj.value}</UseTag>);
   if (type === 'select') {
     const {placeholder, ...selectRest} = rest;
     return (
-      <UseTag {...selectRest} {...refObj} {...commonProps} value={isUndefined(value) ? props.multiple ? [] : "" : value}>
+      <UseTag {...selectRest} {...calcProps} value={isUndefined(value) ? props.multiple ? [] : "" : value}>
         {!props.multiple && placeholder && <option value="">{placeholder}</option>}
-        {enumOptions.map(({value, label}: any, i: number) => <option key={i} value={value}>{label}</option>)}
+        {enumOptions.map(({label, ...rest}: any, i: number) => <option key={i} {...rest}>{label}</option>)}
       </UseTag>);
   }// {enumOptions.map(({value, name}:any, i: number) => <option key={i} value={value}>{name}</option>)}
-  else return (<UseTag className={$cx ? $cx(className) : className} {...rest} {...refObj} {...valueObj} type={type} {...commonProps}/>);
+  else return (<UseTag className={$cx ? $cx(className) : className} {...rest} {...valueObj} type={type} {...calcProps}/>);
 };
 
 
@@ -901,9 +895,9 @@ function normalizeMaps($propsMap: any, prePath = '') {
     const to = multiplyPath(normalizePath((prePath ? prePath + '/' : '') + key));
     if (isObject(map)) {
       const {update = 'every', args = [], $} = map;
-      result[update].push({$, to, ...normalizeArgs(args)});
+      result[update].push({update, $, to, ...normalizeArgs(args)});
     } else if (isArray(map)) {
-      const res: any = {to, ...normalizeArgs(map.slice(1))};
+      const res: any = {update: 'data', to, ...normalizeArgs(map.slice(1))};
       res.$ = map[0];
       if (!isFunction(res.$)) throw new Error('Expected zero element of array to be a function');
       result.data.push(res);
@@ -912,18 +906,22 @@ function normalizeMaps($propsMap: any, prePath = '') {
       if (!isString(path)) throw new Error('$propsMap value is not recognized');
       if (path[0] !== '@') console.warn('Expected "@" at the begining of string');
       else path = path.substr(1);
-      result.data.push({to, dataRequest: true, args: normalizePath(path)})
+      result.data.push({to, dataRequest: true, args: normalizePath(path), update: 'data'})
     }
   });
   return result
 }
 
-function updateProps(mappedData: any, dataItem: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
-  const getFromData = (arg: any) => isNPath(arg) ? getIn(dataItem, arg) : arg;
+function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
+  const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
+  const needUpdate = (map: NormalizedPropsMapType) => isUndefined(prevData) || !map.$ || map.update != 'data' || (map.dataRequest && checkChanges(map.args));
+  const checkChanges = (args: any[]) => {
+    for (let i = 0; i < args.length; i++) if (isNPath(args[i]) && getIn(prevData, args[i] !== getIn(nextData, args[i]))) return true;
+    return false
+  };
   const dataUpdates = {update: {}, replace: {}};
-  // iterMaps.forEach(maps4widgets => maps4widgets && objKeys(maps4widgets).forEach(widget => {
-  //   maps4widgets[widget].forEach((map) => {
   iterMaps.forEach(m => m && m.forEach(map => {
+      if (!needUpdate(map)) return;
       const value = map.$ ? map.$(...(map.dataRequest ? map.args.map(getFromData) : map.args)) : getFromData(map.args);
       objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, true, map.to[k]))
     })
@@ -982,7 +980,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   widgets: {
     FSection: FSection,
     Generic: GenericWidget,
-    Autosize: AutosizeBlock,
+    Autosize: AutosizeWidget,
     Builder: FBuilder,
     Wrapper: WrapperWidget,
     ItemMenu: ItemMenu,
@@ -1070,13 +1068,13 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         onBlur: '%/on/blurBase',
         onFocus: '%/on/focusBase',
         $propsMap: {
-          priority: '@/status/priority',
+          // priority: '@/status/priority',
           value: '@/value',
-          autoFocus: '@/params/autofocus',
+          autofocus: '@/params/autofocus',
           placeholder: '@/params/placeholder',
           required: '@/fData/required',
-          title: '@/fData/title',
-          readOnly: '@/params/readonly',
+          label: '@/fData/title',
+          readonly: '@/params/readonly',
           disabled: '@/params/disabled',
         }
       },

@@ -100,7 +100,7 @@ interface FFCommonSchemaType {
 type FFDataMapGeneric<FN> = [string, string, FN] | [string, string]
 
 type PropsMapGeneric<FN> = { [key: string]: false | string | [FN, ...JsonAny[]] | { $: FN, args: JsonAny[], update?: 'build' | 'data' | 'every' } }
-type NormalizedPropsMapType = { $?: Function, args: any[], dataRequest: boolean, to: { [key: string]: Path } };
+type NormalizedPropsMapType = { $?: Function, args: any[], update: 'build' | 'data' | 'every', dataRequest: boolean, to: { [key: string]: Path } };
 type NPM4WidgetsType = { [key: string]: NormalizedPropsMapType[] }
 
 type FFLayoutGeneric<T> = T & {

@@ -1,4 +1,3 @@
-
 const isUndefined = (value: any): value is undefined => typeof value === 'undefined';
 const isNumber = (value: any): value is number => typeof value === "number";
 const isInteger = (value: any) => typeof value === "number" && (Math.floor(value) === value || value > 9007199254740992 || value < -9007199254740992);
@@ -6,6 +5,9 @@ const isString = (value: any): value is string => typeof value === 'string';
 const isArray = Array.isArray;
 const isObject = (value: any) => isMergeable(value) && !isArray(value);
 const isFunction = (value: any): value is Function => typeof value === 'function';
+
+const toArray = (value: any) => isArray(value) ? value : [value];
+
 
 function isMergeable(val: any) {
   const nonNullObject = val && typeof val === 'object';
@@ -322,6 +324,6 @@ merge.all = function (state: any, obj2merge: any[], options: MergeStateOptionsAr
 };
 
 
-export {mergeState, merge, push2array, asNumber, isEqual, objKeys, objKeysNSymb, moveArrayElems, delIn, setIn, hasIn, getIn, getCreateIn, makeSlice, memoize};
+export {mergeState, merge, push2array, asNumber, isEqual, objKeys, objKeysNSymb, moveArrayElems, delIn, setIn, hasIn, getIn, getCreateIn, makeSlice, memoize, toArray};
 export {isMergeable, isUndefined, isNumber, isInteger, isString, isObject, isArray, isFunction}
 
