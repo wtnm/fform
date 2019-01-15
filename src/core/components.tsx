@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component, PureComponent} from 'react';
-import {asNumber, toArray, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, isFunction, makeSlice, merge, mergeState, objKeys, push2array, memoize, objKeysNSymb} from "./commonLib";
+import {asNumber, toArray, deArray, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, isFunction, makeSlice, merge, mergeState, objKeys, push2array, memoize} from "./commonLib";
 import {
   arrayStart,
   getSchemaPart,
@@ -17,7 +17,7 @@ import {
   mergeStatePROCEDURE,
   branchKeys,
   isNPath,
-  multiplyPath
+  multiplyPath,
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver} from './api'
 import Timeout = NodeJS.Timeout;
@@ -882,9 +882,8 @@ function extractMaps(obj: any, skip: string[] = []) {
 
 function normalizeMaps($propsMap: any, prePath = '') {
   function normalizeArgs(args: any) {
-    if (!isArray(args)) args = [args];
     let dataRequest = false;
-    args = args.map((arg: any) => isString(arg) && arg[0] == '@' ? (dataRequest = true) && normalizePath(arg.substr(1)) : arg);
+    args = toArray(args).map((arg: any) => isString(arg) && arg[0] == '@' ? (dataRequest = true) && normalizePath(arg.substr(1)) : arg);
     return {dataRequest, args}
   }
 
@@ -894,10 +893,10 @@ function normalizeMaps($propsMap: any, prePath = '') {
     if (!map) return;
     const to = multiplyPath(normalizePath((prePath ? prePath + '/' : '') + key));
     if (isObject(map)) {
-      const {update = 'every', args = [], $} = map;
-      result[update].push({update, $, to, ...normalizeArgs(args)});
+      const {update = 'every', replace = true, args = [], $} = map;
+      result[update].push({update, replace, $, to, ...normalizeArgs(args)});
     } else if (isArray(map)) {
-      const res: any = {update: 'data', to, ...normalizeArgs(map.slice(1))};
+      const res: NormalizedPropsMapType = {update: 'data', replace: true, to, ...normalizeArgs(map.slice(1))};
       res.$ = map[0];
       if (!isFunction(res.$)) throw new Error('Expected zero element of array to be a function');
       result.data.push(res);
@@ -906,7 +905,7 @@ function normalizeMaps($propsMap: any, prePath = '') {
       if (!isString(path)) throw new Error('$propsMap value is not recognized');
       if (path[0] !== '@') console.warn('Expected "@" at the begining of string');
       else path = path.substr(1);
-      result.data.push({to, dataRequest: true, args: normalizePath(path), update: 'data'})
+      result.data.push({update: 'data', replace: true, to, dataRequest: true, args: normalizePath(path)})
     }
   });
   return result
@@ -914,16 +913,13 @@ function normalizeMaps($propsMap: any, prePath = '') {
 
 function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
   const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
-  const needUpdate = (map: NormalizedPropsMapType) => isUndefined(prevData) || !map.$ || map.update != 'data' || (map.dataRequest && checkChanges(map.args));
-  const checkChanges = (args: any[]) => {
-    for (let i = 0; i < args.length; i++) if (isNPath(args[i]) && getIn(prevData, args[i] !== getIn(nextData, args[i]))) return true;
-    return false
-  };
+  const needUpdate = (map: NormalizedPropsMapType) => isUndefined(prevData) || !map.$ || map.update != 'data' ||
+    (map.dataRequest && map.args.some(arg => isNPath(arg) && getIn(prevData, arg) !== getIn(nextData, arg)));
   const dataUpdates = {update: {}, replace: {}};
   iterMaps.forEach(m => m && m.forEach(map => {
       if (!needUpdate(map)) return;
-      const value = map.$ ? map.$(...(map.dataRequest ? map.args.map(getFromData) : map.args)) : getFromData(map.args);
-      objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, true, map.to[k]))
+      const value = map.$ ? deArray(toArray(map.$).reduce((args, fn) => toArray(fn(...args)), map.dataRequest ? map.args.map(getFromData) : map.args)) : getFromData(map.args);
+      objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, map.replace, map.to[k]))
     })
   );
   return mergeStatePROCEDURE(mappedData, dataUpdates);
@@ -1025,7 +1021,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         _$widget: '%/widgets/Builder',
         $cx: '%/$cx',
         $propsMap: {
-          widgets: ['%/funcs/getFFieldProperty', '_widgets'],
+          widgets: ['%/fn/getFFieldProperty', '_widgets'],
         },
       },
       Title: {
@@ -1036,7 +1032,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         $propsMap: {
           'className/required': '@/fData/required',
           'children/0': '@/fData/title',
-          htmlFor: {$: '%/funcs/getFFieldProperty', args: ['id'], update: 'build'}
+          htmlFor: {$: '%/fn/getFFieldProperty', args: ['id'], update: 'build'}
         },
       },
       Body: {
@@ -1137,11 +1133,11 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
         $propsMap: {
-          isArray: ['%/funcs/equal', 'array', '@/fData/type'],
-          arrayStart: {$: '%/funcs/getArrayStart', args: [], update: 'build'},
-          FFormApi: {$: '%/funcs/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
-          $layout: {$: '%/funcs/getFFieldProperty', args: 'ff_layout', update: 'build'},
-          $branch: {$: '%/funcs/getFFieldProperty', args: 'state/branch', update: 'every'},
+          isArray: ['%/fn/equal', 'array', '@/fData/type'],
+          arrayStart: {$: '%/fn/getArrayStart', args: [], update: 'build'},
+          FFormApi: {$: '%/fn/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
+          $layout: {$: '%/fn/getFFieldProperty', args: 'ff_layout', update: 'build'},
+          $branch: {$: '%/fn/getFFieldProperty', args: 'state/branch', update: 'every'},
         }
       },
       Title: {
@@ -1152,8 +1148,8 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           {children: '(array is empty)'}],
         $propsMap: {
           'className/required': '@/fData/required',
-          'children/1,2/className/hidden': ['%/funcs/notEqual', 'array', '@/fData/type'],
-          'children/3/className/hidden': ['%/funcs/notEqual', 0, '@/length'],
+          'children/1,2/className/hidden': ['%/fn/equal | %/fn/not', 'array', '@/fData/type'],
+          'children/3/className/hidden': ['%/fn/equal | %/fn/not', 0, '@/length'],
         },
       },
       Wrapper: {useTag: 'fieldset'},
@@ -1197,11 +1193,10 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Array: false,
     }
   },
-  funcs: {
+  fn: {
     not: function (v: any) {return !v},
     bool: function (v: any) {return !!v},
     equal: function (a: any, b: any) {return a === b},
-    notEqual: function (a: any, b: any) {return a !== b},
     getArrayStart: function () {return arrayStart(this.schemaPart)},
     getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
   },
@@ -1230,7 +1225,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         value: 'value',
         placeholder: '@/params/placeholder',
         'className/hidden': '@/params/hidden',
-        $FField: ['%/funcs/getFFieldProperty'],
+        $FField: ['%/fn/getFFieldProperty'],
       }
     },
     Button: {
@@ -1242,19 +1237,19 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     ArrayAddButton: {
       $_ref: '%/parts/Button',
       children: ['+'],
-      onClick: '%/funcs/on/clickArrayAdd',
+      onClick: '%/fn/on/clickArrayAdd',
       'onClick.bind': ['./', 1]
     },
     ArrayDelButton: {
       $_ref: '%/parts/Button',
       children: ['-'],
-      onClick: '%/funcs/on/clickArrayAdd',
+      onClick: '%/fn/on/clickArrayAdd',
       'onClick.bind': ['./', -1]
     },
     ArrayItemMenu: {
       _$widget: '%/widgets/ItemMenu',
       buttons: ['first', 'last', 'up', 'down', 'del'],
-      onClick: '%/funcs/on/clickArrayItemOps',
+      onClick: '%/fn/on/clickArrayItemOps',
       'onClick.bind': ['./'],
       buttonProps: {
         first: {disabledCheck: 'canUp'},
@@ -1263,9 +1258,9 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         down: {disabledCheck: 'canDown'},
         del: {disabledCheck: 'canDel'},
         // $propsMap: {
-        //   'canUp,first/disabled': ['%/funcs/not', '@/arrayItem/canUp'],
-        //   'canDown,last/disabled': ['%/funcs/not', '@/arrayItem/canDown'],
-        //   'canDel/disabled': ['%/funcs/not', '@/arrayItem/canDel'],
+        //   'canUp,first/disabled': ['%/fn/not', '@/arrayItem/canUp'],
+        //   'canDown,last/disabled': ['%/fn/not', '@/arrayItem/canDown'],
+        //   'canDel/disabled': ['%/fn/not', '@/arrayItem/canDel'],
         // }
       },
     }

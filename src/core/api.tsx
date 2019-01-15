@@ -2,24 +2,20 @@
 //  Actions function
 /////////////////////////////////////////////
 import {
-  delIn,
   getIn,
   setIn,
-  hasIn,
-  isEqual,
   isMergeable,
   isObject,
-  makeSlice,
   memoize,
   merge,
   mergeState,
-  moveArrayElems,
-  objKeysNSymb,
   push2array,
   objKeys,
   isArray,
   isUndefined,
-  getCreateIn, isString
+  getCreateIn,
+  isString,
+  deArray, toArray
 } from "./commonLib";
 
 import {
@@ -400,7 +396,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
     if (ff_validators) {
       const props = {state, path: path2string(track), schema, getFromState: (...tPath: Array<string | Path>) => getFromState(state, ...tPath)};
       ff_validators.forEach((validator: any) => {
-        let result = validator(validatedValue, props);
+        let result = validator.$.call(props, validatedValue, validator.args || []);
         if (result && result.then && typeof result.then === 'function') { //Promise
           result.validatedValue = validatedValue;
           result.path = track;
@@ -610,13 +606,7 @@ function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema):
   let {ff_validators, ff_dataMap, ...rest} = schema;
   const result: jsJsonSchema = {ff_compiled: true};
 
-  // if (!ff_preset && !isString(rest.type) && !ff_custom.$ref) throw new Error('For multi-types "ff_preset" should be defined explicitly');
-  // if (!ff_preset && isString(rest.type)) ff_preset = rest.type;
-  // let {$ref = '', ...custom} = ff_custom;
-  // custom.$ref = (ff_preset || '').split(':').map(v => v[0] != '%' && '%/presets/' + v).join(':') + $ref ? ':' + $ref : '';
-  // result.ff_components = objectResolver(fformObjects, custom, true);
-  // ff_layout && (result.ff_layout = objectResolver(fformObjects, ff_layout, true));
-  ff_validators && (result.ff_validators = objectResolver(fformObjects, ff_validators, false));
+  ff_validators && (result.ff_validators = toArray(objectResolver(fformObjects, ff_validators, false)).map((v) => isObject(v) ? (v as any) : {$: v}));
   ff_dataMap && (result.ff_dataMap = objectResolver(fformObjects, ff_dataMap, false));
 
   objKeys(rest).forEach(key => {
@@ -628,6 +618,10 @@ function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema):
       case 'ff_params':
       case 'ff_placeholder':
       case 'ff_props':
+      case 'ff_enumExten':
+      case 'default':
+      case 'enum':
+        result[key] = rest[key];
         break;
       case 'definitions':
       case 'properties':
@@ -636,7 +630,7 @@ function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema):
         result[key] = objMap(rest[key], schemaCompiler.bind(null, fformObjects));
         break;
       default:
-        if (isMergeable(result[key])) result[key] = schemaCompiler(fformObjects, rest[key]);
+        if (isMergeable(rest[key])) result[key] = schemaCompiler(fformObjects, rest[key]);
         else result[key] = rest[key];
         break;
     }
@@ -669,13 +663,15 @@ function objectDerefer(_objects: any, obj2deref: any) { // todo: test
 }
 
 function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boolean): any { // todo: test
+  const convRef = (refs: string) => deArray(refs.split('|').map(r => getIn(_objs, string2path(r.trim()))));
+  const _objs = {'%': _objects};
   const result = objectDerefer(_objects, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
-    const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '%/' ? getIn({'%': _objects}, string2path(result[key])) : result[key];
+    const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '%/' ? convRef(result[key]) : result[key];
     if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _
-    else if (extract2SymData && key.substr(-5) == '.bind') retResult[SymData][key] = resolvedValue; //&& result[key.substr(0, key.length - 5)]
-    else if (isMergeable(result[key])) {
+    else if (extract2SymData && key.substr(-5) == '.bind') setIn(retResult, resolvedValue, SymData, string2path(key));
+    else if (isMergeable(resolvedValue)) {
       retResult[key] = objectResolver(_objects, resolvedValue, extract2SymData);
       if (retResult[key][SymData]) setIn(retResult, retResult[key][SymData], SymData, key);
       delete retResult[key][SymData];

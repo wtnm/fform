@@ -1,4 +1,4 @@
-import {getCreateIn, setIn, hasIn, getIn, objKeys, moveArrayElems, makeSlice, memoize, merge, objKeysNSymb, push2array} from "./commonLib";
+import {getCreateIn, setIn, hasIn, getIn, objKeys, moveArrayElems, makeSlice, memoize, merge, objKeysNSymb, push2array, toArray, deArray} from "./commonLib";
 import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction} from "./commonLib";
 import {number} from "prop-types";
 
@@ -48,7 +48,7 @@ types.string = isString; //(value: any) => typeof value === "string";
 /////////////////////////////////////////////
 
 function getBindedMaps2update(branch: StateType, path: Path = []) {
-  const maps2disable: DataMapStateType[] = getIn(branch, SymDataMapTree, SymData) || [];
+  const maps2disable: normalizedDataMapType[] = getIn(branch, SymDataMapTree, SymData) || [];
   const maps2enable = maps2disable.map((map => merge(map, {emitter: path})));
   objKeys(branch).forEach(key => {
     let result: any;
@@ -411,9 +411,9 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   return result;
 });
 
-function makeDataMap(dataMap: FFDataMapGeneric<MapFunctionType>[], path: Path): DataMapStateType[] {
+function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], path: Path): normalizedDataMapType[] {
   return dataMap.map((item) => {  // item is array where item[0] - from, item[1] - to
-    return {emitter: path, from: item[0], to: item[1], fn: typeof item[2] == 'function' && item[2] || true} as DataMapStateType;
+    return {emitter: path, from: item[0], to: item[1], action: (isFunction(item[2]) ? {$: item[2]} : item[2]) || true} as normalizedDataMapType;
   })
 }
 
@@ -421,7 +421,7 @@ function getUniqKey() {return Date.now().toString(36) + Math.random().toString(3
 
 function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: oneOfStructureType) => oneOfStructureType, path: Path = [], value?: any) { //: { state: StateType, dataMap: StateType } {
   const result = {};
-  const dataMapObjects: DataMapStateType[] = [];
+  const dataMapObjects: normalizedDataMapType[] = [];
   let defaultValues: any;
   const currentOneOf = (getNSetOneOf(path) || {}).oneOf;
   const schemaPartsOneOf = getSchemaPart(schema, path, getNSetOneOf, true);
@@ -434,7 +434,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
     oneOf = tmp.oneOf;
     type = tmp.type;
   }
-  push2array(dataMapObjects, makeDataMap(schemaPart.ff_dataMap || [], path));
+  push2array(dataMapObjects, normalizeDataMap(schemaPart.ff_dataMap || [], path));
   result[SymData] = makeDataStorage(schemaPart, oneOf, type, value);
   getNSetOneOf(path, {oneOf, type});
   // if (!isUndefined(oneOf)) {
@@ -484,13 +484,13 @@ const makeStateFromSchema = memoize(function (schema: jsJsonSchema) {
   return state;
 });
 
-function setDataMapInState(state: StateType, schema: jsJsonSchema, dataMaps: DataMapStateType[], unset: boolean = false) {
+function setDataMapInState(state: StateType, schema: jsJsonSchema, dataMaps: normalizedDataMapType[], unset: boolean = false) {
   //let update: StateType = {};
   const UPDATABLE_object = {update: {}, replace: {}};
   dataMaps.forEach((dataMap) => {
     const emitterPath = dataMap.emitter;
     let bindMap2emitter: boolean = false;
-    normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.from, to: normalizePath(dataMap.to, emitterPath), value: dataMap.fn}, state).forEach(NdataMap => {
+    normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.from, to: normalizePath(dataMap.to, emitterPath), value: dataMap.action}, state).forEach(NdataMap => {
         let relTo = path2string(relativePath(NdataMap.path, NdataMap.to));
         if (getIn(state, NdataMap.path)) setIn(UPDATABLE_object.update, unset ? undefined : NdataMap.value, NdataMap.path, SymDataMapTree, NdataMap[SymData], SymDataMap, relTo);
         if (!unset) {
@@ -505,8 +505,8 @@ function setDataMapInState(state: StateType, schema: jsJsonSchema, dataMaps: Dat
       const emitterBranch = getIn(state, emitterPath);
       if (emitterBranch) {
         let bindedMaps = getIn(emitterBranch, SymDataMapTree, SymData) || [];
-        setIn(UPDATABLE_object.update, bindedMaps.concat(dataMap), emitterPath, SymDataMapTree, SymData);
-        setIn(UPDATABLE_object.replace, true, emitterPath, SymDataMapTree, SymData);
+        setUPDATABLE(UPDATABLE_object, bindedMaps.concat(dataMap), true, emitterPath, SymDataMapTree, SymData);
+        // setIn(UPDATABLE_object.replace, true, emitterPath, SymDataMapTree, SymData);
       }
       state = mergeStatePROCEDURE(state, UPDATABLE_object);
     }
@@ -514,7 +514,7 @@ function setDataMapInState(state: StateType, schema: jsJsonSchema, dataMaps: Dat
   return state
 }
 
-// function updDataMap2state(state: StateType, dataMap: DataMapStateType[], schema: jsJsonSchema) {
+// function updDataMap2state(state: StateType, dataMap: normalizedDataMapType[], schema: jsJsonSchema) {
 //   const UPDATABLE_object = {update: {}, replace: {}};
 //   dataMap.forEach((dataMap) => {
 //     if (dataMap.fn === false) return; // disabled map
@@ -565,7 +565,8 @@ function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
     let checkValue = isUndefined(value) ? (defaultUsed = true) && oneOfShemas[oneOf].default : value;
     for (let j = 0; j < schemaTypes.length; j++)
       if (types[schemaTypes[j]](checkValue) || isUndefined(checkValue)) return {schemaPart: oneOfShemas[oneOf], oneOf, type: schemaTypes[j]};
-    if (defaultUsed && !isUndefined(oneOfShemas[oneOf].default)) throw new Error('Type of schema.default is not supported by schema.type');
+    if (defaultUsed && !isUndefined(oneOfShemas[oneOf].default))
+      throw new Error('Type of schema.default is not supported by schema.type');
   }
   return {};
 }
@@ -823,14 +824,20 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
   return state;
 }
 
+// todo: rework dataMaps and validation to work ...args and chains '|'
 function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, maps: any, item: NormalizedUpdateType) {
   const {value, path, replace} = item;
   const keyPath = item[SymData] || [];
   objKeys(maps || {}).forEach((pathTo) => {
     if (!maps[pathTo]) return; // disabled map
+    const map: dataMapActionType = maps[pathTo];
     const NpathTo = path2string(normalizePath(pathTo, path));
-    const executedValue = maps[pathTo] && maps[pathTo] !== true ? maps[pathTo](value, {path: NUpdate2string(item), pathTo: NpathTo, schema, getFromState: getFrom4DataMap(state, UPDATABLE_object)}) : value;
-    const updates = executedValue instanceof stateUpdates ? executedValue[SymData] : [{path: NpathTo, value: executedValue, replace}];
+    let executedValue = value;
+    if (isObject(map)) {
+      const bindObj = {path: NUpdate2string(item), pathTo: NpathTo, schema, getFromState: getFrom4DataMap(state, UPDATABLE_object)};
+      executedValue = deArray(toArray(map.$).reduce((args, fn) => toArray(fn.call(bindObj, ...args)), push2array([executedValue], map.args)))
+    }
+    const updates = map.asUpdates ? toArray(executedValue) : [{path: NpathTo, value: executedValue, replace}];
     updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE_object, update));
   });
   return state;

@@ -905,7 +905,7 @@ describe('FForm api tests', function () {
     const value = {};
     let mapped = components.updateProps(undefined, undefined, {value, fData: {type: 'string'}}, NMaps.build, NMaps.data, NMaps.every);
     expect(mapped.part.value).toBe(value);
-    expect(mapped.part.first.$branch).toEqual(["state/branch"]);
+    expect(mapped.part.first.$branch).toEqual("state/branch");
     expect(mapped.part.first.arrayStart).toEqual([]);
     expect(mapped.part._more.value).toBe(value);
     expect(mapped.part.first.isArray).toEqual(['array', 'string']);

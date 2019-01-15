@@ -79,7 +79,9 @@ interface formObjectsType {
 
 type styleType = { [key: string]: string | number }
 
-type DataMapStateType = { emitter: Path, from: string, to: string, fn: MapFunctionType | true | undefined }; //{ fromPath: Path, fromKeyPath: Path, to: string, fn: MapFunctionType | false }
+type normalizedDataMapType = { emitter: Path, from: string, to: string, action: dataMapActionType | boolean | undefined }; //{ fromPath: Path, fromKeyPath: Path, to: string, fn: MapFunctionType | false }
+
+type dataMapActionType = { $: Function[], args: any[], asUpdates: boolean }
 
 type MapFunctionType = (value: any, props: MapPropsType) => any;
 
