@@ -9,13 +9,49 @@ process.env.TS_NODE_PROJECT = './tsconfig.json';
 require('ts-mocha');
 
 const expect = require('expect');
-const components = require('../src/core/components.tsx');
+
+
 const commonLib = require('../src/core/commonLib.tsx');
 const stateLib = require('../src/core/stateLib.tsx');
 const apiLib = require('../src/core/api.tsx');
 const {createStore, combineReducers, applyMiddleware} = require('redux');
 const thunk = require('redux-thunk').default;
-// const djv = require('djv');
+
+// const mock = require('mock-require');
+// mock('react', 'preact');
+// mock("react-dom/server", "preact-render-to-string");
+// mock("react-dom/test-utils", "preact-test-utils");
+// mock("react-dom", "preact-compat-enzyme");
+// mock("react-test-renderer", "preact-test-utils");
+// mock("react-test-renderer/shallow", "preact-test-utils");
+// mock("react-addons-test-utils", "preact-test-utils");
+// mock("react-addons-transition-group", "preact-transition-group",);
+
+const jsdom = require('jsdom');
+const {window} = new jsdom.JSDOM('<!doctype html><html><body></body></html>')
+
+function copyProps(src, target) {
+  Object.defineProperties(target, {
+    ...Object.getOwnPropertyDescriptors(src),
+    ...Object.getOwnPropertyDescriptors(target),
+  });
+}
+
+global.window = window;
+global.document = window.document;
+global.navigator = {userAgent: 'node.js'};
+global.requestAnimationFrame = function (callback) {
+  return setTimeout(callback, 0);
+};
+global.cancelAnimationFrame = function (id) {
+  clearTimeout(id);
+};
+copyProps(window, global);
+
+const Enzyme = require('enzyme');
+const AdapterReact16 = require('enzyme-adapter-react-16');
+const {Adapter: AdapterPreact} = require('enzyme-adapter-preact');
+
 
 const SymData = Symbol.for('FFormData');
 const SymReset = Symbol.for('FFormReset'); // TODO: Reset tests
@@ -24,6 +60,25 @@ const SymDataMapTree = Symbol.for('FFormDataMapTree');
 const SymDataMap = Symbol.for('FFormDataMap');
 
 function sleep(time) {return new Promise((resolve) => setTimeout(() => resolve(), time))}
+
+describe('components tests', function () {
+  let usePreact = 1;
+  let React = usePreact ? require('preact') : require('react');
+  Enzyme.configure({adapter: usePreact ? new AdapterPreact() : new AdapterReact16()});
+
+  let components = require('../src/core/components.tsx');
+
+  //let Generic = components.fformObjects.widgets.Generic;
+  let Generic = components.Test;
+  const wrapper = Enzyme.mount(React.createElement(Generic, null, null));
+
+  usePreact = 0;
+  React = usePreact ? require('preact') : require('react');
+  Enzyme.configure({adapter: new AdapterPreact()});
+
+  //components = mock.reRequire('../src/core/components.tsx');
+
+});
 
 describe('FForm comommon functions tests', function () {
 
@@ -789,6 +844,7 @@ describe('FForm state functions tests', function () {
 });
 
 describe('FForm api tests', function () {
+  const components = require('../src/core/components.tsx');
 
   const objects = {
     preset: {first: {one: 'one value'}, second: {two: 'two value'}},
@@ -916,8 +972,8 @@ describe('FForm api tests', function () {
   });
 });
 
-
 describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel_2.array_1[0][0].bazinga[Symbol.for('FFormData')]
+    const components = require('../src/core/components.tsx');
     const extStore = {
       state: undefined,
       getState: () => extStore.state,
@@ -1212,3 +1268,6 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
 
   }
 );
+
+
+

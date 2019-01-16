@@ -88,9 +88,9 @@ interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
 interface FFCommonSchemaType {
   ff_placeholder?: string;
   ff_params?: FFParamsType; // editable in state params
-  ff_props?: FFPropsType; // not editable in state params
   ff_data?: { [key: string]: any } | { [key: number]: any };
   ff_preset?: string; // presets for rendering components
+  ff_managed?: boolean; // not editable in state params
   ff_custom?: FFCustomizeType; // components customization
   ff_layout?: FFLayoutGeneric<FFCustomizeType>; // fields order and object/group extenion
   ff_enumExten?: Array<undefined | string | object>; // enum extension value taken from enum, string turn to label
@@ -124,11 +124,6 @@ interface jsFFCustomizeType {
   [key: string]: any;
 }
 
-interface FFPropsType {
-  flatten?: boolean | string; // prefix if string
-  managed?: boolean;
-  keyField?: string,
-}
 
 type FFParamsType = {
   liveValidate?: boolean;

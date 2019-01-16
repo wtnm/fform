@@ -1,10 +1,7 @@
-import * as React from 'react';
-import {Component, PureComponent} from 'react';
+import * as React from 'preact';
 import {asNumber, toArray, deArray, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, isFunction, makeSlice, merge, mergeState, objKeys, push2array, memoize} from "./commonLib";
 import {
   arrayStart,
-  getSchemaPart,
-  isSchemaSelfManaged,
   isSelfManaged,
   path2string,
   string2path,
@@ -22,22 +19,11 @@ import {
 import {FFormStateAPI, fformCores, objectResolver} from './api'
 import Timeout = NodeJS.Timeout;
 
-// function applyMixins(derivedCtor: any, baseCtors: any[]) {
-//   baseCtors.forEach(baseCtor => {
-//     Object.getOwnPropertyNames(baseCtor.prototype).forEach(name => {
-//       derivedCtor.prototype[name] = baseCtor.prototype[name]
-//     })
-//   });
-// }
-
-
-const _PRIORITYClassNames = {0: 'danger', 1: 'warning', 2: 'success', 3: 'info', 4: 'notice'};
-
 
 /////////////////////////////////////////////
 //  Main class
 /////////////////////////////////////////////
-class FForm extends Component<any, any> {
+class FForm extends React.Component<any, any> {
   private _unsubscribe: any;
   private _savedState: any;
   private _savedValue: any;
@@ -63,7 +49,7 @@ class FForm extends Component<any, any> {
     self._setRef = self._setRef.bind(self);
     self._submit = self._submit.bind(self);
     self._getPath = self._getPath.bind(self);
-    Object.defineProperty(self, "objects", {get: () => self.api.props.objects});
+    Object.defineProperty(self, "objects", {get: () => self.props.objects || self.api.props.objects});
   }
 
   _setRef(FField: any) {
@@ -148,7 +134,7 @@ class FForm extends Component<any, any> {
 /////////////////////////////////////////////
 //  FField class
 /////////////////////////////////////////////
-class FField extends Component<any, any> {
+class FField extends React.Component<any, any> {
   private _mappedData: any = {};
   private _builderData: any = {};
   private _rebuild = true;
@@ -176,7 +162,7 @@ class FField extends Component<any, any> {
     const self = this;
     Object.defineProperty(self, "path", {get: () => self.props.getPath()});
     Object.defineProperty(self, "pFForm", {get: () => self.props.pFForm});
-    Object.defineProperty(self, "liveValidate", {get: () => self.state.branch[SymData].params.liveValidate});
+    Object.defineProperty(self, "liveValidate", {get: () => getIn(self.state, 'branch', SymData, 'params', 'liveValidate')});
     self._apiWrapper();
     const branch = self.api.get(self.path);
     self.state = {branch};
@@ -254,10 +240,6 @@ class FField extends Component<any, any> {
   }
 
   _bind2self(obj: any) {
-    // if (typeof fncs == 'function') return fncs.bind(this);
-    //     // if (fncs === true) return this;
-    //     // return objMap(fncs, this._bind2self);
-
     const result = isArray(obj) ? [] : {};
     objKeys(obj).forEach(key => {
       if (typeof obj[key] == 'function') result[key] = obj[key].bind(this, ...(isArray(obj[key + '.bind']) ? obj[key + '.bind'] : []));
@@ -276,7 +258,6 @@ class FField extends Component<any, any> {
     // const isFilesArray = (schema: any) => schema.items && schema.items.type === "string" && schema.items.format === "data-url";
     // const getPresetName = (schemaPart: any, type: string = 'null') => type == 'array' ? (isMultiSelect(schemaPart) ? 'multiselect' : isFilesArray(schemaPart) ? 'files' : 'array') : type;
     // const getWidget = (objects: any, widget: any) => typeof widget === 'string' ? objects._widgets && objects._widgets[widget] || widget : widget;
-
 
     const self = this;
     const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
@@ -321,6 +302,7 @@ class FField extends Component<any, any> {
   //   return false
   // }
 
+  // todo: id and name
   // _setId() {
   //   const self = this;
   //   const id = getIn(self.props.stateBranch, SymData, 'uniqId');
@@ -349,28 +331,21 @@ class FField extends Component<any, any> {
     const self = this;
     let updateComponent = false;
 
-    if (nextProps.FFrormApi != self.props.FFrormApi) {
-      self._rebuild = true;
-      return true;
-    }
+    if (nextProps.FFrormApi != self.props.FFrormApi) return (self._rebuild = true);
 
-    const nextData = nextState.branch[SymData];
-    const prevData = self.state.branch[SymData];
-    if (nextData.oneOf !== prevData.oneOf) {
-      self._rebuild = true;
-      return true;
-    }
+    const nextData = getIn(nextState, 'branch', SymData);
+    const prevData = getIn(self.state, 'branch', SymData);
+    if (getIn(nextData, 'oneOf') !== getIn(prevData, 'oneOf')) return (self._rebuild = true);
 
-    // if (nextData.fData.type !== currentData.fData.type) updateComponent = self._setArrayBlocks(nextData);
     updateComponent = self._setMappedData(prevData, nextData, nextData !== prevData) || updateComponent;
-    updateComponent = updateComponent || nextData.params.norender != prevData.params.norender;
+    updateComponent = updateComponent || getIn(nextData, 'params', 'norender') !== getIn(prevData, 'params', 'norender');
     return updateComponent
   }
 
   render() {
     const self = this;
-    if (!self.state.branch) return null;
-    if (self.state.branch[SymData].params.norender) return false;
+    if (isUndefined(self.state.branch)) return null;
+    if (getIn(self.state, 'branch', SymData, 'params', 'norender')) return false;
     if (self._rebuild) this._build();
     const BuilderWidget = self._widgets['Builder'];
     return <BuilderWidget {...self._mappedData['Builder']} mapped={self._mappedData}/>
@@ -382,14 +357,16 @@ class FField extends Component<any, any> {
 /////////////////////////////////////////////
 //  Section class
 /////////////////////////////////////////////
-class FSectionWidget extends PureComponent<any, any> { // need to be class, as we use it's forceUpdate() method
+class FSectionWidget extends React.Component<any, any> { // need to be class, as we use it's forceUpdate() method
+  refs: any;
+
   render() {
     const {_$widget: Widget = 'div', getMappedData, $cx, className, ...rest} = this.props;
     return <Widget className={$cx ? $cx(className) : className} {...getMappedData()} {...rest}/>
   }
 }
 
-class FSection extends Component<any, any> {
+class FSection extends React.Component<any, any> {
   private _arrayStart: number = 0;
   private _rebuild = true;
   private _focusField: string = '';
@@ -591,9 +568,13 @@ class FSection extends Component<any, any> {
 //  Basic components
 /////////////////////////////////////////////
 
-class GenericWidget extends PureComponent<any, any> {
+class GenericWidget extends React.Component<any, any> {
   private _children: any;
   private _mapped: any[];
+
+  constructor(props: any, context: any) {
+    super(props, context);
+  }
 
   _newWidget(obj: any) {
     const {_$widget: Widget = GenericWidget, className, ...rest} = obj;
@@ -615,7 +596,7 @@ class GenericWidget extends PureComponent<any, any> {
 }
 
 
-class AutosizeWidget extends PureComponent<any, any> {
+class AutosizeWidget extends React.Component<any, any> {
   static readonly _sizerStyle: { position: 'absolute', top: 0, left: 0, visibility: 'hidden', height: 0, overflow: 'scroll', whiteSpace: 'pre' };
   private _elem: any;
 
@@ -637,21 +618,16 @@ class AutosizeWidget extends PureComponent<any, any> {
 
 function FBuilder(props: any) {
   const {mapped, widgets} = props;
-  const {Title, Body, Main, Message, Wrapper, ArrayItem, Array, Autosize} = widgets;
+  const {Title, Body, Main, Message, Wrapper, Autosize} = widgets;
 
-  let result = (
-    <Wrapper {...mapped['Wrapper']}>
-      {Title ? <Title {...mapped['Title']}/> : ''}
-      <Body {...mapped['Body']}>
-      <Main {...mapped['Main']}/>
-      {Message ? <Message {...mapped['Message']}/> : ''}
-      {Autosize ? <Autosize {...mapped['Autosize']}/> : ''}
-      </Body>
-    </Wrapper>
-  );
-  if (Array) result = <Array {...mapped['Array']}>{result}</Array>;
-  // if (ArrayItem) result = <ArrayItem  {...mapped['ArrayItem']}>{result}</ArrayItem>;
-  return result;
+  return React.createElement(Wrapper, mapped['Wrapper'],
+    Title ? React.createElement(Title, mapped['Title']) : '',
+    React.createElement(Body, mapped['Body'],
+      React.createElement(Main, {}, mapped['Main']),
+      Message ? React.createElement(Message, {}, mapped['Message']) : '',
+      Autosize ? React.createElement(Autosize, mapped['Autosize']) : ''
+    )
+  )
 }
 
 
@@ -680,25 +656,6 @@ function ItemMenu(props: any) {
       })}
     </UseTag>);
 }
-
-function MessagesWidget(props: any) {
-  const {useTag: UseTag = 'div', MessageItem, messages = {}, $cx = classNames, className, ...rest} = props;
-  const {_$widget: MIW, ...restMI} = MessageItem;
-  let keys = objKeys(messages);
-  keys.sort((a, b) => parseFloat(a) - parseFloat(b));
-  return <UseTag className={$cx(className)} {...rest}>{keys.map(key => <MIW key={key} $cx={$cx} messageData={messages[key]} {...restMI} />)}</UseTag>;
-}
-
-
-function MessageItem(props: any) {
-  const {useTag: UseTag = 'div', messageData, $cx = classNames, className, ...rest} = props;
-  const {priority, norender, textGroups, className: groupCN, ...restMG} = messageData;
-  const texts: any[] = [];
-  objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey]));
-  if (norender || !texts.length) return null;
-  return <UseTag className={$cx(className, groupCN, 'priority_' + priority)} {...rest} {...restMG}>{texts.join('<br/>')}</UseTag>
-}
-
 
 function BaseInput(props: any) {
   let {
@@ -733,6 +690,43 @@ function BaseInput(props: any) {
   }// {enumOptions.map(({value, name}:any, i: number) => <option key={i} value={value}>{name}</option>)}
   else return (<UseTag className={$cx ? $cx(className) : className} {...rest} {...valueObj} type={type} {...calcProps}/>);
 };
+
+
+function TristateBox(props: any) {
+  const self = this;
+  let {checked, onChange, nullValue, getRef, type, ...rest} = props;
+  return <input type="checkbox" checked={checked === true} {...rest}
+                onChange={(event: any) => {onChange(checked === nullValue ? true : (checked === true ? false : nullValue), event)}}
+                ref={elem => {
+                  getRef && getRef(elem);
+                  elem && (elem.indeterminate = (checked === nullValue))
+                }}/>
+}
+
+
+function CheckboxInput(props: any) {
+  const {labelProps, ...rest} = props;
+  return <label {...labelProps}><BaseInput {...rest}/><span>{props.title}</span></label>;
+}
+
+
+function MessagesWidget(props: any) {
+  const {useTag: UseTag = 'div', MessageItem, messages = {}, $cx = classNames, className, ...rest} = props;
+  const {_$widget: MIW, ...restMI} = MessageItem;
+  let keys = objKeys(messages);
+  keys.sort((a, b) => parseFloat(a) - parseFloat(b));
+  return <UseTag className={$cx(className)} {...rest}>{keys.map(key => <MIW key={key} $cx={$cx} messageData={messages[key]} {...restMI} />)}</UseTag>;
+}
+
+
+function MessageItem(props: any) {
+  const {useTag: UseTag = 'div', messageData, $cx = classNames, className, ...rest} = props;
+  const {priority, norender, textGroups, className: groupCN, ...restMG} = messageData;
+  const texts: any[] = [];
+  objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey]));
+  if (norender || !texts.length) return null;
+  return <UseTag className={$cx(className, groupCN, 'priority_' + priority)} {...rest} {...restMG}>{texts.join('<br/>')}</UseTag>
+}
 
 
 function ArrayInput(props: any) {
@@ -833,24 +827,6 @@ function ArrayInput(props: any) {
       })
     }</UseTag>
   );
-}
-
-
-function CheckboxInput(props: any) {
-  const {labelProps, ...rest} = props;
-  return <label {...labelProps}><BaseInput {...rest}/><span>{props.title}</span></label>;
-}
-
-
-function TristateBox(props: any) {
-  const self = this;
-  let {checked, onChange, nullValue, getRef, type, ...rest} = props;
-  return <input type="checkbox" checked={checked === true} {...rest}
-                onChange={(event: any) => {onChange(checked === nullValue ? true : (checked === true ? false : nullValue), event)}}
-                ref={elem => {
-                  getRef && getRef(elem);
-                  elem && (elem.indeterminate = (checked === nullValue))
-                }}/>
 }
 
 ///////////////////////////////
@@ -1180,7 +1156,7 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     //selector: {dataMap: [['./@/value', './', selectorOnChange(false)]]}, // {onChange: selectorOnChange(false)}},
     //tabs: {dataMap: [['./@/value', './', selectorOnChange(true)]]}, //{Main: {onChange: selectorOnChange(true)}},
     autosize: {
-      Autosize: '%/parts/Autosize',
+      Autosize: {$_ref: '%/parts/Autosize'},
       Wrapper: {style: {flexGrow: 0}},
     },
     flexRow: {
@@ -1219,13 +1195,13 @@ const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   parts: {
     Autosize: {
       _$widget: '%/widgets/Autosize',
+      addWidth: 45,
+      minWidth: 60,
       $propsMap: {
-        addWidth: 45,
-        minWidth: 60,
         value: 'value',
         placeholder: '@/params/placeholder',
         'className/hidden': '@/params/hidden',
-        $FField: ['%/fn/getFFieldProperty'],
+        $FField: {$: '%/fn/getFFieldProperty', args: [], update: 'build'},
       }
     },
     Button: {
@@ -1319,9 +1295,12 @@ function classNames(...styles: any) {
   return classes.join(' ');
 }
 
+function Test() {
+  return React.createElement('div', null, null);
+}
 
 export {selectorMap, fformObjects, FForm, FFormStateAPI, fformCores, classNames};
 
-export {extractMaps, normalizeMaps, updateProps}
+export {extractMaps, normalizeMaps, updateProps, Test}
 //module.exports = process.env.NODE_ENV === 'test' ? merge(module.exports, {}) : module.exports;
 

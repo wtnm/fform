@@ -549,7 +549,7 @@ function isSelfManaged(state: StateType, ...pathes: any[]) {
 }
 
 function isSchemaSelfManaged(schemaPart: jsJsonSchema, type: string) {
-  return type !== 'array' && type !== 'object' || hasIn(schemaPart, 'ff_props', 'managed')
+  return type !== 'array' && type !== 'object' || hasIn(schemaPart, 'ff_managed')
 }
 
 function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
@@ -1008,12 +1008,8 @@ function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
   return getIn(state, ...pathes.map(path => normalizePath(path as any)));
 }
 
-function objMap(obj: any, fn: Function, symbol = false) {
-  if (!isMergeable(obj)) return obj;
-  const result = isArray(obj) ? [] : {};
-  (symbol ? objKeysNSymb : objKeys)(obj).forEach(key => result[key] = fn(obj[key]));
-  return result
-};
+const objMap = (object: any, fn: (item: any, key: string, obj: anyObject) => any) =>
+  objKeys(object).reduce((result, key) => (result[key] = fn(object[key], key, object)) && result, isArray(object) ? [] : {});
 
 // function objKeysMap(obj: any, fn: Function, symbol = false) {
 //   if (!isMergeable(obj)) return obj;
