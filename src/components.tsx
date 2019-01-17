@@ -1,4 +1,4 @@
-import * as React from 'preact';
+import * as React from 'react';
 import {asNumber, toArray, deArray, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, isFunction, makeSlice, merge, mergeState, objKeys, push2array, memoize} from "./commonLib";
 import {
   arrayStart,
@@ -360,10 +360,7 @@ class FField extends React.Component<any, any> {
 class FSectionWidget extends React.Component<any, any> { // need to be class, as we use it's forceUpdate() method
   refs: any;
 
-  render() {
-    const {_$widget: Widget = 'div', getMappedData, $cx, className, ...rest} = this.props;
-    return <Widget className={$cx ? $cx(className) : className} {...getMappedData()} {...rest}/>
-  }
+  render() {return React.createElement(this.props._$widget || 'div', this.props.getMappedData(), this.props.children);}
 }
 
 class FSection extends React.Component<any, any> {
@@ -578,7 +575,7 @@ class GenericWidget extends React.Component<any, any> {
 
   _newWidget(obj: any) {
     const {_$widget: Widget = GenericWidget, className, ...rest} = obj;
-    return <Widget className={isString(Widget) && this.props.$cx ? this.props.$cx(className) : className} {...rest}/>
+    return <Widget className={isString(Widget) && this.props.$cx ? this.props.$cx(className) : className} cx={!isString(Widget) ? this.props.$cx : undefined} {...rest}/>
   }
 
   render() {

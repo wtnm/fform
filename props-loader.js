@@ -1,7 +1,6 @@
 const strip = require('strip-comments');
 const fs = require('fs');
 
-
 function minifyProps(source) {
   fs.writeFileSync('./source.js', source);
   // return source;
