@@ -3,44 +3,43 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Visualizer = require('webpack-visualizer-plugin');
 const {resolve} = require('path');
 const {getIfUtils, removeEmpty} = require('webpack-config-utils');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 
 const {ifProduction, ifNotProduction, ifNotTest} = getIfUtils(process.env.NODE_ENV || 'development');
 
 module.exports = {
+  stats: {
+    colors: true
+  },
   devtool: 'source-map',
 
   // context: resolve('./src'),
 
   entry: {
-    app: './src/api.tsx'
+    app: './src/components.tsx'
   },
   watch: process.env.NODE_ENV !== 'production',
   output: {
-    filename: `FForm${process.env.NODE_ENV === 'production' ? '.min' : ''}.js`,
+    filename: `fform${process.env.NODE_ENV === 'production' ? '.min' : ''}.js`,
     path: resolve('./dist'),
     libraryTarget: 'umd',
-    library: 'FForm',
+    library: 'fform',
   },
   externals: {
     react: 'react',
-    'react/addons': 'react/addons',
-    redux: 'redux',
-    'react-dom': 'react-dom',
-    'react-redux': 'react-redux'
   },
+
   module: {
-    loaders: [
-      {
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        loaders: ['babel-loader']
-      },
-// ./props-loader!
+    rules: [
       {
         test: /\.(ts|tsx)$/,
         loader: `${process.env.NODE_ENV === 'production' ? './props-loader!babel-loader!' : ''}ts-loader`
       },
+      {
+        test: /\.css$/,
+        loader: `style-loader!css-loader?importLoaders=1!postcss-loader`,
+      }
     ],
   },
 
@@ -55,19 +54,18 @@ module.exports = {
       }
     }),
     ifProduction(new webpack.optimize.OccurrenceOrderPlugin(true)),
-    ifProduction(new webpack.optimize.minimize({
-      sourceMap: process.env.NODE_ENV !== 'production',
-      compress: {
-        screw_ie8: true,
-        warnings: false,
-      },
-      mangle: {
-        screw_ie8: true,
-      },
-      output: {
-        comments: false,
-        screw_ie8: true,
-      },
-    })),
+    ifProduction(new UglifyJsPlugin(
+      {
+        cache: true,
+        parallel: true,
+        uglifyOptions: {
+          toplevel: true,
+          // nameCache: true,
+          ecma: 6,
+          mangle: true
+        },
+        sourceMap: false
+      }
+    )),
   ]),
 };

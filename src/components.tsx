@@ -49,7 +49,7 @@ class FForm extends React.Component<any, any> {
     self._setRef = self._setRef.bind(self);
     self._submit = self._submit.bind(self);
     self._getPath = self._getPath.bind(self);
-    Object.defineProperty(self, "objects", {get: () => self.props.objects || self.api.props.objects});
+    Object.defineProperty(self, "objects", {get: () => self.api.props.objects});
   }
 
   _setRef(FField: any) {
@@ -266,9 +266,9 @@ class FField extends React.Component<any, any> {
     self.schemaPart = schemaPart;
 
     self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
-    const components = resolveComponents(self.api.props.objects, schemaPart.ff_custom, schemaPart.ff_preset);
+    const components = resolveComponents(self.pFForm.objects, schemaPart.ff_custom, schemaPart.ff_preset);
     self._ff_components = components[SymData] ? merge(components, self._bind2self(components[SymData])) : components;
-    const ff_layout = resolveComponents(self.api.props.objects, schemaPart.ff_layout);
+    const ff_layout = resolveComponents(self.pFForm.objects, schemaPart.ff_layout);
     self.ff_layout = ff_layout[SymData] ? merge(ff_layout, self._bind2self(ff_layout[SymData])) : ff_layout;
 
     // self._enumOptions = getEnumOptions(schemaPart);
@@ -938,7 +938,7 @@ function onSelectChange(event: any) {
 /////////////////////////////////////////////
 
 
-const fformObjects: formObjectsType & { extend: (obj: any) => any } = {
+let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   extend: function (obj) {
     return merge(this, obj, {symbol: false}) // merge without symbols, as there (in symbol keys) will be stored cache data which MUST be recalculated after each extend
   },

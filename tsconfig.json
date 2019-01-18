@@ -13,15 +13,17 @@
     "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": false,
     "noUnusedLocals": false,
-    "jsx": "react"
+    "jsx": "react",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   },
   "exclude": [
-        "node_modules",
-        ".git",
-		".happypack",
-		"tools",
-		"docs",
-		"config",
-		"build"
-    ]
+    "node_modules",
+    ".git",
+    ".happypack",
+    "tools",
+    "docs",
+    "config",
+    "build"
+  ]
 }

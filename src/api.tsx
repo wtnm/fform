@@ -38,7 +38,7 @@ import {
 } from "./stateLib";
 
 
-const JSONSchemaValidator = require('./is-my-json-valid');
+const JSONSchemaValidator: any = require('./is-my-json-valid');
 
 
 class exoPromise {
@@ -112,7 +112,7 @@ class FFormStateManager {
     self.name = props.name || '';
     self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
     self._reducer = formReducer();
-    self._validator = JSONSchemaValidator(props.schema, {greedy: true});
+    self._validator = JSONSchemaValidator && JSONSchemaValidator(props.schema, {greedy: true});
     self.JSONValidator = self._jValidator.bind(self);
     self._getState = self._getState.bind(self);
     self._setState = self._setState.bind(self);

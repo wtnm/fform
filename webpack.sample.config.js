@@ -17,48 +17,26 @@ module.exports = {
   // context: resolve('./src'),
 
   entry: {
-    app: './src/constructor.tsx'
+    app: './sample/sample.tsx'
   },
   watch: process.env.NODE_ENV !== 'production',
   output: {
-    filename: `constructor${process.env.NODE_ENV === 'production' ? '.min' : ''}.js`,
-    path: resolve('./dist'),
+    filename: `sample${process.env.NODE_ENV === 'production' ? '.min' : ''}.js`,
+    path: resolve('./sample/build'),
     libraryTarget: 'umd',
-    library: 'constructor',
+    library: 'sample',
   },
   module: {
-
-    rules: [{
-      test: /\.(js|jsx)$/, // include .js files
-      //enforce: "pre", // preload the jshint loader
-      exclude: /node_modules/, // exclude any and all files in the node_modules folder
-      loader: "babel-loader"
-    },
+    rules: [
       {
         test: /\.(ts|tsx)$/,
         loader: `${process.env.NODE_ENV === 'production' ? './props-loader!babel-loader!' : ''}ts-loader`
       },
       {
-        test: /\.scss$/,
-        loader: `style-loader!css-loader?importLoaders=1&sourceMap!postcss-loader?sourceMap!sass-loader?sourceMap`,
-      },
-      {
         test: /\.css$/,
         loader: `style-loader!css-loader?importLoaders=1!postcss-loader`,
       }
-
     ],
-
-//
-//     loaders: [
-//       {
-//         test: /\.(js|jsx)$/,
-//         exclude: /node_modules/,
-//         loaders: ['babel-loader']
-//       },
-// // ./props-loader!
-//
-//     ],
   },
 
   resolve: {
@@ -83,20 +61,6 @@ module.exports = {
         },
         sourceMap: process.env.NODE_ENV !== 'production'
       }
-      // {
-      //   sourceMap: process.env.NODE_ENV !== 'production',
-      //   compress: {
-      //     screw_ie8: true,
-      //     warnings: false,
-      //   },
-      //   mangle: {
-      //     screw_ie8: true,
-      //   },
-      //   output: {
-      //     comments: false,
-      //     screw_ie8: true,
-      //   },
-      // }
     )),
   ]),
 };

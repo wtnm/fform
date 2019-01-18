@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "array": {
+      "type": "array",
+      "default": [
+        [
+          "string value",
+          0,
+          false,
+          null,
+          "more text"
+        ]
+      ],
+      "items": {
+        "type": "array",
+        "items": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    },
+    "radioSelect": {
+      "type": "number"
+    },
+    "checkboxSelect": {
+      "type": "array",
+      "ff_managed": true
+    }
+  }
+}
