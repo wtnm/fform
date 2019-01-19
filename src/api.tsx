@@ -604,7 +604,7 @@ function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema):
   if (isCompiled(schema)) return schema;
 
   let {ff_validators, ff_dataMap, ...rest} = schema;
-  const result: jsJsonSchema = {ff_compiled: true};
+  const result: any = isArray(schema) ? [] : {ff_compiled: true};
 
   ff_validators && (result.ff_validators = toArray(objectResolver(fformObjects, ff_validators, false)).map((v) => isObject(v) ? (v as any) : {$: v}));
   ff_dataMap && (result.ff_dataMap = objectResolver(fformObjects, ff_dataMap, false));

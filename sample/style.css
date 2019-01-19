@@ -4,3 +4,7 @@
     flex: 1 1 auto;
     align-items: stretch;
 }
+
+.hidden {
+    display: none;
+}

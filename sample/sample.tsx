@@ -17,7 +17,7 @@ if (typeof window != 'undefined') {
     <h3>FForm sample</h3>
     <div>
       <div>
-        <FForm core={{schema: {sampleSchema}, name: "FFormConstructor", objects: sampleObjects}}/>
+        <FForm core={{schema: sampleSchema, name: "FFormConstructor", objects: sampleObjects}}/>
       </div>
     </div>
   </div>, container);

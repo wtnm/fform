@@ -23,7 +23,8 @@
               "type": [
                 "number",
                 "null"
-              ]
+              ],
+              "ff_preset": "number"
             },
             {
               "type": "boolean"

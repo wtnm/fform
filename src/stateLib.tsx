@@ -399,7 +399,7 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   else delete result.value;
   let untouched = 1;
   if (type == 'array') {
-    result.length = getIn(value, 'length') || 0;
+    result.length = getIn(value || schemaPart.default, 'length') || 0;
     if (!isUndefined(schemaPart.minItems) && result.length < schemaPart.minItems) result.length = schemaPart.minItems;
     result.fData.canAdd = isArrayCanAdd(schemaPart, result.length);
     untouched = result.length;
@@ -1009,7 +1009,7 @@ function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
 }
 
 const objMap = (object: any, fn: (item: any, key: string, obj: anyObject) => any) =>
-  objKeys(object).reduce((result, key) => (result[key] = fn(object[key], key, object)) && result, isArray(object) ? [] : {});
+  objKeys(object).reduce((result, key) => (result[key] = fn(object[key], key, object) || true) && result, isArray(object) ? [] : {});
 
 // function objKeysMap(obj: any, fn: Function, symbol = false) {
 //   if (!isMergeable(obj)) return obj;
