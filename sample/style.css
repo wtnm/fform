@@ -1,4 +1,4 @@
-.wrapper .layout .body {
+.wrapper, .layout, .body {
     display: flex;
     flex-flow: column;
     flex: 1 1 auto;

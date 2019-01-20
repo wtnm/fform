@@ -52,9 +52,11 @@ function getBindedMaps2update(branch: StateType, path: Path = []) {
   const maps2enable = maps2disable.map((map => merge(map, {emitter: path})));
   objKeys(branch).forEach(key => {
     let result: any;
-    if (branch[key]) result = getBindedMaps2update(branch[key], path.concat(key));
-    push2array(maps2disable, result.maps2disable);
-    push2array(maps2enable, result.maps2enable);
+    if (branch[key]) {
+      result = getBindedMaps2update(branch[key], path.concat(key));
+      push2array(maps2disable, result.maps2disable);
+      push2array(maps2enable, result.maps2enable);
+    }
   });
   return {maps2disable, maps2enable}
 }
@@ -452,7 +454,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
         defaultValues[i] = dValue;
         push2array(dataMapObjects, dataMap);
         branch = merge(branch, {[SymData]: {arrayItem: getArrayItemData(schemaPart, i, defaultValues.length)}}, {replace: {[SymData]: {ArrayItem: true}}});
-        branch = merge(branch, {[SymData]: {params: getUniqKey()}});
+        branch = merge(branch, {[SymData]: {params: {uniqKey: getUniqKey()}}});
         result[i] = branch;
 
       }
@@ -724,6 +726,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
       for (let i = start; i < end; i++) {
         let elemPath = path.concat(i);
         let {state: branch, dataMap = [], defaultValues} = makeStateBranch(schema, oneOfStateFn, elemPath);
+        branch = merge(branch, {[SymData]: {params: {uniqKey: getUniqKey()}}});
         state = merge(state, setIn({}, branch, elemPath), {replace: setIn({}, true, elemPath)});
         state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], push2array(['current'], elemPath), defaultValues, true));
         //state = merge(state, makeSlice(SymData, 'current', elemPath, defaultValues), {replace: makeSlice(SymData, 'current', elemPath, true)});

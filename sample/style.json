@@ -1,28 +1,29 @@
 {
   "nBase": {
-    "Array": {
-      "className": {},
-      "AddButton": {
-        "className": {}
-      },
-      "Empty": {
-        "className": {}
-      }
-    },
     "Wrapper": {
-      "className": {},
+      "className": {
+        "wrapper": true
+      },
       "ArrayItemBody": {
-        "className": {}
+        "className": {
+          "array-item": true
+        }
       },
       "ArrayItemMenu": {
-        "className": {}
+        "className": {
+          "array-menu": true
+        }
       }
     },
     "Body": {
-      "className": {}
+      "className": {
+        "body": true
+      }
     },
     "Title": {
-      "className": {}
+      "className": {
+        "title": true
+      }
     },
     "Message": {
       "className": {},
@@ -36,22 +37,30 @@
   },
   "object": {
     "Title": {
-      "className": {},
+      "className": {
+        "title": true
+      },
       "children": [
         "",
         {
-          "className": {}
+          "className": {
+            "add-button": true
+          }
         },
         {
-          "className": {}
+          "className": {
+            "del-button": true
+          }
         },
         {
-          "className": {}
+          "className": {
+            "empty-message": true
+          }
         }
       ]
     },
     "Main": {
-      "LayoutDefaultClass": {}
+      "LayoutDefaultClass": "layout"
     }
   }
 }

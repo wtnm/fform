@@ -150,6 +150,7 @@ class FField extends React.Component<any, any> {
 
   ff_layout: FFLayoutGeneric<jsFFCustomizeType>;
   $refs: any = {};
+  $branch: any;
   schemaPart: jsJsonSchema;
 
   liveValidate: boolean;
@@ -166,6 +167,7 @@ class FField extends React.Component<any, any> {
     self._apiWrapper();
     const branch = self.api.get(self.path);
     self.state = {branch};
+    self.$branch = branch;
     self._bind2self = self._bind2self.bind(self);
     self._setRef = self._setRef.bind(self);
     self._build();
@@ -306,7 +308,7 @@ class FField extends React.Component<any, any> {
   // todo: id and name
   // _setId() {
   //   const self = this;
-  //   const id = getIn(self.props.stateBranch, SymData, 'uniqId');
+  //   const id = getIn(self.props.$branch, SymData, 'uniqId');
   //   let path = self.props.getPath();
   //   if (id && path != '#') {
   //     path = path.split('/');
@@ -328,8 +330,8 @@ class FField extends React.Component<any, any> {
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
     if (!nextState.branch) return true;
-
     const self = this;
+    self.$branch = nextState.branch;
     let updateComponent = false;
 
     if (nextProps.FFrormApi != self.props.FFrormApi) return (self._rebuild = true);
@@ -480,15 +482,15 @@ class FSection extends React.Component<any, any> {
                    getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
   }
 
-  _arrayIndex2key(stateBranch: any) {
-    return this.props.uniqKey ? getIn(stateBranch[SymData], string2path(this.props.uniqKey)) : undefined;
+  _arrayIndex2key($branch: any) {
+    return this.props.uniqKey ? getIn($branch[SymData], string2path(this.props.uniqKey)) : undefined;
   }
 
-  _getObjectKeys(stateBranch: StateType) {
+  _getObjectKeys($branch: StateType) {
     const self = this;
     let keys: string[] = [];
-    if (self.props.isArray) for (let i = 0; i < self.props.arrayStart; i++) keys.push(i.toString()); // Math.min(self.props.arrayStart, stateBranch[SymData].length)
-    else keys = branchKeys(stateBranch);
+    if (self.props.isArray) for (let i = 0; i < self.props.arrayStart; i++) keys.push(i.toString()); // Math.min(self.props.arrayStart, $branch[SymData].length)
+    else keys = branchKeys($branch);
     return keys;
   }
 
@@ -506,12 +508,13 @@ class FSection extends React.Component<any, any> {
     let doUpdate = false;
     for (let i = self.props.arrayStart; i < nextBranch[SymData].length; i++) {
       let arrayKey = self._arrayIndex2key(nextBranch[i]);
+      if (isUndefined(arrayKey)) throw new Error('no unique key provided for array item');
       if (self._fields[arrayKey]) self._fields[arrayKey].setState({branch: nextBranch[i]});
       let prevIndex = self._arrayKey2field[arrayKey];
       if (self._arrayKey2field[arrayKey] !== i) {
         self._arrayKey2field[arrayKey] = i;
         doUpdate = true
-      }
+      }      
       updatedArray.push(!isUndefined(prevIndex) ? self._arrayLayouts[prevIndex - self.props.arrayStart] : self._makeFField(i.toString(), arrayKey));
     }
     if (self._arrayLayouts.length !== updatedArray.length) doUpdate = true;
@@ -532,21 +535,21 @@ class FSection extends React.Component<any, any> {
     }
     let doUpdate = false;
 
-    let prevBranch = self.props.stateBranch;
-    let nextBranch = nextProps.stateBranch;
+    let prevBranch = self.props.$branch;
+    let nextBranch = nextProps.$branch;
 
     if (prevBranch != nextBranch) {
-      // update object elements or if it _isArray elements that lower than self.props.arrayStart
-      self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self._fields[field] && self._fields[field].setState({branch: nextBranch[field]}));
-
-      if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch); // updates and reorders elements greater/equal than self.props.arrayStart
-
       const newMapped = self._updateMappedData(prevBranch[SymData], nextBranch[SymData], nextBranch[SymData] !== prevBranch[SymData]);
       if (newMapped != self._mappedData) { // update self._widgets
         const oldMapped = self._mappedData;
         self._mappedData = newMapped;
         objKeys(newMapped).forEach(key => self._widgets[key] && newMapped[key] != oldMapped[key] && self._widgets[key]['forceUpdate']());
       }
+      // update object elements or if it _isArray elements that lower than self.props.arrayStart
+      self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self._fields[field] && self._fields[field].setState({branch: nextBranch[field]}));
+
+      if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch); // updates and reorders elements greater/equal than self.props.arrayStart
+
     }
 
     return doUpdate; //|| !isEqual(self.props, nextProps, {skipKeys: ['$branch']});
@@ -649,8 +652,8 @@ function ItemMenu(props: any) {
   return (
     <UseTag className={_$cx(className)} {...rest}>
       {buttons.map((key: string) => {
-        const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, ...restBut} = buttonsProps[key] || {};
-        return (<ButW key={key} type={type} className={_$cx ? _$cx(ButCN) : ButCN} disabled={disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
+        const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, children = key, ...restBut} = buttonsProps[key] || {};
+        return (<ButW key={key} type={type} className={_$cx ? _$cx(ButCN) : ButCN} children={children} disabled={disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
       })}
     </UseTag>);
 }
@@ -744,7 +747,6 @@ function ArrayInput(props: any) {
     onFocus,
     onBlur,
     onChange,
-    stateBranch,
     $FField,
     enumOptions,
     $reactRef,
@@ -978,7 +980,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         _$widget: '%/widgets/Builder',
         _$cx: '%/_$cx',
         $propsMap: {
-          widgets: ['%/fn/getFFieldProperty', '_widgets'],
+          widgets: {$: '%/fn/getFFieldProperty', args: ['_widgets'], update: 'build'},
         },
       },
       Title: {
@@ -1095,7 +1097,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           $FField: {$: '%/fn/getFFieldProperty', args: [], update: 'build'},
           FFormApi: {$: '%/fn/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
           $layout: {$: '%/fn/getFFieldProperty', args: 'ff_layout', update: 'build'},
-          $branch: {$: '%/fn/getFFieldProperty', args: 'state/branch', update: 'every'},
+          $branch: {$: '%/fn/getFFieldProperty', args: '$branch', update: 'every'},
         }
       },
       Title: {
@@ -1195,19 +1197,19 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     ArrayAddButton: {
       $_ref: '%/parts/Button',
       children: ['+'],
-      onClick: '%/fn/on/clickArrayAdd',
+      onClick: '%/on/clickArrayAdd',
       'onClick.bind': ['./', 1]
     },
     ArrayDelButton: {
       $_ref: '%/parts/Button',
       children: ['-'],
-      onClick: '%/fn/on/clickArrayAdd',
+      onClick: '%/on/clickArrayAdd',
       'onClick.bind': ['./', -1]
     },
     ArrayItemMenu: {
       _$widget: '%/widgets/ItemMenu',
       buttons: ['first', 'last', 'up', 'down', 'del'],
-      onClick: '%/fn/on/clickArrayItemOps',
+      onClick: '%/on/clickArrayItemOps',
       'onClick.bind': ['./'],
       buttonProps: {
         first: {disabledCheck: 'canUp'},
