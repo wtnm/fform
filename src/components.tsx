@@ -188,7 +188,7 @@ class FField extends React.Component<any, any> {
     const self = this;
     self._cachedTimeout = undefined;
     if (self._cached) {
-      self.api.setValue(self._cached.value, {noValidation: !self.liveValidate});
+      self.props.pFForm.api.setValue(self._cached.value, {noValidation: !self.liveValidate, path: self.path});
       self._cached = undefined;
     }
   }
@@ -514,7 +514,7 @@ class FSection extends React.Component<any, any> {
       if (self._arrayKey2field[arrayKey] !== i) {
         self._arrayKey2field[arrayKey] = i;
         doUpdate = true
-      }      
+      }
       updatedArray.push(!isUndefined(prevIndex) ? self._arrayLayouts[prevIndex - self.props.arrayStart] : self._makeFField(i.toString(), arrayKey));
     }
     if (self._arrayLayouts.length !== updatedArray.length) doUpdate = true;
