@@ -21,11 +21,6 @@
           "body": true
         }
       },
-      "Title": {
-        "className": {
-          "title": true
-        }
-      },
       "Message": {
         "className": {},
         "MessageItem": {
@@ -36,10 +31,17 @@
         "className": {}
       }
     },
-    "object": {
+    "nBase": {
       "Title": {
         "className": {
           "title": true
+        }
+      }
+    },
+    "object": {
+      "Title": {
+        "className": {
+          "title-container": true
         },
         "children": [
           {

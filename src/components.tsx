@@ -1108,10 +1108,10 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Title: {
         useTag: 'legend',
         children: [
-          {$_ref: '%/presets/nBase/Title'},
+          {$_ref: '%/presets/nBase/Title', useTag: 'span'},
           {$_ref: '%/parts/ArrayAddButton'},
           {$_ref: '%/parts/ArrayDelButton'},
-          {children: '(array is empty)'}],
+          {children: '(array is empty)', useTag: 'span'}],
         $propsMap: {
           'children/1,2/className/hidden': ['%/fn/equal | %/fn/not', 'array', '@/fData/type'],
           'children/3/className/hidden': ['%/fn/equal | %/fn/not', 0, '@/length'],

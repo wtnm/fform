@@ -1013,7 +1013,7 @@ function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
 }
 
 const objMap = (object: any, fn: (item: any, key: string, obj: anyObject) => any) =>
-  objKeys(object).reduce((result, key) => (result[key] = fn(object[key], key, object) || true) && result, isArray(object) ? [] : {});
+  objKeys(object).reduce((result, key) => ((result[key] = fn(object[key], key, object)) || true) && result, isArray(object) ? [] : {});
 
 // function objKeysMap(obj: any, fn: Function, symbol = false) {
 //   if (!isMergeable(obj)) return obj;
