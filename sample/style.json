@@ -1,66 +1,74 @@
 {
-  "nBase": {
-    "Wrapper": {
-      "className": {
-        "wrapper": true
-      },
-      "ArrayItemBody": {
+  "presets": {
+    "base": {
+      "Wrapper": {
         "className": {
-          "array-item": true
+          "wrapper": true
+        },
+        "ArrayItemBody": {
+          "className": {
+            "array-item": true
+          }
+        },
+        "ArrayItemMenu": {
+          "className": {
+            "array-menu": true
+          }
         }
       },
-      "ArrayItemMenu": {
+      "Body": {
         "className": {
-          "array-menu": true
+          "body": true
         }
-      }
-    },
-    "Body": {
-      "className": {
-        "body": true
-      }
-    },
-    "Title": {
-      "className": {
-        "title": true
-      }
-    },
-    "Message": {
-      "className": {},
-      "MessageItem": {
+      },
+      "Title": {
+        "className": {
+          "title": true
+        }
+      },
+      "Message": {
+        "className": {},
+        "MessageItem": {
+          "className": {}
+        }
+      },
+      "Main": {
         "className": {}
       }
     },
-    "Main": {
-      "className": {}
-    }
-  },
-  "object": {
-    "Title": {
-      "className": {
-        "title": true
+    "object": {
+      "Title": {
+        "className": {
+          "title": true
+        },
+        "children": [
+          {
+            "className": {
+              "title": true
+            }
+          },
+          {
+            "className": {
+              "add-button": true
+            }
+          },
+          {
+            "className": {
+              "del-button": true
+            }
+          },
+          {
+            "className": {
+              "empty-message": true
+            }
+          }
+        ]
       },
-      "children": [
-        "",
-        {
-          "className": {
-            "add-button": true
-          }
-        },
-        {
-          "className": {
-            "del-button": true
-          }
-        },
-        {
-          "className": {
-            "empty-message": true
-          }
+      "Main": {
+        "LayoutDefaultClass": {
+          "layout": true
         }
-      ]
-    },
-    "Main": {
-      "LayoutDefaultClass": "layout"
+      }
     }
   }
 }

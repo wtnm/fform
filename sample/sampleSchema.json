@@ -3,6 +3,7 @@
   "properties": {
     "array": {
       "type": "array",
+      "title": "Array of arrays",
       "default": [
         [
           "string value",
@@ -14,26 +15,30 @@
       ],
       "items": {
         "type": "array",
+        "title": "Array of values",
         "items": {
           "oneOf": [
             {
-              "type": "string"
+              "type": "string",
+              "ff_preset": "string:inlineTitle:inlineArrayItem"
             },
             {
               "type": [
                 "number",
                 "null"
               ],
-              "ff_preset": "number"
+              "ff_preset": "number:inlineTitle:inlineArrayItem"
             },
             {
-              "type": "boolean"
+              "type": "boolean",
+              "ff_preset": "boolean:inlineTitle:inlineArrayItem"
             }
           ]
         }
       }
     },
     "radioSelect": {
+      "title": "Radio select",
       "type": "number"
     },
     "checkboxSelect": {

@@ -633,17 +633,18 @@ function FBuilder(props: any) {
 
 
 function WrapperWidget(props: any) {
-  let {useTag: Wrapper = 'div', children, _$cx = classNames, className, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
+  let {useTag: Wrapper = 'div', _$cx = classNames, className, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
   const {_$widget: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
   const {_$widget: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
+  const result = <Wrapper className={_$cx ? _$cx(className) : className} {...rest} />;
   if (arrayItem) {
     return (
-      <Wrapper className={_$cx ? _$cx(className) : className} {...rest}>
-        <IBodyW className={_$cx && _$cx(IBodyCN)} {...IBodyRest} children={children}/>
+      <IBodyW className={_$cx ? _$cx(IBodyCN) : IBodyCN} {...IBodyRest}>
+        {result}
         <IMenuW className={_$cx && _$cx(IMenuCN)} {...IMenuRest} arrayItem={arrayItem}/>
-      </Wrapper>
+      </IBodyW>
     )
-  } else return <Wrapper className={_$cx ? _$cx(className) : className} {...rest} children={children}/>
+  } else return result
 }
 
 function ItemMenu(props: any) {
@@ -844,9 +845,9 @@ const resolveComponents = memoize((fformObjects: formObjectsType, customizeField
 function extractMaps(obj: any, skip: string[] = []) {
   let {$propsMap, ...rest2extract} = obj;
   $propsMap = {...$propsMap};
-  const rest: any = {};
+  const rest: any = isArray(obj) ? [] : {};
   objKeys(rest2extract).forEach(key => {
-    if (isObject(rest2extract[key]) && !~skip.indexOf(key)) {
+    if (isMergeable(rest2extract[key]) && !~skip.indexOf(key)) {
       let res = extractMaps(rest2extract[key]);
       rest[key] = res.rest;
       objKeys(res.$propsMap).forEach((nk) => $propsMap[key + '/' + nk] = res.$propsMap[nk]);
@@ -985,14 +986,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       },
       Title: {
         _$widget: '%/widgets/Generic',
-        useTag: 'label',
         _$cx: '%/_$cx',
-        children: [],
-        $propsMap: {
-          'className/required': '@/fData/required',
-          'children/0': '@/fData/title',
-          htmlFor: {$: '%/fn/getFFieldProperty', args: ['id'], update: 'build'}
-        },
       },
       Body: {
         _$widget: '%/widgets/Generic',
@@ -1031,6 +1025,17 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           label: '@/fData/title',
           readonly: '@/params/readonly',
           disabled: '@/params/disabled',
+        }
+      },
+      Title: {
+        _$widget: '%/widgets/Generic',
+        _$cx: '%/_$cx',
+        useTag: 'label',
+        children: [],
+        $propsMap: {
+          'className/required': '@/fData/required',
+          'children/0': '@/fData/title',
+          htmlFor: {$: '%/fn/getFFieldProperty', args: ['id'], update: 'build'}
         }
       },
     },
@@ -1102,12 +1107,12 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       },
       Title: {
         useTag: 'legend',
-        children: ['',
+        children: [
+          {$_ref: '%/presets/nBase/Title'},
           {$_ref: '%/parts/ArrayAddButton'},
           {$_ref: '%/parts/ArrayDelButton'},
           {children: '(array is empty)'}],
         $propsMap: {
-          'className/required': '@/fData/required',
           'children/1,2/className/hidden': ['%/fn/equal | %/fn/not', 'array', '@/fData/type'],
           'children/3/className/hidden': ['%/fn/equal | %/fn/not', 0, '@/length'],
         },
@@ -1115,13 +1120,9 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Wrapper: {useTag: 'fieldset'},
     },
     array: {$_ref: '%/presets/object'},
-    inlineTitle: {
-      Wrapper: {
-        style: {flexFlow: 'row'},
-      }
-    },
     select: {$_ref: '%/presets/nBase', Main: {type: 'select', onChange: onSelectChange}},
     multiselect: {$_ref: '%/presets/select', Main: {multiply: true}},
+
     arrayOf: {
       $_ref: '%/presets/nBase',
       Main: {
@@ -1143,15 +1144,30 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Autosize: {$_ref: '%/parts/Autosize'},
       Wrapper: {style: {flexGrow: 0}},
     },
-    flexRow: {
-      Layouts: {style: {flexFlow: 'row'}}
-    },
     noArrayItem: {
-      ArrayItem: false,
+      Wrapper: {
+        $propsMap: {'arrayItem': false}
+      },
     },
     noArray: {
-      Array: false,
-    }
+      Title: {
+        children: [''],
+        $propsMap: {
+          'className/required': false,
+          'children/1,2/className/hidden': false,
+          'children/3/className/hidden': false,
+        },
+      },
+    },
+    inlineTitle: {
+      Wrapper: {className: {'flex-row': true}}
+    },
+    inlineArrayItem: {
+      Wrapper: {ArrayItemBody: {className: {'flex-row': true}}}
+    },
+    inlineLayout: {
+      Main: {LayoutDefaultClass: {'flex-row': true}}
+    },
   },
   fn: {
     not: function (v: any) {return !v},

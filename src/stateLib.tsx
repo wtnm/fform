@@ -77,6 +77,7 @@ Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCED
     return updateCurrentRecursively(state, schema, UPDATABLE_object, mergeArrayObj, replaceArrayObj, path)
   } else {
     length += item.value || 1;
+    if (length < 0) length = 0;
     return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['length'], length));
   }
 };
