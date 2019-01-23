@@ -279,7 +279,7 @@ class FFormStateAPI extends FFormStateManager {
   get = (...pathes: Array<string | Path>): any => getFromState(this.getState(), ...pathes);
 
   set = (path: string | Path, value: any, opts: APIOptsType & { replace?: any, setOneOf?: number, macros?: string } = {}) => {
-    let {execute, force, noValidation, ...update} = opts;
+    let {...update} = opts;
     (update as StateApiUpdateType).path = path;
     (update as StateApiUpdateType).value = value;
     return this._setExecution((update as StateApiUpdateType), opts);
@@ -291,8 +291,10 @@ class FFormStateAPI extends FFormStateManager {
   };
 
   setValue = (value: any, opts: APIOptsType & { path?: string | Path, replace?: any, setOneOf?: number, inital?: boolean } = {}) => {
-    const path = normalizePath(opts.path || []);
-    return this._setExecution({path: [opts.inital ? '@inital' : '@current'].concat(path), value}, opts);
+    let {path, inital, ...update} = opts;
+    (update as StateApiUpdateType).path = [inital ? '@inital' : '@current'].concat(normalizePath(path || []));
+    (update as StateApiUpdateType).value = value;
+    return this._setExecution(update, opts);
   };
 
   getDefaultValue = (opts: { path?: string | Path, flatten?: boolean } = {}) => getDefaultFromSchema(this.schema);
@@ -303,19 +305,19 @@ class FFormStateAPI extends FFormStateManager {
     opts.status ? this.set([(opts.path || '/'), '@status/' + opts.status], SymReset, {macros: 'switch'}) : this.setValue(SymReset, opts);
 
   arrayAdd = (path: string | Path, value: number | any[] = 1, opts: APIOptsType = {}) =>
-    this._setExecution({path, value: value, macros: 'array'}, opts);
+    this._setExecution({path, value: value, macros: 'array', ...opts}, opts);
 
   arrayItemOps = (path: string | Path, op: 'up' | 'down' | 'first' | 'last' | 'del' | 'move' | 'shift', opts: APIOptsType & { value?: number } = {}) =>
-    this._setExecution({path, op: op, value: opts.value || 0, macros: 'arrayItem'}, opts);
+    this._setExecution({path, op: op, macros: 'arrayItem', ...opts}, opts);
 
   setHidden = (path: string | Path, value = true, opts: APIOptsType = {}) =>
-    this._setExecution([{path: path + '@' + '/params/hidden', value}], opts);
+    this._setExecution([{path: path + '@' + '/params/hidden', value, ...opts}], opts);
 
-  showOnly = (path: string | Path, opts: APIOptsType & { skipFields?: string[] } = {}) => {
+  showOnly = (path: string | Path, opts: APIOptsType = {}) => {
     path = normalizePath(path);
     return this._setExecution([
-      {path: path2string(path.slice(0, -1)) + '/*/@/params/hidden', value: true},
-      {path: path2string(path) + '@' + '/params/hidden', value: false},
+      {path: path2string(path.slice(0, -1)) + '/*/@/params/hidden', value: true, ...opts},
+      {path: path2string(path) + '@' + '/params/hidden', value: false, ...opts},
     ], opts);
   };
 
@@ -652,12 +654,12 @@ function objectDerefer(_objects: any, obj2deref: any) { // todo: test
     let path = string2path($_ref[i]);
     if (path[0] !== '%') throw new Error('Can reffer only to %');
     let refObj = getIn({'%': _objects}, path);
-    if (refObj.$_ref) refObj = objectDerefer(_objects, refObj);
+    if (isMergeable(refObj)) refObj = objectDerefer(_objects, refObj);
     objs2merge.push(refObj);
   }
   let result = isArray(obj2deref) ? [] : {};
 
-  for (let i = objs2merge.length - 1; i >= 0; i--) result = merge(result, objs2merge[i]);
+  for (let i = 0; i < objs2merge.length; i++) result = merge(result, objs2merge[i]);
   return merge(result, objMap(restObj, objectDerefer.bind(null, _objects)));
   //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
 }

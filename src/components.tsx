@@ -146,6 +146,7 @@ class FField extends React.Component<any, any> {
   private _widgets: object;
   private _ff_components: object;
   private _maps: NPM4WidgetsType;
+  private _$_parse: any;
 
 
   ff_layout: FFLayoutGeneric<jsFFCustomizeType>;
@@ -197,23 +198,24 @@ class FField extends React.Component<any, any> {
     const self = this;
     let fieldCache = self.pFForm.props.fieldCache;
     if (isUndefined(fieldCache) || fieldCache === true) fieldCache = 40;
-    if (fieldCache) {
-      let valueSet = setValue && (!path || path == './' || path == '.');
-      if (!valueSet) {
-        let fPath = self.path;
-        path = '#/' + path2string(normalizePath(path, self.path)) + (setValue ? '/@/value' : '');
-        valueSet = (path == fPath + '/@/value') || (path == '#/@/current/' + fPath.slice(2));
-      }
-      if (valueSet) {
-        self._cached = {value};
+
+    let valueSet = setValue && (!path || path == './' || path == '.');
+    if (!valueSet) {
+      let fPath = self.path;
+      path = '#/' + path2string(normalizePath(path, self.path)) + (setValue ? '/@/value' : '');
+      valueSet = (path == fPath + '/@/value') || (path == '#/@/current/' + fPath.slice(2));
+    }
+    if (valueSet) {
+      self._cached = {value: self._parseValue(value)};
+      if (fieldCache) {
         if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
         const data = merge(self.state.branch[SymData], {value: self._cached.value});
         const mappedData = self._mappedData;
         self._setMappedData(self.state.branch[SymData], data, true);
         if (mappedData != self._mappedData) self.forceUpdate();
-        return true;
-      }
+      } else self._updateCachedValue();
+      return true;
     }
     return false;
   }
@@ -241,6 +243,12 @@ class FField extends React.Component<any, any> {
     ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
   }
 
+  _parseValue(value: any) {
+    const $_parse = this._$_parse;
+    if ($_parse) return deArray(toArray($_parse.$).reduce((args, fn) => toArray(fn(...args)), $_parse.args || []));
+    return value
+  }
+
   _bind2self(obj: any) {
     const result = isArray(obj) ? [] : {};
     objKeys(obj).forEach(key => {
@@ -256,11 +264,6 @@ class FField extends React.Component<any, any> {
   }
 
   _build() {
-    // const isMultiSelect = (schema: any) => _isArray(schema.items && schema.items.enum) && schema.uniqueItems;
-    // const isFilesArray = (schema: any) => schema.items && schema.items.type === "string" && schema.items.format === "data-url";
-    // const getPresetName = (schemaPart: any, type: string = 'null') => type == 'array' ? (isMultiSelect(schemaPart) ? 'multiselect' : isFilesArray(schemaPart) ? 'files' : 'array') : type;
-    // const getWidget = (objects: any, widget: any) => typeof widget === 'string' ? objects._widgets && objects._widgets[widget] || widget : widget;
-
     const self = this;
     const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
     const funcs: any = {};
@@ -268,23 +271,26 @@ class FField extends React.Component<any, any> {
     self.schemaPart = schemaPart;
 
     self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
-    if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart.ff_preset) throw new Error('schema.ff_preset should be defined explicitly for multi type');
-    const components = resolveComponents(self.pFForm.objects, schemaPart.ff_custom, schemaPart.ff_preset || schemaPart.type);
-    self._ff_components = components[SymData] ? merge(components, self._bind2self(components[SymData])) : components;
+    if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart.ff_presets) throw new Error('schema.ff_presets should be defined explicitly for multi type');
+    let components = resolveComponents(self.pFForm.objects, schemaPart.ff_custom, schemaPart.ff_presets || schemaPart.type);
+    components = components[SymData] ? merge(components, self._bind2self(components[SymData])) : components;
+    const {$_parse, ...ff_components} = components;
+    self._$_parse = $_parse && (isObject($_parse) ? $_parse : {'$': $_parse});
+    self._ff_components = ff_components;
     const ff_layout = resolveComponents(self.pFForm.objects, schemaPart.ff_layout);
     self.ff_layout = ff_layout[SymData] ? merge(ff_layout, self._bind2self(ff_layout[SymData])) : ff_layout;
 
     // self._enumOptions = getEnumOptions(schemaPart);
     self._widgets = {};
-    const {$propsMap, rest: comps} = extractMaps(self._ff_components);
-    self._maps = normalizeMaps($propsMap);
+    const {$_maps, rest: comps} = extractMaps(self._ff_components);
+    self._maps = normalizeMaps($_maps);
 
     self._blocks = objKeys(comps).filter(key => comps[key]);
     self._blocks.forEach((block: string) => {
-      //let {$propsMap, rest} = extractMaps(comps[block]);
-      const {_$widget, $reactRef, ...staticProps} = comps[block];
+      //let {$_maps, rest} = extractMaps(comps[block]);
+      const {_$widget, $_reactRef, ...staticProps} = comps[block];
       self._widgets[block] = _$widget;
-      if ($reactRef) staticProps[isString(staticProps.$reactRef) ? $reactRef : 'ref'] = self._setRef(block); // $reactRef - prop for react ref-function
+      if ($_reactRef) staticProps[isString(staticProps.$_reactRef) ? $_reactRef : 'ref'] = self._setRef(block); // $_reactRef - prop for react ref-function
 
       self._mappedData[block] = staticProps;  // properties, without reserved names      
     });
@@ -363,7 +369,13 @@ class FField extends React.Component<any, any> {
 class FSectionWidget extends React.Component<any, any> { // need to be class, as we use it's forceUpdate() method
   refs: any;
 
-  render() {return React.createElement(this.props._$widget || 'div', this.props.getMappedData(), this.props.children);}
+  _cn(props: any) {
+    if (!props) return props;
+    if (this.props._$cx && props.className && !isString(props.className) && isString(this.props._$widget)) return {...props, className: this.props._$cx(props.className)};
+    return props;
+  }
+
+  render() {return React.createElement(this.props._$widget, this._cn(this.props.getMappedData()), this.props.children);}
 }
 
 class FSection extends React.Component<any, any> {
@@ -433,10 +445,10 @@ class FSection extends React.Component<any, any> {
     }
 
     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
-      let {$propsMap, rest} = extractMaps(layout, ['$fields']);
-      let {$fields, $reactRef, _$widget = LayoutDefaultWidget, className = LayoutDefaultClass, ...staticProps} = rest;
+      let {$_maps, rest} = extractMaps(layout, ['$fields']);
+      let {$fields, $_reactRef, _$widget = LayoutDefaultWidget, className = LayoutDefaultClass, ...staticProps} = rest;
       staticProps.className = className;
-      let maps = normalizeMaps($propsMap, counter.toString());
+      let maps = normalizeMaps($_maps, counter.toString());
       mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
       self._mappedData[counter] = staticProps;
       return {_$widget, $fields}
@@ -641,7 +653,7 @@ function WrapperWidget(props: any) {
     return (
       <IBodyW className={_$cx ? _$cx(IBodyCN) : IBodyCN} {...IBodyRest}>
         {result}
-        <IMenuW className={_$cx && _$cx(IMenuCN)} {...IMenuRest} arrayItem={arrayItem}/>
+        <IMenuW className={_$cx && _$cx(IMenuCN)} {...IMenuRest}/>
       </IBodyW>
     )
   } else return result
@@ -653,8 +665,9 @@ function ItemMenu(props: any) {
   return (
     <UseTag className={_$cx(className)} {...rest}>
       {buttons.map((key: string) => {
-        const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, children = key, ...restBut} = buttonsProps[key] || {};
-        return (<ButW key={key} type={type} className={_$cx ? _$cx(ButCN) : ButCN} children={children} disabled={disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
+        const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key, ...restBut} = buttonsProps[key] || {};
+        return (
+          <ButW key={key} type={type} title={title} className={_$cx ? _$cx(ButCN) : ButCN} children={children} disabled={disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
       })}
     </UseTag>);
 }
@@ -666,16 +679,16 @@ function BaseInput(props: any) {
     type = 'text',
     title,
     enumOptions,
-    $reactRef,
+    $_reactRef,
     _$cx,
     className,
     ...rest
   }: { [key: string]: any } = props;
   UseTag = UseTag || (type == 'textarea' || type == 'select' ? type : 'input');
-  let ref = rest[$reactRef];
-  if ($reactRef) delete rest[$reactRef];
+  let ref = rest[$_reactRef];
+  if ($_reactRef) delete rest[$_reactRef];
   const calcProps: any = {}; //{name: props.id, label: title || props.id.split('/').slice(-1)[0]}; 
-  if (isString(UseTag)) calcProps.ref = ref; else calcProps[$reactRef] = ref; // if "simple" tag then use ref else pass further in $reactRef property
+  if (isString(UseTag)) calcProps.ref = ref; else calcProps[$_reactRef] = ref; // if "simple" tag then use ref else pass further in $_reactRef property
   let valueObj: any = {};
   if (type === 'checkbox') valueObj.checked = !!value;
   else if (type === 'tristate') valueObj.checked = isUndefined(value) ? undefined : value;
@@ -698,17 +711,13 @@ function TristateBox(props: any) {
   const self = this;
   let {checked, onChange, nullValue, getRef, type, ...rest} = props;
   return <input type="checkbox" checked={checked === true} {...rest}
-                onChange={(event: any) => {onChange(checked === nullValue ? true : (checked === true ? false : nullValue), event)}}
+                onChange={(event: any) => {
+                  onChange(checked === nullValue ? true : (checked === true ? false : nullValue), event)
+                }}
                 ref={elem => {
                   getRef && getRef(elem);
                   elem && (elem.indeterminate = (checked === nullValue))
                 }}/>
-}
-
-
-function CheckboxInput(props: any) {
-  const {labelProps, ...rest} = props;
-  return <label {...labelProps}><BaseInput {...rest}/><span>{props.title}</span></label>;
 }
 
 
@@ -750,7 +759,7 @@ function ArrayInput(props: any) {
     onChange,
     $FField,
     enumOptions,
-    $reactRef,
+    $_reactRef,
     autofocus,
     disabled,
     disabledClass,
@@ -762,8 +771,8 @@ function ArrayInput(props: any) {
   }: { [key: string]: any } = props;
   if (!type) type = $FField && $FField.schemaPart.type == 'array' ? 'checkbox' : 'radio';
   const name = props.id;
-  let ref = rest[$reactRef];
-  if ($reactRef) delete rest[$reactRef];
+  let ref = rest[$_reactRef];
+  if ($_reactRef) delete rest[$_reactRef];
   let {useTag: InputUseTag = 'input', ...restInput} = inputProps;
   let {useTag: LabelUseTag = 'label', ...restLabel} = labelProps;
   let stacked = !!stackedProps;
@@ -843,21 +852,21 @@ const resolveComponents = memoize((fformObjects: formObjectsType, customizeField
 });
 
 function extractMaps(obj: any, skip: string[] = []) {
-  let {$propsMap, ...rest2extract} = obj;
-  $propsMap = {...$propsMap};
+  let {$_maps, ...rest2extract} = obj;
+  $_maps = {...$_maps};
   const rest: any = isArray(obj) ? [] : {};
   objKeys(rest2extract).forEach(key => {
     if (isMergeable(rest2extract[key]) && !~skip.indexOf(key)) {
-      let res = extractMaps(rest2extract[key]);
+      let res = extractMaps(rest2extract[key], skip);
       rest[key] = res.rest;
-      objKeys(res.$propsMap).forEach((nk) => $propsMap[key + '/' + nk] = res.$propsMap[nk]);
+      objKeys(res.$_maps).forEach((nk) => $_maps[key + '/' + nk] = res.$_maps[nk]);
     } else rest[key] = rest2extract[key]
   });
 
-  return {$propsMap, rest};
+  return {$_maps, rest};
 }
 
-function normalizeMaps($propsMap: any, prePath = '') {
+function normalizeMaps($_maps: any, prePath = '') {
   function normalizeArgs(args: any) {
     let dataRequest = false;
     args = toArray(args).map((arg: any) => isString(arg) && arg[0] == '@' ? (dataRequest = true) && normalizePath(arg.substr(1)) : arg);
@@ -865,8 +874,8 @@ function normalizeMaps($propsMap: any, prePath = '') {
   }
 
   const result: { data: NormalizedPropsMapType[], every: NormalizedPropsMapType[], build: NormalizedPropsMapType[] } = {data: [], every: [], build: []};
-  objKeys($propsMap).forEach(key => {
-    const map = $propsMap[key];
+  objKeys($_maps).forEach(key => {
+    const map = $_maps[key];
     if (!map) return;
     const to = multiplyPath(normalizePath((prePath ? prePath + '/' : '') + key));
     if (isObject(map)) {
@@ -879,7 +888,7 @@ function normalizeMaps($propsMap: any, prePath = '') {
       result.data.push(res);
     } else {
       let path = map;
-      if (!isString(path)) throw new Error('$propsMap value is not recognized');
+      if (!isString(path)) throw new Error('$_maps value is not recognized');
       if (path[0] !== '@') console.warn('Expected "@" at the begining of string');
       else path = path.substr(1);
       result.data.push({update: 'data', replace: true, to, dataRequest: true, args: normalizePath(path)})
@@ -960,7 +969,6 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     Messages: MessagesWidget,
     MessageItem: MessageItem,
     BaseInput: BaseInput,
-    CheckboxInput: CheckboxInput,
     ArrayInput: ArrayInput,
     TristateBox: TristateBox,
   },
@@ -972,15 +980,15 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           $_ref: '%/parts/ArrayItemMenu'
         },
         _$cx: '%/_$cx',
-        $propsMap: {
-          'arrayItem': '@/arrayItem',
+        $_maps: {
           'className/hidden': 'params/hidden',
+          'arrayItem': '@/arrayItem'
         }
       },
       Builder: {
         _$widget: '%/widgets/Builder',
         _$cx: '%/_$cx',
-        $propsMap: {
+        $_maps: {
           widgets: {$: '%/fn/getFFieldProperty', args: ['_widgets'], update: 'build'},
         },
       },
@@ -999,7 +1007,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Message: {
         _$widget: '%/widgets/Messages',
         _$cx: '%/_$cx',
-        $propsMap: {
+        $_maps: {
           messages: '@/messages',
           untouched: '@/status/untouched',
         },
@@ -1012,11 +1020,11 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '%/presets/base',
       Main: {
         _$widget: '%/widgets/BaseInput',
-        $reactRef: 'getRef',
+        $_reactRef: 'getRef',
         onChange: '%/on/changeBase',
         onBlur: '%/on/blurBase',
         onFocus: '%/on/focusBase',
-        $propsMap: {
+        $_maps: {
           // priority: '@/status/priority',
           value: '@/value',
           autofocus: '@/params/autofocus',
@@ -1032,7 +1040,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         _$cx: '%/_$cx',
         useTag: 'label',
         children: [],
-        $propsMap: {
+        $_maps: {
           'className/required': '@/fData/required',
           'children/0': '@/fData/title',
           htmlFor: {$: '%/fn/getFFieldProperty', args: ['id'], update: 'build'}
@@ -1066,37 +1074,53 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     hidden: {
       Builder: {
         className: {hidden: true},
-        $propsMap: {'className/hidden': false}
+        $_maps: {'className/hidden': false}
       }
     },
     boolean: {
       $_ref: '%/presets/nBase',
       Main: {
-        _$widget: '%/widgets/CheckboxInput',
         type: 'checkbox',
         onChange: '%/on/changeBoolean'
+      },
+    },
+    booleanLeft: {
+      $_ref: '%/presets/base',
+      Main: {
+        _$widget: '%/widgets/Generic',
+        useTag: 'label',
+        children: [
+          {
+            $_ref: '%/presets/nBase/Main',
+            type: 'checkbox',
+            onChange: '%/on/changeBoolean'
+          },
+          {$_ref: '%/presets/nBase/Title', useTag: 'span'}
+        ]
       },
       Title: false,
     },
     tristate: {
       $_ref: '%/presets/nBase',
       Main: {
-        _$widget: '%/widgets/CheckboxInput',
         type: 'tristate',
         useTag: '%/widgets/TristateBox'
       },
-      Title: false,
+    },
+    tristateLeft: {
+      $_ref: '%/presets/booleanLeft',
+      Main: {children: [{type: 'tristate', useTag: '%/widgets/TristateBox', onChange: '%/on/changeDirect'}, {}]}
     },
     object: {
       $_ref: '%/presets/base',
       Main: {
         _$widget: '%/widgets/FSection',
-        $reactRef: true,
+        $_reactRef: true,
         uniqKey: 'params/uniqKey',
         _$cx: '%/_$cx',
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
-        $propsMap: {
+        $_maps: {
           isArray: ['%/fn/equal', 'array', '@/fData/type'],
           arrayStart: {$: '%/fn/getArrayStart', args: [], update: 'build'},
           $FField: {$: '%/fn/getFFieldProperty', args: [], update: 'build'},
@@ -1111,11 +1135,11 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           {$_ref: '%/presets/nBase/Title', useTag: 'span'},
           {$_ref: '%/parts/ArrayAddButton'},
           {$_ref: '%/parts/ArrayDelButton'},
-          {children: '(array is empty)', useTag: 'span'}],
-        $propsMap: {
-          'children/1,2/className/hidden': ['%/fn/equal | %/fn/not', 'array', '@/fData/type'],
-          'children/3/className/hidden': ['%/fn/equal | %/fn/not', 0, '@/length'],
-        },
+          {$_ref: '%/parts/ArrayEmpty'}],
+        // $_maps: {
+        //   'children/1,2/className/hidden': ['%/fn/equal | %/fn/not', 'array', '@/fData/type'],
+        //   'children/3/className/hidden': ['%/fn/equal | %/fn/not', 0, '@/length'],
+        // },
       },
       Wrapper: {useTag: 'fieldset'},
     },
@@ -1144,20 +1168,13 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Autosize: {$_ref: '%/parts/Autosize'},
       Wrapper: {style: {flexGrow: 0}},
     },
-    noArrayItem: {
+    noArrayControls: {
       Wrapper: {
-        $propsMap: {'arrayItem': false}
+        $_maps: {'arrayItem': false}
       },
     },
-    noArray: {
-      Title: {
-        children: [''],
-        $propsMap: {
-          'className/required': false,
-          'children/1,2/className/hidden': false,
-          'children/3/className/hidden': false,
-        },
-      },
+    noArrayButtons: {
+      Title: {$_ref: '%/presets/nBase/Title'},
     },
     inlineTitle: {
       Wrapper: {className: {'flex-row': true}}
@@ -1177,9 +1194,10 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
   },
   on: {
-    clickArrayAdd: function (path: any, value: number) {this.api.arrayAdd(path, value)},
-    clickArrayItemOps: function (path: any, key: string) {this.api.arrayItemOps(path, key)},
+    clickArrayAdd: function (path: any, value: number, opts: any) {this.api.arrayAdd(path, value, opts)},
+    clickArrayItemOps: function (path: any, key: string, opts: any) {this.api.arrayItemOps(path, key, opts)},
     changeBase: function (event: any) {this.api.setValue(event.target.value, {})},
+    changeDirect: function (value: any) {this.api.setValue(value, {})},
     // changeString: function (event: any) {this.api.setValue(event.target.value, {})},
     changeInteger: function (event: any) {this.api.setValue(event.target.value == '' ? undefined : parseInt(event.target.value), {})},
     changeNumber: function (event: any) {this.api.setValue(event.target.value == '' ? undefined : parseFloat(event.target.value), {})},
@@ -1197,7 +1215,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       _$widget: '%/widgets/Autosize',
       addWidth: 45,
       minWidth: 60,
-      $propsMap: {
+      $_maps: {
         value: 'value',
         placeholder: '@/params/placeholder',
         'className/hidden': '@/params/hidden',
@@ -1214,31 +1232,40 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '%/parts/Button',
       children: ['+'],
       onClick: '%/on/clickArrayAdd',
-      'onClick.bind': ['./', 1]
+      'onClick.bind': ['./', 1],
+      $_maps: {
+        'className/hidden': ['%/fn/equal | %/fn/not', 'array', '@/fData/type'],
+        'disabled': ['%/fn/not', '@/fData/canAdd']
+      }
     },
     ArrayDelButton: {
       $_ref: '%/parts/Button',
       children: ['-'],
       onClick: '%/on/clickArrayAdd',
-      'onClick.bind': ['./', -1]
+      'onClick.bind': ['./', -1],
+      $_maps: {
+        'className/hidden': ['%/fn/equal | %/fn/not', 'array', '@/fData/type'],
+        'disabled': ['%/fn/not', '@/length']
+      },
+    },
+    ArrayEmpty: {
+      children: '(array is empty)',
+      useTag: 'span',
+      $_maps: {'className/hidden': ['%/fn/equal | %/fn/not', 0, '@/length'],}
     },
     ArrayItemMenu: {
       _$widget: '%/widgets/ItemMenu',
       buttons: ['first', 'last', 'up', 'down', 'del'],
       onClick: '%/on/clickArrayItemOps',
       'onClick.bind': ['./'],
-      buttonProps: {
+      buttonsProps: {
         first: {disabledCheck: 'canUp'},
         last: {disabledCheck: 'canDown'},
         up: {disabledCheck: 'canUp'},
         down: {disabledCheck: 'canDown'},
         del: {disabledCheck: 'canDel'},
-        // $propsMap: {
-        //   'canUp,first/disabled': ['%/fn/not', '@/arrayItem/canUp'],
-        //   'canDown,last/disabled': ['%/fn/not', '@/arrayItem/canDown'],
-        //   'canDel/disabled': ['%/fn/not', '@/arrayItem/canDel'],
-        // }
       },
+      $_maps: {'arrayItem': '@/arrayItem'},
     }
   },
   presetMap: {

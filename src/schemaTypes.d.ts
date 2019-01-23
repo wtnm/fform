@@ -89,7 +89,7 @@ interface FFCommonSchemaType {
   ff_placeholder?: string;
   ff_params?: FFParamsType; // editable in state params
   ff_data?: { [key: string]: any } | { [key: number]: any };
-  ff_preset?: string; // presets for rendering components
+  ff_presets?: string; // presets for rendering components
   ff_managed?: boolean; // not editable in state params
   ff_custom?: FFCustomizeType; // components customization
   ff_layout?: FFLayoutGeneric<FFCustomizeType>; // fields order and object/group extenion
@@ -109,9 +109,9 @@ type FFLayoutGeneric<T> = T & {
 
 interface FFCustomizeType {
   _$widget?: string,
-  $propsMap?: PropsMapGeneric<string>;
+  $_maps?: PropsMapGeneric<string>;
   $_ref?: string;
-  $reactRef?: string | boolean;
+  $_reactRef?: string | boolean;
 
   [key: string]: JsonAny;
 }

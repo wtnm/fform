@@ -16,26 +16,123 @@
       "items": {
         "type": "array",
         "title": "Array of values",
+        "ff_presets": "array:noArrayControls",
+        "ff_custom": {
+          "Title": {
+            "style": {
+              "width": "100%"
+            },
+            "children": [
+              {},
+              {
+                "$_ref": "%/parts/ArrayAddButton",
+                "children": [
+                  "+string"
+                ],
+                "onClick.bind": [
+                  "./",
+                  1,
+                  {
+                    "setOneOf": 0
+                  }
+                ]
+              },
+              {
+                "$_ref": "%/parts/ArrayAddButton",
+                "children": [
+                  "+number"
+                ],
+                "onClick.bind": [
+                  "./",
+                  1,
+                  {
+                    "setOneOf": 1
+                  }
+                ]
+              },
+              {
+                "$_ref": "%/parts/ArrayAddButton",
+                "children": [
+                  "+boolean"
+                ],
+                "onClick.bind": [
+                  "./",
+                  1,
+                  {
+                    "setOneOf": 2
+                  }
+                ]
+              },
+              {
+                "$_ref": "%/parts/ArrayDelButton"
+              },
+              {
+                "$_ref": "%/parts/ArrayEmpty"
+              },
+              {
+                "$_ref": "%/parts/ArrayItemMenu",
+                "useTag": "span",
+                "buttons": [
+                  "up",
+                  "down",
+                  "del"
+                ],
+                "buttonsProps": {
+                  "up": {
+                    "children": [
+                      "⬆"
+                    ]
+                  },
+                  "down": {
+                    "children": [
+                      "⬇"
+                    ]
+                  },
+                  "del": {
+                    "children": [
+                      "x"
+                    ]
+                  }
+                },
+                "style": {
+                  "float": "right",
+                  "marginRight": "1em",
+                  "marginLeft": "1em"
+                }
+              }
+            ]
+          }
+        },
+        "maxItems": 7,
         "items": {
           "oneOf": [
             {
               "type": "string",
-              "ff_preset": "string:inlineTitle:inlineArrayItem"
+              "ff_presets": "string:inlineTitle:inlineArrayItem",
+              "default": "default"
             },
             {
               "type": [
                 "number",
                 "null"
               ],
-              "ff_preset": "number:inlineTitle:inlineArrayItem"
+              "ff_presets": "number:inlineTitle:inlineArrayItem",
+              "default": 0
             },
             {
               "type": "boolean",
-              "ff_preset": "boolean:inlineTitle:inlineArrayItem"
+              "ff_presets": "boolean:inlineTitle:inlineArrayItem",
+              "default": false
             }
           ]
         }
       }
+    },
+    "tristateLeft": {
+      "type": "boolean",
+      "title": "tristate left",
+      "ff_presets": "tristateLeft",
+      "default": false
     },
     "radioSelect": {
       "title": "Radio select",
@@ -43,7 +140,8 @@
     },
     "checkboxSelect": {
       "type": "array",
-      "ff_managed": true
+      "ff_managed": true,
+      "ff_presets": "checkboxes"
     }
   }
 }

@@ -64,7 +64,7 @@ function getBindedMaps2update(branch: StateType, path: Path = []) {
 const Macros: { [key: string]: any } = {};
 
 Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
-  let path = item.path;
+  let {path, macros, value, [SymData]: sym, ...rest} = item as any;
   let length = getUpdValue([UPDATABLE_object.update, state], path, SymData, 'length');
   if (isArray(item.value)) {
     let mergeArrayObj: any = [];
@@ -74,11 +74,11 @@ Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCED
       replaceArrayObj[length + i] = getIn(item.replace, i);
     }
     mergeArrayObj.length = length + item.value.length;
-    return updateCurrentRecursively(state, schema, UPDATABLE_object, mergeArrayObj, replaceArrayObj, path)
+    return updateCurrentRecursively(state, schema, UPDATABLE_object, mergeArrayObj, replaceArrayObj, path, item.setOneOf)
   } else {
     length += item.value || 1;
     if (length < 0) length = 0;
-    return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['length'], length));
+    return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['length'], length, false, rest));
   }
 };
 
@@ -726,6 +726,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
       const maps2disable: any[] = [];
       for (let i = start; i < end; i++) {
         let elemPath = path.concat(i);
+        if (item.setOneOf) oneOfStateFn(elemPath, {oneOf: item.setOneOf});
         let {state: branch, dataMap = [], defaultValues} = makeStateBranch(schema, oneOfStateFn, elemPath);
         branch = merge(branch, {[SymData]: {params: {uniqKey: getUniqKey()}}});
         state = merge(state, setIn({}, branch, elemPath), {replace: setIn({}, true, elemPath)});

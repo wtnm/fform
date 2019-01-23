@@ -72,5 +72,36 @@
         }
       }
     }
+  },
+  "parts": {
+    "ArrayItemMenu": {
+      "buttonsProps": {
+        "first": {
+          "children": [
+            "⇑"
+          ]
+        },
+        "last": {
+          "children": [
+            "⇓"
+          ]
+        },
+        "up": {
+          "children": [
+            "↑"
+          ]
+        },
+        "down": {
+          "children": [
+            "↓"
+          ]
+        },
+        "del": {
+          "children": [
+            "×"
+          ]
+        }
+      }
+    }
   }
 }
