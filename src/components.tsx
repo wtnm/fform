@@ -676,7 +676,7 @@ function UniversalInput(props: any) {
     let {useTag: UseTag = 'div', emptyMock = '(none)', ...rest} = viewerProps;
     if (rest.className && _$cx) rest.className = _$cx(rest.className);
     value = getIn(enumExten, value, 'label') || value;
-    return (<UseTag {...rest}>{isEmpty(value) ? emptyMock : value}</UseTag>)
+    return React.createElement(UseTag, rest, isEmpty(value) ? emptyMock : value)
   }
 
   let {
@@ -700,17 +700,18 @@ function UniversalInput(props: any) {
 
   if (rest.className && _$cx) rest.className = _$cx(rest.className);
 
-  if (type === 'textarea') return (<UseTag {...rest} >{rest.value}</UseTag>);
+  if (type === 'textarea') return React.createElement(UseTag, rest, value);
   if (type === 'select') {
     const {placeholder} = rest;
     if (!isUndefined(placeholder)) delete rest.placeholder;
-    return (
-      <UseTag {...rest}>
-        {!props.multiple && placeholder && <option value="" {...(enumExten[""] || {})}>{placeholder}</option>}
-        {enumVals.map((val: any, i: number) => <option key={i} value={val} {...(enumExten[val] || {})}>{getIn(enumExten, val, 'label') || val}</option>)}
-      </UseTag>);
-  }// {enumOptions.map(({value, name}:any, i: number) => <option key={i} value={value}>{name}</option>)}
-  else return (<UseTag {...rest} type={type}/>);
+    return React.createElement(UseTag, rest,
+      !props.multiple && placeholder && React.createElement('option', enumExten[""], placeholder),
+      ...enumVals.map((val: any, i: number) => React.createElement('option', {key: i, value: val, ...(enumExten[val] || {})}, getIn(enumExten, val, 'label') || val))
+    );
+  } else {
+    rest.type = type;
+    return React.createElement(UseTag, rest);
+  }
 };
 
 
