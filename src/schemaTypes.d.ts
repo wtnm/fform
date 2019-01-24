@@ -132,4 +132,5 @@ type FFParamsType = {
   disabled?: boolean;
   hidden?: boolean;
   norender?: boolean;
+  viewer?: boolean;
 }

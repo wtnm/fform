@@ -36,11 +36,12 @@ const types: any = ['null', 'boolean', 'integer', 'number', 'string', 'array', '
 types.any = () => true;
 types.null = (value: any) => value === null;
 types.boolean = (value: any) => typeof value === "boolean";
-types.array = isArray;
-types.object = isObject; //(value: any) => typeof value === "object" && value && !isArray(value);// isObject(value);  //
 types.number = isNumber;// (value: any) => typeof value === "number";
 types.integer = isInteger; //(value: any) => typeof value === "number" && (Math.floor(value) === value || value > 9007199254740992 || value < -9007199254740992);
 types.string = isString; //(value: any) => typeof value === "string";
+types.array = isArray;
+types.object = isObject; //(value: any) => typeof value === "object" && value && !isArray(value);// isObject(value);  //
+types.empty = {'any': null, 'null': null, 'boolean': false, 'number': 0, 'integer': 0, 'string': '', get array() {return []}, get object() {return {}}};
 
 
 /////////////////////////////////////////////
@@ -74,7 +75,7 @@ Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCED
       replaceArrayObj[length + i] = getIn(item.replace, i);
     }
     mergeArrayObj.length = length + item.value.length;
-    return updateCurrentRecursively(state, schema, UPDATABLE_object, mergeArrayObj, replaceArrayObj, path, item.setOneOf)
+    return updateCurrentPROCEDURE(state, schema, UPDATABLE_object, mergeArrayObj, replaceArrayObj, path, item.setOneOf)
   } else {
     length += item.value || 1;
     if (length < 0) length = 0;
@@ -184,13 +185,13 @@ Macros.setStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PR
 };
 
 Macros.setCurrent = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
-  return updateCurrentRecursively(state, schema, UPDATABLE_object, item.value, item.replace, item.path, item.setOneOf)
+  return updateCurrentPROCEDURE(state, schema, UPDATABLE_object, item.value, item.replace, item.path, item.setOneOf)
 };
 
 Macros.setOneOf = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
   let oldOneOf = getIn(state, item.path, SymData, 'oneOf');
   if (oldOneOf == item.value) {
-    if (!isUndefined(item.setValue)) state = updateCurrentRecursively(state, schema, UPDATABLE_object, item.setValue, false, item.path);
+    if (!isUndefined(item.setValue)) state = updateCurrentPROCEDURE(state, schema, UPDATABLE_object, item.setValue, false, item.path);
     return state;
   }
   const {macros, ...newItem} = item;
@@ -383,11 +384,13 @@ const getEnumOptions = (schemaPart: jsJsonSchema) => {
 
 const basicStatus = {invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true, touched: false, pristine: true};
 
-const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: number, type: string, value?: any) {
+const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: number, type: string, value: any = schemaPart.default) {
   // const x = schemaPart.x || ({} as FFSchemaExtensionType);
   const {ff_params = {}, ff_data = {}} = schemaPart;
   const result: any = Object.assign({params: ff_params}, ff_data);
   if (!isObject(result.messages)) result.messages = {};
+
+  if (isUndefined(value)) value = types.empty[type || 'any'];
 
   result.oneOf = oneOf;
   result.status = basicStatus;
@@ -398,19 +401,16 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   result.fData.placeholder = schemaPart.ff_placeholder;
   result.fData.enum = getEnumOptions(schemaPart);
 
-  if (isSchemaSelfManaged(schemaPart, type)) result.value = isUndefined(value) ? schemaPart.default : value;
+  if (isSchemaSelfManaged(schemaPart, type)) result.value = value;
   else delete result.value;
   let untouched = 1;
   if (type == 'array') {
-    result.length = getIn(value || schemaPart.default, 'length') || 0;
+    result.length = getIn(value, 'length') || 0;
     if (!isUndefined(schemaPart.minItems) && result.length < schemaPart.minItems) result.length = schemaPart.minItems;
     result.fData.canAdd = isArrayCanAdd(schemaPart, result.length);
     untouched = result.length;
   } else if (type == 'object') untouched = objKeys(schemaPart.properties || {}).length;
-  if (untouched != 1) {
-    result.status = {...basicStatus};
-    result.status.untouched = untouched;
-  }
+  if (untouched != 1) result.status = {...result.status, untouched};
   return result;
 });
 
@@ -440,10 +440,6 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   push2array(dataMapObjects, normalizeDataMap(schemaPart.ff_dataMap || [], path));
   result[SymData] = makeDataStorage(schemaPart, oneOf, type, value);
   getNSetOneOf(path, {oneOf, type});
-  // if (!isUndefined(oneOf)) {
-  //   getNSetOneOf(path, oneOf);
-  //   result[SymData] = merge(result[SymData], {oneOf});
-  // }
 
   if ((result[SymData].hasOwnProperty('value'))) defaultValues = result[SymData].value;
   else {
@@ -574,13 +570,13 @@ function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
   return {};
 }
 
-function updateCurrentRecursively(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, value: any, replace: any, track: Path = [], setOneOf?: number): StateType {
+function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, value: any, replace: any, track: Path = [], setOneOf?: number): StateType {
 
   if (value === SymReset) value = getIn(state, SymData, 'inital', track);
   if (value === SymClear) value = getIn(getDefaultFromSchema(schema), track);
   if (getIn(state, SymData, 'current', track) === value && !hasIn(UPDATABLE_object.update, SymData, 'current', track)) return state;
 
-  let branch = getIn(state, track);
+  const branch = getIn(state, track);
 
   // if no branch then no need to modify state for this value, just update current
   if (!branch) {
@@ -593,11 +589,13 @@ function updateCurrentRecursively(state: StateType, schema: jsJsonSchema, UPDATA
     return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], ['current'].concat(track), value, replace));
   }
 
-  if (!isUndefined(value) && !types[branch[SymData].fData.type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
+  const type = branch[SymData].fData.type;
+  if (isUndefined(value)) value = types.empty[type || 'any'];
+  if (!types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
     const {schemaPart, oneOf, type} = findOneOf(getSchemaPart(schema, track, oneOfFromState(state), true), value, isUndefined(setOneOf) ? branch[SymData].oneOf : setOneOf);
     if (schemaPart) {
       return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
-      //branch = getIn(state, track);
+
     } else console.warn('Type not found in path [' + track.join('/') + ']')
   }
 
@@ -605,12 +603,10 @@ function updateCurrentRecursively(state: StateType, schema: jsJsonSchema, UPDATA
     state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['value'], value, replace))
   } else {
     if (isMergeable(value)) {  // if we receive object or array then apply their values to state
-      if (branch[SymData].fData.type == 'array' && !isUndefined(value.length))
+      if (type == 'array' && !isUndefined(value.length))
         state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['length'], value.length));
-
-      objKeys(value).forEach(key => {
-        state = updateCurrentRecursively(state, schema, UPDATABLE_object, value[key], getIn(replace, key), track.concat(key))
-      })
+      objKeys(value).forEach(key =>
+        state = updateCurrentPROCEDURE(state, schema, UPDATABLE_object, value[key], getIn(replace, key), track.concat(key)))
     }
   }
 

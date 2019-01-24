@@ -31,7 +31,7 @@ interface FormApi {
 }
 
 interface FFormProps {
-  widget?: any;
+  useTag?: any;
 
   core: any;
   state?: any;
@@ -39,7 +39,6 @@ interface FFormProps {
   inital?: any;
   extData?: { [key: string]: any };
   fieldCache?: boolean | number;
-  flatten?: boolean;
   noValidate?: boolean;
 
   parent?: any;

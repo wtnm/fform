@@ -668,7 +668,7 @@ describe('FForm state functions tests', function () {
     expect(val[1][2]).to.be.equal(true);
   });
 
-  it('test getSchemaPart', function () {
+  it('test oneOf', function () {
     const schemaOneOf = require('./schemaOneOf').default;
     let state = stateLib.makeStateFromSchema(schemaOneOf);
     expect(state[SymData].oneOf).to.be.equal(0);

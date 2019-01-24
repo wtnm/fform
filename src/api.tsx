@@ -652,8 +652,8 @@ function objectDerefer(_objects: any, obj2deref: any) { // todo: test
   for (let i = 0; i < $_ref.length; i++) {
     if (!$_ref[i]) continue;
     let path = string2path($_ref[i]);
-    if (path[0] !== '%') throw new Error('Can reffer only to %');
-    let refObj = getIn({'%': _objects}, path);
+    if (path[0] !== '^') throw new Error('Can reffer only to ^');
+    let refObj = getIn({'^': _objects}, path);
     if (isMergeable(refObj)) refObj = objectDerefer(_objects, refObj);
     objs2merge.push(refObj);
   }
@@ -666,11 +666,11 @@ function objectDerefer(_objects: any, obj2deref: any) { // todo: test
 
 function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boolean): any { // todo: test
   const convRef = (refs: string) => deArray(refs.split('|').map(r => getIn(_objs, string2path(r.trim()))));
-  const _objs = {'%': _objects};
+  const _objs = {'^': _objects};
   const result = objectDerefer(_objects, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
-    const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '%/' ? convRef(result[key]) : result[key];
+    const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '^/' ? convRef(result[key]) : result[key];
     if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _
     else if (extract2SymData && key.substr(-5) == '.bind') setIn(retResult, resolvedValue, SymData, string2path(key));
     else if (isMergeable(resolvedValue)) {

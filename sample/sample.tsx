@@ -8,16 +8,13 @@ const {render} = require('react-dom');
 
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');
-
-//<FForm core={constructorCore} objects={editFormObjects} onChange={onMainFormChange}/>
-  console.log(sampleSchema, style);
   let sampleObjects = fformObjects.extend(style);
 
   render(<div>
     <h3>FForm sample</h3>
     <div>
       <div>
-        <FForm core={{schema: sampleSchema, name: "FFormConstructor", objects: sampleObjects}}/>
+        <FForm id="sampleForm" core={{schema: sampleSchema, name: "sampleForm", objects: sampleObjects}}/>
       </div>
     </div>
   </div>, container);

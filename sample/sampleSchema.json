@@ -25,7 +25,7 @@
             "children": [
               {},
               {
-                "$_ref": "%/parts/ArrayAddButton",
+                "$_ref": "^/parts/ArrayAddButton",
                 "children": [
                   "+string"
                 ],
@@ -38,7 +38,7 @@
                 ]
               },
               {
-                "$_ref": "%/parts/ArrayAddButton",
+                "$_ref": "^/parts/ArrayAddButton",
                 "children": [
                   "+number"
                 ],
@@ -51,7 +51,7 @@
                 ]
               },
               {
-                "$_ref": "%/parts/ArrayAddButton",
+                "$_ref": "^/parts/ArrayAddButton",
                 "children": [
                   "+boolean"
                 ],
@@ -64,13 +64,13 @@
                 ]
               },
               {
-                "$_ref": "%/parts/ArrayDelButton"
+                "$_ref": "^/parts/ArrayDelButton"
               },
               {
-                "$_ref": "%/parts/ArrayEmpty"
+                "$_ref": "^/parts/ArrayEmpty"
               },
               {
-                "$_ref": "%/parts/ArrayItemMenu",
+                "$_ref": "^/parts/ArrayItemMenu",
                 "useTag": "span",
                 "buttons": [
                   "up",
@@ -116,8 +116,8 @@
                 "number",
                 "null"
               ],
-              "ff_presets": "number:inlineTitle:inlineArrayItem",
-              "default": 0
+              "ff_presets": "numberNull:inlineTitle:inlineArrayItem",
+              "default": null
             },
             {
               "type": "boolean",
@@ -128,10 +128,19 @@
         }
       }
     },
-    "tristateLeft": {
+    "booleanLeft": {
       "type": "boolean",
-      "title": "tristate left",
-      "ff_presets": "tristateLeft",
+      "title": "boolean left",
+      "ff_presets": "booleanLeft",
+      "default": false
+    },
+    "booleanNullLeft": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "title": "booleanNull left",
+      "ff_presets": "booleanNullLeft",
       "default": false
     },
     "radioSelect": {

@@ -58,11 +58,11 @@ class FForm extends React.Component<any, any> {
 
 
   _updateValues(nextProps: FFormProps, prevProps: any = {}) {
-    const {state, value, inital, extData, flatten, noValidate} = nextProps;
+    const {state, value, inital, extData, noValidate} = nextProps;
     const self = this;
     if (state && state !== prevProps.state) self.api.setState(state);
-    if (inital && inital !== prevProps.inital) self.api.setValue(inital, {inital: true, flatten, noValidate});
-    if (value && value !== prevProps.value) self.api.setValue(value, {flatten, noValidate});
+    if (inital && inital !== prevProps.inital) self.api.setValue(inital, {inital: true, noValidate});
+    if (value && value !== prevProps.value) self.api.setValue(value, {noValidate});
     if (extData && extData !== prevProps.extData) objKeys(extData).forEach(key => (self.api.set(key, (extData as any)[key], {replace: true})));
   }
 
@@ -120,11 +120,11 @@ class FForm extends React.Component<any, any> {
 
   render() {
     const self = this;
-    let {core, state, value, inital, extData, fieldCache, flatten, noValidate, parent, onSubmit, onChange, onStateChange, useTag: UseTag = 'form', ...rest} = self.props;
+    let {core, state, value, inital, extData, fieldCache, noValidate, parent, onSubmit, onChange, onStateChange, useTag: UseTag = 'form', ...rest} = self.props;
 
     return (
       <UseTag {...rest} onSubmit={self._submit}>
-        <FField ref={self._setRef} pFForm={self} getPath={self._getPath} FFrormApi={self.api}/>
+        <FField ref={self._setRef} id={rest.id ? rest.id + '/#' : undefined} name={self.api.name} pFForm={self} getPath={self._getPath} FFrormApi={self.api}/>
       </UseTag>
     )
   }
@@ -294,24 +294,16 @@ class FField extends React.Component<any, any> {
 
       self._mappedData[block] = staticProps;  // properties, without reserved names      
     });
-    // self._setArrayBlocks(self.state.branch[SymData]);
     self._setMappedData(undefined, self.state.branch[SymData], 'build');
     self._rebuild = false;
   }
 
-  // _setArrayBlocks(data: any) {
-  //   const self = this;
-  //   let _widgets = self._widgets;
-  //   _widgets = merge(_widgets, {Array: data.fData.type == 'array' ? getIn(self._ff_components, 'Array', '_$widget') : false});
-  //   // _widgets = merge(_widgets, {ArrayItem: data.ArrayItem ? getIn(self._ff_components, 'ArrayItem', '_$widget') : false});
-  //   if (self._widgets !== _widgets) {
-  //     self._widgets = _widgets;
-  //     return true
-  //   }
-  //   return false
-  // }
+  // todo: viewer
+  // todo: arrayOf checkboxes, radio
+  // todo: messages rework to GenericWidget
+  // todo: SSR support
+  // todo: lazy schema compilation
 
-  // todo: id and name
   // _setId() {
   //   const self = this;
   //   const id = getIn(self.props.$branch, SymData, 'uniqId');
@@ -340,7 +332,7 @@ class FField extends React.Component<any, any> {
     self.$branch = nextState.branch;
     let updateComponent = false;
 
-    if (nextProps.FFrormApi != self.props.FFrormApi) return (self._rebuild = true);
+    if (!isEqual(nextProps, self.props)) return (self._rebuild = true);
 
     const nextData = getIn(nextState, 'branch', SymData);
     const prevData = getIn(self.state, 'branch', SymData);
@@ -491,6 +483,8 @@ class FSection extends React.Component<any, any> {
   _makeFField(fieldName: string, arrayKey?: string) {
     const self = this;
     return <FField ref={self._setFieldRef(arrayKey || fieldName)} key={arrayKey || fieldName} pFForm={self.props.$FField.pFForm} FFormApi={self.props.FFormApi}
+                   id={self.props.id ? self.props.id + (arrayKey || fieldName) : undefined}
+                   name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '' : fieldName) + ']' : undefined}
                    getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
   }
 
@@ -672,44 +666,57 @@ function ItemMenu(props: any) {
     </UseTag>);
 }
 
-function BaseInput(props: any) {
+function isEmpty(value: any) {
+  return isMergeable(value) ? objKeys(value).length === 0 : value === undefined || value === null || value === "";
+}
+
+function UniversalInput(props: any) {
+  if (props.viewer) {
+    let {value, type = 'text', _$cx, enumExten = {}, viewerProps = {}} = props;
+    let {useTag: UseTag = 'div', emptyMock = '(none)', ...rest} = viewerProps;
+    if (rest.className && _$cx) rest.className = _$cx(rest.className);
+    value = getIn(enumExten, value, 'label') || value;
+    return (<UseTag {...rest}>{isEmpty(value) ? emptyMock : value}</UseTag>)
+  }
+
   let {
     value,
     useTag: UseTag,
     type = 'text',
-    title,
-    enumOptions,
+    enumVals = [],
+    enumExten = {},
     $_reactRef,
     _$cx,
-    className,
+    viewer,
+    viewerProps,
     ...rest
   }: { [key: string]: any } = props;
   UseTag = UseTag || (type == 'textarea' || type == 'select' ? type : 'input');
-  let ref = rest[$_reactRef];
-  if ($_reactRef) delete rest[$_reactRef];
-  const calcProps: any = {}; //{name: props.id, label: title || props.id.split('/').slice(-1)[0]}; 
-  if (isString(UseTag)) calcProps.ref = ref; else calcProps[$_reactRef] = ref; // if "simple" tag then use ref else pass further in $_reactRef property
-  let valueObj: any = {};
-  if (type === 'checkbox') valueObj.checked = !!value;
-  else if (type === 'tristate') valueObj.checked = isUndefined(value) ? undefined : value;
-  else valueObj.value = isUndefined(value) ? "" : value;
 
-  if (type === 'textarea') return (<UseTag {...rest} {...calcProps}>{valueObj.value}</UseTag>);
+  if (isString(UseTag) && $_reactRef) rest.ref = rest[$_reactRef] && delete rest[$_reactRef]; // if "simple" tag then use ref else pass further in $_reactRef property
+
+  if (type === 'checkbox') rest.checked = value;
+  else if (type != 'textarea') rest.value = value;
+
+  if (rest.className && _$cx) rest.className = _$cx(rest.className);
+
+  if (type === 'textarea') return (<UseTag {...rest} >{rest.value}</UseTag>);
   if (type === 'select') {
-    const {placeholder, ...selectRest} = rest;
+    const {placeholder} = rest;
+    if (!isUndefined(placeholder)) delete rest.placeholder;
     return (
-      <UseTag {...selectRest} {...calcProps} value={isUndefined(value) ? props.multiple ? [] : "" : value}>
-        {!props.multiple && placeholder && <option value="">{placeholder}</option>}
-        {enumOptions.map(({label, ...rest}: any, i: number) => <option key={i} {...rest}>{label}</option>)}
+      <UseTag {...rest}>
+        {!props.multiple && placeholder && <option value="" {...(enumExten[""] || {})}>{placeholder}</option>}
+        {enumVals.map((val: any, i: number) => <option key={i} value={val} {...(enumExten[val] || {})}>{getIn(enumExten, val, 'label') || val}</option>)}
       </UseTag>);
   }// {enumOptions.map(({value, name}:any, i: number) => <option key={i} value={value}>{name}</option>)}
-  else return (<UseTag className={_$cx ? _$cx(className) : className} {...rest} {...valueObj} type={type} {...calcProps}/>);
+  else return (<UseTag {...rest} type={type}/>);
 };
 
 
-function TristateBox(props: any) {
+function CheckboxNull(props: any) {
   const self = this;
-  let {checked, onChange, nullValue, getRef, type, ...rest} = props;
+  let {checked, onChange, nullValue = null, getRef, type, ...rest} = props;
   return <input type="checkbox" checked={checked === true} {...rest}
                 onChange={(event: any) => {
                   onChange(checked === nullValue ? true : (checked === true ? false : nullValue), event)
@@ -845,7 +852,7 @@ function ArrayInput(props: any) {
 
 const resolveComponents = memoize((fformObjects: formObjectsType, customizeFields: FFCustomizeType = {}, presets?: string): jsFFCustomizeType => {
   if (presets) {
-    let $_ref = presets.split(':').map(v => v[0] != '%' && '%/presets/' + v).join(':') + ':' + (customizeFields.$_ref || '');
+    let $_ref = presets.split(':').map(v => v[0] != '^' && '^/presets/' + v).join(':') + ':' + (customizeFields.$_ref || '');
     customizeFields = merge(customizeFields, {$_ref});
   }
   return objectResolver(fformObjects, customizeFields, true);
@@ -968,109 +975,120 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     ItemMenu: ItemMenu,
     Messages: MessagesWidget,
     MessageItem: MessageItem,
-    BaseInput: BaseInput,
+    Input: UniversalInput,
     ArrayInput: ArrayInput,
-    TristateBox: TristateBox,
+    CheckboxNull: CheckboxNull,
   },
   presets: {
     'base': {
       Wrapper: {
-        _$widget: '%/widgets/Wrapper',
+        _$widget: '^/widgets/Wrapper',
         ArrayItemMenu: {
-          $_ref: '%/parts/ArrayItemMenu'
+          $_ref: '^/parts/ArrayItemMenu'
         },
-        _$cx: '%/_$cx',
+        _$cx: '^/_$cx',
         $_maps: {
           'className/hidden': 'params/hidden',
           'arrayItem': '@/arrayItem'
         }
       },
       Builder: {
-        _$widget: '%/widgets/Builder',
-        _$cx: '%/_$cx',
+        _$widget: '^/widgets/Builder',
+        _$cx: '^/_$cx',
         $_maps: {
-          widgets: {$: '%/fn/getFFieldProperty', args: ['_widgets'], update: 'build'},
+          widgets: {$: '^/fn/getFFieldProperty', args: ['_widgets'], update: 'build'},
         },
       },
       Title: {
-        _$widget: '%/widgets/Generic',
-        _$cx: '%/_$cx',
+        _$widget: '^/widgets/Generic',
+        _$cx: '^/_$cx',
       },
       Body: {
-        _$widget: '%/widgets/Generic',
-        _$cx: '%/_$cx',
+        _$widget: '^/widgets/Generic',
+        _$cx: '^/_$cx',
         className: 'body',
       },
       Main: {
-        _$cx: '%/_$cx',
+        _$cx: '^/_$cx',
       },
       Message: {
-        _$widget: '%/widgets/Messages',
-        _$cx: '%/_$cx',
+        _$widget: '^/widgets/Messages',
+        _$cx: '^/_$cx',
         $_maps: {
           messages: '@/messages',
           untouched: '@/status/untouched',
         },
         MessageItem: {
-          _$widget: '%/widgets/MessageItem',
+          _$widget: '^/widgets/MessageItem',
         },
       }
     },
     nBase: {
-      $_ref: '%/presets/base',
+      $_ref: '^/presets/base',
       Main: {
-        _$widget: '%/widgets/BaseInput',
+        _$widget: '^/widgets/Input',
         $_reactRef: 'getRef',
-        onChange: '%/on/changeBase',
-        onBlur: '%/on/blurBase',
-        onFocus: '%/on/focusBase',
+        onChange: '^/on/changeBase',
+        onBlur: '^/on/blurBase',
+        onFocus: '^/on/focusBase',
+        viewerProps: {emptyMock: '(no value)'},
         $_maps: {
           // priority: '@/status/priority',
           value: '@/value',
+          viewer: '@/params/viewer',
           autofocus: '@/params/autofocus',
-          placeholder: '@/params/placeholder',
-          required: '@/fData/required',
-          label: '@/fData/title',
           readonly: '@/params/readonly',
           disabled: '@/params/disabled',
+          placeholder: '@/fData/placeholder',
+          required: '@/fData/required',
+          label: '@/fData/title',
+          enumVals: {$: '^/fn/getFFieldProperty', args: 'schemaPart/enum', update: 'build'},
+          enumExten: {$: '^/fn/getFFieldProperty', args: 'schemaPart/ff_enumExten', update: 'build'},
+          id: {$: '^/fn/getFFieldProperty', args: 'props/id', update: 'build'},
+          name: {$: '^/fn/getFFieldProperty', args: 'props/name', update: 'build'},
         }
       },
       Title: {
-        _$widget: '%/widgets/Generic',
-        _$cx: '%/_$cx',
+        _$widget: '^/widgets/Generic',
+        _$cx: '^/_$cx',
         useTag: 'label',
         children: [],
         $_maps: {
           'className/required': '@/fData/required',
           'children/0': '@/fData/title',
-          htmlFor: {$: '%/fn/getFFieldProperty', args: ['id'], update: 'build'}
+          htmlFor: {$: '^/fn/getFFieldProperty', args: ['id'], update: 'build'}
         }
       },
     },
     string: {
-      $_ref: '%/presets/nBase',
+      $_ref: '^/presets/nBase',
       Main: {
         type: 'text',
-        //onChange: '%/on/changeString'
+        //onChange: '^/on/changeString'
       }
     },
     integer: {
-      $_ref: '%/presets/nBase',
+      $_ref: '^/presets/nBase',
       Main: {
         type: 'number',
-        onChange: '%/on/changeInteger'
+        onChange: '^/on/changeNumber',
+        'onChange.bind': [true, 0]
       }
+    },
+    integerNull: {
+      $_ref: '^/presets/integer',
+      Main: {'onChange.bind': [true, null]}
     },
     number: {
-      $_ref: '%/presets/nBase',
-      Main: {
-        type: 'number',
-        step: 'any',
-        onChange: '%/on/changeNumber'
-      }
+      $_ref: '^/presets/integer',
+      Main: {'onChange.bind': [false, 0], step: 'any'}
     },
-    range: {$_ref: '%/presets/nBase', Main: {type: 'range'}},
-    'null': {$_ref: '%/presets/nBase', Main: {type: 'hidden'}},
+    numberNull: {
+      $_ref: '^/presets/number',
+      Main: {'onChange.bind': [false, null]}
+    },
+    range: {$_ref: '^/presets/nBase', Main: {type: 'range'}},
+    'null': {$_ref: '^/presets/nBase', Main: {type: 'hidden'}},
     hidden: {
       Builder: {
         className: {hidden: true},
@@ -1078,94 +1096,92 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       }
     },
     boolean: {
-      $_ref: '%/presets/nBase',
+      $_ref: '^/presets/nBase',
       Main: {
         type: 'checkbox',
-        onChange: '%/on/changeBoolean'
+        onChange: '^/on/changeBoolean'
       },
     },
     booleanLeft: {
-      $_ref: '%/presets/base',
+      $_ref: '^/presets/base',
       Main: {
-        _$widget: '%/widgets/Generic',
+        _$widget: '^/widgets/Generic',
         useTag: 'label',
         children: [
-          {
-            $_ref: '%/presets/nBase/Main',
-            type: 'checkbox',
-            onChange: '%/on/changeBoolean'
-          },
-          {$_ref: '%/presets/nBase/Title', useTag: 'span'}
+          {$_ref: '^/presets/nBase/Main', type: 'checkbox', onChange: '^/on/changeBoolean'},
+          {$_ref: '^/presets/nBase/Title', useTag: 'span'}
         ]
       },
       Title: false,
     },
-    tristate: {
-      $_ref: '%/presets/nBase',
+    booleanNull: {
+      $_ref: '^/presets/boolean',
       Main: {
-        type: 'tristate',
-        useTag: '%/widgets/TristateBox'
+        useTag: '^/widgets/CheckboxNull',
+        onChange: '^/on/changeDirect'
       },
     },
-    tristateLeft: {
-      $_ref: '%/presets/booleanLeft',
-      Main: {children: [{type: 'tristate', useTag: '%/widgets/TristateBox', onChange: '%/on/changeDirect'}, {}]}
+    booleanNullLeft: {
+      $_ref: '^/presets/booleanLeft',
+      Main: {children: [{$_ref: '^/presets/booleanNull/Main'}, {}]}
     },
     object: {
-      $_ref: '%/presets/base',
+      $_ref: '^/presets/base',
       Main: {
-        _$widget: '%/widgets/FSection',
+        _$widget: '^/widgets/FSection',
         $_reactRef: true,
         uniqKey: 'params/uniqKey',
-        _$cx: '%/_$cx',
+        _$cx: '^/_$cx',
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
         $_maps: {
-          isArray: ['%/fn/equal', 'array', '@/fData/type'],
-          arrayStart: {$: '%/fn/getArrayStart', args: [], update: 'build'},
-          $FField: {$: '%/fn/getFFieldProperty', args: [], update: 'build'},
-          FFormApi: {$: '%/fn/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
-          $layout: {$: '%/fn/getFFieldProperty', args: 'ff_layout', update: 'build'},
-          $branch: {$: '%/fn/getFFieldProperty', args: '$branch', update: 'every'},
+          isArray: ['^/fn/equal', 'array', '@/fData/type'],
+          arrayStart: {$: '^/fn/getArrayStart', args: [], update: 'build'},
+          $FField: {$: '^/fn/getFFieldProperty', args: [], update: 'build'},
+          FFormApi: {$: '^/fn/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
+          id: {$: '^/fn/getFFieldProperty', args: 'props/id', update: 'build'},
+          name: {$: '^/fn/getFFieldProperty', args: 'props/name', update: 'build'},
+          $layout: {$: '^/fn/getFFieldProperty', args: 'ff_layout', update: 'build'},
+          $branch: {$: '^/fn/getFFieldProperty', args: '$branch', update: 'every'},
         }
       },
       Title: {
         useTag: 'legend',
         children: [
-          {$_ref: '%/presets/nBase/Title', useTag: 'span'},
-          {$_ref: '%/parts/ArrayAddButton'},
-          {$_ref: '%/parts/ArrayDelButton'},
-          {$_ref: '%/parts/ArrayEmpty'}],
+          {$_ref: '^/presets/nBase/Title', useTag: 'span'},
+          {$_ref: '^/parts/ArrayAddButton'},
+          {$_ref: '^/parts/ArrayDelButton'},
+          {$_ref: '^/parts/ArrayEmpty'}],
         // $_maps: {
-        //   'children/1,2/className/hidden': ['%/fn/equal | %/fn/not', 'array', '@/fData/type'],
-        //   'children/3/className/hidden': ['%/fn/equal | %/fn/not', 0, '@/length'],
+        //   'children/1,2/className/hidden': ['^/fn/equal | ^/fn/not', 'array', '@/fData/type'],
+        //   'children/3/className/hidden': ['^/fn/equal | ^/fn/not', 0, '@/length'],
         // },
       },
       Wrapper: {useTag: 'fieldset'},
     },
-    array: {$_ref: '%/presets/object'},
-    select: {$_ref: '%/presets/nBase', Main: {type: 'select', onChange: onSelectChange}},
-    multiselect: {$_ref: '%/presets/select', Main: {multiply: true}},
+    array: {$_ref: '^/presets/object'},
+    select: {$_ref: '^/presets/nBase', Main: {type: 'select', onChange: onSelectChange}},
+    multiselect: {$_ref: '^/presets/select', Main: {multiply: true}},
 
     arrayOf: {
-      $_ref: '%/presets/nBase',
+      $_ref: '^/presets/nBase',
       Main: {
-        _$widget: '%/widgets/ArrayInput',
+        _$widget: '^/widgets/ArrayInput',
         inputProps: {},
         labelProps: {},
         stackedProps: {},
         disabledClass: 'disabled',
       },
     },
-    radio: {$_ref: '%/presets/arrayOf', Main: {type: 'radio'}},
-    checkboxes: {$_ref: '%/presets/arrayOf', Main: {type: 'checkbox'}, 'Array': false},
+    radio: {$_ref: '^/presets/arrayOf', Main: {type: 'radio'}},
+    checkboxes: {$_ref: '^/presets/arrayOf', Main: {type: 'checkbox'}, 'Array': false},
 
     inlineItems: {Main: {stackedProps: false}},
     buttons: {Main: {inputProps: {className: {'button': true}}, labelProps: {className: {'button': true}}}},
     //selector: {dataMap: [['./@/value', './', selectorOnChange(false)]]}, // {onChange: selectorOnChange(false)}},
     //tabs: {dataMap: [['./@/value', './', selectorOnChange(true)]]}, //{Main: {onChange: selectorOnChange(true)}},
     autosize: {
-      Autosize: {$_ref: '%/parts/Autosize'},
+      Autosize: {$_ref: '^/parts/Autosize'},
       Wrapper: {style: {flexGrow: 0}},
     },
     noArrayControls: {
@@ -1174,7 +1190,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       },
     },
     noArrayButtons: {
-      Title: {$_ref: '%/presets/nBase/Title'},
+      Title: {$_ref: '^/presets/nBase/Title'},
     },
     inlineTitle: {
       Wrapper: {className: {'flex-row': true}}
@@ -1199,8 +1215,11 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     changeBase: function (event: any) {this.api.setValue(event.target.value, {})},
     changeDirect: function (value: any) {this.api.setValue(value, {})},
     // changeString: function (event: any) {this.api.setValue(event.target.value, {})},
-    changeInteger: function (event: any) {this.api.setValue(event.target.value == '' ? undefined : parseInt(event.target.value), {})},
-    changeNumber: function (event: any) {this.api.setValue(event.target.value == '' ? undefined : parseFloat(event.target.value), {})},
+    changeNumber: function (integer: boolean, emptyValue: number | null, event: any) {
+      this.api.setValue(event.target.value == '' ? emptyValue : (integer ? parseInt : parseFloat)(event.target.value), {})
+    },
+    //changeNumber: function (nullValue = 0, event: any) {this.api.setValue(event.target.value == '' ? 0 : parseFloat(event.target.value), {})},
+
     changeBoolean: function (event: any) {this.api.setValue(event.target.checked, {})},
     focusBase: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
     blurBase: function (value: any) {
@@ -1212,51 +1231,51 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   },
   parts: {
     Autosize: {
-      _$widget: '%/widgets/Autosize',
+      _$widget: '^/widgets/Autosize',
       addWidth: 45,
       minWidth: 60,
       $_maps: {
         value: 'value',
         placeholder: '@/params/placeholder',
         'className/hidden': '@/params/hidden',
-        $FField: {$: '%/fn/getFFieldProperty', args: [], update: 'build'},
+        $FField: {$: '^/fn/getFFieldProperty', args: [], update: 'build'},
       }
     },
     Button: {
-      _$widget: '%/widgets/Generic',
-      _$cx: '%/_$cx',
+      _$widget: '^/widgets/Generic',
+      _$cx: '^/_$cx',
       useTag: 'button',
       type: 'button',
     },
     ArrayAddButton: {
-      $_ref: '%/parts/Button',
+      $_ref: '^/parts/Button',
       children: ['+'],
-      onClick: '%/on/clickArrayAdd',
+      onClick: '^/on/clickArrayAdd',
       'onClick.bind': ['./', 1],
       $_maps: {
-        'className/hidden': ['%/fn/equal | %/fn/not', 'array', '@/fData/type'],
-        'disabled': ['%/fn/not', '@/fData/canAdd']
+        'className/hidden': ['^/fn/equal | ^/fn/not', 'array', '@/fData/type'],
+        'disabled': ['^/fn/not', '@/fData/canAdd']
       }
     },
     ArrayDelButton: {
-      $_ref: '%/parts/Button',
+      $_ref: '^/parts/Button',
       children: ['-'],
-      onClick: '%/on/clickArrayAdd',
+      onClick: '^/on/clickArrayAdd',
       'onClick.bind': ['./', -1],
       $_maps: {
-        'className/hidden': ['%/fn/equal | %/fn/not', 'array', '@/fData/type'],
-        'disabled': ['%/fn/not', '@/length']
+        'className/hidden': ['^/fn/equal | ^/fn/not', 'array', '@/fData/type'],
+        'disabled': ['^/fn/not', '@/length']
       },
     },
     ArrayEmpty: {
       children: '(array is empty)',
       useTag: 'span',
-      $_maps: {'className/hidden': ['%/fn/equal | %/fn/not', 0, '@/length'],}
+      $_maps: {'className/hidden': ['^/fn/equal | ^/fn/not', 0, '@/length'],}
     },
     ArrayItemMenu: {
-      _$widget: '%/widgets/ItemMenu',
+      _$widget: '^/widgets/ItemMenu',
       buttons: ['first', 'last', 'up', 'down', 'del'],
-      onClick: '%/on/clickArrayItemOps',
+      onClick: '^/on/clickArrayItemOps',
       'onClick.bind': ['./'],
       buttonsProps: {
         first: {disabledCheck: 'canUp'},
