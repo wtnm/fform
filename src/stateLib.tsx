@@ -376,11 +376,11 @@ const arrayStart = memoize(function (schemaPart: jsJsonSchema) {
   }
 );
 
-const getEnumOptions = (schemaPart: jsJsonSchema) => {
-  if (!schemaPart.enum) return undefined;
-  let exten: any[] = schemaPart.ff_enumExten || [];
-  return schemaPart.enum.map((value, i) => isObject(exten[i]) ? merge(exten[i], {value}) : {value, label: exten[i] || value});
-};
+// const getEnumOptions = (schemaPart: jsJsonSchema) => {
+//   if (!schemaPart.enum) return undefined;
+//   let exten: any[] = schemaPart.ff_enumExten || [];
+//   return schemaPart.enum.map((value, i) => isObject(exten[i]) ? merge(exten[i], {value}) : {value, label: exten[i] || value});
+// };
 
 const basicStatus = {invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true, touched: false, pristine: true};
 
@@ -399,8 +399,9 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   result.fData.required = schemaPart.required;
   result.fData.title = schemaPart.title;
   result.fData.placeholder = schemaPart.ff_placeholder;
-  result.fData.enum = getEnumOptions(schemaPart);
-
+  result.fData.enum = schemaPart.enum;// getEnumOptions(schemaPart);
+  result.fData.enumExten = schemaPart.ff_enumExten;
+  
   if (isSchemaSelfManaged(schemaPart, type)) result.value = value;
   else delete result.value;
   let untouched = 1;

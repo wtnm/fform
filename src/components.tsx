@@ -118,6 +118,14 @@ class FForm extends React.Component<any, any> {
     return '#';
   }
 
+  getDataObject(branch: any, ffield: FField) {
+    return getIn(branch, SymData)
+  }
+
+  getBranch(path: string) {
+    return this.api.get(path)
+  }
+
   render() {
     const self = this;
     let {core, state, value, inital, extData, fieldCache, noValidate, parent, onSubmit, onChange, onStateChange, useTag: UseTag = 'form', ...rest} = self.props;
@@ -164,11 +172,10 @@ class FField extends React.Component<any, any> {
     const self = this;
     Object.defineProperty(self, "path", {get: () => self.props.getPath()});
     Object.defineProperty(self, "pFForm", {get: () => self.props.pFForm});
-    Object.defineProperty(self, "liveValidate", {get: () => getIn(self.state, 'branch', SymData, 'params', 'liveValidate')});
-    self._apiWrapper();
-    const branch = self.api.get(self.path);
-    self.state = {branch};
-    self.$branch = branch;
+    Object.defineProperty(self, "liveValidate", {get: () => getIn(self.getData(), 'params', 'liveValidate')});
+    if (self.pFForm.api) self._apiWrapper();
+    self.state = {branch: self.pFForm.getBranch(self.path)};
+    self.$branch = self.state.branch;
     self._bind2self = self._bind2self.bind(self);
     self._setRef = self._setRef.bind(self);
     self._build();
@@ -210,9 +217,9 @@ class FField extends React.Component<any, any> {
       if (fieldCache) {
         if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
-        const data = merge(self.state.branch[SymData], {value: self._cached.value});
+        const data = merge(self.getData(), {value: self._cached.value});
         const mappedData = self._mappedData;
-        self._setMappedData(self.state.branch[SymData], data, true);
+        self._setMappedData(self.getData(), data, true);
         if (mappedData != self._mappedData) self.forceUpdate();
       } else self._updateCachedValue();
       return true;
@@ -294,7 +301,7 @@ class FField extends React.Component<any, any> {
 
       self._mappedData[block] = staticProps;  // properties, without reserved names      
     });
-    self._setMappedData(undefined, self.state.branch[SymData], 'build');
+    self._setMappedData(undefined, self.getData(), 'build');
     self._rebuild = false;
   }
 
@@ -303,18 +310,6 @@ class FField extends React.Component<any, any> {
   // todo: messages rework to GenericWidget
   // todo: SSR support
   // todo: lazy schema compilation
-
-  // _setId() {
-  //   const self = this;
-  //   const id = getIn(self.props.$branch, SymData, 'uniqId');
-  //   let path = self.props.getPath();
-  //   if (id && path != '#') {
-  //     path = path.split('/');
-  //     path[path.length - 1] = id;
-  //     path = path.join('/')
-  //   }
-  //   self.id = self.props.pFForm.api.name + '/' + path;
-  // };
 
   _setMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build') {
     const self = this;
@@ -326,16 +321,20 @@ class FField extends React.Component<any, any> {
     return false
   }
 
+  getData(branch: any = getIn(this, 'state', 'branch')) {
+    return this.pFForm.getDataObject(branch, this)
+  }
+
   shouldComponentUpdate(nextProps: any, nextState: any) {
-    if (!nextState.branch) return true;
+    if (isUndefined(nextState.branch)) return true;
     const self = this;
     self.$branch = nextState.branch;
     let updateComponent = false;
 
     if (!isEqual(nextProps, self.props)) return (self._rebuild = true);
 
-    const nextData = getIn(nextState, 'branch', SymData);
-    const prevData = getIn(self.state, 'branch', SymData);
+    const nextData = self.getData(getIn(nextState, 'branch'));
+    const prevData = self.getData();
     if (getIn(nextData, 'oneOf') !== getIn(prevData, 'oneOf')) return (self._rebuild = true);
 
     updateComponent = self._setMappedData(prevData, nextData, nextData !== prevData) || updateComponent;
@@ -346,7 +345,7 @@ class FField extends React.Component<any, any> {
   render() {
     const self = this;
     if (isUndefined(self.state.branch)) return null;
-    if (getIn(self.state, 'branch', SymData, 'params', 'norender')) return false;
+    if (getIn(self.getData(), 'params', 'norender')) return false;
     if (self._rebuild) this._build();
     const BuilderWidget = self._widgets['Builder'];
     return <BuilderWidget {...self._mappedData['Builder']} mapped={self._mappedData}/>
@@ -470,13 +469,13 @@ class FSection extends React.Component<any, any> {
     self._arrayLayouts = [];
     self._arrayKey2field = {};
     if (self.props.isArray) {  // _makeArrayLayouts
-      for (let i = arrayStart; i < $branch[SymData].length; i++) {
+      for (let i = arrayStart; i < self.props.length; i++) {
         let arrayKey = self._arrayIndex2key($branch[i]);
         self._arrayLayouts.push(self._makeFField(i.toString(), arrayKey));
         arrayKey && (self._arrayKey2field[arrayKey] = i);
       }
     }
-    self._mappedData = self._updateMappedData(undefined, $branch[SymData], 'build');
+    self._mappedData = self._updateMappedData(undefined, self._getData($branch), 'build');
     self._rebuild = false;
   }
 
@@ -489,13 +488,13 @@ class FSection extends React.Component<any, any> {
   }
 
   _arrayIndex2key($branch: any) {
-    return this.props.uniqKey ? getIn($branch[SymData], string2path(this.props.uniqKey)) : undefined;
+    return this.props.uniqKey ? getIn(this._getData($branch), string2path(this.props.uniqKey)) : undefined;
   }
 
   _getObjectKeys($branch: StateType) {
     const self = this;
     let keys: string[] = [];
-    if (self.props.isArray) for (let i = 0; i < self.props.arrayStart; i++) keys.push(i.toString()); // Math.min(self.props.arrayStart, $branch[SymData].length)
+    if (self.props.isArray) for (let i = 0; i < self.props.arrayStart; i++) keys.push(i.toString());
     else keys = branchKeys($branch);
     return keys;
   }
@@ -508,11 +507,11 @@ class FSection extends React.Component<any, any> {
     return this.props.$FField.path + '/' + this._arrayKey2field[key];
   }
 
-  _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType) {
+  _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType, props: any) {
     const self = this;
     const updatedArray = [];
     let doUpdate = false;
-    for (let i = self.props.arrayStart; i < nextBranch[SymData].length; i++) {
+    for (let i = props.arrayStart; i < props.length; i++) {
       let arrayKey = self._arrayIndex2key(nextBranch[i]);
       if (isUndefined(arrayKey)) throw new Error('no unique key provided for array item');
       if (self._fields[arrayKey]) self._fields[arrayKey].setState({branch: nextBranch[i]});
@@ -521,16 +520,20 @@ class FSection extends React.Component<any, any> {
         self._arrayKey2field[arrayKey] = i;
         doUpdate = true
       }
-      updatedArray.push(!isUndefined(prevIndex) ? self._arrayLayouts[prevIndex - self.props.arrayStart] : self._makeFField(i.toString(), arrayKey));
+      updatedArray.push(!isUndefined(prevIndex) ? self._arrayLayouts[prevIndex - props.arrayStart] : self._makeFField(i.toString(), arrayKey));
     }
     if (self._arrayLayouts.length !== updatedArray.length) doUpdate = true;
     if (doUpdate) self._arrayLayouts = updatedArray;
     return doUpdate;
   }
 
-  _updateMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build') {
+  _updateMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build' = prevData !== nextData) {
     const self = this;
     return updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
+  }
+
+  _getData(branch = this.props.$branch) {
+    return this.props.$FField.getData(branch)
   }
 
   shouldComponentUpdate(nextProps: any) {
@@ -545,7 +548,7 @@ class FSection extends React.Component<any, any> {
     let nextBranch = nextProps.$branch;
 
     if (prevBranch != nextBranch) {
-      const newMapped = self._updateMappedData(prevBranch[SymData], nextBranch[SymData], nextBranch[SymData] !== prevBranch[SymData]);
+      const newMapped = self._updateMappedData(self._getData(prevBranch), self._getData(nextBranch));
       if (newMapped != self._mappedData) { // update self._widgets
         const oldMapped = self._mappedData;
         self._mappedData = newMapped;
@@ -554,7 +557,7 @@ class FSection extends React.Component<any, any> {
       // update object elements or if it _isArray elements that lower than self.props.arrayStart
       self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self._fields[field] && self._fields[field].setState({branch: nextBranch[field]}));
 
-      if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch); // updates and reorders elements greater/equal than self.props.arrayStart
+      if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch, nextProps); // updates and reorders elements greater/equal than self.props.arrayStart
 
     }
 
@@ -577,28 +580,80 @@ class FSection extends React.Component<any, any> {
 
 class GenericWidget extends React.Component<any, any> {
   private _children: any;
-  private _mapped: any[];
+  protected _mapped: any[];
 
   constructor(props: any, context: any) {
     super(props, context);
   }
 
-  _newWidget(obj: any) {
+  private _newWidget(key: any, obj: any) {
     const {_$widget: Widget = GenericWidget, className, ...rest} = obj;
-    return <Widget className={isString(Widget) && this.props._$cx ? this.props._$cx(className) : className} _$cx={!isString(Widget) ? this.props._$cx : undefined} {...rest}/>
+    return <Widget key={key} className={isString(Widget) && this.props._$cx ? this.props._$cx(className) : className} _$cx={!isString(Widget) ? this.props._$cx : undefined} {...rest}/>
   }
 
-  render() {
+  protected _mapChildren(children: any) {
     const self = this;
-    if (self.props.norender) return null;
-    const {useTag: UseTag = 'div', _$cx, className, children, ...rest} = self.props;
     if (children !== self._children) {
       const prev = toArray(self._children);
       const next = toArray(children);
-      self._mapped = next.map((ch: any, i: number) => !isObject(ch) || ch.$$typeof ? ch : (prev[i] !== next[i] ? self._newWidget(ch) : self._mapped[i]));
+      self._mapped = next.map((ch: any, i: number) => !isObject(ch) || ch.$$typeof ? ch : (prev[i] !== next[i] ? self._newWidget(i, ch) : self._mapped[i]));
       self._children = children;
     }
+  }
+
+  render(): any {
+    const self = this;
+    if (self.props.norender) return null;
+    const {useTag: UseTag = 'div', _$cx, className, children, ...rest} = self.props;
+    self._mapChildren(children);
     return (<UseTag children={self._mapped} className={_$cx ? _$cx(className) : className} {...rest} />)
+  }
+}
+
+function isEmpty(value: any) {
+  return isMergeable(value) ? objKeys(value).length === 0 : value === undefined || value === null || value === "";
+}
+
+class UniversalInput extends GenericWidget {
+  render() {
+    const self = this;
+    const props: any = self.props;
+    if (props.viewer) {
+      let {value, type = 'text', _$cx, enumExten = {}, viewerProps = {}} = props;
+      let {useTag: UseTag = 'div', emptyMock = '(none)', ...rest} = viewerProps;
+      if (rest.className && _$cx) rest.className = _$cx(rest.className);
+      value = getIn(enumExten, value, 'label') || value;
+      return React.createElement(UseTag, rest, isEmpty(value) ? emptyMock : value)
+    }
+
+    let {value, useTag: UseTag, type = 'text', enumVals = [], enumExten = {}, $_reactRef, _$cx, viewer, viewerProps, children, ...rest} = props;
+
+    self._mapChildren(children);
+
+    if (type == 'textarea' || type == 'select') UseTag = UseTag || type;
+    else {
+      UseTag = UseTag || 'input';
+      rest.type = type;
+    }
+    rest[type === 'checkbox' ? 'checked' : 'value'] = value;
+
+    if (isString(UseTag) && $_reactRef) { // if "simple" tag then use ref else pass further in $_reactRef property
+      (rest.ref = rest[$_reactRef]);
+      delete rest[$_reactRef];
+    }
+
+    if (rest.className && _$cx) rest.className = _$cx(rest.className);
+
+    // if (type === 'textarea') return React.createElement(UseTag, rest, value);
+    // if (type === 'select') {
+    //   const {placeholder} = rest;
+    //   if (!isUndefined(placeholder)) delete rest.placeholder;
+    //   return React.createElement(UseTag, rest,
+    //     !props.multiple && placeholder && React.createElement('option', enumExten[""], placeholder),
+    //     ...enumVals.map((val: any, i: number) => React.createElement('option', {key: i, value: val, ...(enumExten[val] || {})}, getIn(enumExten, val, 'label') || val))
+    //   );
+    // } else return React.createElement(UseTag, rest);
+    return React.createElement(UseTag, rest, self._mapped)
   }
 }
 
@@ -653,6 +708,7 @@ function WrapperWidget(props: any) {
   } else return result
 }
 
+
 function ItemMenu(props: any) {
   const {useTag: UseTag = 'div', _$cx = classNames, className, buttonsProps = {}, arrayItem = {}, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
   buttons.forEach((key: string) => delete rest[key]);
@@ -665,54 +721,6 @@ function ItemMenu(props: any) {
       })}
     </UseTag>);
 }
-
-function isEmpty(value: any) {
-  return isMergeable(value) ? objKeys(value).length === 0 : value === undefined || value === null || value === "";
-}
-
-function UniversalInput(props: any) {
-  if (props.viewer) {
-    let {value, type = 'text', _$cx, enumExten = {}, viewerProps = {}} = props;
-    let {useTag: UseTag = 'div', emptyMock = '(none)', ...rest} = viewerProps;
-    if (rest.className && _$cx) rest.className = _$cx(rest.className);
-    value = getIn(enumExten, value, 'label') || value;
-    return React.createElement(UseTag, rest, isEmpty(value) ? emptyMock : value)
-  }
-
-  let {
-    value,
-    useTag: UseTag,
-    type = 'text',
-    enumVals = [],
-    enumExten = {},
-    $_reactRef,
-    _$cx,
-    viewer,
-    viewerProps,
-    ...rest
-  }: { [key: string]: any } = props;
-  UseTag = UseTag || (type == 'textarea' || type == 'select' ? type : 'input');
-
-  if (isString(UseTag) && $_reactRef) rest.ref = rest[$_reactRef] && delete rest[$_reactRef]; // if "simple" tag then use ref else pass further in $_reactRef property
-
-  if (type === 'checkbox') rest.checked = value;
-  else if (type != 'textarea') rest.value = value;
-
-  if (rest.className && _$cx) rest.className = _$cx(rest.className);
-
-  if (type === 'textarea') return React.createElement(UseTag, rest, value);
-  if (type === 'select') {
-    const {placeholder} = rest;
-    if (!isUndefined(placeholder)) delete rest.placeholder;
-    return React.createElement(UseTag, rest,
-      !props.multiple && placeholder && React.createElement('option', enumExten[""], placeholder),
-      ...enumVals.map((val: any, i: number) => React.createElement('option', {key: i, value: val, ...(enumExten[val] || {})}, getIn(enumExten, val, 'label') || val))
-    );
-  } else {
-    rest.type = type;
-    return React.createElement(UseTag, rest);
-  }
-};
 
 
 function CheckboxNull(props: any) {
@@ -938,22 +946,6 @@ function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: stri
 }
 
 
-function onSelectChange(event: any) {
-  function processSelectValue({type, items}: any, value: any) {
-    if (type === "array" && items && (items.type == "number" || items.type == "integer")) return value.map(asNumber);
-    else if (type === "boolean") return value === "true";
-    else if (type === "number") return asNumber(value);
-    return value;
-  }
-
-  function getSelectValue(event: any, multiple: boolean) {
-    if (multiple) return [].slice.call(event.target.options).filter((item: any) => item.selected).map((item: any) => item.value);
-    else return event.target.value;
-  }
-
-  this.onChange(processSelectValue(this.schemaPart, getSelectValue(event, this.field.schemaProps['Main'].multiple)))
-}
-
 /////////////////////////////////////////////
 //  fformObjects
 /////////////////////////////////////////////
@@ -970,15 +962,15 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   widgets: {
     FSection: FSection,
     Generic: GenericWidget,
+    Input: UniversalInput,
     Autosize: AutosizeWidget,
+    CheckboxNull: CheckboxNull,
     Builder: FBuilder,
     Wrapper: WrapperWidget,
     ItemMenu: ItemMenu,
     Messages: MessagesWidget,
     MessageItem: MessageItem,
-    Input: UniversalInput,
     ArrayInput: ArrayInput,
-    CheckboxNull: CheckboxNull,
   },
   presets: {
     'base': {
@@ -1000,18 +992,13 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           widgets: {$: '^/fn/getFFieldProperty', args: ['_widgets'], update: 'build'},
         },
       },
-      Title: {
-        _$widget: '^/widgets/Generic',
-        _$cx: '^/_$cx',
-      },
+      Title: {},
       Body: {
         _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
         className: 'body',
       },
-      Main: {
-        _$cx: '^/_$cx',
-      },
+      Main: {},
       Message: {
         _$widget: '^/widgets/Messages',
         _$cx: '^/_$cx',
@@ -1028,6 +1015,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '^/presets/base',
       Main: {
         _$widget: '^/widgets/Input',
+        _$cx: '^/_$cx',
         $_reactRef: 'getRef',
         onChange: '^/on/changeBase',
         onBlur: '^/on/blurBase',
@@ -1037,14 +1025,14 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           // priority: '@/status/priority',
           value: '@/value',
           viewer: '@/params/viewer',
-          autofocus: '@/params/autofocus',
-          readonly: '@/params/readonly',
+          autoFocus: '@/params/autofocus',
+          readOnly: '@/params/readonly',
           disabled: '@/params/disabled',
           placeholder: '@/fData/placeholder',
           required: '@/fData/required',
           label: '@/fData/title',
-          enumVals: {$: '^/fn/getFFieldProperty', args: 'schemaPart/enum', update: 'build'},
-          enumExten: {$: '^/fn/getFFieldProperty', args: 'schemaPart/ff_enumExten', update: 'build'},
+          enumVals: '@/fData/enum',
+          enumExten: '@/fData/enumExten',
           id: {$: '^/fn/getFFieldProperty', args: 'props/id', update: 'build'},
           name: {$: '^/fn/getFFieldProperty', args: 'props/name', update: 'build'},
         }
@@ -1063,10 +1051,11 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     },
     string: {
       $_ref: '^/presets/nBase',
-      Main: {
-        type: 'text',
-        //onChange: '^/on/changeString'
-      }
+      Main: {type: 'text'}
+    },
+    textarea: {
+      $_ref: '^/presets/nBase',
+      Main: {type: 'textarea'}
     },
     integer: {
       $_ref: '^/presets/nBase',
@@ -1130,13 +1119,14 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '^/presets/base',
       Main: {
         _$widget: '^/widgets/FSection',
+        _$cx: '^/_$cx',
         $_reactRef: true,
         uniqKey: 'params/uniqKey',
-        _$cx: '^/_$cx',
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
         $_maps: {
           isArray: ['^/fn/equal', 'array', '@/fData/type'],
+          length: '@/length',
           arrayStart: {$: '^/fn/getArrayStart', args: [], update: 'build'},
           $FField: {$: '^/fn/getFFieldProperty', args: [], update: 'build'},
           FFormApi: {$: '^/fn/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
@@ -1147,22 +1137,35 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         }
       },
       Title: {
+        _$widget: '^/widgets/Generic',
+        _$cx: '^/_$cx',
         useTag: 'legend',
         children: [
           {$_ref: '^/presets/nBase/Title', useTag: 'span'},
           {$_ref: '^/parts/ArrayAddButton'},
           {$_ref: '^/parts/ArrayDelButton'},
           {$_ref: '^/parts/ArrayEmpty'}],
-        // $_maps: {
-        //   'children/1,2/className/hidden': ['^/fn/equal | ^/fn/not', 'array', '@/fData/type'],
-        //   'children/3/className/hidden': ['^/fn/equal | ^/fn/not', 0, '@/length'],
-        // },
       },
       Wrapper: {useTag: 'fieldset'},
     },
     array: {$_ref: '^/presets/object'},
-    select: {$_ref: '^/presets/nBase', Main: {type: 'select', onChange: onSelectChange}},
-    multiselect: {$_ref: '^/presets/select', Main: {multiply: true}},
+    select: {
+      $_ref: '^/presets/nBase',
+      Main: {
+        type: 'select',
+        $_maps: {
+          'children': {$: '^/fn/arrayOfEnum', args: ['@/fData/enum', '@/fData/enumExten', {_$widget: 'option'}], replace: false},
+          'label': false
+        }
+      }
+    },
+    multiselect: {
+      $_ref: '^/presets/select', Main: {
+        multiple: true,
+        // onChange: undefined,
+        onChange: '^/on/changeSelectMultiple'
+      }
+    },
 
     arrayOf: {
       $_ref: '^/presets/nBase',
@@ -1179,8 +1182,6 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
 
     inlineItems: {Main: {stackedProps: false}},
     buttons: {Main: {inputProps: {className: {'button': true}}, labelProps: {className: {'button': true}}}},
-    //selector: {dataMap: [['./@/value', './', selectorOnChange(false)]]}, // {onChange: selectorOnChange(false)}},
-    //tabs: {dataMap: [['./@/value', './', selectorOnChange(true)]]}, //{Main: {onChange: selectorOnChange(true)}},
     autosize: {
       Autosize: {$_ref: '^/parts/Autosize'},
       Wrapper: {style: {flexGrow: 0}},
@@ -1205,23 +1206,21 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   },
   fn: {
     not: function (v: any) {return !v},
-    bool: function (v: any) {return !!v},
-    equal: function (a: any, b: any) {return a === b},
+    equal: function (a: any, ...args: any[]) {return args.some(b => a === b)},
     getArrayStart: function () {return arrayStart(this.schemaPart)},
     getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
+    arrayOfEnum: function (enumVals: any[], enumExten: anyObject = {}, props: any = {}) {
+      return enumVals.map(val => {return {value: val, key: val, children: [getIn(enumExten, val, 'label') || val], ...(enumExten[val] || {}), ...props}})
+    }
   },
   on: {
     clickArrayAdd: function (path: any, value: number, opts: any) {this.api.arrayAdd(path, value, opts)},
     clickArrayItemOps: function (path: any, key: string, opts: any) {this.api.arrayItemOps(path, key, opts)},
     changeBase: function (event: any) {this.api.setValue(event.target.value, {})},
     changeDirect: function (value: any) {this.api.setValue(value, {})},
-    // changeString: function (event: any) {this.api.setValue(event.target.value, {})},
-    changeNumber: function (integer: boolean, emptyValue: number | null, event: any) {
-      this.api.setValue(event.target.value == '' ? emptyValue : (integer ? parseInt : parseFloat)(event.target.value), {})
-    },
-    //changeNumber: function (nullValue = 0, event: any) {this.api.setValue(event.target.value == '' ? 0 : parseFloat(event.target.value), {})},
-
+    changeNumber: function (int: boolean, empty: number | null, event: any) {this.api.setValue(event.target.value == '' ? empty : (int ? parseInt : parseFloat)(event.target.value), {})},
     changeBoolean: function (event: any) {this.api.setValue(event.target.checked, {})},
+    changeSelectMultiple: function (event: any) {this.api.setValue(Array.from(event.target.options).filter((opt: any) => opt.selected).map((opt: any) => opt.value))},
     focusBase: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
     blurBase: function (value: any) {
       const self = this;
@@ -1296,23 +1295,6 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     array: ['select', 'checkboxes', 'files'],
   },
   _$cx: classNames
-
-  // presetsCombineAfter: {
-  //   radio: ['inlineItems', 'buttons'],
-  //   checkboxes: ['inlineItems', 'buttons'],
-  //   string: ['autosize'],
-  //   number: ['autosize'],
-  //   integer: ['autosize'],
-  //   email: ['autosize'],
-  //   password: ['autosize'],
-  //   hostname: ['autosize'],
-  //   uri: ['autosize'],
-  // },
-  // presetsCombineBefore: {
-  //   radio: ['selector', 'tabs'],
-  //   checkboxes: ['selector', 'tabs'],
-  //   select: ['selector', 'tabs'],
-  // },
 };
 
 
@@ -1351,3 +1333,13 @@ export {selectorMap, fformObjects, FForm, FFormStateAPI, fformCores, classNames}
 export {extractMaps, normalizeMaps, updateProps, Test}
 //module.exports = process.env.NODE_ENV === 'test' ? merge(module.exports, {}) : module.exports;
 
+
+//    "radioSelect": {
+//       "title": "Radio select",
+//       "type": "number"
+//     },
+//     "checkboxSelect": {
+//       "type": "array",
+//       "ff_managed": true,
+//       "ff_presets": "checkboxes"
+//     },

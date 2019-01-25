@@ -1,6 +1,17 @@
 {
   "type": "object",
   "properties": {
+    "multiselect": {
+      "title": "Multiselect",
+      "type": "array",
+      "enum": [
+        "option 1",
+        "option 2",
+        "option 3"
+      ],
+      "ff_managed": true,
+      "ff_presets": "multiselect"
+    },
     "array": {
       "type": "array",
       "title": "Array of arrays",
@@ -143,14 +154,21 @@
       "ff_presets": "booleanNullLeft",
       "default": false
     },
-    "radioSelect": {
-      "title": "Radio select",
-      "type": "number"
+    "select": {
+      "title": "Select",
+      "type": "string",
+      "enum": [
+        "option 1",
+        "option 2",
+        "option 3"
+      ],
+      "ff_presets": "select"
     },
-    "checkboxSelect": {
-      "type": "array",
-      "ff_managed": true,
-      "ff_presets": "checkboxes"
+
+    "textarea": {
+      "title": "Textarea",
+      "type": "string",
+      "ff_presets": "textarea"
     }
   }
 }
