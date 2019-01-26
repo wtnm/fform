@@ -231,7 +231,7 @@ class FField extends React.Component<any, any> {
     const self = this;
     const api = self.props.pFForm.api;
     const wrapPath = (path: string | Path = []) => normalizePath(path, self.path);
-    const wrapOpts = (opts: any) => {
+    const wrapOpts = (opts: any = {}) => {
       const {path, noValidation, ...rest} = opts;
       if (!isUndefined(path)) rest.path = wrapPath(path);
       rest.noValidation = isUndefined(noValidation) ? !self.liveValidate : noValidation;
@@ -242,7 +242,7 @@ class FField extends React.Component<any, any> {
       validate: (path: boolean | string | Path = [], ...args: any[]) => api.validate(typeof path == 'boolean' ? path : wrapPath(path), ...args),
       get: (...path: any[]) => api.get(wrapPath(path)),
       set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => self._cacheValue(path, value) || api.set(wrapPath(path), value, wrapOpts(opts), ...args),
-      setValue: (value: any, opts: any, ...args: any[]) => self._cacheValue(opts.path, value, true) || api.setValue(value, wrapOpts(opts), ...args)
+      setValue: (value: any, opts: any = {}, ...args: any[]) => self._cacheValue(opts.path, value, true) || api.setValue(value, wrapOpts(opts), ...args)
     };
     ['noExec', 'execute', 'setState', 'getActive',].forEach(fn => self.api[fn] = (...args: any[]) => api[fn](...args));
     ['arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly', 'getSchemaPart']
@@ -894,14 +894,11 @@ function normalizeMaps($_maps: any, prePath = '') {
     const map = $_maps[key];
     if (!map) return;
     const to = multiplyPath(normalizePath((prePath ? prePath + '/' : '') + key));
-    if (isObject(map)) {
-      const {update = 'every', replace = true, args = [], $} = map;
-      result[update].push({update, replace, $, to, ...normalizeArgs(args)});
-    } else if (isArray(map)) {
-      const res: NormalizedPropsMapType = {update: 'data', replace: true, to, ...normalizeArgs(map.slice(1))};
-      res.$ = map[0];
-      if (isArray(res.$) && !res.$.every(isFunction) || !isArray(res.$) && !isFunction(res.$)) throw new Error('Expected zero element of array to be a function');
-      result.data.push(res);
+    if (isMergeable(map)) {
+      toArray(map).forEach(m => {
+        const {update = 'data', replace = true, args = [], $} = m;
+        result[update].push({update, replace, $, to, ...normalizeArgs(args)});
+      })
     } else {
       let path = map;
       if (!isString(path)) throw new Error('$_maps value is not recognized');
@@ -1125,15 +1122,15 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
         $_maps: {
-          isArray: ['^/fn/equal', 'array', '@/fData/type'],
           length: '@/length',
+          isArray: {$: '^/fn/equal', args: ['@/fData/type', 'array']},
+          $branch: {$: '^/fn/getFFieldProperty', args: '$branch', update: 'every'},
           arrayStart: {$: '^/fn/getArrayStart', args: [], update: 'build'},
           $FField: {$: '^/fn/getFFieldProperty', args: [], update: 'build'},
           FFormApi: {$: '^/fn/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
           id: {$: '^/fn/getFFieldProperty', args: 'props/id', update: 'build'},
           name: {$: '^/fn/getFFieldProperty', args: 'props/name', update: 'build'},
-          $layout: {$: '^/fn/getFFieldProperty', args: 'ff_layout', update: 'build'},
-          $branch: {$: '^/fn/getFFieldProperty', args: '$branch', update: 'every'},
+          $layout: {$: '^/fn/getFFieldProperty', args: 'ff_layout', update: 'build'}
         }
       },
       Title: {
@@ -1220,7 +1217,9 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     changeDirect: function (value: any) {this.api.setValue(value, {})},
     changeNumber: function (int: boolean, empty: number | null, event: any) {this.api.setValue(event.target.value == '' ? empty : (int ? parseInt : parseFloat)(event.target.value), {})},
     changeBoolean: function (event: any) {this.api.setValue(event.target.checked, {})},
-    changeSelectMultiple: function (event: any) {this.api.setValue(Array.from(event.target.options).filter((opt: any) => opt.selected).map((opt: any) => opt.value))},
+    changeSelectMultiple: function (event: any) {
+      this.api.setValue(Array.from(event.target.options).filter((opt: any) => opt.selected).map((opt: any) => opt.value))
+    },
     focusBase: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
     blurBase: function (value: any) {
       const self = this;
@@ -1253,8 +1252,8 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       onClick: '^/on/clickArrayAdd',
       'onClick.bind': ['./', 1],
       $_maps: {
-        'className/hidden': ['^/fn/equal | ^/fn/not', 'array', '@/fData/type'],
-        'disabled': ['^/fn/not', '@/fData/canAdd']
+        'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
+        'disabled': {$: '^/fn/not', args: '@/fData/canAdd'}
       }
     },
     ArrayDelButton: {
@@ -1263,14 +1262,14 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       onClick: '^/on/clickArrayAdd',
       'onClick.bind': ['./', -1],
       $_maps: {
-        'className/hidden': ['^/fn/equal | ^/fn/not', 'array', '@/fData/type'],
-        'disabled': ['^/fn/not', '@/length']
+        'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
+        'disabled': {$: '^/fn/not', args: '@/length'}
       },
     },
     ArrayEmpty: {
       children: '(array is empty)',
       useTag: 'span',
-      $_maps: {'className/hidden': ['^/fn/equal | ^/fn/not', 0, '@/length'],}
+      $_maps: {'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/length', 0]}}
     },
     ArrayItemMenu: {
       _$widget: '^/widgets/ItemMenu',

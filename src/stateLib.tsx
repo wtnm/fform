@@ -394,14 +394,14 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
 
   result.oneOf = oneOf;
   result.status = basicStatus;
-  result.fData = {};
+  if (!isObject(result.fData)) result.fData = {};
   result.fData.type = type;
   result.fData.required = schemaPart.required;
-  result.fData.title = schemaPart.title;
-  result.fData.placeholder = schemaPart.ff_placeholder;
-  result.fData.enum = schemaPart.enum;// getEnumOptions(schemaPart);
-  result.fData.enumExten = schemaPart.ff_enumExten;
-  
+  if (schemaPart.title) result.fData.title = schemaPart.title;
+  if (schemaPart.ff_placeholder) result.fData.placeholder = schemaPart.ff_placeholder;
+  if (schemaPart.enum) result.fData.enum = schemaPart.enum;
+  if (schemaPart.ff_enumExten) result.fData.enumExten = schemaPart.ff_enumExten;
+
   if (isSchemaSelfManaged(schemaPart, type)) result.value = value;
   else delete result.value;
   let untouched = 1;

@@ -844,36 +844,36 @@ describe('FForm api tests', function () {
     funcs: {one: function (...a) {return a}, two: function (...a) {return a}},
     parts: {
       first: {
-        $_ref: '%/preset',
-        f1: '%/funcs/one',
+        $_ref: '^/preset',
+        f1: '^/funcs/one',
         'f1.bind': [2]
       },
       second: {
-        $_ref: '%/parts/first',
+        $_ref: '^/parts/first',
         'f1.bind': [4],
-        f2: '%/funcs/two',
+        f2: '^/funcs/two',
         'f2.bind': [6, 10],
       }
     }
   };
   let exampleObj = {
-    func: '%/funcs/two',
+    func: '^/funcs/two',
     part: {
-      $_ref: '%/parts/second',
+      $_ref: '^/parts/second',
       'f1.bind': [1],
       first: {
         three: 'three value',
         $_maps: {
-          isArray: ['%/funcs/two', 'array', '@/fData/type'],
-          arrayStart: {$: '%/funcs/two', args: [], update: 'build'},
-          FFormApi: {$: '%/funcs/one', args: 'props/pFForm/api', update: 'build'},
-          $layout: {$: '%/funcs/one', args: 'ff_layout', update: 'data'},
-          $branch: {$: '%/funcs/one', args: 'state/branch', update: 'every'},
+          isArray: [{$: '^/funcs/two', args: ['@/fData/type', 'array']}],
+          arrayStart: {$: '^/funcs/two', args: [], update: 'build'},
+          FFormApi: {$: '^/funcs/one', args: 'props/pFForm/api', update: 'build'},
+          $layout: {$: '^/funcs/one', args: 'ff_layout', update: 'data'},
+          $branch: {$: '^/funcs/one', args: 'state/branch', update: 'every'},
         }
       },
-      _some: '%/funcs/two',
+      _some: '^/funcs/two',
       _more: {
-        f3: '%/funcs/three',
+        f3: '^/funcs/three',
         $_maps: {value: '@/value'}
       },
       $fields: [{$_maps: {length: '@/length'}}],
@@ -885,10 +885,10 @@ describe('FForm api tests', function () {
 
   it('test api.objectDerefer', function () {
     let obj = apiLib.objectDerefer(objects, exampleObj);
-    expect(obj.func).to.be.equal('%/funcs/two');
-    expect(obj.part.f1).to.be.equal('%/funcs/one');
+    expect(obj.func).to.be.equal('^/funcs/two');
+    expect(obj.part.f1).to.be.equal('^/funcs/one');
     expect(obj.part['f1.bind']).to.be.eql([1]);
-    expect(obj.part.f2).to.be.equal('%/funcs/two');
+    expect(obj.part.f2).to.be.equal('^/funcs/two');
     expect(obj.part['f2.bind']).to.be.eql([6, 10]);
     expect(obj.part.first.one).to.be.equal('one value');
     expect(obj.part.first.three).to.be.equal('three value');
@@ -903,7 +903,7 @@ describe('FForm api tests', function () {
     expect(obj.part.f2).to.be.equal(objects.funcs.two);
     expect(obj.part['f2.bind']).to.be.eql([6, 10]);
     expect(obj.part._some).to.be.equal(objects.funcs.two);
-    expect(obj.part._more.f3).to.be.equal('%/funcs/three');
+    expect(obj.part._more.f3).to.be.equal('^/funcs/three');
 
     obj2SymData = apiLib.objectResolver(objects, exampleObj, true);
     expect(obj2SymData[SymData].func).to.be.equal(objects.funcs.two);
@@ -914,7 +914,7 @@ describe('FForm api tests', function () {
     expect(obj2SymData.part.first.one).to.be.equal('one value');
     expect(obj2SymData.part.first.three).to.be.equal('three value');
     expect(obj2SymData.part._some).to.be.equal(objects.funcs.two);
-    expect(obj2SymData.part._more.f3).to.be.equal('%/funcs/three');
+    expect(obj2SymData.part._more.f3).to.be.equal('^/funcs/three');
   });
 
   it('test components.extractMaps', function () {
@@ -939,7 +939,7 @@ describe('FForm api tests', function () {
     expect(NMaps.data[0].dataRequest).to.be.equal(true);
     expect(NMaps.data[1].dataRequest).to.be.equal(true);
     expect(NMaps.data[1].to['']).to.be.eql(["part", "first", "isArray"]);
-    expect(stateLib.isNPath(NMaps.data[1].args[1])).to.be.equal(true);
+    expect(stateLib.isNPath(NMaps.data[1].args[0])).to.be.equal(true);
     const preNMaps = components.normalizeMaps($_maps, '0');
     expect(preNMaps.build[0].to['']).to.be.eql(["0", "part", "first", "arrayStart"]);
     expect(preNMaps.build[0].dataRequest).to.be.equal(false);
@@ -957,10 +957,10 @@ describe('FForm api tests', function () {
     expect(mapped.part.first.$branch).to.be.eql("state/branch");
     expect(mapped.part.first.arrayStart).to.be.eql([]);
     expect(mapped.part._more.value).to.be.equal(value);
-    expect(mapped.part.first.isArray).to.be.eql(['array', 'string']);
+    expect(mapped.part.first.isArray).to.be.eql(['string', 'array']);
 
     mapped = components.updateProps(mapped, undefined, {value: 'value', fData: {type: 'object'}}, NMaps.data, NMaps.every);
-    expect(mapped.part.first.isArray).to.be.eql(['array', 'object']);
+    expect(mapped.part.first.isArray).to.be.eql(['object', 'array']);
     expect(mapped.part._more.value).to.be.equal('value');
   });
 });

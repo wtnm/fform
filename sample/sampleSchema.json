@@ -4,13 +4,25 @@
     "multiselect": {
       "title": "Multiselect",
       "type": "array",
-      "enum": [
-        "option 1",
-        "option 2",
-        "option 3"
-      ],
+      "ff_data": {
+        "fData": {
+          "enum": [
+            "option 1",
+            "option 2",
+            "option 3"
+          ]
+        }
+      },
       "ff_managed": true,
-      "ff_presets": "multiselect"
+      "ff_presets": "multiselect",
+      "items": {
+        "type": "string",
+        "enum": [
+          "option 1",
+          "option 2",
+          "option 3"
+        ]
+      }
     },
     "array": {
       "type": "array",
@@ -164,7 +176,6 @@
       ],
       "ff_presets": "select"
     },
-
     "textarea": {
       "title": "Textarea",
       "type": "string",
