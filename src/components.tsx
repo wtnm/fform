@@ -737,124 +737,6 @@ function CheckboxNull(props: any) {
 }
 
 
-function MessagesWidget(props: any) {
-  const {useTag: UseTag = 'div', MessageItem, messages = {}, _$cx = classNames, className, ...rest} = props;
-  const {_$widget: MIW, ...restMI} = MessageItem;
-  let keys = objKeys(messages);
-  keys.sort((a, b) => parseFloat(a) - parseFloat(b));
-  return <UseTag className={_$cx(className)} {...rest}>{keys.map(key => <MIW key={key} _$cx={_$cx} messageData={messages[key]} {...restMI} />)}</UseTag>;
-}
-
-
-function MessageItem(props: any) {
-  const {useTag: UseTag = 'div', messageData, _$cx = classNames, className, ...rest} = props;
-  const {priority, norender, textGroups, className: groupCN, ...restMG} = messageData;
-  const texts: any[] = [];
-  objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey]));
-  if (norender || !texts.length) return null;
-  return <UseTag className={_$cx(className, groupCN, 'priority_' + priority)} {...rest} {...restMG}>{texts.join('<br/>')}</UseTag>
-}
-
-
-function ArrayInput(props: any) {
-  function selectValue(value: any, selected: any, all: any) {
-    const at = all.indexOf(value);
-    const updated = selected.slice(0, at).concat(value, selected.slice(at));
-    return updated.sort((a: any, b: any) => all.indexOf(a) > all.indexOf(b)); // reorder the updated selection to match the initial order
-  }
-
-  function deselectValue(value: any, selected: any) {return selected.filter((v: any) => v !== value);}
-
-  let {
-    value,
-    useTag: UseTag = 'div',
-    type,
-    title,
-    onFocus,
-    onBlur,
-    onChange,
-    $FField,
-    enumOptions,
-    $_reactRef,
-    autofocus,
-    disabled,
-    disabledClass,
-    nullValue,
-    inputProps = {},
-    labelProps = {},
-    stackedProps,
-    ...rest
-  }: { [key: string]: any } = props;
-  if (!type) type = $FField && $FField.schemaPart.type == 'array' ? 'checkbox' : 'radio';
-  const name = props.id;
-  let ref = rest[$_reactRef];
-  if ($_reactRef) delete rest[$_reactRef];
-  let {useTag: InputUseTag = 'input', ...restInput} = inputProps;
-  let {useTag: LabelUseTag = 'label', ...restLabel} = labelProps;
-  let stacked = !!stackedProps;
-  if (!stackedProps) stackedProps = {};
-  let {useTag: StackedlUseTag = 'div', ...restStacked} = stackedProps;
-  return (
-    <UseTag {...rest}>{
-      enumOptions && enumOptions.map((option: any, i: number) => {
-        const addClass = disabled ? disabledClass : "";
-        let input;
-        if (type == 'radio') {
-          const checked = option.value === value; // checked={checked} has been moved above name={name}, this is a temporary fix for radio button rendering bug in React, facebook/react#7630.
-          input = (
-            <InputUseTag type={type}
-                         checked={checked}
-                         id={`${name}/${i}`}
-                         name={name}
-                         value={option.value}
-                         disabled={disabled}
-                         autoFocus={autofocus && i === 0}
-                         onFocus={onFocus}
-                         onBlur={onBlur}
-                         onClick={(event: any) => checked && onChange(nullValue)}
-                         onChange={(event: any) => !checked && onChange(option.value)
-                         }
-                         {...restInput}/>);
-        } else {
-          const checked = value.indexOf(option.value) !== -1;
-          input = (
-            <InputUseTag type={type}
-                         checked={checked}
-                         id={`${name}/${i}`}
-                         name={`${name}/${i}`}
-                         disabled={disabled}
-                         autoFocus={autofocus && i === 0}
-                         onFocus={onFocus}
-                         onBlur={onBlur}
-                         onChange={(event: any) => {
-                           const all = enumOptions.map(({value}: any) => value);
-                           if (event.target.checked) props.funcs.onChange(selectValue(option.value, value, all));
-                           else props.funcs.onChange(deselectValue(option.value, value));
-                         }}
-                         {...restInput}/>);
-        }
-        if (addClass) {
-          let obj = stacked ? restStacked : restLabel;
-          obj.className = ((obj.className || "") + " " + addClass).trim()
-        }
-        return stacked ? (
-          <StackedlUseTag key={i} {...restStacked}>
-            <LabelUseTag {...restLabel}>
-              {input}
-              <span>{option.label}</span>
-            </LabelUseTag>
-          </StackedlUseTag>
-        ) : (
-          <LabelUseTag key={i} {...restLabel}>
-            {input}
-            <span>{option.label}</span>
-          </LabelUseTag>
-        );
-      })
-    }</UseTag>
-  );
-}
-
 ///////////////////////////////
 //     Functions
 ///////////////////////////////
@@ -954,9 +836,6 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     return merge(this, obj, {symbol: false}) // merge without symbols, as there (in symbol keys) will be stored cache data which MUST be recalculated after each extend
   },
   types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
-  // methods2chain: { // bind on<EventName> methods, so that it can access to previous method in chain by using this.on<EventName>
-  //   'onBlur': true, 'onMouseOver': true, 'onMouseEnter': true, 'onMouseLeave': true, 'onChange': true, 'onSelect': true, 'onClick': true, 'onSubmit': true, 'onFocus': true, 'onUnload': true, 'onLoad': true
-  // },
   widgets: {
     FSection: FSection,
     Generic: GenericWidget,
@@ -966,9 +845,6 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     Builder: FBuilder,
     Wrapper: WrapperWidget,
     ItemMenu: ItemMenu,
-    Messages: MessagesWidget,
-    MessageItem: MessageItem,
-    ArrayInput: ArrayInput,
   },
   presets: {
     'base': {
@@ -998,15 +874,12 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       },
       Main: {},
       Message: {
-        _$widget: '^/widgets/Messages',
+        _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
         $_maps: {
-          messages: '@/messages',
-          untouched: '@/status/untouched',
-        },
-        MessageItem: {
-          _$widget: '^/widgets/MessageItem',
-        },
+          children: {$: '^/fn/messages', args: ['@/messages', {}]},
+          'className/hidden': {$: '^/fn/not', args: '@/status/touched'},
+        }
       }
     },
     nBase: {
@@ -1164,18 +1037,6 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         onChange: '^/on/changeSelectMultiple'
       }
     },
-
-    // arrayOf: {
-    //   $_ref: '^/presets/nBase',
-    //   Main: {
-    //     _$widget: '^/widgets/ArrayInput',
-    //     inputProps: {},
-    //     labelProps: {},
-    //     stackedProps: {},
-    //     disabledClass: 'disabled',
-    //   },
-    // },readOnly: '@/params/readonly',
-    //           disabled: '@/params/disabled',
     radio: {
       $_ref: '^/presets/base',
       Title: {$_ref: '^/presets/nBase/Title'},
@@ -1233,8 +1094,21 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     },
   },
   fn: {
-    not: function (v: any) {return !v},
+    not: function (v: any) {
+      return !v
+    },
     equal: function (a: any, ...args: any[]) {return args.some(b => a === b)},
+    messages: function (messages: any[], staticProps: anyObject = {}) {
+      const {className: cnSP = {}, ...restSP} = staticProps;
+      return objKeys(messages).map(key => {
+        const {priority = key, norender, textGroups, className = {}, ...rest} = messages[key];
+        const texts: any[] = [];
+        objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey], {_$widget: 'br'}));
+        if (norender || !texts.length) return null;
+        texts.pop();
+        return {children: texts, ...restSP, className: {['priority_' + priority]: true, ...cnSP, ...className}, ...rest}
+      })
+    },
     getArrayStart: function () {return arrayStart(this.schemaPart)},
     getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
     arrayOfEnum: function (enumVals: any[], enumExten: anyObject = {}, staticProps: any = {}, name?: true | string) {
@@ -1286,7 +1160,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     focusBase: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
     blurBase: function (value: any) {
       const self = this;
-      self.api.set('./', 0, {[SymData]: ['status', 'untouched'], noValidation: true});
+      self.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
       self.api.set('/@/active', undefined, {noValidation: true});
       return !self.liveValidate ? self.api.validate() : null;
     }

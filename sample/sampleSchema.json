@@ -164,7 +164,7 @@
             ]
           }
         },
-        "maxItems": 7,
+        "maxItems": 3,
         "items": {
           "oneOf": [
             {

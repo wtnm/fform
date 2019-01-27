@@ -22,10 +22,7 @@
         }
       },
       "Message": {
-        "className": {},
-        "MessageItem": {
-          "className": {}
-        }
+        "className": {}
       },
       "Main": {
         "className": {}
