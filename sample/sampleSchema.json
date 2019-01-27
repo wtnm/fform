@@ -1,8 +1,20 @@
 {
   "type": "object",
   "properties": {
-    "multiselect": {
-      "title": "Multiselect",
+    "radioSelect": {
+      "title": "Radio select",
+      "type": "string",
+      "ff_presets": "radio",
+      "enum": [
+        "option 1",
+        "option 2",
+        "option 3"
+      ],
+      "default": "option 2"
+    },
+    "checkboxSelect": {
+      "title": "Checkbox select",
+      "ff_presets": "checkboxes",
       "type": "array",
       "ff_data": {
         "fData": {
@@ -14,7 +26,33 @@
         }
       },
       "ff_managed": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "option 1",
+          "option 2",
+          "option 3"
+        ]
+      },
+      "default": [
+        "option 2",
+        "option 3"
+      ]
+    },
+    "multiselect": {
+      "title": "Multiselect",
       "ff_presets": "multiselect",
+      "type": "array",
+      "ff_data": {
+        "fData": {
+          "enum": [
+            "option 1",
+            "option 2",
+            "option 3"
+          ]
+        }
+      },
+      "ff_managed": true,
       "items": {
         "type": "string",
         "enum": [

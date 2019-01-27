@@ -626,16 +626,16 @@ class UniversalInput extends GenericWidget {
       return React.createElement(UseTag, rest, isEmpty(value) ? emptyMock : value)
     }
 
-    let {value, useTag: UseTag, type = 'text', enumVals = [], enumExten = {}, $_reactRef, _$cx, viewer, viewerProps, children, ...rest} = props;
+    let {value, useTag: UseTag, type, enumVals = [], enumExten = {}, $_reactRef, _$cx, viewer, viewerProps, children, ...rest} = props;
 
     self._mapChildren(children);
 
     if (type == 'textarea' || type == 'select') UseTag = UseTag || type;
     else {
       UseTag = UseTag || 'input';
-      rest.type = type;
+      if (type !== 'notInput') rest.type = type;
     }
-    rest[type === 'checkbox' ? 'checked' : 'value'] = value;
+    if (type !== 'notInput') rest[type === 'checkbox' ? 'checked' : 'value'] = value;
 
     if (isString(UseTag) && $_reactRef) { // if "simple" tag then use ref else pass further in $_reactRef property
       (rest.ref = rest[$_reactRef]);
@@ -918,7 +918,8 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
   iterMaps.forEach(m => m && m.forEach(map => {
       if (!needUpdate(map)) return;
       const value = map.$ ? deArray(toArray(map.$).reduce((args, fn) => toArray(fn(...args)), map.dataRequest ? map.args.map(getFromData) : map.args)) : getFromData(map.args);
-      objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, map.replace, map.to[k]))
+      objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, map.replace, map.to[k]));
+      if (!map.replace) mappedData = mergeStatePROCEDURE(mappedData, dataUpdates);
     })
   );
   return mergeStatePROCEDURE(mappedData, dataUpdates);
@@ -1157,28 +1158,58 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       }
     },
     multiselect: {
-      $_ref: '^/presets/select', Main: {
+      $_ref: '^/presets/select',
+      Main: {
         multiple: true,
-        // onChange: undefined,
         onChange: '^/on/changeSelectMultiple'
       }
     },
 
-    arrayOf: {
-      $_ref: '^/presets/nBase',
+    // arrayOf: {
+    //   $_ref: '^/presets/nBase',
+    //   Main: {
+    //     _$widget: '^/widgets/ArrayInput',
+    //     inputProps: {},
+    //     labelProps: {},
+    //     stackedProps: {},
+    //     disabledClass: 'disabled',
+    //   },
+    // },readOnly: '@/params/readonly',
+    //           disabled: '@/params/disabled',
+    radio: {
+      $_ref: '^/presets/base',
+      Title: {$_ref: '^/presets/nBase/Title'},
       Main: {
-        _$widget: '^/widgets/ArrayInput',
-        inputProps: {},
-        labelProps: {},
-        stackedProps: {},
-        disabledClass: 'disabled',
-      },
+        _$widget: '^/widgets/Input',
+        _$cx: '^/_$cx',
+        useTag: 'div',
+        $_reactRef: true,
+        type: 'notInput',
+        $_maps: {
+          value: '@/value',
+          viewer: '@/params/viewer',
+          children: [
+            {
+              $: '^/fn/enumInputs',
+              args: [
+                '@/fData/enum',
+                '@/fData/enumExten',
+                {useTag: 'label'},
+                {_$widget: 'input', type: 'radio', onChange: '^/on/changeBase', onBlur: '^/on/blurBase', onFocus: '^/on/focusBase'},
+                true
+              ],
+              replace: false
+            },
+            {$: '^/fn/enumInputProps', args: ['@/fData/enum', 'readOnly', '@/params/readonly', 'disabled', '@/params/disabled'], replace: false},
+            {$: '^/fn/enumInputValue', args: ['@/fData/enum', '@/value'], replace: false}
+          ]
+        }
+      }
     },
-    radio: {$_ref: '^/presets/arrayOf', Main: {type: 'radio'}},
-    checkboxes: {$_ref: '^/presets/arrayOf', Main: {type: 'checkbox'}, 'Array': false},
+    checkboxes: {$_ref: '^/presets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: '^/on/changeCheckboxes'}, '4': '[]'}}}}}},
 
-    inlineItems: {Main: {stackedProps: false}},
-    buttons: {Main: {inputProps: {className: {'button': true}}, labelProps: {className: {'button': true}}}},
+    // inlineItems: {Main: {stackedProps: false}},
+    // buttons: {Main: {inputProps: {className: {'button': true}}, labelProps: {className: {'button': true}}}},
     autosize: {
       Autosize: {$_ref: '^/parts/Autosize'},
       Wrapper: {style: {flexGrow: 0}},
@@ -1206,8 +1237,30 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     equal: function (a: any, ...args: any[]) {return args.some(b => a === b)},
     getArrayStart: function () {return arrayStart(this.schemaPart)},
     getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
-    arrayOfEnum: function (enumVals: any[], enumExten: anyObject = {}, props: any = {}) {
-      return enumVals.map(val => {return {value: val, key: val, children: [getIn(enumExten, val, 'label') || val], ...(enumExten[val] || {}), ...props}})
+    arrayOfEnum: function (enumVals: any[], enumExten: anyObject = {}, staticProps: any = {}, name?: true | string) {
+      return enumVals.map(val => {
+        return {value: val, key: val, children: [getIn(enumExten, val, 'label') || val], name: name && (this.name + (name === true ? '' : name)), ...(enumExten[val] || {}), ...staticProps}
+      })
+    },
+    enumInputs: function (enumVals: any[], enumExten: anyObject = {}, labelProps: any = {}, inputProps: any = {}, name?: true | string) {
+      return enumVals.map(val => {
+        return {
+          ...labelProps,
+          children: [
+            {value: val, key: val, name: name && (this.props.name + (name === true ? '' : name)), ...(enumExten[val] || {}), ...inputProps},
+            getIn(enumExten, val, 'label') || val
+          ]
+        }
+      })
+    },
+    enumInputProps: function (enumVals: any[], ...rest: any[]) {
+      let props: any = {};
+      for (let i = 0; i < rest.length; i += 2) props[rest[i]] = rest[i + 1];
+      return enumVals.map(val => {return {'children': {'0': props}}})
+    },
+    enumInputValue: function (enumVals: any[], value: any, property = 'checked') {
+      value = toArray(value);
+      return enumVals.map(val => {return {'children': {'0': {[property]: !!~value.indexOf(val)}}}})
     }
   },
   on: {
@@ -1219,6 +1272,16 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     changeBoolean: function (event: any) {this.api.setValue(event.target.checked, {})},
     changeSelectMultiple: function (event: any) {
       this.api.setValue(Array.from(event.target.options).filter((opt: any) => opt.selected).map((opt: any) => opt.value))
+    },
+    changeCheckboxes: function (event: any) {
+      const selected = (this.getData().value || []).slice();
+      const value = event.target.value;
+      const at = selected.indexOf(value);
+      const updated = selected.slice();
+      if (at == -1) updated.push(value); else updated.splice(at, 1);
+      const all = this.getData().fData.enum;
+      updated.sort((a: any, b: any) => all.indexOf(a) > all.indexOf(b));
+      this.api.setValue(updated)
     },
     focusBase: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
     blurBase: function (value: any) {
@@ -1333,10 +1396,6 @@ export {extractMaps, normalizeMaps, updateProps, Test}
 //module.exports = process.env.NODE_ENV === 'test' ? merge(module.exports, {}) : module.exports;
 
 
-//    "radioSelect": {
-//       "title": "Radio select",
-//       "type": "number"
-//     },
 //     "checkboxSelect": {
 //       "type": "array",
 //       "ff_managed": true,
