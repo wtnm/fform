@@ -1,5 +1,5 @@
 {
-  "presets": {
+  "sets": {
     "base": {
       "Wrapper": {
         "className": {
@@ -66,6 +66,31 @@
       "Main": {
         "LayoutDefaultClass": {
           "layout": true
+        }
+      }
+    },
+    "radio": {
+      "Main": {
+        "className": {
+          "radio": true
+        },
+        "$_maps": {
+          "children": {
+            "0": {
+              "args": {
+                "2": {
+                  "className": {
+                    "radio-label": true
+                  }
+                },
+                "3": {
+                  "className": {
+                    "radio-input": true
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

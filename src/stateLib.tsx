@@ -260,6 +260,7 @@ function oneOfStructure(state: StateType | Function, path: Path) { // makes obje
 
 function branchKeys(branch: StateType) {
   let keys: string[] = [];
+  if (isSelfManaged(branch)) return keys;
   if (branch[SymData].fData.type == 'array') for (let j = 0; j < getIn(branch, SymData, 'length'); j++) keys.push(j.toString());
   else keys = objKeys(branch).filter(v => v);
   return keys;

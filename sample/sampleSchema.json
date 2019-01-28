@@ -1,67 +1,57 @@
 {
   "type": "object",
-  "properties": {
-    "radioSelect": {
-      "title": "Radio select",
-      "type": "string",
-      "ff_presets": "radio",
-      "enum": [
-        "option 1",
-        "option 2",
-        "option 3"
-      ],
-      "default": "option 2"
-    },
-    "checkboxSelect": {
-      "title": "Checkbox select",
-      "ff_presets": "checkboxes",
-      "type": "array",
-      "ff_data": {
-        "fData": {
-          "enum": [
-            "option 1",
-            "option 2",
-            "option 3"
+  "ff_layout": [
+    {
+      "className": {
+        "layout": true,
+        "inline": true
+      },
+      "$_fields": [
+        {
+          "$_ref": "^/parts/Button",
+          "children": "switch to viewer",
+          "className": {
+            "shrink": true
+          },
+          "$_maps": {
+            "disabled": "@/params/viewer",
+            "className/button-viewer": false
+          },
+          "onClick": "^/user/set",
+          "onClick.bind": [
+            "/@/params/viewer",
+            true,
+            {
+              "macros": "switch"
+            }
+          ]
+        },
+        {
+          "$_ref": "^/parts/Button",
+          "children": "switch to editor",
+          "className": {
+            "shrink": true
+          },
+          "$_maps": {
+            "disabled": {
+              "$": "^/fn/not",
+              "args": "@/params/viewer"
+            },
+            "className/button-viewer": false
+          },
+          "onClick": "^/user/set",
+          "onClick.bind": [
+            "/@/params/viewer",
+            false,
+            {
+              "macros": "switch"
+            }
           ]
         }
-      },
-      "ff_managed": true,
-      "items": {
-        "type": "string",
-        "enum": [
-          "option 1",
-          "option 2",
-          "option 3"
-        ]
-      },
-      "default": [
-        "option 2",
-        "option 3"
       ]
-    },
-    "multiselect": {
-      "title": "Multiselect",
-      "ff_presets": "multiselect",
-      "type": "array",
-      "ff_data": {
-        "fData": {
-          "enum": [
-            "option 1",
-            "option 2",
-            "option 3"
-          ]
-        }
-      },
-      "ff_managed": true,
-      "items": {
-        "type": "string",
-        "enum": [
-          "option 1",
-          "option 2",
-          "option 3"
-        ]
-      }
-    },
+    }
+  ],
+  "properties": {
     "array": {
       "type": "array",
       "title": "Array of arrays",
@@ -212,7 +202,70 @@
         "option 2",
         "option 3"
       ],
-      "ff_presets": "select"
+      "default": "option 2",
+      "ff_presets": "select:inlineTitle"
+    },
+    "radioSelect": {
+      "title": "Radio select",
+      "type": "string",
+      "ff_presets": "radio:inlineItems:inlineTitle",
+      "enum": [
+        "option 1",
+        "option 2",
+        "option 3"
+      ],
+      "default": "option 2"
+    },
+    "checkboxSelect": {
+      "title": "Checkbox select",
+      "ff_presets": "checkboxes:inlineItems:inlineTitle",
+      "type": "array",
+      "required": true,
+      "ff_data": {
+        "fData": {
+          "enum": [
+            "option 1",
+            "option 2",
+            "option 3"
+          ]
+        }
+      },
+      "ff_managed": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "option 1",
+          "option 2",
+          "option 3"
+        ]
+      },
+      "default": [
+        "option 2",
+        "option 3"
+      ]
+    },
+    "multiselect": {
+      "title": "Multiselect",
+      "ff_presets": "multiselect",
+      "type": "array",
+      "ff_data": {
+        "fData": {
+          "enum": [
+            "option 1",
+            "option 2",
+            "option 3"
+          ]
+        }
+      },
+      "ff_managed": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "option 1",
+          "option 2",
+          "option 3"
+        ]
+      }
     },
     "textarea": {
       "title": "Textarea",

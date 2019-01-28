@@ -3,11 +3,11 @@ const isNumber = (value: any): value is number => typeof value === "number";
 const isInteger = (value: any) => typeof value === "number" && (Math.floor(value) === value || value > 9007199254740992 || value < -9007199254740992);
 const isString = (value: any): value is string => typeof value === 'string';
 const isArray = Array.isArray;
-const isObject = (value: any):value is anyObject => isMergeable(value) && !isArray(value);
+const isObject = (value: any): value is anyObject => isMergeable(value) && !isArray(value);
 const isFunction = (value: any): value is Function => typeof value === 'function';
 
 const toArray = (value: any) => isArray(value) ? value : [value];
-const deArray = (value: any) => isArray(value) && value.length == 1 ? value[0] : value;
+const deArray = (value: any, keepArray?: boolean) => !keepArray && isArray(value) && value.length == 1 ? value[0] : value;
 
 function isMergeable(val: any) {
   const nonNullObject = val && typeof val === 'object';

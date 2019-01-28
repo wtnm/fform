@@ -1,9 +1,24 @@
 
-.wrapper, .layout, .body, .array-item, .flex {
+.wrapper, .layout, .body, .array-item, .radio, .flex {
     display: flex;
     flex-flow: column;
     flex: 1 1 auto;
     align-items: stretch;
+}
+
+.required:after {
+    content: " *";
+}
+
+.title-container {
+    width: 100%;
+}
+
+.title-viewer {
+}
+
+.title-viewer:after {
+    content: "";
 }
 
 .wrapper {
@@ -11,37 +26,28 @@
     margin-right: 0.5em;
 }
 
-.hidden {
+.viewer {
+    margin-right: 1em;
+    font-weight: bold;
+}
+
+.hidden, .button-viewer {
     display: none;
 }
 
-.flex-row {
+.inline {
     flex-direction: row;
 }
 
-.title {
+.shrink {
+    flex-grow: 0;
+}
+
+.title, .radio-label {
     margin-right: 1em;
 }
 
+
 .add-button {
     margin-left: 1em;
-}
-
-button {
-    background: #fff;
-    color: #888;
-    border: 1px solid #ccc;
-    border-radius: .2em;
-    padding: 0.3em 0.8em;
-}
-
-button:disabled {
-    background: #fff;
-    color: #c0c0c0;
-    cursor: not-allowed;
-}
-
-button:hover {
-    background: #f5f5f5;
-    color: #000;
 }

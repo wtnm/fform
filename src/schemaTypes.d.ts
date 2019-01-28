@@ -74,10 +74,6 @@ interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaTy
   ff_compiled: boolean;
   ff_validators?: JsonFunctionGeneric<Function>[]; // sync/async validators
   ff_dataMap?: FFDataMapGeneric<Function | Function[]>[]; // mapping values in state
-  // ff_layout?: FFieldsGeneric<jsFFCustomizeType>; // fields order and object/group extenion
-  // ff_custom?: jsFFCustomizeType;
-  // ff_preset?: string; // presets for rendering components
-  // ff_custom?: jsFFCustomizeType; // components customization
 }
 
 interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
@@ -98,13 +94,13 @@ interface FFCommonSchemaType {
 
 type ReplaceType = boolean | { [key: string]: ReplaceType } | { [key: number]: ReplaceType }
 type FFDataMapGeneric<FN> = [string, string, JsonFunctionGeneric<FN>] | [string, string]
-type PropsMapGeneric<FN> = { [key: string]: false | string | [FN, ...JsonAny[]] | { $: FN, args: JsonAny[], replace?: ReplaceType, update?: 'build' | 'data' | 'every' } }
-type NormalizedPropsMapType = { $?: Function | Function[], args: any[], replace?: ReplaceType, update: 'build' | 'data' | 'every', dataRequest: boolean, to: { [key: string]: Path } };
+type PropsMapGeneric<FN> = { [key: string]: false | string | [FN, ...JsonAny[]] | { $: FN, args: JsonAny[], replace?: ReplaceType, arrayResult?: boolean, update?: 'build' | 'data' | 'every' } }
+type NormalizedPropsMapType = { $?: Function | Function[], args: any[], replace?: ReplaceType, update: 'build' | 'data' | 'every', arrayResult?: boolean, dataRequest: boolean, to: { [key: string]: Path } };
 type NPM4WidgetsType = { [key: string]: NormalizedPropsMapType[] }
 type JsonFunctionGeneric<FN> = { $: FN, args?: any[], asUpdates?: boolean }
 
 type FFLayoutGeneric<T> = T & {
-  $fields?: Array<string | FFLayoutGeneric<T>>,
+  $_fields?: Array<string | FFLayoutGeneric<T>>,
 }
 
 interface FFCustomizeType {

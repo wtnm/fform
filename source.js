@@ -64,11 +64,16 @@ types.null = function (value) {
 types.boolean = function (value) {
     return typeof value === "boolean";
 };
-types.array = commonLib_2.isArray;
-types.object = commonLib_2.isObject; //(value: any) => typeof value === "object" && value && !isArray(value);// isObject(value);  //
 types.number = commonLib_2.isNumber; // (value: any) => typeof value === "number";
 types.integer = commonLib_2.isInteger; //(value: any) => typeof value === "number" && (Math.floor(value) === value || value > 9007199254740992 || value < -9007199254740992);
 types.string = commonLib_2.isString; //(value: any) => typeof value === "string";
+types.array = commonLib_2.isArray;
+types.object = commonLib_2.isObject; //(value: any) => typeof value === "object" && value && !isArray(value);// isObject(value);  //
+types.empty = { 'any': null, 'null': null, 'boolean': false, 'number': 0, 'integer': 0, 'string': '', get array() {
+        return [];
+    }, get object() {
+        return {};
+    } };
 /////////////////////////////////////////////
 //  Macros
 /////////////////////////////////////////////
@@ -81,15 +86,23 @@ function getBindedMaps2update(branch) {
     });
     commonLib_1.objKeys(branch).forEach(function (key) {
         var result = void 0;
-        if (branch[key]) result = getBindedMaps2update(branch[key], path.concat(key));
-        commonLib_1.push2array(maps2disable, result.maps2disable);
-        commonLib_1.push2array(maps2enable, result.maps2enable);
+        if (branch[key]) {
+            result = getBindedMaps2update(branch[key], path.concat(key));
+            commonLib_1.push2array(maps2disable, result.maps2disable);
+            commonLib_1.push2array(maps2enable, result.maps2enable);
+        }
     });
     return { maps2disable: maps2disable, maps2enable: maps2enable };
 }
 var Macros = {};
 Macros.array = function (state, schema, UPDATABLE_object, item) {
-    var path = item.path;
+    var _a = item,
+        path = _a.path,
+        macros = _a.macros,
+        value = _a.value,
+        _b = SymData,
+        sym = _a[_b],
+        rest = __rest(_a, ["path", "macros", "value", (typeof _b === "undefined" ? "undefined" : _typeof(_b)) === "symbol" ? _b : _b + ""]);
     var length = getUpdValue([UPDATABLE_object.update, state], path, SymData, 'length');
     if (commonLib_2.isArray(item.value)) {
         var mergeArrayObj = [];
@@ -99,10 +112,11 @@ Macros.array = function (state, schema, UPDATABLE_object, item) {
             replaceArrayObj[length + i] = commonLib_1.getIn(item.replace, i);
         }
         mergeArrayObj.length = length + item.value.length;
-        return updateCurrentRecursively(state, schema, UPDATABLE_object, mergeArrayObj, replaceArrayObj, path);
+        return updateCurrentPROCEDURE(state, schema, UPDATABLE_object, mergeArrayObj, replaceArrayObj, path, item.setOneOf);
     } else {
         length += item.value || 1;
-        return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['length'], length));
+        if (length < 0) length = 0;
+        return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['length'], length, false, rest));
     }
 };
 Macros.arrayItem = function (state, schema, UPDATABLE_object, item) {
@@ -208,12 +222,12 @@ Macros.setStatus = function (state, schema, UPDATABLE_object, item) {
     return state;
 };
 Macros.setCurrent = function (state, schema, UPDATABLE_object, item) {
-    return updateCurrentRecursively(state, schema, UPDATABLE_object, item.value, item.replace, item.path, item.setOneOf);
+    return updateCurrentPROCEDURE(state, schema, UPDATABLE_object, item.value, item.replace, item.path, item.setOneOf);
 };
 Macros.setOneOf = function (state, schema, UPDATABLE_object, item) {
     var oldOneOf = commonLib_1.getIn(state, item.path, SymData, 'oneOf');
     if (oldOneOf == item.value) {
-        if (!commonLib_2.isUndefined(item.setValue)) state = updateCurrentRecursively(state, schema, UPDATABLE_object, item.setValue, false, item.path);
+        if (!commonLib_2.isUndefined(item.setValue)) state = updateCurrentPROCEDURE(state, schema, UPDATABLE_object, item.setValue, false, item.path);
         return state;
     }
     var macros = item.macros,
@@ -400,15 +414,15 @@ var arrayStart = commonLib_1.memoize(function (schemaPart) {
     return schemaPart.items.length - 1;
 });
 exports.arrayStart = arrayStart;
-var getEnumOptions = function getEnumOptions(schemaPart) {
-    if (!schemaPart.enum) return undefined;
-    var exten = schemaPart.ff_enumExten || [];
-    return schemaPart.enum.map(function (value, i) {
-        return commonLib_2.isObject(exten[i]) ? commonLib_1.merge(exten[i], { value: value }) : { value: value, label: exten[i] || value };
-    });
-};
+// const getEnumOptions = (schemaPart: jsJsonSchema) => {
+//   if (!schemaPart.enum) return undefined;
+//   let exten: any[] = schemaPart.ff_enumExten || [];
+//   return schemaPart.enum.map((value, i) => isObject(exten[i]) ? merge(exten[i], {value}) : {value, label: exten[i] || value});
+// };
 var basicStatus = { invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true, touched: false, pristine: true };
-var makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, value) {
+var makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type) {
+    var value = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : schemaPart.default;
+
     // const x = schemaPart.x || ({} as FFSchemaExtensionType);
     var _schemaPart$ff_params = schemaPart.ff_params,
         ff_params = _schemaPart$ff_params === undefined ? {} : _schemaPart$ff_params,
@@ -417,15 +431,17 @@ var makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, val
 
     var result = Object.assign({ params: ff_params }, ff_data);
     if (!commonLib_2.isObject(result.messages)) result.messages = {};
+    if (commonLib_2.isUndefined(value)) value = types.empty[type || 'any'];
     result.oneOf = oneOf;
     result.status = basicStatus;
-    result.fData = {};
+    if (!commonLib_2.isObject(result.fData)) result.fData = {};
     result.fData.type = type;
     result.fData.required = schemaPart.required;
-    result.fData.title = schemaPart.title;
-    result.fData.placeholder = schemaPart.ff_placeholder;
-    result.fData.enum = getEnumOptions(schemaPart);
-    if (isSchemaSelfManaged(schemaPart, type)) result.value = commonLib_2.isUndefined(value) ? schemaPart.default : value;else delete result.value;
+    if (schemaPart.title) result.fData.title = schemaPart.title;
+    if (schemaPart.ff_placeholder) result.fData.placeholder = schemaPart.ff_placeholder;
+    if (schemaPart.enum) result.fData.enum = schemaPart.enum;
+    if (schemaPart.ff_enumExten) result.fData.enumExten = schemaPart.ff_enumExten;
+    if (isSchemaSelfManaged(schemaPart, type)) result.value = value;else delete result.value;
     var untouched = 1;
     if (type == 'array') {
         result.length = commonLib_1.getIn(value, 'length') || 0;
@@ -433,10 +449,7 @@ var makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, val
         result.fData.canAdd = isArrayCanAdd(schemaPart, result.length);
         untouched = result.length;
     } else if (type == 'object') untouched = commonLib_1.objKeys(schemaPart.properties || {}).length;
-    if (untouched != 1) {
-        result.status = Object.assign({}, basicStatus);
-        result.status.untouched = untouched;
-    }
+    if (untouched != 1) result.status = Object.assign({}, result.status, { untouched: untouched });
     return result;
 });
 function normalizeDataMap(dataMap, path) {
@@ -474,10 +487,6 @@ function makeStateBranch(schema, getNSetOneOf) {
     commonLib_1.push2array(dataMapObjects, normalizeDataMap(schemaPart.ff_dataMap || [], path));
     result[SymData] = makeDataStorage(schemaPart, oneOf, type, value);
     getNSetOneOf(path, { oneOf: oneOf, type: type });
-    // if (!isUndefined(oneOf)) {
-    //   getNSetOneOf(path, oneOf);
-    //   result[SymData] = merge(result[SymData], {oneOf});
-    // }
     if (result[SymData].hasOwnProperty('value')) defaultValues = result[SymData].value;else {
         if (type == 'array') {
             defaultValues = [];
@@ -491,7 +500,7 @@ function makeStateBranch(schema, getNSetOneOf) {
                 defaultValues[i] = dValue;
                 commonLib_1.push2array(dataMapObjects, dataMap);
                 branch = commonLib_1.merge(branch, _defineProperty({}, SymData, { arrayItem: getArrayItemData(schemaPart, i, defaultValues.length) }), { replace: _defineProperty({}, SymData, { ArrayItem: true }) });
-                branch = commonLib_1.merge(branch, _defineProperty({}, SymData, { params: getUniqKey() }));
+                branch = commonLib_1.merge(branch, _defineProperty({}, SymData, { params: { uniqKey: getUniqKey() } }));
                 result[i] = branch;
             }
         } else if (type == 'object') {
@@ -617,7 +626,7 @@ function findOneOf(oneOfShemas, value, currentOneOf) {
     }
     return {};
 }
-function updateCurrentRecursively(state, schema, UPDATABLE_object, value, replace) {
+function updateCurrentPROCEDURE(state, schema, UPDATABLE_object, value, replace) {
     var track = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : [];
     var setOneOf = arguments[6];
 
@@ -635,16 +644,17 @@ function updateCurrentRecursively(state, schema, UPDATABLE_object, value, replac
         }
         return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], ['current'].concat(track), value, replace));
     }
-    if (!types[branch[SymData].fData.type || 'any'](value)) {
+    var type = branch[SymData].fData.type;
+    if (commonLib_2.isUndefined(value)) value = types.empty[type || 'any'];
+    if (!types[type || 'any'](value)) {
         // if wrong type for current oneOf index search for proper type in oneOf
         var _findOneOf2 = findOneOf(getSchemaPart(schema, track, oneOfFromState(state), true), value, commonLib_2.isUndefined(setOneOf) ? branch[SymData].oneOf : setOneOf),
             schemaPart = _findOneOf2.schemaPart,
             oneOf = _findOneOf2.oneOf,
-            type = _findOneOf2.type;
+            _type2 = _findOneOf2.type;
 
         if (schemaPart) {
-            return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['oneOf'], oneOf, false, { type: type, setValue: value }));
-            //branch = getIn(state, track);
+            return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['oneOf'], oneOf, false, { type: _type2, setValue: value }));
         } else console.warn('Type not found in path [' + track.join('/') + ']');
     }
     if (isSelfManaged(branch)) {
@@ -653,9 +663,9 @@ function updateCurrentRecursively(state, schema, UPDATABLE_object, value, replac
     } else {
         if (commonLib_2.isMergeable(value)) {
             // if we receive object or array then apply their values to state
-            if (branch[SymData].fData.type == 'array' && !commonLib_2.isUndefined(value.length)) state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['length'], value.length));
+            if (type == 'array' && !commonLib_2.isUndefined(value.length)) state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['length'], value.length));
             commonLib_1.objKeys(value).forEach(function (key) {
-                state = updateCurrentRecursively(state, schema, UPDATABLE_object, value[key], commonLib_1.getIn(replace, key), track.concat(key));
+                return state = updateCurrentPROCEDURE(state, schema, UPDATABLE_object, value[key], commonLib_1.getIn(replace, key), track.concat(key));
             });
         }
     }
@@ -780,6 +790,7 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
             var maps2disable = [];
             for (var i = start; i < end; i++) {
                 var elemPath = path.concat(i);
+                if (item.setOneOf) oneOfStateFn(elemPath, { oneOf: item.setOneOf });
 
                 var _makeStateBranch4 = makeStateBranch(schema, oneOfStateFn, elemPath),
                     _branch = _makeStateBranch4.state,
@@ -787,6 +798,7 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
                     _dataMap = _makeStateBranch4$dat === undefined ? [] : _makeStateBranch4$dat,
                     defaultValues = _makeStateBranch4.defaultValues;
 
+                _branch = commonLib_1.merge(_branch, _defineProperty({}, SymData, { params: { uniqKey: getUniqKey() } }));
                 state = commonLib_1.merge(state, commonLib_1.setIn({}, _branch, elemPath), { replace: commonLib_1.setIn({}, true, elemPath) });
                 state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], commonLib_1.push2array(['current'], elemPath), defaultValues, true));
                 //state = merge(state, makeSlice(SymData, 'current', elemPath, defaultValues), {replace: makeSlice(SymData, 'current', elemPath, true)});
@@ -1131,7 +1143,7 @@ function getFromState(state) {
 exports.getFromState = getFromState;
 var objMap = function objMap(object, fn) {
     return commonLib_1.objKeys(object).reduce(function (result, key) {
-        return (result[key] = fn(object[key], key, object)) && result;
+        return ((result[key] = fn(object[key], key, object)) || true) && result;
     }, commonLib_2.isArray(object) ? [] : {});
 };
 exports.objMap = objMap;

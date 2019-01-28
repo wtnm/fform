@@ -8,7 +8,14 @@ const {render} = require('react-dom');
 
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');
-  let sampleObjects = fformObjects.extend(style);
+  let sampleObjects = fformObjects.extend(style).extend({
+    'user': {
+      set: function (path: string, value: any, opts: any) {
+        this.api.set(path, value, opts)
+      }
+    }
+  });
+
 
   render(<div>
     <h3>FForm sample</h3>
