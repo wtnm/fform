@@ -15,10 +15,16 @@
 }
 
 .title-viewer {
+    margin-bottom: 0;
 }
 
 .title-viewer:after {
     content: "";
+}
+
+.title-viewer-inverted {
+    font-weight: bold;
+    margin-bottom: 0;
 }
 
 .wrapper {
@@ -29,6 +35,13 @@
 .viewer {
     margin-right: 1em;
     font-weight: bold;
+    margin-bottom: 1em;
+}
+
+.viewer-inverted {
+    margin-right: 1em;
+    font-weight: normal;
+    margin-bottom: 1.5em;
 }
 
 .hidden, .button-viewer {

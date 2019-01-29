@@ -152,6 +152,11 @@
                 }
               }
             ]
+          },
+          "Main": {
+            "$_maps": {
+              "viewer": "@/params/viewer"
+            }
           }
         },
         "maxItems": 3,
@@ -182,8 +187,16 @@
     "booleanLeft": {
       "type": "boolean",
       "title": "boolean left",
-      "ff_presets": "booleanLeft",
-      "default": false
+      "ff_presets": "booleanLeft:inlineTitle",
+      "default": false,
+      "ff_enumExten": {
+        "true": {
+          "label": "yes"
+        },
+        "false": {
+          "label": "no"
+        }
+      }
     },
     "booleanNullLeft": {
       "type": [
@@ -191,7 +204,7 @@
         "null"
       ],
       "title": "booleanNull left",
-      "ff_presets": "booleanNullLeft",
+      "ff_presets": "booleanNullLeft:inlineTitle",
       "default": false
     },
     "select": {

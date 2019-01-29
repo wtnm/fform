@@ -41,7 +41,7 @@ types.integer = isInteger; //(value: any) => typeof value === "number" && (Math.
 types.string = isString; //(value: any) => typeof value === "string";
 types.array = isArray;
 types.object = isObject; //(value: any) => typeof value === "object" && value && !isArray(value);// isObject(value);  //
-types.empty = {'any': null, 'null': null, 'boolean': false, 'number': 0, 'integer': 0, 'string': '', get array() {return []}, get object() {return {}}};
+types.empty = {'any': null, 'null': null, 'boolean': false, 'number': 0, 'integer': 0, 'string': '', array: Object.freeze([]), object: Object.freeze({})};
 
 
 /////////////////////////////////////////////

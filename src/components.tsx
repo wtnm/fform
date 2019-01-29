@@ -122,6 +122,11 @@ class FForm extends React.Component<any, any> {
     return getIn(branch, SymData)
   }
 
+  getValue(branch: any, ffield: FField) {
+    if (isSelfManaged(branch)) return getIn(branch, SymData, 'value');
+    else return this.api.getValue({path: ffield.path})
+  }
+
   getBranch(path: string) {
     return this.api.get(path)
   }
@@ -173,6 +178,7 @@ class FField extends React.Component<any, any> {
     Object.defineProperty(self, "path", {get: () => self.props.getPath()});
     Object.defineProperty(self, "pFForm", {get: () => self.props.pFForm});
     Object.defineProperty(self, "liveValidate", {get: () => getIn(self.getData(), 'params', 'liveValidate')});
+    Object.defineProperty(self, "value", {get: () => self.props.pFForm.getValue(self.state.branch, self)});
     if (self.pFForm.api) self._apiWrapper();
     self.state = {branch: self.pFForm.getBranch(self.path)};
     self.$branch = self.state.branch;
@@ -544,11 +550,9 @@ class FSection extends React.Component<any, any> {
 
   shouldComponentUpdate(nextProps: any) {
     const self = this;
-    if (nextProps.FFormProps !== self.props.FFormProps) {
-      self._rebuild = true;
-      return true;
-    }
-    let doUpdate = false;
+    if (nextProps.FFormProps !== self.props.FFormProps) return self._rebuild = true;
+
+    let doUpdate = !isEqual(nextProps, self.props, {skipKeys: ['$branch']});
 
     let prevBranch = self.props.$branch;
     let nextBranch = nextProps.$branch;
@@ -563,7 +567,7 @@ class FSection extends React.Component<any, any> {
       // update object elements or if it _isArray elements that lower than self.props.arrayStart
       self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self._fields[field] && self._fields[field].setState({branch: nextBranch[field]}));
 
-      if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch, nextProps); // updates and reorders elements greater/equal than self.props.arrayStart
+      if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch, nextProps) || doUpdate; // updates and reorders elements greater/equal than self.props.arrayStart
 
     }
 
@@ -572,8 +576,15 @@ class FSection extends React.Component<any, any> {
 
   render() {
     const self = this;
-    if (self._rebuild) self._build(self.props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-    return <FSectionWidget _$widget={self._$widget} _$cx={self.props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
+    let props = self.props;
+    if (props.viewer) {
+      let {_$widget = UniversalViewer, ...rest} = props.viewerProps || {};
+      rest.inputProps = props;
+      rest.value = props.$FField.value;
+      return React.createElement(_$widget, rest)
+    }
+    if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
+    return <FSectionWidget _$widget={self._$widget} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
                            getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
 
   }
@@ -620,25 +631,34 @@ function isEmpty(value: any) {
   return isMergeable(value) ? objKeys(value).length === 0 : value === undefined || value === null || value === "";
 }
 
-function toString(value: any): string {
-  if (isArray(value)) return value.map(toString).join(', ');
+function toString(emptyMock: any, enumExten: any = {}, value: any): string {
+  if (isEmpty(value)) return emptyMock;
+  if (isArray(value)) return value.map(toString.bind(null, emptyMock, enumExten)).join(', ');
+  value = getExten(enumExten, value).label || value;
   if (!isString(value)) return JSON.stringify(value);
   return value
 }
+
+function UniversalViewer(props: any) {
+  let {useTag: UseTag = 'div', value, inputProps, _$cx, enumExten = {}, emptyMock = '(none)', ...rest} = props;
+  if (rest.className && _$cx) rest.className = _$cx(rest.className);
+
+  return React.createElement(UseTag, rest, toString(emptyMock, enumExten, value))
+}
+
 
 class UniversalInput extends GenericWidget {
   render() {
     const self = this;
     const props: any = self.props;
     if (props.viewer) {
-      let {value, type = 'text', _$cx, enumExten = {}, viewerProps = {}} = props;
-      let {useTag: UseTag = 'div', emptyMock = '(none)', ...rest} = viewerProps;
-      if (rest.className && _$cx) rest.className = _$cx(rest.className);
-      value = getIn(enumExten, value, 'label') || value;
-      return React.createElement(UseTag, rest, isEmpty(value) ? emptyMock : toString(value))
+      let {_$widget = UniversalViewer, ...rest} = props.viewerProps || {};
+      rest.inputProps = props;
+      rest.value = props.value;
+      return React.createElement(_$widget, rest)
     }
 
-    let {value, useTag: UseTag, type, enumVals = [], enumExten = {}, $_reactRef, _$cx, viewer, viewerProps, children, ...rest} = props;
+    let {value, useTag: UseTag, type, $_reactRef, _$cx, viewer, viewerProps, children, ...rest} = props;
 
     self._mapChildren(children);
 
@@ -809,6 +829,9 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
   return mergeStatePROCEDURE(mappedData, dataUpdates);
 }
 
+const getExten = (enumExten: any, value: any) => (isFunction(enumExten) ? enumExten(value) : getIn(enumExten, value)) || {};
+
+
 //
 // function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: string]: string } } = {}) { //skipFields: string[] = [], replaceFields: { [key: string]: string } = {}) {
 //   const skipFields = opts.skipFields || [];
@@ -874,7 +897,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         _$cx: '^/_$cx',
         className: 'body',
       },
-      Main: {viewerProps: {emptyMock: '(no value)', className: {viewer: true}}},
+      Main: {viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {viewer: true}}},
       Message: {
         _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
@@ -903,8 +926,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           placeholder: '@/fData/placeholder',
           required: '@/fData/required',
           label: '@/fData/title',
-          enumVals: '@/fData/enum',
-          enumExten: '@/fData/enumExten',
+          'viewerProps/enumExten': '@/fData/enumExten',
           id: {$: '^/fn/getFFieldProperty', args: 'props/id', update: 'build'},
           name: {$: '^/fn/getFFieldProperty', args: 'props/name', update: 'build'},
         }
@@ -928,7 +950,12 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     },
     textarea: {
       $_ref: '^/sets/nBase',
-      Main: {type: 'textarea'}
+      Main: {type: 'textarea', viewerProps: {className: {viewer: false, 'viewer-inverted': true}}},
+      Title: {
+        $_maps: {
+          'className/title-viewer-inverted': '@/params/viewer'
+        }
+      }
     },
     integer: {
       $_ref: '^/sets/nBase',
@@ -972,10 +999,10 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         useTag: 'label',
         children: [
           {$_ref: '^/sets/nBase/Main', type: 'checkbox', onChange: '^/on/changeBoolean', viewerProps: {$_ref: '^/sets/base/Main/viewerProps', useTag: 'span'}},
-          {$_ref: '^/sets/nBase/Title', useTag: 'span'}
+          {$_ref: '^/sets/nBase/Title', useTag: 'span', $_maps: {'className/hidden': '@/params/viewer'}}
         ]
       },
-      Title: false,
+      Title: {$_ref: '^/sets/nBase/Title', $_maps: {'className/hidden': {$: '^/fn/not', args: '@/params/viewer'}}},
     },
     booleanNull: {
       $_ref: '^/sets/boolean',
@@ -1102,18 +1129,20 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     },
     getArrayStart: function () {return arrayStart(this.schemaPart)},
     getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
-    arrayOfEnum: function (enumVals: any[], enumExten: anyObject = {}, staticProps: any = {}, name?: true | string) {
+    arrayOfEnum: function (enumVals: any[], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
       return enumVals.map(val => {
-        return {value: val, key: val, children: [getIn(enumExten, val, 'label') || val], name: name && (this.name + (name === true ? '' : name)), ...(enumExten[val] || {}), ...staticProps}
+        let extenProps = getExten(enumExten, val);
+        return {value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)), ...extenProps, ...staticProps}
       })
     },
-    enumInputs: function (enumVals: any[], enumExten: anyObject = {}, labelProps: any = {}, inputProps: any = {}, name?: true | string) {
+    enumInputs: function (enumVals: any[], enumExten: any = {}, labelProps: any = {}, inputProps: any = {}, name?: true | string) {
       return enumVals.map(val => {
+        let extenProps = getExten(enumExten, val);
         return {
           ...labelProps,
           children: [
-            {value: val, key: val, name: name && (this.props.name + (name === true ? '' : name)), ...(enumExten[val] || {}), ...inputProps},
-            getIn(enumExten, val, 'label') || val
+            {value: val, key: val, name: name && (this.props.name + (name === true ? '' : name)), ...extenProps, ...inputProps},
+            extenProps.label || val
           ]
         }
       })
