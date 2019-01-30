@@ -143,11 +143,42 @@ class FForm extends React.Component<any, any> {
   }
 }
 
+class FRefsGeneric extends React.Component<any, any> {
+  $refs: any = {};
+
+  constructor(props: any, context: any) {
+    super(props, context);
+    const self = this;
+    self._setRef = self._setRef.bind(self);
+    // self._refProcess = self._refProcess.bind(self);
+  }
+
+  getRef(path: Path) {
+    const self = this;
+    if (!path.length) return self;
+    if (path.length == 1) return self.$refs[path[0]];
+    return self.$refs[path[0]].getRef(path.slice(1));
+  }
+
+  protected _setRef(name: string) {
+    const self = this;
+    return (v: any) => self.$refs[name] = v
+  }
+
+  protected _refProcess(defaultName: string, $reactRef: any) {
+    const self = this;
+    if ($reactRef === true) return self._setRef(defaultName);
+    else if (isString($reactRef)) return self._setRef($reactRef);
+    else if (isMergeable($reactRef)) return objMap($reactRef, self._refProcess.bind(self, defaultName));
+    return $reactRef;
+  }
+}
+
 
 /////////////////////////////////////////////
 //  FField class
 /////////////////////////////////////////////
-class FField extends React.Component<any, any> {
+class FField extends FRefsGeneric {
   private _mappedData: any = {};
   private _builderData: any = {};
   private _rebuild = true;
@@ -163,7 +194,6 @@ class FField extends React.Component<any, any> {
 
 
   ff_layout: FFLayoutGeneric<jsFFCustomizeType>;
-  $refs: any = {};
   $branch: any;
   schemaPart: jsJsonSchema;
 
@@ -183,13 +213,20 @@ class FField extends React.Component<any, any> {
     self.state = {branch: self.pFForm.getBranch(self.path)};
     self.$branch = self.state.branch;
     self._bind2self = self._bind2self.bind(self);
-    self._setRef = self._setRef.bind(self);
     self._build();
   }
 
-  focus(path: Path) {
+  // focus(path: Path) {
+  //   const self = this;
+  //   self.$refs['Main'] && self.$refs['Main'].focus && self.$refs['Main'].focus(path); // path.length ? self.$refs.focus(path) : self.$refs.focus();
+  // }
+
+  getRef(path: Path | string) {
+    path = normalizePath(path);
     const self = this;
-    self.$refs['Main'] && self.$refs['Main'].focus && self.$refs['Main'].focus(path); // path.length ? self.$refs.focus(path) : self.$refs.focus();
+    if (!path.length) return self.$refs['@Main'];
+    if (path[0][0] == '@') return path.length == 1 ? self.$refs[path[0]] : self.$refs[path[0]].getRef(path.slice(1));
+    return self.$refs['@Main'].getRef(path)
   }
 
   _resolver(obj: any) {
@@ -272,11 +309,6 @@ class FField extends React.Component<any, any> {
     return result
   }
 
-  _setRef(block: string) {
-    const self = this;
-    return (v: any) => self.$refs[block] = v
-  }
-
   _build() {
     const self = this;
     const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
@@ -304,7 +336,10 @@ class FField extends React.Component<any, any> {
       //let {$_maps, rest} = extractMaps(comps[block]);
       const {_$widget, $_reactRef, ...staticProps} = comps[block];
       self._widgets[block] = _$widget;
-      if ($_reactRef) staticProps[isString(staticProps.$_reactRef) ? $_reactRef : 'ref'] = self._setRef(block); // $_reactRef - prop for react ref-function
+      if ($_reactRef) { // $_reactRef - prop for react ref-function
+        const $ref = self._refProcess('@' + block, $_reactRef);
+        staticProps[isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
+      }
 
       self._mappedData[block] = staticProps;  // properties, without reserved names      
     });
@@ -312,7 +347,7 @@ class FField extends React.Component<any, any> {
     self._rebuild = false;
   }
 
-  // todo: viewer check
+  // todo: focus, refs and inline layout
   // todo: sample schema mount tests
   // todo: manual
   // todo: SSR support
@@ -380,43 +415,43 @@ class FSectionWidget extends React.Component<any, any> { // need to be class, as
   }
 }
 
-class FSection extends React.Component<any, any> {
+class FSection extends FRefsGeneric {
   private _arrayStart: number = 0;
   private _rebuild = true;
   private _focusField: string = '';
   private _arrayKey2field: { [key: string]: number } = {};
-  private _fields: { [key: string]: any } = {};
   private _widgets: { [key: string]: any } = {};
   private _objectLayouts: any[] = [];
   private _arrayLayouts: any[] = [];
   private _setWidRef: any;
-  private _setFieldRef: any;
   private _maps: NPM4WidgetsType = {};
   private _mappedData: { [key: string]: any } = {};
   private _$widget: any;
   private _isArray: boolean = false;
+  //private _setRef: any;
+  //$refs: { [key: string]: any } = {};
 
   constructor(props: any, context: any) {
     super(props, context);
     const self = this;
-    self._setFieldRef = (field: number | string) => (item: any) => self._fields[field] = item;
+    //self._setRef = (name: number | string) => (item: any) => self.$refs[name] = item;
     self._setWidRef = (key: number | string) => (item: any) => self._widgets[key] = item;
     self._build(self.props);
   }
 
-  focus(path: Path) {
-    const self = this;
-    let field;
-    if (!path.length) {
-      field = self.props.focusField;
-      if (isUndefined(field)) field = self.props.isArray ? '0' : (branchKeys(self.props.$branch)[0] || '');
-    } else {
-      field = path[0].toString();
-      path = path.slice(1);
-    }
-    if (self.props.isArray && field >= self.props.arrayStart) field = self._arrayIndex2key(self.props.$branch[field]) || field;
-    if (self._fields[field] && self._fields[field].focus) self._fields[field].focus(path)
-  }
+  // focus(path: Path) {
+  //   const self = this;
+  //   let field;
+  //   if (!path.length) {
+  //     field = self.props.focusField;
+  //     if (isUndefined(field)) field = self.props.isArray ? '0' : (branchKeys(self.props.$branch)[0] || '');
+  //   } else {
+  //     field = path[0].toString();
+  //     path = path.slice(1);
+  //   }
+  //   if (self.props.isArray && field >= self.props.arrayStart) field = self._arrayIndex2key(self.props.$branch[field]) || field;
+  //   if (self.$refs[field] && self.$refs[field].focus) self.$refs[field].focus(path)
+  // }
 
   _getMappedData(key: number) {
     const self = this;
@@ -451,6 +486,9 @@ class FSection extends React.Component<any, any> {
       let {$_fields, $_reactRef, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
       if (isUndefined(className) && !$_fields) className = LayoutDefaultClass;
       staticProps.className = className;
+      let refObject = self._refProcess('@widget_' + counter, $_reactRef) || {};
+      if (isFunction(refObject)) refObject = {'ref': refObject};
+      Object.assign(staticProps, refObject);
       let maps = normalizeMaps($_maps, counter.toString());
       mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
       self._mappedData[counter] = staticProps;
@@ -464,7 +502,7 @@ class FSection extends React.Component<any, any> {
     if (isSelfManaged($branch)) return;
     const mapsKeys = ['build', 'data', 'every'];
     mapsKeys.forEach(k => self._maps[k] = []);
-    self._fields = {};
+    self.$refs = {};
     self._widgets = {};
     self._mappedData = {};
     self._objectLayouts = [];
@@ -493,7 +531,7 @@ class FSection extends React.Component<any, any> {
 
   _makeFField(fieldName: string, arrayKey?: string) {
     const self = this;
-    return <FField ref={self._setFieldRef(arrayKey || fieldName)} key={arrayKey || fieldName} pFForm={self.props.$FField.pFForm} FFormApi={self.props.FFormApi}
+    return <FField ref={self._setRef(arrayKey || fieldName)} key={arrayKey || fieldName} pFForm={self.props.$FField.pFForm} FFormApi={self.props.FFormApi}
                    id={self.props.id ? self.props.id + (arrayKey || fieldName) : undefined}
                    name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '' : fieldName) + ']' : undefined}
                    getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
@@ -526,7 +564,7 @@ class FSection extends React.Component<any, any> {
     for (let i = props.arrayStart; i < props.length; i++) {
       let arrayKey = self._arrayIndex2key(nextBranch[i]);
       if (isUndefined(arrayKey)) throw new Error('no unique key provided for array item');
-      if (self._fields[arrayKey]) self._fields[arrayKey].setState({branch: nextBranch[i]});
+      if (self.$refs[arrayKey]) self.$refs[arrayKey].setState({branch: nextBranch[i]});
       let prevIndex = self._arrayKey2field[arrayKey];
       if (self._arrayKey2field[arrayKey] !== i) {
         self._arrayKey2field[arrayKey] = i;
@@ -565,7 +603,7 @@ class FSection extends React.Component<any, any> {
         objKeys(newMapped).forEach(key => self._widgets[key] && newMapped[key] != oldMapped[key] && self._widgets[key]['forceUpdate']());
       }
       // update object elements or if it _isArray elements that lower than self.props.arrayStart
-      self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self._fields[field] && self._fields[field].setState({branch: nextBranch[field]}));
+      self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self.$refs[field] && self.$refs[field].setState({branch: nextBranch[field]}));
 
       if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch, nextProps) || doUpdate; // updates and reorders elements greater/equal than self.props.arrayStart
 
@@ -595,34 +633,48 @@ class FSection extends React.Component<any, any> {
 //  Basic components
 /////////////////////////////////////////////
 
-class GenericWidget extends React.Component<any, any> {
+class GenericWidget extends FRefsGeneric {
   private _children: any;
+  private _reactRef: any;
   protected _mapped: any[];
 
   constructor(props: any, context: any) {
     super(props, context);
   }
 
-  private _newWidget(key: any, obj: any) {
-    const {_$widget: Widget = GenericWidget, className, ...rest} = obj;
-    return <Widget key={key} className={isString(Widget) && this.props._$cx ? this.props._$cx(className) : className} _$cx={!isString(Widget) ? this.props._$cx : undefined} {...rest}/>
+  private _newWidget(key: any, obj: any, passedReactRef: anyObject = {}) {
+    const {_$widget: Widget = GenericWidget, className, $_reactRef, ...rest} = obj;
+    const self = this;
+    let refObject = self._refProcess($_reactRef, key) || {};
+    if (isFunction(refObject)) refObject = {ref: refObject};
+    if (isFunction(passedReactRef)) refObject.ref = passedReactRef;
+    else Object.assign(refObject, passedReactRef);
+    return <Widget key={key} className={isString(Widget) && this.props._$cx ? this.props._$cx(className) : className} _$cx={!isString(Widget) ? this.props._$cx : undefined} {...rest} {...refObject}/>
   }
 
-  protected _mapChildren(children: any) {
+  protected _mapChildren(children: any, $_reactRef: anyObject) {
     const self = this;
-    if (children !== self._children) {
+    if (children !== self._children || self._reactRef !== $_reactRef) {
       const prev = toArray(self._children);
       const next = toArray(children);
-      self._mapped = next.map((ch: any, i: number) => !isObject(ch) || ch.$$typeof ? ch : (prev[i] !== next[i] ? self._newWidget(i, ch) : self._mapped[i]));
+      self._mapped = next.map((ch: any, i: number) => !isObject(ch) || ch.$$typeof ? ch :
+        ((prev[i] !== next[i] || getIn(self._reactRef, i) !== getIn($_reactRef, i)) ? self._newWidget(i, ch, $_reactRef[i]) : self._mapped[i]));
       self._children = children;
+      self._reactRef = $_reactRef
     }
+  }
+
+  protected setRef2rest(rest: anyObject, $_reactRef: anyObject) {
+    if ($_reactRef['ref']) rest.ref = $_reactRef['ref'];
+    if ($_reactRef['tagRef']) rest.tagRef = $_reactRef['tagRef'];
   }
 
   render(): any {
     const self = this;
     if (self.props.norender) return null;
-    const {useTag: UseTag = 'div', _$cx, className, children, ...rest} = self.props;
-    self._mapChildren(children);
+    const {useTag: UseTag = 'div', _$cx, className, $_reactRef, children, ...rest} = self.props;
+    self._mapChildren(children, $_reactRef);
+    self.setRef2rest(rest, $_reactRef);
     return (<UseTag children={self._mapped} className={_$cx ? _$cx(className) : className} {...rest} />)
   }
 }
@@ -660,7 +712,8 @@ class UniversalInput extends GenericWidget {
 
     let {value, useTag: UseTag, type, $_reactRef, _$cx, viewer, viewerProps, children, ...rest} = props;
 
-    self._mapChildren(children);
+    self._mapChildren(children, $_reactRef);
+    self.setRef2rest(rest, $_reactRef);
 
     if (type == 'textarea' || type == 'select') UseTag = UseTag || type;
     else {
@@ -669,10 +722,6 @@ class UniversalInput extends GenericWidget {
     }
     if (type !== 'notInput') rest[type === 'checkbox' ? 'checked' : 'value'] = value;
     if (rest.value === null) rest.value = '';
-    if (isString(UseTag) && $_reactRef) { // if "simple" tag then use ref else pass further in $_reactRef property
-      (rest.ref = rest[$_reactRef]);
-      delete rest[$_reactRef];
-    }
 
     if (rest.className && _$cx) rest.className = _$cx(rest.className);
     return React.createElement(UseTag, rest, self._mapped)
@@ -685,7 +734,7 @@ class Autowidth extends React.Component<any, any> {
   private _elem: any;
 
   componentDidMount() {
-    const style = window && window.getComputedStyle(this.props.$FField.$refs.Main);
+    const style = window && window.getComputedStyle(this.props.$FField.$refs['@Main']);
     if (!style || !this._elem) return;
     ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'letterSpacing'].forEach(key => this._elem.style[key] = style[key]);
   }
@@ -695,7 +744,7 @@ class Autowidth extends React.Component<any, any> {
     const props = self.props;
     const value = (isUndefined(props.value) ? '' : props.value.toString()) || props.placeholder || '';
     return (<div style={Autowidth._sizerStyle as any} ref={(elem) => {
-      (self._elem = elem) && (props.$FField.$refs.Main.style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
+      (self._elem = elem) && (props.$FField.$refs['@Main'].style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
     }}>{value}</div>)
   }
 }
@@ -747,13 +796,13 @@ function ItemMenu(props: any) {
 
 function CheckboxNull(props: any) {
   const self = this;
-  let {checked, onChange, nullValue = null, getRef, type, ...rest} = props;
+  let {checked, onChange, nullValue = null, tagRef, type, ...rest} = props;
   return <input type="checkbox" checked={checked === true} {...rest}
                 onChange={(event: any) => {
                   onChange(checked === nullValue ? true : (checked === true ? false : nullValue), event)
                 }}
                 ref={elem => {
-                  getRef && getRef(elem);
+                  tagRef && tagRef(elem);
                   elem && (elem.indeterminate = (checked === nullValue))
                 }}/>
 }
@@ -831,6 +880,32 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
 
 const getExten = (enumExten: any, value: any) => (isFunction(enumExten) ? enumExten(value) : getIn(enumExten, value)) || {};
 
+
+function classNames(...styles: any) {
+  const classes = [];
+
+  for (let i = 0; i < styles.length; i++) {
+    let arg = styles[i];
+    if (!arg) continue;
+
+    const argType = typeof arg;
+
+    if (argType === 'string' || argType === 'number') {
+      classes.push(this && this[arg] || arg);
+    } else if (isArray(arg)) {
+      classes.push(classNames.apply(this, arg));
+    } else if (argType === 'object') {
+      for (let key in arg) {
+        if (arg.hasOwnProperty(key) && arg[key]) {
+          if (arg[key] === true) classes.push(this && this[key] || key);
+          else classes.push(classNames.call(this, arg[key]));
+        }
+      }
+    }
+  }
+
+  return classes.join(' ');
+}
 
 //
 // function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: string]: string } } = {}) { //skipFields: string[] = [], replaceFields: { [key: string]: string } = {}) {
@@ -912,7 +987,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Main: {
         _$widget: '^/widgets/Input',
         _$cx: '^/_$cx',
-        $_reactRef: 'getRef',
+        $_reactRef: {ref: true},
         onChange: '^/on/changeBase',
         onBlur: '^/on/blurBase',
         onFocus: '^/on/focusBase',
@@ -997,8 +1072,9 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Main: {
         _$widget: '^/widgets/Generic',
         useTag: 'label',
+        $_reactRef: {'0': {ref: true}},
         children: [
-          {$_ref: '^/sets/nBase/Main', type: 'checkbox', onChange: '^/on/changeBoolean', viewerProps: {$_ref: '^/sets/base/Main/viewerProps', useTag: 'span'}},
+          {$_ref: '^/sets/nBase/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: {$_ref: '^/sets/base/Main/viewerProps', useTag: 'span'}},
           {$_ref: '^/sets/nBase/Title', useTag: 'span', $_maps: {'className/hidden': '@/params/viewer'}}
         ]
       },
@@ -1008,11 +1084,13 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '^/sets/boolean',
       Main: {
         useTag: '^/widgets/CheckboxNull',
+        $_reactRef: {tagRef: true},
         onChange: '^/on/changeDirect'
       },
     },
     booleanNullLeft: {
       $_ref: '^/sets/booleanLeft',
+      $_reactRef: {'0': {ref: false, tagRef: true}},
       Main: {children: [{$_ref: '^/sets/booleanNull/Main'}, {}]}
     },
     object: {
@@ -1255,39 +1333,9 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
 };
 
 
-function classNames(...styles: any) {
-  const classes = [];
-
-  for (let i = 0; i < styles.length; i++) {
-    let arg = styles[i];
-    if (!arg) continue;
-
-    const argType = typeof arg;
-
-    if (argType === 'string' || argType === 'number') {
-      classes.push(this && this[arg] || arg);
-    } else if (isArray(arg)) {
-      classes.push(classNames.apply(this, arg));
-    } else if (argType === 'object') {
-      for (let key in arg) {
-        if (arg.hasOwnProperty(key) && arg[key]) {
-          if (arg[key] === true) classes.push(this && this[key] || key);
-          else classes.push(classNames.call(this, arg[key]));
-        }
-      }
-    }
-  }
-
-  return classes.join(' ');
-}
-
-function Test() {
-  return React.createElement('div', null, null);
-}
-
 export {fformObjects, FForm, FFormStateAPI, fformCores, classNames};
 
-export {extractMaps, normalizeMaps, updateProps, Test}
+export {extractMaps, normalizeMaps, updateProps}
 //module.exports = process.env.NODE_ENV === 'test' ? merge(module.exports, {}) : module.exports;
 
 
