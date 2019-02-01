@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="components fixes">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="components refs rework">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components.tsx" afterDir="false" />
     </list>
@@ -25,31 +25,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/commonLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4890">
-              <caret line="326" column="174" selection-start-line="326" selection-start-column="167" selection-end-line="326" selection-end-column="174" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sample/sampleSchema.json">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1215">
-              <caret line="159" column="11" selection-start-line="159" selection-start-column="11" selection-end-line="159" selection-end-column="11" />
-              <folding>
-                <element signature="e#1671#3702#0" />
-                <element signature="n#!!block;n#radioSelect#0;n#!!block;n#properties#0;n#!!top" />
-                <element signature="n#!!block;n#multiselect#0;n#!!block;n#properties#0;n#!!top" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1560">
-              <caret line="104" selection-start-line="104" selection-end-line="104" />
+            <state relative-caret-position="225">
+              <caret line="15" column="62" selection-start-line="15" selection-start-column="62" selection-end-line="15" selection-end-column="62" />
             </state>
           </provider>
         </entry>
@@ -96,8 +73,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="660">
-              <caret line="44" selection-start-line="44" selection-end-line="44" />
+            <state relative-caret-position="333">
+              <caret line="1013" column="6" selection-start-line="1013" selection-start-column="6" selection-end-line="1013" selection-end-column="6" />
             </state>
           </provider>
         </entry>
@@ -105,8 +82,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/components.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="189">
-              <caret line="440" lean-forward="true" selection-start-line="440" selection-end-line="440" />
+            <state relative-caret-position="811">
+              <caret line="680" column="9" selection-start-line="680" selection-start-column="9" selection-end-line="680" selection-end-column="9" />
             </state>
           </provider>
         </entry>
@@ -132,8 +109,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>MessageItem</find>
-      <find>Message</find>
       <find>setStatus</find>
       <find>selectorMap</find>
       <find>Autosize</find>
@@ -158,10 +133,12 @@
       <find>className/viewer</find>
       <find>getRef</find>
       <find>useTagRef</find>
-      <find>$_reactRef</find>
       <find>Main</find>
       <find>$refs.Main</find>
       <find>@Main</find>
+      <find>$_reactRef</find>
+      <find>_refProcess</find>
+      <find>enumInputs</find>
     </findStrings>
     <replaceStrings>
       <replace>focusBase</replace>
@@ -355,7 +332,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -382,13 +358,14 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="javascript.nodejs.core.library.configured.version" value="7.3.0" />
+    <property name="javascript.nodejs.core.library.configured.version" value="10.13.0" />
     <property name="js-jscs-nodeInterpreter" value="C:\Program Files\nodejs\node.exe" />
     <property name="js.eslint.eslintPackage" value="" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/node_modules/ts-mocha" />
@@ -1135,7 +1112,9 @@
       <workItem from="1548636974361" duration="8900000" />
       <workItem from="1548664613638" duration="21000" />
       <workItem from="1548714060689" duration="10786000" />
-      <workItem from="1548815056031" duration="8741000" />
+      <workItem from="1548815056031" duration="8775000" />
+      <workItem from="1548984769744" duration="20000" />
+      <workItem from="1548984824609" duration="4664000" />
     </task>
     <task id="LOCAL-00001" summary="before package update">
       <created>1542772477945</created>
@@ -1459,7 +1438,14 @@
       <option name="project" value="LOCAL" />
       <updated>1548736783139</updated>
     </task>
-    <option name="localTasksCounter" value="47" />
+    <task id="LOCAL-00047" summary="components refs rework">
+      <created>1548834633655</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1548834633655</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1495,7 +1481,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3226298000" />
+    <option name="totallyTimeSpent" value="3231016000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1511,8 +1497,8 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.40732265" visible="true" weight="0.09378293" />
-      <window_info active="true" id="Structure" order="2" sideWeight="0.59267735" side_tool="true" visible="true" weight="0.13593256" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.4045977" visible="true" weight="0.09272919" />
+      <window_info id="Structure" order="2" sideWeight="0.5954023" side_tool="true" visible="true" weight="0.13593256" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.58690745" side_tool="true" weight="0.13645943" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
@@ -1520,10 +1506,10 @@
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="Terminal" order="3" sideWeight="0.4919972" weight="0.32683983" />
       <window_info anchor="bottom" id="DB Execution Console" order="4" />
-      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48746517" visible="true" weight="0.28246754" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48746517" weight="0.28246754" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.24675325" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4885396" weight="0.35714287" />
+      <window_info active="true" anchor="bottom" id="Debug" order="8" sideWeight="0.4885396" visible="true" weight="0.35714287" />
       <window_info anchor="bottom" id="Find" order="9" weight="0.1504329" />
       <window_info anchor="right" x="0" y="0" width="434" height="856" id="Documentation" order="0" side_tool="true" weight="0.32942432" />
     </layout>
@@ -1565,7 +1551,8 @@
     <MESSAGE value="switched to chai.expect" />
     <MESSAGE value="preps for github" />
     <MESSAGE value="components fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="components fixes" />
+    <MESSAGE value="components refs rework" />
+    <option name="LAST_COMMIT_MESSAGE" value="components refs rework" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1602,14 +1589,9 @@
           <line>263</line>
           <option name="timeStamp" value="81" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/components.tsx</url>
-          <line>618</line>
-          <option name="timeStamp" value="82" />
-        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
-        <breakpoint type="javascript-exception">
+        <breakpoint enabled="true" type="javascript-exception">
           <properties uncaughtOnly="true" />
         </breakpoint>
       </default-breakpoints>
@@ -1622,6 +1604,9 @@
         <watch expression="self.pFForm.api.getState()" language="TypeScript JSX" />
         <watch expression="$layout" />
         <watch expression="self._maps.build" />
+        <watch expression="self._mapped" />
+        <watch expression="!getIn(self._mapped, i)" />
+        <watch expression="passedReactRef" />
       </configuration>
       <configuration name="NodeJSConfigurationType">
         <watch expression="vars" />
@@ -1641,6 +1626,26 @@
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="breakpointCondition">
+      <expression>
+        <expression-string>$_reactRef</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>passedReactRef[0]</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>self._mapped &amp;&amp; UseTag =='input'</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>!getIn(self._mapped, i)</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>!branch</expression-string>
         <language-id>TypeScript JSX</language-id>
@@ -1663,31 +1668,6 @@
       </expression>
       <expression>
         <expression-string>v</expression-string>
-        <language-id>TypeScript JSX</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>type =='notInput'</expression-string>
-        <language-id>TypeScript JSX</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>!map.replace</expression-string>
-        <language-id>TypeScript JSX</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>updates[0].path[2]=='0'</expression-string>
-        <language-id>TypeScript JSX</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>result[key].substr(0, 2) == '%/'</expression-string>
-        <language-id>TypeScript JSX</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>restObj[0]==''</expression-string>
         <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -1927,13 +1907,6 @@
     <entry file="file://$PROJECT_DIR$/sample/tacit.addon.css">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/commonLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4890">
-          <caret line="326" column="174" selection-start-line="326" selection-start-column="167" selection-end-line="326" selection-end-column="174" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sample/sampleSchema.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1215">
@@ -1984,13 +1957,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="660">
-          <caret line="44" selection-start-line="44" selection-end-line="44" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/dataTypes.d.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1485">
@@ -1998,10 +1964,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="333">
+          <caret line="1013" column="6" selection-start-line="1013" selection-start-column="6" selection-end-line="1013" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/commonLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="15" column="62" selection-start-line="15" selection-start-column="62" selection-end-line="15" selection-end-column="62" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/components.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="189">
-          <caret line="440" lean-forward="true" selection-start-line="440" selection-end-line="440" />
+        <state relative-caret-position="811">
+          <caret line="680" column="9" selection-start-line="680" selection-start-column="9" selection-end-line="680" selection-end-column="9" />
         </state>
       </provider>
     </entry>

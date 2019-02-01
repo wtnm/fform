@@ -169,7 +169,8 @@ class FRefsGeneric extends React.Component<any, any> {
     const self = this;
     if ($reactRef === true) return self._setRef(defaultName);
     else if (isString($reactRef)) return self._setRef($reactRef);
-    else if (isMergeable($reactRef)) return objMap($reactRef, self._refProcess.bind(self, defaultName));
+    else if (isMergeable($reactRef))
+      return objMap($reactRef, self._refProcess.bind(self, defaultName));
     return $reactRef;
   }
 }
@@ -645,7 +646,7 @@ class GenericWidget extends FRefsGeneric {
   private _newWidget(key: any, obj: any, passedReactRef: anyObject = {}) {
     const {_$widget: Widget = GenericWidget, className, $_reactRef, ...rest} = obj;
     const self = this;
-    let refObject = self._refProcess($_reactRef, key) || {};
+    let refObject = self._refProcess(key, $_reactRef) || {};
     if (isFunction(refObject)) refObject = {ref: refObject};
     if (isFunction(passedReactRef)) refObject.ref = passedReactRef;
     else Object.assign(refObject, passedReactRef);
@@ -655,16 +656,20 @@ class GenericWidget extends FRefsGeneric {
   protected _mapChildren(children: any, $_reactRef: anyObject) {
     const self = this;
     if (children !== self._children || self._reactRef !== $_reactRef) {
-      const prev = toArray(self._children);
-      const next = toArray(children);
-      self._mapped = next.map((ch: any, i: number) => !isObject(ch) || ch.$$typeof ? ch :
-        ((prev[i] !== next[i] || getIn(self._reactRef, i) !== getIn($_reactRef, i)) ? self._newWidget(i, ch, $_reactRef[i]) : self._mapped[i]));
+      const prev = self._children && toArray(self._children);
+      const next = children && toArray(children);
+      self._mapped = next && next.map((ch: any, i: number) => !isObject(ch) || ch.$$typeof ? ch :
+        ((!getIn(self._mapped, i) ||
+          prev[i] !== next[i] ||
+          getIn(self._reactRef, i) !== getIn($_reactRef, i)) ? self._newWidget(i, ch, getIn($_reactRef, i)) :
+          self._mapped[i]));
       self._children = children;
       self._reactRef = $_reactRef
     }
   }
 
   protected setRef2rest(rest: anyObject, $_reactRef: anyObject) {
+    if (!$_reactRef) return rest;
     if ($_reactRef['ref']) rest.ref = $_reactRef['ref'];
     if ($_reactRef['tagRef']) rest.tagRef = $_reactRef['tagRef'];
   }
@@ -1162,7 +1167,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
               args: [
                 '@/fData/enum',
                 '@/fData/enumExten',
-                {useTag: 'label'},
+                {useTag: 'label', $_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
                 {_$widget: 'input', type: 'radio', onChange: '^/on/changeBase', onBlur: '^/on/blurBase', onFocus: '^/on/focusBase'},
                 true
               ],
