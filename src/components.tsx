@@ -159,7 +159,7 @@ class FRefsGeneric extends React.Component<any, any> {
   getRef(path: Path) {
     const self = this;
     if (!path.length) return self;
-    if (path.length == 1 && !self.$refs[path[0]].getRef) return  self.$refs[path[0]];
+    if (path.length == 1 && !self.$refs[path[0]].getRef) return self.$refs[path[0]];
     return self.$refs[path[0]] && self.$refs[path[0]].getRef && self.$refs[path[0]].getRef(path.slice(1));
   }
 
@@ -993,7 +993,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         _$cx: '^/_$cx',
         className: 'body',
       },
-      Main: {viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {viewer: true}}},
+      Main: {},
       Message: {
         _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
@@ -1009,6 +1009,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         _$widget: '^/widgets/Input',
         _$cx: '^/_$cx',
         $_reactRef: {ref: true},
+        viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {viewer: true}},
         onChange: '^/on/changeBase',
         onBlur: '^/on/blurBase',
         onFocus: '^/on/focusBase',
@@ -1095,7 +1096,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         useTag: 'label',
         $_reactRef: {'0': {ref: true}},
         children: [
-          {$_ref: '^/sets/nBase/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: {$_ref: '^/sets/base/Main/viewerProps', useTag: 'span'}},
+          {$_ref: '^/sets/nBase/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: {useTag: 'span'}},
           {$_ref: '^/sets/nBase/Title', useTag: 'span', $_maps: {'className/hidden': '@/params/viewer'}}
         ]
       },
@@ -1123,6 +1124,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         uniqKey: 'params/uniqKey',
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
+        viewerProps: {$_ref: '^/sets/nBase/Main/viewerProps'},
         $_maps: {
           length: '@/length',
           isArray: {$: '^/fn/equal', args: ['@/fData/type', 'array']},
@@ -1174,6 +1176,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         useTag: 'div',
         $_reactRef: true,
         type: 'notInput',
+        viewerProps: {$_ref: '^/sets/nBase/Main/viewerProps'},
         $_maps: {
           value: '@/value',
           viewer: '@/params/viewer',
