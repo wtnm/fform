@@ -159,7 +159,7 @@ class FRefsGeneric extends React.Component<any, any> {
   getRef(path: Path) {
     const self = this;
     if (!path.length) return self;
-    if (path.length == 1) return self.$refs[path[0]];
+    if (path.length == 1 && !self.$refs[path[0]].getRef) return  self.$refs[path[0]];
     return self.$refs[path[0]] && self.$refs[path[0]].getRef && self.$refs[path[0]].getRef(path.slice(1));
   }
 
@@ -230,7 +230,7 @@ class FField extends FRefsGeneric {
     const self = this;
     if (!path.length) return self.$refs['@Main'];
     if (path[0][0] == '@') return path.length == 1 ? self.$refs[path[0]] : self.$refs[path[0]].getRef(path.slice(1));
-    return self.$refs['@Main'].getRef(path)
+    return self.$refs['@Main'] && self.$refs['@Main'].getRef && self.$refs['@Main'].getRef(path)
   }
 
   _resolver(obj: any) {
@@ -1207,7 +1207,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     noArrayButtons: {Title: {$_ref: '^/sets/nBase/Title'}},
     inlineItems: {Main: {className: {'inline': true}}},
     inlineTitle: {Wrapper: {className: {'inline': true}}},
-    inlineArrayItem: {Wrapper: {ArrayItemBody: {className: {'inline': true}}}},
+    inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'inline': true}}}},
     inlineLayout: {Main: {LayoutDefaultClass: {'inline': true}}},
   },
   fn: {

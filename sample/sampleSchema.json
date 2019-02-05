@@ -72,13 +72,15 @@
     }
   ],
   "ff_data": {
-    "focusValue": "/array/0/0"
+    "focusValue": "/array/2/1"
   },
   "properties": {
     "array": {
       "type": "array",
-      "title": "Array of arrays",
+      "title": "Array of mix",
       "default": [
+        "vd 1",
+        "vd 2",
         [
           "string value",
           0,
@@ -87,125 +89,136 @@
           "more text"
         ]
       ],
-      "items": {
-        "type": "array",
-        "title": "Array of values",
-        "ff_presets": "array:noArrayControls",
-        "ff_custom": {
-          "Title": {
-            "style": {
-              "width": "100%"
-            },
-            "children": [
-              {},
-              {
-                "$_ref": "^/parts/ArrayAddButton",
-                "children": [
-                  "+string"
-                ],
-                "onClick.bind": [
-                  "./",
-                  1,
-                  {
-                    "setOneOf": 0
-                  }
-                ]
+      "items": [
+        {
+          "type": "string",
+          "default": "some default",
+          "ff_presets": "string:noArrayControls"
+        },
+        {
+          "type": "string",
+          "ff_presets": "string:noArrayControls"
+        },
+        {
+          "type": "array",
+          "title": "Array of values",
+          "ff_presets": "array:noArrayControls",
+          "ff_custom": {
+            "Title": {
+              "style": {
+                "width": "100%"
               },
-              {
-                "$_ref": "^/parts/ArrayAddButton",
-                "children": [
-                  "+number"
-                ],
-                "onClick.bind": [
-                  "./",
-                  1,
-                  {
-                    "setOneOf": 1
-                  }
-                ]
-              },
-              {
-                "$_ref": "^/parts/ArrayAddButton",
-                "children": [
-                  "+boolean"
-                ],
-                "onClick.bind": [
-                  "./",
-                  1,
-                  {
-                    "setOneOf": 2
-                  }
-                ]
-              },
-              {
-                "$_ref": "^/parts/ArrayDelButton"
-              },
-              {
-                "$_ref": "^/parts/ArrayEmpty"
-              },
-              {
-                "$_ref": "^/parts/ArrayItemMenu",
-                "useTag": "span",
-                "buttons": [
-                  "up",
-                  "down",
-                  "del"
-                ],
-                "buttonsProps": {
-                  "up": {
-                    "children": [
-                      "⬆"
-                    ]
-                  },
-                  "down": {
-                    "children": [
-                      "⬇"
-                    ]
-                  },
-                  "del": {
-                    "children": [
-                      "x"
-                    ]
-                  }
+              "children": [
+                {},
+                {
+                  "$_ref": "^/parts/ArrayAddButton",
+                  "children": [
+                    "+string"
+                  ],
+                  "onClick.bind": [
+                    "./",
+                    1,
+                    {
+                      "setOneOf": 0
+                    }
+                  ]
                 },
-                "style": {
-                  "float": "right",
-                  "marginRight": "1em",
-                  "marginLeft": "1em"
+                {
+                  "$_ref": "^/parts/ArrayAddButton",
+                  "children": [
+                    "+number"
+                  ],
+                  "onClick.bind": [
+                    "./",
+                    1,
+                    {
+                      "setOneOf": 1
+                    }
+                  ]
+                },
+                {
+                  "$_ref": "^/parts/ArrayAddButton",
+                  "children": [
+                    "+boolean"
+                  ],
+                  "onClick.bind": [
+                    "./",
+                    1,
+                    {
+                      "setOneOf": 2
+                    }
+                  ]
+                },
+                {
+                  "$_ref": "^/parts/ArrayDelButton"
+                },
+                {
+                  "$_ref": "^/parts/ArrayEmpty"
+                },
+                {
+                  "$_ref": "^/parts/ArrayItemMenu",
+                  "useTag": "span",
+                  "buttons": [
+                    "up",
+                    "down",
+                    "del"
+                  ],
+                  "buttonsProps": {
+                    "up": {
+                      "children": [
+                        "⬆"
+                      ]
+                    },
+                    "down": {
+                      "children": [
+                        "⬇"
+                      ]
+                    },
+                    "del": {
+                      "children": [
+                        "x"
+                      ]
+                    }
+                  },
+                  "style": {
+                    "float": "right",
+                    "marginRight": "1em",
+                    "marginLeft": "1em"
+                  }
                 }
+              ]
+            },
+            "Main": {
+              "$_maps": {
+                "viewer": "@/params/viewer"
+              }
+            }
+          },
+          "maxItems": 3,
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "ff_presets": "string:inlineTitle:inlineArrayControls",
+                "default": "default"
+              },
+              {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "ff_presets": "numberNull:inlineTitle:inlineArrayControls",
+                "default": null
+              },
+              {
+                "type": "boolean",
+                "ff_presets": "boolean:inlineTitle:inlineArrayControls",
+                "default": false
               }
             ]
-          },
-          "Main": {
-            "$_maps": {
-              "viewer": "@/params/viewer"
-            }
           }
-        },
-        "maxItems": 3,
-        "items": {
-          "oneOf": [
-            {
-              "type": "string",
-              "ff_presets": "string:inlineTitle:inlineArrayItem",
-              "default": "default"
-            },
-            {
-              "type": [
-                "number",
-                "null"
-              ],
-              "ff_presets": "numberNull:inlineTitle:inlineArrayItem",
-              "default": null
-            },
-            {
-              "type": "boolean",
-              "ff_presets": "boolean:inlineTitle:inlineArrayItem",
-              "default": false
-            }
-          ]
         }
-      }
+      ]
     },
     "booleanLeft": {
       "type": "boolean",
