@@ -47,10 +47,33 @@
               "macros": "switch"
             }
           ]
+        },
+        {
+          "_$widget": "input",
+          "type": "text",
+          "onChange": "^/user/focusInputChange",
+          "$_reactRef": {
+            "ref": "!focusInput"
+          },
+          "$_maps": {
+            "className/hidden": "@/params/viewer",
+            "value": "@/focusValue"
+          }
+        },
+        {
+          "$_ref": "^/parts/Button",
+          "children": "focus",
+          "className": {
+            "shrink": true
+          },
+          "onClick": "^/user/focusInput"
         }
       ]
     }
   ],
+  "ff_data": {
+    "focusValue": "/array/0/0"
+  },
   "properties": {
     "array": {
       "type": "array",

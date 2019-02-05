@@ -12,6 +12,17 @@ if (typeof window != 'undefined') {
     'user': {
       set: function (path: string, value: any, opts: any) {
         this.api.set(path, value, opts)
+      },
+      focusInputChange: function (event: any) {
+        this.api.set('./@/focusValue', event.target.value, {execute: true})
+      },
+      focusInput: function () {
+        let focusInput = this.getRef('!focusInput');
+        focusInput = focusInput.value;
+        let target = this.pFForm.getRef(focusInput);
+        if (!target) return alert('No target field');
+        if (!target.focus) return alert('Target field has no focus');
+        target.focus();
       }
     }
   });

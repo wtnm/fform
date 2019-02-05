@@ -43,7 +43,7 @@ class FForm extends React.Component<any, any> {
 
     self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(merge(coreParams), context);
     self.parent = props.parent;
-    self.focus = self.focus.bind(self);
+    // self.focus = self.focus.bind(self);
     self._updateValues(props);
     self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
     self._setRef = self._setRef.bind(self);
@@ -52,10 +52,9 @@ class FForm extends React.Component<any, any> {
     Object.defineProperty(self, "objects", {get: () => self.api.props.objects});
   }
 
-  _setRef(FField: any) {
+  private _setRef(FField: any) {
     this._root = FField;
   }
-
 
   _updateValues(nextProps: FFormProps, prevProps: any = {}) {
     const {state, value, inital, extData, noValidate} = nextProps;
@@ -110,9 +109,13 @@ class FForm extends React.Component<any, any> {
     if (this._unsubscribe) this._unsubscribe();
   }
 
-  focus(path: Path | string): void {
-    if (this._root) this._root.focus(normalizePath(path));
-  };
+  // focus(path: Path | string): void {
+  //   if (this._root) this._root.focus(normalizePath(path));
+  // };
+
+  getRef(path: Path | string) {
+    return this._root && this._root.getRef(path)
+  }
 
   _getPath() {
     return '#';
@@ -157,7 +160,7 @@ class FRefsGeneric extends React.Component<any, any> {
     const self = this;
     if (!path.length) return self;
     if (path.length == 1) return self.$refs[path[0]];
-    return self.$refs[path[0]].getRef(path.slice(1));
+    return self.$refs[path[0]] && self.$refs[path[0]].getRef && self.$refs[path[0]].getRef(path.slice(1));
   }
 
   protected _setRef(name: string) {
@@ -558,6 +561,11 @@ class FSection extends FRefsGeneric {
     return this.props.$FField.path + '/' + this._arrayKey2field[key];
   }
 
+  _getArrayField(key: any) {
+    const self = this;
+    return self._arrayLayouts[key - self.props.arrayStart]
+  }
+
   _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType, props: any) {
     const self = this;
     const updatedArray = [];
@@ -571,7 +579,7 @@ class FSection extends FRefsGeneric {
         self._arrayKey2field[arrayKey] = i;
         doUpdate = true
       }
-      updatedArray.push(!isUndefined(prevIndex) ? self._arrayLayouts[prevIndex - props.arrayStart] : self._makeFField(i.toString(), arrayKey));
+      updatedArray.push(!isUndefined(prevIndex) ? self._getArrayField(prevIndex) : self._makeFField(i.toString(), arrayKey));
     }
     if (self._arrayLayouts.length !== updatedArray.length) doUpdate = true;
     if (doUpdate) self._arrayLayouts = updatedArray;
@@ -611,6 +619,13 @@ class FSection extends FRefsGeneric {
     }
 
     return doUpdate; //|| !isEqual(self.props, nextProps, {skipKeys: ['$branch']});
+  }
+
+  getRef(path: Path) {
+    const self = this;
+    if (!self.props.isArray || isNaN(parseInt(path[0])) || path[0] < self.props.arrayStart) return super.getRef(path);
+    let field = self._getArrayField(path[0]);
+    return field && self.$refs[field.key].getRef(path.slice(1))
   }
 
   render() {
@@ -671,7 +686,8 @@ class GenericWidget extends FRefsGeneric {
   protected setRef2rest(rest: anyObject, $_reactRef: anyObject) {
     if (!$_reactRef) return rest;
     if ($_reactRef['ref']) rest.ref = $_reactRef['ref'];
-    if ($_reactRef['tagRef']) rest.tagRef = $_reactRef['tagRef'];
+    if ($_reactRef['tagRef'])
+      rest.tagRef = $_reactRef['tagRef'];
   }
 
   render(): any {
