@@ -78,6 +78,18 @@
     "array": {
       "type": "array",
       "title": "Array of mix",
+      "ff_layout": [
+        {
+          "className": {
+            "layout": true,
+            "inline": true
+          },
+          "$_fields": [
+            "0",
+            "1"
+          ]
+        }
+      ],
       "default": [
         "vd 1",
         "vd 2",
@@ -92,11 +104,11 @@
       "items": [
         {
           "type": "string",
-          "default": "some default",
           "ff_presets": "string:noArrayControls"
         },
         {
           "type": "string",
+          "default": "some default",
           "ff_presets": "string:noArrayControls"
         },
         {
