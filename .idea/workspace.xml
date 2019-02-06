@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="components fixes">
-      <change afterPath="$PROJECT_DIR$/docsPlan.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/documentation.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="documentation inital">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample/sample.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sample.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/api.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/docs/docsPlan.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fnTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/fnTypes.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/schemaTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/schemaTypes.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation.md" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -1147,14 +1139,7 @@
       <workItem from="1548984824609" duration="4684000" />
       <workItem from="1549334844586" duration="12502000" />
       <workItem from="1549364451352" duration="3306000" />
-      <workItem from="1549426609765" duration="8825000" />
-    </task>
-    <task id="LOCAL-00004" summary="fixed widgets with react-select">
-      <created>1542780946311</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1542780946311</updated>
+      <workItem from="1549426609765" duration="9462000" />
     </task>
     <task id="LOCAL-00005" summary="pre rework">
       <created>1542966425745</created>
@@ -1492,7 +1477,14 @@
       <option name="project" value="LOCAL" />
       <updated>1549363657708</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="documentation inital">
+      <created>1549456359602</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1549456359602</updated>
+    </task>
+    <option name="localTasksCounter" value="54" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1528,7 +1520,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3255669000" />
+    <option name="totallyTimeSpent" value="3256306000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1600,7 +1592,8 @@
     <MESSAGE value="components refs fix" />
     <MESSAGE value="components focus fix" />
     <MESSAGE value="components fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="components fixes" />
+    <MESSAGE value="documentation inital" />
+    <option name="LAST_COMMIT_MESSAGE" value="documentation inital" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
