@@ -1,4 +1,6 @@
 import * as React from 'react';
+
+//const React = require('preact');
 import {asNumber, toArray, deArray, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, isFunction, makeSlice, merge, mergeState, objKeys, push2array, memoize} from "./commonLib";
 import {
   arrayStart,
@@ -351,7 +353,6 @@ class FField extends FRefsGeneric {
     self._rebuild = false;
   }
 
-  // todo: focus, refs and inline layout
   // todo: sample schema mount tests
   // todo: manual
   // todo: SSR support
@@ -997,6 +998,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Message: {
         _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
+        children:[],
         $_maps: {
           children: {$: '^/fn/messages', args: ['@/messages', {}]},
           'className/hidden': {$: '^/fn/not', args: '@/status/touched'},
@@ -1154,6 +1156,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '^/sets/nBase',
       Main: {
         type: 'select',
+        children:[],
         $_maps: {
           'children': {$: '^/fn/arrayOfEnum', args: ['@/fData/enum', '@/fData/enumExten', {_$widget: 'option'}], replace: false},
           'label': false
@@ -1177,6 +1180,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         $_reactRef: true,
         type: 'notInput',
         viewerProps: {$_ref: '^/sets/nBase/Main/viewerProps'},
+        children:[],
         $_maps: {
           value: '@/value',
           viewer: '@/params/viewer',
@@ -1261,7 +1265,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   },
   on: {
     clickArrayAdd: function (path: any, value: number, opts: any) {this.api.arrayAdd(path, value, opts)},
-    clickArrayItemOps: function (path: any, key: string, opts: any) {this.api.arrayItemOps(path, key, opts)},
+    clickArrayItemOps: function (path: any, key: any, opts: any) {this.api.arrayItemOps(path, key, opts)},
     changeBase: function (event: any) {this.api.setValue(event.target.value, {})},
     changeDirect: function (value: any) {this.api.setValue(value, {})},
     changeNumber: function (int: boolean, empty: number | null, event: any) {this.api.setValue(event.target.value == '' ? empty : (int ? parseInt : parseFloat)(event.target.value), {})},
@@ -1346,13 +1350,13 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_maps: {'arrayItem': '@/arrayItem', 'className/button-viewer': '@/params/viewer'},
     }
   },
-  presetMap: {
-    boolean: ['select', 'radio'],
-    string: ['select', 'password', 'email', 'hostname', 'ipv4', 'ipv6', 'uri', 'data-url', 'radio', 'textarea', 'hidden', 'date', 'datetime', 'date-time', 'color', 'file'],
-    number: ['select', 'updown', 'range', 'radio'],
-    integer: ['select', 'updown', 'range', 'radio'],
-    array: ['select', 'checkboxes', 'files'],
-  },
+  // presetMap: {
+  //   boolean: ['select', 'radio'],
+  //   string: ['select', 'password', 'email', 'hostname', 'ipv4', 'ipv6', 'uri', 'data-url', 'radio', 'textarea', 'hidden', 'date', 'datetime', 'date-time', 'color', 'file'],
+  //   number: ['select', 'updown', 'range', 'radio'],
+  //   integer: ['select', 'updown', 'range', 'radio'],
+  //   array: ['select', 'checkboxes', 'files'],
+  // },
   _$cx: classNames
 };
 

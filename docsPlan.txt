@@ -1,0 +1,22 @@
+Readme.md
+	features
+	installation
+	quick  start
+	documentation
+Documentation.md
+	FFStateApi
+		storage integration: inner, external, redux
+	FForm
+		frameworks integration: react support, others throught anu (vue, angular, plain js)
+	Schema properties
+		explanation of all additional props
+	Validation
+		JSON, sync, async
+	Styling
+		style.js
+	Customization
+		custom objects and $_ref explanation
+	SSR
+		dehydrataion
+	Examples
+	

@@ -86,10 +86,10 @@ interface FFCommonSchemaType {
   ff_params?: FFParamsType; // editable in state params
   ff_data?: { [key: string]: any } | { [key: number]: any };
   ff_presets?: string; // presets for rendering components
-  ff_managed?: boolean; // not editable in state params
+  ff_managed?: boolean; // determine that value managed by component itself (for objects and arrays)
   ff_custom?: FFCustomizeType; // components customization
   ff_layout?: FFLayoutGeneric<FFCustomizeType>; // fields order and object/group extenion
-  ff_enumExten?: Array<undefined | string | object>; // enum extension value taken from enum, string turn to label
+  ff_enumExten?: { [key: string]: undefined | string | object }; // enum extension value taken from enum, string turn to label
 }
 
 type ReplaceType = boolean | { [key: string]: ReplaceType } | { [key: number]: ReplaceType }

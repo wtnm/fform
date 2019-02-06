@@ -95,13 +95,13 @@ class FFormStateManager {
   private _unsubscribe: any;
   private _listeners: Array<(state: StateType) => void> = [];
 
-  props: FFormCoreProps;
+  props: FFormApiProps;
   schema: jsJsonSchema;
   dispatch: any;
   JSONValidator: (values: any) => any;
   name?: string;
 
-  constructor(props: FFormCoreProps) {
+  constructor(props: FFormApiProps) {
     // if ((props.getState || props.setState) && props.store) throw new Error('Expected either "store" or "getState & setState" but not all of them.');
     if (((props.getState ? 1 : 0) + (props.setState ? 1 : 0)) == 1) new Error('Expected both "getState" and "setState" or none but not only one of them.');
     if (props.store && !props.name) throw new Error('Expected "name" to be passed together with "store".');
@@ -202,7 +202,7 @@ class FFormStateAPI extends FFormStateManager {
   private _defferedTimerId: any;
   getState = this._getState;
 
-  // constructor(props: FFormCoreProps) {//schema: jsJsonSchema, name: string, dispatch: any, getState: () => StateType, setState: (state: any) => any, JSONValidator: any) {
+  // constructor(props: FFormApiProps) {//schema: jsJsonSchema, name: string, dispatch: any, getState: () => StateType, setState: (state: any) => any, JSONValidator: any) {
   //   super(props);
   //   this.getState = this._getState;
   //   //   const self = this;

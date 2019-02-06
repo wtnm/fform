@@ -5,6 +5,7 @@ import * as sampleSchema from './sampleSchema.json'
 import * as style from './style.json'
 
 const {render} = require('react-dom');
+//const {render} = require('preact');
 
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');
@@ -26,7 +27,6 @@ if (typeof window != 'undefined') {
       }
     }
   });
-
 
   render(<div>
     <h3>FForm sample</h3>

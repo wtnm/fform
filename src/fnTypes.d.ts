@@ -49,7 +49,7 @@ interface FFormProps {
 }
 
 /** Parameters to creates a FFormCore */
-interface FFormCoreProps {
+interface FFormApiProps {
   schema: jsJsonSchema | JsonSchema;
   /** schema that will be used to create state */
   objects?: { [key: string]: any };
