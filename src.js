@@ -70,11 +70,7 @@ types.integer = commonLib_2.isInteger;
 types.string = commonLib_2.isString; 
 types.array = commonLib_2[__$_9__] ;
 types.object = commonLib_2[__$_18__] ; 
-types.empty = { 'any': null, 'null': null, 'boolean': false, 'number': 0, 'integer': 0, 'string': '', get array() {
-        return [];
-    }, get object() {
-        return {};
-    } };
+types.empty = { 'any': null, 'null': null, 'boolean': false, 'number': 0, 'integer': 0, 'string': '', array: Object.freeze([]), object: Object.freeze({}) };
 
 
 
@@ -299,6 +295,7 @@ function oneOfStructure(state, path) {
 exports.oneOfStructure = oneOfStructure;
 function branchKeys(branch) {
     var keys = [];
+    if (isSelfManaged(branch)) return keys;
     if (branch[SymData][__$_26__] .type == 'array') for (var j = 0; j < commonLib_1[__$_2__] (branch, SymData, 'length'); j++) {
         keys.push(j[__$_37__] ());
     } else keys = commonLib_1[__$_7__] (branch).filter(function (v) {

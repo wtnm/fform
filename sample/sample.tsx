@@ -7,6 +7,8 @@ import * as style from './style.json'
 const {render} = require('react-dom');
 //const {render} = require('preact');
 
+const JSONValidator:any = require('../addons/is-my-json-valid-lite');
+
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');
   let sampleObjects = fformObjects.extend(style).extend({
@@ -32,7 +34,7 @@ if (typeof window != 'undefined') {
     <h3>FForm sample</h3>
     <div>
       <div>
-        <FForm id="sampleForm" core={{schema: sampleSchema, name: "sampleForm", objects: sampleObjects}}/>
+        <FForm id="sampleForm" core={{schema: sampleSchema, name: "sampleForm", objects: sampleObjects, JSONValidator}}/>
       </div>
     </div>
   </div>, container);

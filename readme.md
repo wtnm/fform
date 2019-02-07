@@ -1,10 +1,7 @@
 
-## Table of Contents
+# Table of Contents
 
-- [Installation](#installation)
-- [Quick  start](#quick  start)
-- [Documentation](#documentation)
-- [Examples](#examples)
+[TOC]
 
 
 ## Features
@@ -35,6 +32,7 @@ import {FForm, fformObjects} from 'fform';
 const {FForm, fformObjects} = require("fform");
 ```
 
-## Documentation
+## [Documentation](#documentation.md)
+
 
 ## Examples

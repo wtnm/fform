@@ -69,11 +69,7 @@ types.integer = commonLib_2.isInteger; //(value: any) => typeof value === "numbe
 types.string = commonLib_2.isString; //(value: any) => typeof value === "string";
 types.array = commonLib_2.isArray;
 types.object = commonLib_2.isObject; //(value: any) => typeof value === "object" && value && !isArray(value);// isObject(value);  //
-types.empty = { 'any': null, 'null': null, 'boolean': false, 'number': 0, 'integer': 0, 'string': '', get array() {
-        return [];
-    }, get object() {
-        return {};
-    } };
+types.empty = { 'any': null, 'null': null, 'boolean': false, 'number': 0, 'integer': 0, 'string': '', array: Object.freeze([]), object: Object.freeze({}) };
 /////////////////////////////////////////////
 //  Macros
 /////////////////////////////////////////////
@@ -298,6 +294,7 @@ function oneOfStructure(state, path) {
 exports.oneOfStructure = oneOfStructure;
 function branchKeys(branch) {
     var keys = [];
+    if (isSelfManaged(branch)) return keys;
     if (branch[SymData].fData.type == 'array') for (var j = 0; j < commonLib_1.getIn(branch, SymData, 'length'); j++) {
         keys.push(j.toString());
     } else keys = commonLib_1.objKeys(branch).filter(function (v) {

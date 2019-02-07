@@ -38,7 +38,7 @@ import {
 } from "./stateLib";
 
 
-const JSONSchemaValidator: any = require('./is-my-json-valid');
+// const JSONValidator: any = require('./is-my-json-valid');
 
 
 class exoPromise {
@@ -98,7 +98,7 @@ class FFormStateManager {
   props: FFormApiProps;
   schema: jsJsonSchema;
   dispatch: any;
-  JSONValidator: (values: any) => any;
+  // JSONValidator: (values: any) => any;
   name?: string;
 
   constructor(props: FFormApiProps) {
@@ -112,8 +112,8 @@ class FFormStateManager {
     self.name = props.name || '';
     self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
     self._reducer = formReducer();
-    self._validator = JSONSchemaValidator && JSONSchemaValidator(props.schema, {greedy: true});
-    self.JSONValidator = self._jValidator.bind(self);
+    self._validator = props.JSONValidator && props.JSONValidator(props.schema, {greedy: true});
+    self.JSONValidator = self._validator && self.JSONValidator.bind(self);
     self._getState = self._getState.bind(self);
     self._setState = self._setState.bind(self);
     if (props.setState && props.store) self._unsubscribe = self.props.store.subscribe(self._handleChange.bind(self));
@@ -153,12 +153,12 @@ class FFormStateManager {
     return this.props.name && this.props.store.getState()[getFRVal()][this.props.name];
   }
 
-  private _jValidator(data: any) {
+  private JSONValidator(data: any) {
     this._validator(data);
     let result = this._validator.errors;
     if (!result) return [];
     if (!isArray(result)) result = [result];
-    return result.map((item: any) => [item.field.split('.').slice(1), item.message])
+    return result.map((item: any) => [item.field.replace('["','.').replace('"]','').split('.').slice(1), item.message])
   }
 
   private _handleChange() {

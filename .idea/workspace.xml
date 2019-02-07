@@ -3,7 +3,62 @@
   <component name="ChangeListManager">
     <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="documentation inital">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/__tests__/testForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/testForm.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/documentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sample/sample.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sample.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/source.js" beforeDir="false" afterPath="$PROJECT_DIR$/source.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src.js" beforeDir="false" afterPath="$PROJECT_DIR$/src.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/api.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/docs/api.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/docs/components.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/docs/examples.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/docs/schema.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/docs/start.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fnTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/fnTypes.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/example.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/formats.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/genfn.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/require.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/fixtures/cosmic.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/additionalItems.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/additionalProperties.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/allOf.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/anyOf.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/bignum.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/default.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/definitions.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/dependencies.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/enum.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/format.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/items.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/maxItems.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/maxLength.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/maxProperties.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/maximum.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/minItems.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/minLength.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/minProperties.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/minimum.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/multipleOf.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/not.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/nullAndFormat.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/nullAndObject.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/oneOf.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/pattern.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/patternProperties.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/properties.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/ref.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/refRemote.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/required.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/type.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/uniqueItems.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/misc.js" beforeDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -23,19 +78,19 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sample/style.css">
+        <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="555">
-              <caret line="37" column="20" selection-start-line="37" selection-start-column="20" selection-end-line="37" selection-end-column="20" />
+            <state relative-caret-position="507">
+              <caret line="36" column="118" selection-start-line="36" selection-start-column="118" selection-end-line="36" selection-end-column="118" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
+        <entry file="file://$PROJECT_DIR$/webpack.config.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="420">
-              <caret line="28" column="5" selection-start-line="28" selection-start-column="5" selection-end-line="28" selection-end-column="5" />
+            <state relative-caret-position="274">
+              <caret line="34" column="7" selection-start-line="34" selection-start-column="7" selection-end-line="34" selection-end-column="7" />
             </state>
           </provider>
         </entry>
@@ -43,8 +98,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/api.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="205">
-              <caret line="103" column="31" selection-start-line="103" selection-start-column="31" selection-end-line="103" selection-end-column="31" />
+            <state relative-caret-position="359">
+              <caret line="97" column="14" lean-forward="true" selection-start-line="97" selection-start-column="14" selection-end-line="97" selection-end-column="14" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -52,11 +107,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/fnTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="412">
-              <caret line="59" column="33" selection-start-line="59" selection-start-column="13" selection-end-line="59" selection-end-column="33" />
+            <state relative-caret-position="199">
+              <caret line="51" column="10" selection-start-line="51" selection-start-column="10" selection-end-line="51" selection-end-column="10" />
             </state>
           </provider>
         </entry>
@@ -64,21 +119,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="585">
-              <caret line="960" selection-start-line="960" selection-end-line="960" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/sample/sampleSchema.json">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="110" column="36" selection-start-line="110" selection-start-column="36" selection-end-line="110" selection-end-column="36" />
-              <folding>
-                <element signature="n#!!block;n#radioSelect#0;n#!!block;n#properties#0;n#!!top" />
-                <element signature="n#!!block;n#multiselect#0;n#!!block;n#properties#0;n#!!top" />
-              </folding>
+            <state relative-caret-position="360">
+              <caret line="18" selection-start-line="18" selection-end-line="18" selection-end-column="65" />
             </state>
           </provider>
         </entry>
@@ -86,7 +128,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="637">
+            <state>
               <caret line="123" column="21" selection-start-line="123" selection-start-column="21" selection-end-line="123" selection-end-column="21" />
             </state>
           </provider>
@@ -95,17 +137,26 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="585">
+            <state>
               <caret line="1013" column="6" selection-start-line="1013" selection-start-column="6" selection-end-line="1013" selection-end-column="6" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/components.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="501">
-              <caret line="1350" column="5" selection-start-line="1350" selection-start-column="5" selection-end-line="1350" selection-end-column="5" />
+            <state relative-caret-position="199">
+              <caret line="40" column="26" selection-start-line="40" selection-start-column="26" selection-end-line="40" selection-end-column="26" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/commonLib.tsx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="208">
+              <caret line="190" column="12" selection-start-line="190" selection-start-column="12" selection-end-line="190" selection-end-column="12" />
             </state>
           </provider>
         </entry>
@@ -113,7 +164,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/dataTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="585">
+            <state>
               <caret line="99" column="48" selection-start-line="99" selection-start-column="48" selection-end-line="99" selection-end-column="48" />
             </state>
           </provider>
@@ -131,7 +182,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>substr</find>
       <find>ff_layout</find>
       <find>getFFieldProperty</find>
       <find>deArray</find>
@@ -161,6 +211,7 @@
       <find>parent</find>
       <find>_$widget</find>
       <find>$_parse</find>
+      <find>JSONValidator</find>
     </findStrings>
     <replaceStrings>
       <replace>%/presets/nBase</replace>
@@ -241,10 +292,7 @@
         <option value="$PROJECT_DIR$/sample/sample.json" />
         <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/tsconfig.json" />
-        <option value="$PROJECT_DIR$/webpack.config.js" />
         <option value="$PROJECT_DIR$/src/dataTypes.d.ts" />
-        <option value="$PROJECT_DIR$/src/api.tsx" />
-        <option value="$PROJECT_DIR$/__tests__/testForm.js" />
         <option value="$PROJECT_DIR$/sample/tacit.addon.css" />
         <option value="$PROJECT_DIR$/sample/index.html" />
         <option value="$PROJECT_DIR$/sample/style.json" />
@@ -252,10 +300,13 @@
         <option value="$PROJECT_DIR$/src/stateLib.tsx" />
         <option value="$PROJECT_DIR$/sample/style.css" />
         <option value="$PROJECT_DIR$/sample/sampleSchema.json" />
-        <option value="$PROJECT_DIR$/sample/sample.tsx" />
-        <option value="$PROJECT_DIR$/src/fnTypes.d.ts" />
         <option value="$PROJECT_DIR$/src/schemaTypes.d.ts" />
+        <option value="$PROJECT_DIR$/__tests__/testForm.js" />
+        <option value="$PROJECT_DIR$/webpack.config.js" />
+        <option value="$PROJECT_DIR$/sample/sample.tsx" />
+        <option value="$PROJECT_DIR$/src/api.tsx" />
         <option value="$PROJECT_DIR$/src/components.tsx" />
+        <option value="$PROJECT_DIR$/src/fnTypes.d.ts" />
       </list>
     </option>
   </component>
@@ -354,6 +405,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -380,7 +432,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -397,7 +448,7 @@
     <property name="nodejs.mocha.mocha_node_package_dir" value="$PROJECT_DIR$/node_modules/mocha" />
     <property name="nodejs_interpreter_path" value="C:/Program Files/nodejs/node" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors.Language Defaults" />
     <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
     <property name="typescript-compiler-editor-notification" value="false" />
   </component>
@@ -542,8 +593,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.compile:sample:dev" />
         <item itemvalue="npm.compile" />
+        <item itemvalue="npm.compile:sample:dev" />
         <item itemvalue="npm.compile:dev" />
       </list>
     </recent_temporary>
@@ -1139,14 +1190,8 @@
       <workItem from="1548984824609" duration="4684000" />
       <workItem from="1549334844586" duration="12502000" />
       <workItem from="1549364451352" duration="3306000" />
-      <workItem from="1549426609765" duration="9462000" />
-    </task>
-    <task id="LOCAL-00005" summary="pre rework">
-      <created>1542966425745</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1542966425745</updated>
+      <workItem from="1549426609765" duration="10189000" />
+      <workItem from="1549520670195" duration="3629000" />
     </task>
     <task id="LOCAL-00006" summary="reworked">
       <created>1546261350866</created>
@@ -1484,19 +1529,17 @@
       <option name="project" value="LOCAL" />
       <updated>1549456359602</updated>
     </task>
-    <option name="localTasksCounter" value="54" />
+    <task id="LOCAL-00054" summary="documentation inital">
+      <created>1549462049636</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1549462049636</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="testCore - 2019.01.26 at 01h 20m 34s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="testCore - 2019.01.26 at 01h 22m 25s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="testCore - 2019.01.26 at 01h 23m 36s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
     <history-entry file="testCore - 2019.01.26 at 01h 23m 52s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
@@ -1518,9 +1561,18 @@
     <history-entry file="testCore - 2019.01.29 at 05h 00m 35s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
+    <history-entry file="testCore - 2019.02.07 at 11h 23m 50s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2019.02.07 at 11h 24m 42s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="testCore - 2019.02.07 at 11h 26m 13s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3256306000" />
+    <option name="totallyTimeSpent" value="3260662000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1533,21 +1585,22 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info active="true" content_ui="combo" id="Project" order="1" sideWeight="0.40046296" visible="true" weight="0.09114858" />
-      <window_info id="Structure" order="2" sideWeight="0.599537" side_tool="true" visible="true" weight="0.13593256" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.5228216" visible="true" weight="0.13333334" />
+      <window_info active="true" id="Structure" order="2" sideWeight="0.47717842" side_tool="true" visible="true" weight="0.121164024" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
-      <window_info id="npm" order="4" sideWeight="0.58690745" side_tool="true" weight="0.13645943" />
+      <window_info id="npm" order="4" sideWeight="0.47663552" side_tool="true" weight="0.107407406" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
       <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.5125348" side_tool="true" weight="0.28246754" />
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="Terminal" order="3" sideWeight="0.4919972" weight="0.32683983" />
       <window_info anchor="bottom" id="DB Execution Console" order="4" />
-      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48746517" weight="0.28246754" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48746517" weight="0.2814238" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.24675325" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4885396" weight="0.2651515" />
+      <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4885396" visible="true" weight="0.27030033" />
       <window_info anchor="bottom" id="Find" order="9" weight="0.1504329" />
       <window_info anchor="right" x="0" y="0" width="434" height="856" id="Documentation" order="0" side_tool="true" weight="0.32942432" />
     </layout>
@@ -1642,6 +1695,7 @@
         <watch expression="self._mapped" />
         <watch expression="$_reactRef" />
         <watch expression="field.props.key" />
+        <watch expression="self.liveValidate" />
       </configuration>
       <configuration name="NodeJSConfigurationType">
         <watch expression="vars" />
@@ -1761,9 +1815,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/node_modules/react-is/index.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="270">
@@ -1910,13 +1961,6 @@
     <entry file="http://localhost:63342/FForm/sample/build/sample.js">
       <provider selected="true" editor-type-id="httpFileEditor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/webpack.config.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="717">
-          <caret line="49" column="24" selection-start-line="49" selection-start-column="24" selection-end-line="49" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sample/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="135">
@@ -1934,20 +1978,6 @@
     <entry file="file://$PROJECT_DIR$/sample/tacit.addon.css">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/commonLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="62" selection-start-line="15" selection-start-column="62" selection-end-line="15" selection-end-column="62" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sample/style.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="555">
-          <caret line="37" column="20" selection-start-line="37" selection-start-column="20" selection-end-line="37" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/readme.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
@@ -1956,37 +1986,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
+    <entry file="file://$PROJECT_DIR$/sample/style.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="420">
-          <caret line="28" column="5" selection-start-line="28" selection-start-column="5" selection-end-line="28" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="585">
-          <caret line="960" selection-start-line="960" selection-end-line="960" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="585">
-          <caret line="1013" column="6" selection-start-line="1013" selection-start-column="6" selection-end-line="1013" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/dataTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="585">
-          <caret line="99" column="48" selection-start-line="99" selection-start-column="48" selection-end-line="99" selection-end-column="48" />
+        <state>
+          <caret line="37" column="20" selection-start-line="37" selection-start-column="20" selection-end-line="37" selection-end-column="20" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sample/sampleSchema.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
+        <state>
           <caret line="110" column="36" selection-start-line="110" selection-start-column="36" selection-end-line="110" selection-end-column="36" />
           <folding>
             <element signature="n#!!block;n#radioSelect#0;n#!!block;n#properties#0;n#!!top" />
@@ -1995,10 +2004,73 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="123" column="21" selection-start-line="123" selection-start-column="21" selection-end-line="123" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="1013" column="6" selection-start-line="1013" selection-start-column="6" selection-end-line="1013" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/dataTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="99" column="48" selection-start-line="99" selection-start-column="48" selection-end-line="99" selection-end-column="48" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/enzyme/build/ReactWrapper.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1416">
+          <caret line="120" selection-start-line="120" selection-end-line="120" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/webpack.config.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="274">
+          <caret line="34" column="7" selection-start-line="34" selection-start-column="7" selection-end-line="34" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="18" selection-start-line="18" selection-end-line="18" selection-end-column="65" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="507">
+          <caret line="36" column="118" selection-start-line="36" selection-start-column="118" selection-end-line="36" selection-end-column="118" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/commonLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="208">
+          <caret line="190" column="12" selection-start-line="190" selection-start-column="12" selection-end-line="190" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="199">
+          <caret line="40" column="26" selection-start-line="40" selection-start-column="26" selection-end-line="40" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/api.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="205">
-          <caret line="103" column="31" selection-start-line="103" selection-start-column="31" selection-end-line="103" selection-end-column="31" />
+        <state relative-caret-position="359">
+          <caret line="97" column="14" lean-forward="true" selection-start-line="97" selection-start-column="14" selection-end-line="97" selection-end-column="14" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
@@ -2007,22 +2079,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/fnTypes.d.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="412">
-          <caret line="59" column="33" selection-start-line="59" selection-start-column="13" selection-end-line="59" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="637">
-          <caret line="123" column="21" selection-start-line="123" selection-start-column="21" selection-end-line="123" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="501">
-          <caret line="1350" column="5" selection-start-line="1350" selection-start-column="5" selection-end-line="1350" selection-end-column="5" />
+        <state relative-caret-position="199">
+          <caret line="51" column="10" selection-start-line="51" selection-start-column="10" selection-end-line="51" selection-end-column="10" />
         </state>
       </provider>
     </entry>

@@ -16,6 +16,7 @@ const stateLib = require('../src/stateLib.tsx');
 const apiLib = require('../src/api.tsx');
 const {createStore, combineReducers, applyMiddleware} = require('redux');
 const thunk = require('redux-thunk').default;
+const JSONValidator = require('../addons/is-my-json-valid-lite');
 
 // const mock = require('mock-require');
 // mock('react', 'preact');
@@ -27,6 +28,7 @@ const thunk = require('redux-thunk').default;
 // mock("react-addons-test-utils", "preact-test-utils");
 // mock("react-addons-transition-group", "preact-transition-group",);
 
+/*
 const jsdom = require('jsdom');
 const {window} = new jsdom.JSDOM('<!doctype html><html><body></body></html>')
 
@@ -47,10 +49,11 @@ global.cancelAnimationFrame = function (id) {
   clearTimeout(id);
 };
 copyProps(window, global);
-
+*/
 const Enzyme = require('enzyme');
 const AdapterReact16 = require('enzyme-adapter-react-16');
 const {Adapter: AdapterPreact} = require('enzyme-adapter-preact');
+
 
 
 const SymData = Symbol.for('FFormData');
@@ -61,7 +64,7 @@ const SymDataMap = Symbol.for('FFormDataMap');
 
 function sleep(time) {return new Promise((resolve) => setTimeout(() => resolve(), time))}
 
-describe('components tests', function () {
+/*describe('components tests', function () {
   let usePreact = 1;
   let React = usePreact ? require('preact') : require('react');
   Enzyme.configure({adapter: usePreact ? new AdapterPreact() : new AdapterReact16()});
@@ -78,7 +81,7 @@ describe('components tests', function () {
 
   //components = mock.reRequire('../src/components.tsx');
 
-});
+});*/
 
 describe('FForm comommon functions tests', function () {
 
@@ -982,11 +985,11 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
     const rootReducer = combineReducers({fforms: formReducer()});
     const store = createStore(rootReducer, applyMiddleware(thunk));
 
-    const simpleCore = new components.FFormStateAPI({name: 'simpleCore', schema: require('./schemaArray').default});
-    const externalCore = new components.FFormStateAPI({getState: extStore.getState, setState: extStore.setState, name: 'externalCore', schema: require('./schemaArray').default});
+    const simpleCore = new components.FFormStateAPI({name: 'simpleCore', schema: require('./schemaArray').default, JSONValidator});
+    const externalCore = new components.FFormStateAPI({getState: extStore.getState, setState: extStore.setState, name: 'externalCore', schema: require('./schemaArray').default, JSONValidator});
 
-    const simpleReduxCore = new components.FFormStateAPI({name: 'simpleReduxCore', store, schema: require('./schemaArray').default});
-    const externalReduxCore = new components.FFormStateAPI({getState: extStoreRedux.getState, setState: extStoreRedux.setState, name: 'externalReduxCore', store, schema: require('./schemaArray').default});
+    const simpleReduxCore = new components.FFormStateAPI({name: 'simpleReduxCore', store, schema: require('./schemaArray').default, JSONValidator});
+    const externalReduxCore = new components.FFormStateAPI({getState: extStoreRedux.getState, setState: extStoreRedux.setState, name: 'externalReduxCore', store, schema: require('./schemaArray').default, JSONValidator});
     const notExist = {};
 
     async function testApi(core) {

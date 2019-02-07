@@ -39,7 +39,7 @@ interface FFormProps {
   inital?: any;
   extData?: { [key: string]: any };
   fieldCache?: boolean | number;
-  noValidate?: boolean;
+  noInitValidate?: boolean;
 
   parent?: any;
 
@@ -52,6 +52,7 @@ interface FFormProps {
 interface FFormApiProps {
   schema: jsJsonSchema | JsonSchema;
   /** schema that will be used to create state */
+  JSONValidator?: any;
   objects?: { [key: string]: any };
   name?: string;
   /** name that will be used to access data in redux storage */

@@ -41,12 +41,13 @@ class FForm extends React.Component<any, any> {
   constructor(props: FFormProps, context: any) {
     super(props, context);
     const self = this;
-    let {core: coreParams, onChange, onSubmit, state, value, inital, extData, ...rest} = props;
+    let {core: coreParams, noInitValidate} = props;
 
     self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(merge(coreParams), context);
     self.parent = props.parent;
     // self.focus = self.focus.bind(self);
     self._updateValues(props);
+    if (!noInitValidate) self.api.validate(true);
     self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
     self._setRef = self._setRef.bind(self);
     self._submit = self._submit.bind(self);
@@ -138,7 +139,7 @@ class FForm extends React.Component<any, any> {
 
   render() {
     const self = this;
-    let {core, state, value, inital, extData, fieldCache, noValidate, parent, onSubmit, onChange, onStateChange, useTag: UseTag = 'form', ...rest} = self.props;
+    let {core, state, value, inital, extData, fieldCache, noInitValidate, parent, onSubmit, onChange, onStateChange, useTag: UseTag = 'form', ...rest} = self.props;
 
     return (
       <UseTag {...rest} onSubmit={self._submit}>
@@ -288,7 +289,7 @@ class FField extends FRefsGeneric {
     };
 
     self.api = {
-      validate: (path: boolean | string | Path = [], ...args: any[]) => api.validate(typeof path == 'boolean' ? path : wrapPath(path), ...args),
+      validate: (path: boolean | string | Path = './', ...args: any[]) => api.validate(typeof path == 'boolean' ? path : wrapPath(path), ...args),
       get: (...path: any[]) => api.get(wrapPath(path)),
       set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => self._cacheValue(path, value) || api.set(wrapPath(path), value, wrapOpts(opts), ...args),
       setValue: (value: any, opts: any = {}, ...args: any[]) => self._cacheValue(opts.path, value, true) || api.setValue(value, wrapOpts(opts), ...args)
@@ -998,7 +999,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Message: {
         _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
-        children:[],
+        children: [],
         $_maps: {
           children: {$: '^/fn/messages', args: ['@/messages', {}]},
           'className/hidden': {$: '^/fn/not', args: '@/status/touched'},
@@ -1156,7 +1157,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '^/sets/nBase',
       Main: {
         type: 'select',
-        children:[],
+        children: [],
         $_maps: {
           'children': {$: '^/fn/arrayOfEnum', args: ['@/fData/enum', '@/fData/enumExten', {_$widget: 'option'}], replace: false},
           'label': false
@@ -1180,7 +1181,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         $_reactRef: true,
         type: 'notInput',
         viewerProps: {$_ref: '^/sets/nBase/Main/viewerProps'},
-        children:[],
+        children: [],
         $_maps: {
           value: '@/value',
           viewer: '@/params/viewer',

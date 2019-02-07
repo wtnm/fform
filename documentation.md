@@ -2,23 +2,14 @@
 
 # Documentation
 
-
-
-- [FFStateApi](#ffstateapi)
-- [FForm](#fform)
-- [Basic schema properties](#basic-schema-properties)
-- [Extended schema properties](#extended-schema-properties)
-- [fformObjects](#fformobjects)
-- [Validation](#validation)
-- [Styling](#styling)
-- [Customization](#customization)
-- [SSR](#ssr)
+[TOC]
 
 
 ##FFStateApi
 -   `schema` - schema that will be used to create state
 -   `name?: string` - name that will be used to access data in redux storage and for fields naming
--   `objects?` - fformObjects, that contains all nessary for  components creation
+-   `objects?` - [fformObjects](#fformobjects), that contains all nessary for  components creation
+-   `JSONValidator?` - JSON schema validator for [JSON validation](#json-validation)
 -   `store?:any` - redux store. [FForm](#fform) can take store from context
 -   `getState?: () => any` - external state setter
 -   `setState?: (state: any) => void` - external state getter
@@ -29,6 +20,7 @@
 - `state?: any` - state of FFStateApi
 - `value?: any` - form's current value
 - `inital?: any` - form's inital value
+- `noInitValidate?: boolean` - skip validation on creation
 - `fieldCache?: boolean | number` - caching delay on updating form's value. Used for optimization purposes.
 - `useTag?: string | Function` - html tag. Default 'form' 
 - `parent?: any` - parent for form;
@@ -73,12 +65,13 @@
 -  `patternProperties?: { [pattern: string]: T }` - The key of this object is a regex for which properties the schema applies to
 -  `dependencies?: { [key: string]: T | string[] }` - If the key is present as a property then the string of properties must also be present. If the value is a JSON Schema then it must. Also be valid for the object if the key is  present.
 #####Combining Schemas
--  `allOf?: JSONschema[]` - used for mergeing schemas
--  `anyOf?: JSONschema[]`
+-  `allOf?: JSONschema[]` - used for merging schemas
+-  `anyOf?: JSONschema[]` - only for validation
 -  `oneOf?: JSONschema[]` - used for switching schemas
 -  `not?: JSONschema` - The entity being validated must not match this schema
 
 ##Extended schema properties
+As JSON format doesn't support js-code all function moved to [fformObjects](#fformobjects). So in schema you should specify [reference to fformObjects](#object-refs) as string value that starts with "^/". It will be resolved at [FFStateApi](#ffstateapi) creating.
 
 - `ff_placeholder?: string`- field's placeholder
 - `ff_params?: FFParamsType` - params that can be edited in state
@@ -93,17 +86,17 @@
 - `ff_presets?: string`- presets for rendering components
 - `ff_managed?: boolean`- determine that value managed by component itself (for objects and arrays)
 - `ff_enumExten?: { [key: string]: undefined | string | object }`- enum extension. Keys taken from enum. String converts to object with property `{label}`
+- `ff_validators?: string[]`- [sync/async validators](#validation) as array of [refs to fformObjects](#object-refs)
+- `ff_dataMap?: [string, string, string][]`- [maps data in state](#state-data-mapping)
 - `ff_custom?: FFCustomizeType`- component [customization](#customization)
-- `ff_layout?: FFLayoutCustomizeType` - fields order and object/group extenion
-- `ff_validators?: string[]`- sync/async validators as array of refs to [fformObjects](#fformobjects)
-- `ff_dataMap?: [string, string, string][]`- mapping values in state
+- `ff_layout?: FFLayoutCustomizeType` - fields, objects, groups in [object/turple layout](#object-layout)
 
 ##fformObjects
 Each field in form receive a set of objects that is parts of fformObjects (due to 'ff_presets' and 'ff_custom') that merges into one object. Then all functions that field finds in merged object binds to it during render. Exception is the props that starts with underscore.
 
 ####"magic" props
-- `^/` - string value that begins with "^/" determines that the value is the reference and it will be resolved respectively
-- `_` - underscore at the property name beginig prevent it from deep processing (makes only resolving if string value starts with "^/")
+- `^/`<a name="object-refs"></a> - string value that begins with "^/" determines that the value is the reference and it will be resolved respectively
+- `_` - property name that starts with underscore prevent it value from deep processing (makes only resolving if string value starts with "^/")
 - `_%widget: string | Function` - HTML tag or function that will we used as react.element
 - `_$cx: Function` - classnames processor, reference to '^/_$cx'
 - `$_ref: string` - reference starts with '^' path separated by '/', multi-refs separated by ':', <details><summary>example</summary> `{$_ref:'^/sets/base:^/sets/boolean'}`</details>
@@ -123,12 +116,21 @@ Each field in form receive a set of objects that is parts of fformObjects (due t
 - `_$cx` - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" (trusty is classnames), otherwise if value is trusty but not true it process recursively</details>
 
 ##Validation
+####JSON validation
+####Sync validation
+####Async validation
 
 
-##Styling
+##State data mapping
 
 
 ##Customization
+
+
+##Object layout
+
+
+##Styling
 
 
 ##SSR
