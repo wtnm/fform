@@ -40,6 +40,7 @@ interface FFormProps {
   extData?: { [key: string]: any };
   fieldCache?: boolean | number;
   noInitValidate?: boolean;
+  noValidate?: boolean;
 
   parent?: any;
 

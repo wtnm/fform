@@ -1,64 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="documentation inital">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="documentation more">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__tests__/testForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/testForm.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/documentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample/sample.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sample.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/source.js" beforeDir="false" afterPath="$PROJECT_DIR$/source.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src.js" beforeDir="false" afterPath="$PROJECT_DIR$/src.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/api.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/docs/api.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/docs/components.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/docs/examples.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/docs/schema.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/docs/start.md" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/fnTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/fnTypes.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/example.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/formats.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/genfn.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/require.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/fixtures/cosmic.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/additionalItems.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/additionalProperties.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/allOf.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/anyOf.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/bignum.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/default.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/definitions.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/dependencies.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/enum.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/format.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/items.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/maxItems.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/maxLength.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/maxProperties.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/maximum.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/minItems.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/minLength.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/minProperties.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/minimum.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/multipleOf.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/not.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/nullAndFormat.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/nullAndObject.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/oneOf.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/pattern.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/patternProperties.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/properties.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/ref.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/refRemote.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/required.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/type.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema-draft4/uniqueItems.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/json-schema.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/is-my-json-valid/test/misc.js" beforeDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -78,6 +24,24 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sample/style.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1140">
+              <caret line="57" lean-forward="true" selection-start-line="57" selection-end-line="57" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/sample/style.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1360">
+              <caret line="68" column="9" lean-forward="true" selection-start-line="68" selection-start-column="9" selection-end-line="68" selection-end-column="9" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="507">
@@ -87,19 +51,10 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/webpack.config.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="274">
-              <caret line="34" column="7" selection-start-line="34" selection-start-column="7" selection-end-line="34" selection-end-column="7" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/api.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="359">
-              <caret line="97" column="14" lean-forward="true" selection-start-line="97" selection-start-column="14" selection-end-line="97" selection-end-column="14" />
+            <state relative-caret-position="479">
+              <caret line="274" column="73" selection-start-line="274" selection-start-column="73" selection-end-line="274" selection-end-column="73" />
               <folding>
                 <element signature="n#!!doc" expanded="true" />
               </folding>
@@ -107,11 +62,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/fnTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="199">
-              <caret line="51" column="10" selection-start-line="51" selection-start-column="10" selection-end-line="51" selection-end-column="10" />
+            <state relative-caret-position="840">
+              <caret line="42" column="23" selection-start-line="42" selection-start-column="23" selection-end-line="42" selection-end-column="23" />
             </state>
           </provider>
         </entry>
@@ -128,17 +83,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret line="123" column="21" selection-start-line="123" selection-start-column="21" selection-end-line="123" selection-end-column="21" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret line="1013" column="6" selection-start-line="1013" selection-start-column="6" selection-end-line="1013" selection-end-column="6" />
+            <state relative-caret-position="459">
+              <caret line="102" column="10" selection-start-line="102" selection-start-column="2" selection-end-line="102" selection-end-column="10" />
             </state>
           </provider>
         </entry>
@@ -146,8 +92,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/components.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="199">
-              <caret line="40" column="26" selection-start-line="40" selection-start-column="26" selection-end-line="40" selection-end-column="26" />
+            <state relative-caret-position="232">
+              <caret line="789" column="16" selection-start-line="789" selection-start-column="9" selection-end-line="789" selection-end-column="16" />
             </state>
           </provider>
         </entry>
@@ -164,8 +110,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/dataTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret line="99" column="48" selection-start-line="99" selection-start-column="48" selection-end-line="99" selection-end-column="48" />
+            <state relative-caret-position="360">
+              <caret line="18" column="1" lean-forward="true" selection-start-line="18" selection-start-column="1" selection-end-line="18" selection-end-column="1" />
             </state>
           </provider>
         </entry>
@@ -1191,14 +1137,7 @@
       <workItem from="1549334844586" duration="12502000" />
       <workItem from="1549364451352" duration="3306000" />
       <workItem from="1549426609765" duration="10189000" />
-      <workItem from="1549520670195" duration="3629000" />
-    </task>
-    <task id="LOCAL-00006" summary="reworked">
-      <created>1546261350866</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1546261350866</updated>
+      <workItem from="1549520670195" duration="7636000" />
     </task>
     <task id="LOCAL-00007" summary="some fixes, multitype inital changes">
       <created>1546474237072</created>
@@ -1536,7 +1475,14 @@
       <option name="project" value="LOCAL" />
       <updated>1549462049636</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="documentation more">
+      <created>1549530266897</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1549530266898</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1572,7 +1518,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3260662000" />
+    <option name="totallyTimeSpent" value="3264669000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1588,8 +1534,8 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.5228216" visible="true" weight="0.13333334" />
-      <window_info active="true" id="Structure" order="2" sideWeight="0.47717842" side_tool="true" visible="true" weight="0.121164024" />
+      <window_info active="true" content_ui="combo" id="Project" order="1" sideWeight="0.5228216" visible="true" weight="0.13333334" />
+      <window_info id="Structure" order="2" sideWeight="0.47717842" side_tool="true" visible="true" weight="0.121164024" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.47663552" side_tool="true" weight="0.107407406" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
@@ -1646,7 +1592,8 @@
     <MESSAGE value="components focus fix" />
     <MESSAGE value="components fixes" />
     <MESSAGE value="documentation inital" />
-    <option name="LAST_COMMIT_MESSAGE" value="documentation inital" />
+    <MESSAGE value="documentation more" />
+    <option name="LAST_COMMIT_MESSAGE" value="documentation more" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1968,13 +1915,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sample/style.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1275">
-          <caret line="85" column="18" selection-start-line="85" selection-start-column="18" selection-end-line="85" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/sample/tacit.addon.css">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -1983,13 +1923,6 @@
         <state split_layout="SPLIT">
           <first_editor />
           <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sample/style.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret line="37" column="20" selection-start-line="37" selection-start-column="20" selection-end-line="37" selection-end-column="20" />
         </state>
       </provider>
     </entry>
@@ -2004,24 +1937,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret line="123" column="21" selection-start-line="123" selection-start-column="21" selection-end-line="123" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
       <provider selected="true" editor-type-id="text-editor">
         <state>
           <caret line="1013" column="6" selection-start-line="1013" selection-start-column="6" selection-end-line="1013" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/dataTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret line="99" column="48" selection-start-line="99" selection-start-column="48" selection-end-line="99" selection-end-column="48" />
         </state>
       </provider>
     </entry>
@@ -2046,10 +1965,34 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
+    <entry file="file://$PROJECT_DIR$/src/fnTypes.d.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="507">
-          <caret line="36" column="118" selection-start-line="36" selection-start-column="118" selection-end-line="36" selection-end-column="118" />
+        <state relative-caret-position="840">
+          <caret line="42" column="23" selection-start-line="42" selection-start-column="23" selection-end-line="42" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/dataTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="360">
+          <caret line="18" column="1" lean-forward="true" selection-start-line="18" selection-start-column="1" selection-end-line="18" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/api.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="479">
+          <caret line="274" column="73" selection-start-line="274" selection-start-column="73" selection-end-line="274" selection-end-column="73" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="232">
+          <caret line="789" column="16" selection-start-line="789" selection-start-column="9" selection-end-line="789" selection-end-column="16" />
         </state>
       </provider>
     </entry>
@@ -2060,27 +2003,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/components.tsx">
+    <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="199">
-          <caret line="40" column="26" selection-start-line="40" selection-start-column="26" selection-end-line="40" selection-end-column="26" />
+        <state relative-caret-position="459">
+          <caret line="102" column="10" selection-start-line="102" selection-start-column="2" selection-end-line="102" selection-end-column="10" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/api.tsx">
+    <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="359">
-          <caret line="97" column="14" lean-forward="true" selection-start-line="97" selection-start-column="14" selection-end-line="97" selection-end-column="14" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
+        <state relative-caret-position="507">
+          <caret line="36" column="118" selection-start-line="36" selection-start-column="118" selection-end-line="36" selection-end-column="118" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/fnTypes.d.ts">
+    <entry file="file://$PROJECT_DIR$/sample/style.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="199">
-          <caret line="51" column="10" selection-start-line="51" selection-start-column="10" selection-end-line="51" selection-end-column="10" />
+        <state relative-caret-position="1140">
+          <caret line="57" lean-forward="true" selection-start-line="57" selection-end-line="57" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sample/style.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1360">
+          <caret line="68" column="9" lean-forward="true" selection-start-line="68" selection-start-column="9" selection-end-line="68" selection-end-column="9" />
         </state>
       </provider>
     </entry>
