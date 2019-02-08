@@ -2,12 +2,13 @@
 
 # Documentation
 
+
 [TOC]
 
 
 
 ##FForm
-- `core` - instance of FFStateApi or object with [FFStateApi props](#ffstateapi) 
+- `core` - instance of [FFStateApi](#ffstateapi)  or object with [FFStateApi props](#ffstateapi) 
 - `state?: any` - state of FFStateApi
 - `value?: any` - form's current value
 - `inital?: any` - form's inital value
@@ -19,7 +20,11 @@
 - `onChange?: (value: any, fform?: any) => void` -
 - `onStateChange?: (state: any, fform?: any) => void` -
 
+#####Passing [FFStateApi props](#ffstateapi)
+Property `core` with [FFStateApi props](#ffstateapi) processed only on creation (creating new instance of [FFStateApi](#ffstateapi)). On property update, if `core` is object with [FFStateApi props](#ffstateapi) then `core` is ignored (new instance of [FFStateApi](#ffstateapi) is not created). Otherwise, if (on property update) `core` is instance of [FFStateApi](#ffstateapi)  `FForm` component will make full rebuild.
 
+#####Using with redux Provider
+`FFrom` can take store from context on creation if property `core` is object with [FFStateApi props](#ffstateapi). Just put `FForm` inside redux `Provider` with properly created store and leave `store` property undefined. To prevent from taking store from context (and not using store at all) set `store` property to false or null.
 
 ##FFStateApi
 On creation pass to constructor object as first argument with following props:
@@ -33,23 +38,133 @@ On creation pass to constructor object as first argument with following props:
 
 After creation FFStateApi can be manipulated throught [API methods](#api)
 
-##API
-#####set
-#####get
-#####setValue
-#####getValue
-#####getDefaultValue
-#####clear
-#####reset
-#####validate
-#####arrayAdd
-#####arrayItemOps
-#####setHidden
-#####showOnly
-#####getSchemaPart
-#####getActive
-#####execute
+#####Redux storage
+Create redux store with [thunk](#https://github.com/reduxjs/redux-thunk) and with `formReducer` with "fforms" in root reducer: 
+```
+const {formReducer} = require('fform');
+const {createStore, combineReducers, applyMiddleware} = require('redux');
+const thunk = require('redux-thunk').default;
+store = createStore(combineReducers({fforms: formReducer()}), applyMiddleware(thunk))
+```
+Then pass redux store in `store` property on [FFStateApi](#ffstateapi) creation:
+```
+const {FFormStateAPI} = require('fform');
+stateApi = new FFormStateAPI({store, schema})
+```
 
+#####External storage
+Pass `setState/getState` function  from any storage on [FFStateApi](#ffstateapi) creation and it will use them for setting and getting fform state.
+
+#####Internal storage
+if no `setState/getState` or `store` are passed on creation then [FFStateApi](#ffstateapi) will use own internal storage for fform state.
+
+
+
+##API
+- #####`get(...pathes: string | string[]`)
+*Returns* data in [path(es)](#path)
+
+- #####`set(path: string | string[], value: any, opts?: setOpts )`
+Set value in path. *Returns* [setPromise](#setpromise)
+	- `path: string | string[]` - [path](#path) to data
+	- `value: any` - value to set
+	- `opts?: setOpts` - object with props:
+		- [APIOptsType](#apioptstype)
+		- `replace?: boolean` - replace value if true or merge if false (actual for objects and arrays)
+		- `setOneOf?: number` - will try to switch to [oneOf index](#combining-schemas)
+		- `macros?: string` - excute macros
+
+
+- #####`getValue(opts?: getValueOpts)`
+*Returns* form's value
+	- `opts: getValueOpts` - object with props:
+		- `path?: string | string[]` - path to field. If not passed value of all form will be returned.
+		- `inital?: boolean` - if true returns inital value else current value will be returned
+
+
+- #####`setValue(value: any, opts?: setValueOpts)`
+Set form's value *Returns* [setPromise](#setpromise)
+	- `value: any` - value to set
+	- `opts?: setValueOpts` - object with props:
+		- [APIOptsType](#apioptstype)
+		- `path?: string | string[]` - path to field. If not passed value of all form will be set.
+		- `inital?: boolean` - if true returns inital value else current value will be returned
+		- `replace?: boolean` - replace value if true or merge if false (actual for objects and arrays)
+		- `setOneOf?: number` - will try to switch to [oneOf index](#combining-schemas)
+
+
+- #####`getDefaultValue()`
+*Returns* form's default value
+
+
+- #####`reset(opts?: resetOpts)`
+Set form's value to inital. *Returns* [setPromise](#setpromise)
+	- `opts?: resetOpts` - object with props:
+		- [APIOptsType](#apioptstype)
+		- `path?: string | string[]` - path to field. If not passed all form will be reset.
+		- `status?: 'untouched' | 'invalid' | 'dirty' | 'pending'` = resets passed status instead of reseting form's value
+
+
+- #####`clear(opts?: clearOpts)`
+Set form's value to default. *Returns* [setPromise](#setpromise)
+	- `opts?: clearOpts` - object with props:
+		- [APIOptsType](#apioptstype)
+		- `path?: string | string[]` - path to field. If not passed all form will be cleared.
+
+
+- #####`validate(path: boolean | string | string[], opts?: APIOptsType)`
+Validates form in path.  *Returns* [setPromise](#setpromise)
+	- `path: string | string[]` - If path is `true` then validates full form. If path is `false` then cancel any validation that was set before.
+	- `opts?: `[APIOptsType](#apioptstype)
+
+
+- #####`arrayAdd(path: string | string[], value: number | any[], opts?: APIOptsType)`
+*Returns* [setPromise](#setpromise)
+	- `path: string | string[]` - path to array field
+	- `value` - number determines how many items will added (or removed if negtive). If value is any[] then it will be concated to existing array's value
+	- `opts?: `[APIOptsType](#apioptstype)
+
+
+- #####`arrayItemOps(path: string | string[], op: string, opts: arrayItemOpts)`
+*Returns* [setPromise](#setpromise)
+	- `path: string | string[]` - path to array's item field
+	- `op: 'up' | 'down' | 'first' | 'last' | 'del' | 'move' | 'shift'` - operation that should be done to item
+	- `opts?: arrayItemOpts` - object with props:
+		- [APIOptsType](#apioptstype)
+		- `value?: number` - for 'move' and 'shift'`operations. If 'move' then item will be moved to that position. If 'shift' then item will be shifted to that value
+
+
+- #####`setHidden(path: string | string[], value?: boolean, opts?: APIOptsType)`
+Set hidden param in [path](#path). *Returns* [setPromise](#setpromise)
+	- `path: string | string[]` - path to field
+	- `value?: boolean` - value that shold be set to param hidden. Default is true.
+	- `opts?: `[APIOptsType](#apioptstype)
+
+
+- #####`showOnly(path: string | string[], opts?: APIOptsType)`
+Shows properties of object in  [path](#path) and hides others. *Returns* [setPromise](#setpromise)
+	- `path: string | string[]` - path to field
+	- `opts?: `[APIOptsType](#apioptstype)
+
+
+- #####`getActive()`
+*Returns* path of currently active field.
+
+
+
+- #####`execute()`
+Executes all bathed updates.  *Returns* [setPromise](#setpromise)
+
+
+
+**Path explanation** <a name="path"></a>:
+
+**setPromise** <a name="setpromise"></a>:
+
+**APIOptsType** <a name="apioptstype"></a>:
+- `execute?: true | number` - if true then execute synchronously and immediatly. If number then executed asynchronously after number in milliseconds passed. Default is 0, that means asynchronous execution right after calling code is finished.
+Multiply asynchronous commands are stacking in batch and executes together.
+- `noValidation?: boolean` - No validation is made if true.
 
 ##Basic schema properties
 - `$ref?: string`
@@ -113,6 +228,36 @@ As JSON format doesn't support js-code all function moved to [fformObjects](#ffo
 - `ff_custom?: FFCustomizeType`- component [customization](#customization)
 - `ff_layout?: FFLayoutCustomizeType` - fields, objects, groups in [object/turple layout](#object-layout)
 
+###Validation
+#####JSON validation
+For JSON validation used [is-my-json-valid](#https://github.com/mafintosh/is-my-json-valid) with modifications for smaller (3 times) bundle size. It is placed in `addons/is-my-json-valid-lite`. Pass it as `JSONValidator` property for [FFStateApi](#ffstateapi). Default group for JSON validation is 0.
+#####Sync validation
+Custom function that receive value as first parameter and should return string or object in the following format (or array of strings or objects):
+-  `group?: number` - group that replaces on each validation call. By default 0 - used for JSON validation, 1 - for sync validation, 2 - for async validation.
+-  `text: string | string[]` - message(s) that should be displayed
+-  `priority?: number` - Default value 0. If field has at least one message with priority 0 it means that validation failed. Any priority greater that 0 doesn't affect validation status (used for warning, info, success etc). 
+-  `path?: string` - path to another field for which you want to set message.
+-  `{[key: string]: any}` - result may have any other props (such as className or style). It will be added to div layer for that priority on render.
+
+
+#####Async validation
+If function return promise then on resolve its result will be processed as for sync function (with default group equal 2)
+
+
+####Customization
+Each field build from following blocks: 
+- `Wrapper` - wrapps all and add array item controls when field is array element
+- `Title` - shows title property fromschema, and provide array add/del buttons when field is array
+- `Body` - contains Main and Messages to align then together
+- `Main` - in this block input element is placed
+- `Messages` - element that shows messages (error, warnigns, info etc)
+
+In `ff_custom` schema property you can add/overwrite any proprerty of any block. It supports [fformObjects "magic" props](#magic-props). It merges with `ff_presets` refs on field build. More details in examples.
+
+####Object layout
+Schema property `ff_layout` can be object or array of strings | objects. String is the name of field and it determines the order in which fields will be placed. Object supports [fformObjects "magic" props](#magic-props) with `$_fields` (that is array of strings | objects) property and can be customized. More details in examples.
+
+
 ##fformObjects
 Each field in form receive a set of objects that is parts of fformObjects (due to 'ff_presets' and 'ff_custom') that merges into one object. Then all functions that field finds in merged object binds to it during render. Exception is the props that starts with underscore.
 
@@ -137,44 +282,16 @@ Each field in form receive a set of objects that is parts of fformObjects (due t
 - `parts` - commonly used parts of components
 - `_$cx` - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" (trusty is classnames), otherwise if value is trusty but not true it process recursively</details>
 
-##Validation
-####JSON validation
-For JSON validation used [is-my-json-valid](#https://github.com/mafintosh/is-my-json-valid) with modifications for smaller (3 times) bundle size. It is placed in `addons/is-my-json-valid-lite`. Pass it as `JSONValidator` property for [FFStateApi](#ffstateapi). Default group for JSON validation is 0.
-####Sync validation
-Custom function that receive value as first parameter and should return string or object in the following format (or array of strings or objects):
--  `group?: number` - group that replaces on each validation call. By default 0 - used for JSON validation, 1 - for sync validation, 2 - for async validation.
--  `text: string | string[]` - message(s) that should be displayed
--  `priority?: number` - Default value 0. If field has at least one message with priority 0 it means that validation failed. Any priority greater that 0 doesn't affect validation status (used for warning, info, success etc). 
--  `path?: string` - path to another field for which you want to set message.
--  `{[key: string]: any}` - result may have any other props (such as className or style). It will be added to div layer for that priority on render.
-
-
-####Async validation
-If function return promise then on resolve its result will be processed as for sync function (with default group equal 2)
-
-
-##Customization
-Each field build from following blocks: 
-- `Wrapper` - wrapps all and add array item controls when field is array element
-- `Title` - shows title property fromschema, and provide array add/del buttons when field is array
-- `Body` - contains Main and Messages to align then together
-- `Main` - in this block input element is placed
-- `Messages` - element that shows messages (error, warnigns, info etc)
-
-In `ff_custom` schema property you can add/overwrite any proprerty of any block. It supports [fformObjects "magic" props](#magic-props). It merges with `ff_presets` refs on field build. More details in examples.
-
-##Object layout
-`ff_layout` can be object or array of strings | objects. String is the name of field and it determines the order in which fields will be placed. Object supports [fformObjects "magic" props](#magic-props) with `$_fields` property and can be customized freely. More details in examples.
 
 ##Styling
-FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) and can be binded class name replacement.
+FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)) and it can be binded for class name's replacement.
 Classes that are used in [fformObjects](#fformobjects):
-`hidden`
-`priority_1`
-`inline`
-`required`
+`hidden` - to hide elements
+`priority_0` - for errors styling
+`inline` - to place elements in line
+`required` - to mark title as required
 
-All classes that can be apllied to every block and set in [fformObjects](#fformobjects) placed in `sample/style.json` 
+All classNames that can be apllied to blocks and sets in [fformObjects](#fformobjects) can be in `sample/style.json` 
 
 ##SSR
 

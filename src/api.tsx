@@ -269,7 +269,7 @@ class FFormStateAPI extends FFormStateManager {
 
   getActive = () => this.get(SymData, 'active');
 
-  validate = (path: boolean | string | Path = [], opts: APIOptsType = {}) => {
+  validate = (path: boolean | string | Path = true, opts: APIOptsType = {}) => {
     const self = this;
     if (typeof path == 'boolean') self._validation = path;
     else normalizeUpdate({path: path, value: true}, self.getState()).forEach(i => self._validation = setIfNotDeeper(self._validation || {}, true, i.path));
@@ -285,7 +285,7 @@ class FFormStateAPI extends FFormStateManager {
     return this._setExecution((update as StateApiUpdateType), opts);
   };
 
-  getValue = (opts: APIOptsType & { path?: string | Path, inital?: boolean } = {}): any => {
+  getValue = (opts: { path?: string | Path, inital?: boolean } = {}): any => {
     const path = normalizePath(opts.path || []);
     return getIn(this.getState(), SymData, opts.inital ? 'inital' : 'current', path);
   };
@@ -297,12 +297,12 @@ class FFormStateAPI extends FFormStateManager {
     return this._setExecution(update, opts);
   };
 
-  getDefaultValue = (opts: { path?: string | Path, flatten?: boolean } = {}) => getDefaultFromSchema(this.schema);
-
-  clear = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymClear, opts);
+  getDefaultValue = () => getDefaultFromSchema(this.schema);
 
   reset = (opts: APIOptsType & { path?: string | Path, status?: string } = {}) =>
     opts.status ? this.set([(opts.path || '/'), '@status/' + opts.status], SymReset, {macros: 'switch'}) : this.setValue(SymReset, opts);
+
+  clear = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymClear, opts);
 
   arrayAdd = (path: string | Path, value: number | any[] = 1, opts: APIOptsType = {}) =>
     this._setExecution({path, value: value, macros: 'array', ...opts}, opts);

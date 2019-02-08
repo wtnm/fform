@@ -981,7 +981,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
       setState: (state) => extStore.state = state
     };
 
-    const formReducer = apiLib.formReducer;
+    const formReducer = components.formReducer;
     const rootReducer = combineReducers({fforms: formReducer()});
     const store = createStore(rootReducer, applyMiddleware(thunk));
 

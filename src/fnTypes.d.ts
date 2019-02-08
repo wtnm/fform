@@ -117,9 +117,6 @@ type APIOptsType = {
   execute?: boolean | number;
   force?: boolean;
   noValidation?: boolean;
-  //returnItems?: boolean;
-  // async?: boolean | 'syncValidation';
-  //getState?: any;
 }
 
 interface apiPromises extends Promise<any> {

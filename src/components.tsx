@@ -18,7 +18,7 @@ import {
   isNPath,
   multiplyPath,
 } from './stateLib'
-import {FFormStateAPI, fformCores, objectResolver} from './api'
+import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
 import Timeout = NodeJS.Timeout;
 
 
@@ -43,7 +43,7 @@ class FForm extends React.Component<any, any> {
     const self = this;
     let {core: coreParams, noInitValidate} = props;
 
-    self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(merge(coreParams), context);
+    self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
     self.parent = props.parent;
     // self.focus = self.focus.bind(self);
     self._updateValues(props);
@@ -87,7 +87,7 @@ class FForm extends React.Component<any, any> {
   }
 
   _getCoreFromParams(coreParams: any, context: any) {
-    if (!coreParams.store && coreParams.store !== false && context.store) return new FFormStateAPI(merge(coreParams, {store: context.store}));
+    if (isUndefined(coreParams.store) && context.store) return new FFormStateAPI(merge(coreParams, {store: context.store}));
     else return new FFormStateAPI(coreParams);
   }
 
@@ -1362,7 +1362,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
 };
 
 
-export {fformObjects, FForm, FFormStateAPI, fformCores, classNames};
+export {fformObjects, formReducer, FForm, FFormStateAPI, fformCores, classNames};
 
 export {extractMaps, normalizeMaps, updateProps}
 //module.exports = process.env.NODE_ENV === 'test' ? merge(module.exports, {}) : module.exports;
