@@ -60,7 +60,6 @@ interface FFieldDataType extends anyObject {
 }
 
 interface MessagesDataType {
-  priority: number;
   textGroups: string[][];
   norender?: boolean;
   className?: any;

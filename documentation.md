@@ -7,6 +7,43 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ##FForm
 - `core` - instance of [FFStateApi](#ffstateapi)  or object with [FFStateApi props](#ffstateapi) 
 - `state?: any` - state of FFStateApi
@@ -19,6 +56,8 @@
 - `onSubmit?: (value: any, fform?: any) => boolean` -
 - `onChange?: (value: any, fform?: any) => void` -
 - `onStateChange?: (state: any, fform?: any) => void` -
+
+After creation [FFStateApi](#ffstateapi) can accessed throught `api` property
 
 #####Passing [FFStateApi props](#ffstateapi)
 Property `core` with [FFStateApi props](#ffstateapi) processed only on creation (creating new instance of [FFStateApi](#ffstateapi)). On property update, if `core` is object with [FFStateApi props](#ffstateapi) then `core` is ignored (new instance of [FFStateApi](#ffstateapi) is not created). Otherwise, if (on property update) `core` is instance of [FFStateApi](#ffstateapi)  `FForm` component will make full rebuild.
@@ -65,7 +104,7 @@ if no `setState/getState` or `store` are passed on creation then [FFStateApi](#f
 *Returns* data in [path(es)](#path)
 
 - #####`set(path: string | string[], value: any, opts?: setOpts )`
-Set value in path. *Returns* [setPromise](#setpromise)
+Set value in path. *Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - [path](#path) to data
 	- `value: any` - value to set
 	- `opts?: setOpts` - object with props:
@@ -83,7 +122,7 @@ Set value in path. *Returns* [setPromise](#setpromise)
 
 
 - #####`setValue(value: any, opts?: setValueOpts)`
-Set form's value *Returns* [setPromise](#setpromise)
+Set form's value *Returns* [ApiPromise](#apipromise)
 	- `value: any` - value to set
 	- `opts?: setValueOpts` - object with props:
 		- [APIOptsType](#apioptstype)
@@ -98,7 +137,7 @@ Set form's value *Returns* [setPromise](#setpromise)
 
 
 - #####`reset(opts?: resetOpts)`
-Set form's value to inital. *Returns* [setPromise](#setpromise)
+Set form's value to inital. *Returns* [ApiPromise](#apipromise)
 	- `opts?: resetOpts` - object with props:
 		- [APIOptsType](#apioptstype)
 		- `path?: string | string[]` - path to field. If not passed all form will be reset.
@@ -106,27 +145,27 @@ Set form's value to inital. *Returns* [setPromise](#setpromise)
 
 
 - #####`clear(opts?: clearOpts)`
-Set form's value to default. *Returns* [setPromise](#setpromise)
+Set form's value to default. *Returns* [ApiPromise](#apipromise)
 	- `opts?: clearOpts` - object with props:
 		- [APIOptsType](#apioptstype)
 		- `path?: string | string[]` - path to field. If not passed all form will be cleared.
 
 
 - #####`validate(path: boolean | string | string[], opts?: APIOptsType)`
-Validates form in path.  *Returns* [setPromise](#setpromise)
+Validates form in path.  *Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - If path is `true` then validates full form. If path is `false` then cancel any validation that was set before.
 	- `opts?: `[APIOptsType](#apioptstype)
 
 
 - #####`arrayAdd(path: string | string[], value: number | any[], opts?: APIOptsType)`
-*Returns* [setPromise](#setpromise)
+*Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - path to array field
 	- `value` - number determines how many items will added (or removed if negtive). If value is any[] then it will be concated to existing array's value
 	- `opts?: `[APIOptsType](#apioptstype)
 
 
 - #####`arrayItemOps(path: string | string[], op: string, opts: arrayItemOpts)`
-*Returns* [setPromise](#setpromise)
+*Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - path to array's item field
 	- `op: 'up' | 'down' | 'first' | 'last' | 'del' | 'move' | 'shift'` - operation that should be done to item
 	- `opts?: arrayItemOpts` - object with props:
@@ -135,14 +174,14 @@ Validates form in path.  *Returns* [setPromise](#setpromise)
 
 
 - #####`setHidden(path: string | string[], value?: boolean, opts?: APIOptsType)`
-Set hidden param in [path](#path). *Returns* [setPromise](#setpromise)
+Set hidden param in [path](#path). *Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - path to field
 	- `value?: boolean` - value that shold be set to param hidden. Default is true.
 	- `opts?: `[APIOptsType](#apioptstype)
 
 
 - #####`showOnly(path: string | string[], opts?: APIOptsType)`
-Shows properties of object in  [path](#path) and hides others. *Returns* [setPromise](#setpromise)
+Shows properties of object in  [path](#path) and hides others. *Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - path to field
 	- `opts?: `[APIOptsType](#apioptstype)
 
@@ -151,20 +190,72 @@ Shows properties of object in  [path](#path) and hides others. *Returns* [setPro
 *Returns* path of currently active field.
 
 
-
 - #####`execute()`
-Executes all bathed updates.  *Returns* [setPromise](#setpromise)
+Executes all bathed updates.  *Returns* [ApiPromise](#apipromise)
 
 
+**ApiPromise** <a name="apipromise"></a>:
+API set functions returns promise that will be resolved after changes is made (actual only for asyncronous updates).
+Also returned promise has property 'vAsync' which is promis either. This promise will be resolved after all async validation that was triggered by update will be resolved.
 
-**Path explanation** <a name="path"></a>:
 
-**setPromise** <a name="setpromise"></a>:
-
-**APIOptsType** <a name="apioptstype"></a>:
+**ApiOptsType** <a name="apioptstype"></a>:
 - `execute?: true | number` - if true then execute synchronously and immediatly. If number then executed asynchronously after number in milliseconds passed. Default is 0, that means asynchronous execution right after calling code is finished.
 Multiply asynchronous commands are stacking in batch and executes together.
 - `noValidation?: boolean` - No validation is made if true.
+
+
+##Path <a name="path"></a>
+String (or array or strings) value delimited with '/' that describes path to field. Following pathes are equal:` '#/obects/array/field_1',  ['#', 'object/array', 'field_1'], ['object', '/array/', '/field_1/']`
+
+Each field has [data object](#data-object) that can be accessed in path by using `'@'` symbol: `'/field_1@value', ['object/array', '@', 'length']`
+
+`'#'` - is the root element of schema state. Can be ommited.
+
+Path can be relative. Relative path starts with `'.'` or `'..'` and resolved relatively fields it eas used.
+
+API set functions support path-muliplying:
+- Comma-separated fields. Path 'array/1,2/field,prop' turns to 4 pathes 'array/1/field', 'array/1/prop', 'array/2/field', 'array/2/prop'. Works for both field-part(part before '@') and data-part(part after '@') of path.
+- Symbol `'*'` turns into all props of object/array. Path 'array/*' (for arrat with length 3) turns to 'array/0', 'array/1', 'array/2'. Works only for field-part(part before '@') of path.
+
+##Data object <a name="data-object"></a>
+Each field has data object that is created according to [JSON schema](#basic-schema-properties) and can be changed throught [API](#api)
+Data object has the following props:
+- `value?: any`
+- `length?: number`
+- `oneOf: number`
+- `fData`:
+    - `title: string`
+    - `type: string`
+    - `required: boolean`
+    - `canAdd?: boolean`
+    - `placeholder?: string`
+- `status`:
+    - `priority?: number`
+    - `invalid: number` - 0 if all children is 0
+    - `dirty: number` - 0 if all children is 0
+    - `untouched: number` - 0 if all children is 0
+    - `pending: number` - 0 if all children is 0
+    - `valid: boolean` - null if pending else !invalid
+    - `pristine: boolean` - !dirty
+    - `touched: boolean` - !untouched
+- `params`:
+	- `liveValidate?: boolean`
+	- `autofocus?: boolean`
+	- `readonly?: boolean`
+	- `disabled?: boolean`
+	- `hidden?: boolean`
+	- `norender?: boolean`
+	- `viewer?: boolean`
+-  `arrayItem?`:
+    `canUp?: boolean`
+    `canDown?: boolean`
+    `canDel?: boolean`
+-  `messages?: { [priority: number]: {`
+	- `textGroups: string[][]`
+	- `norender?: boolean`
+`} )`
+
 
 ##Basic schema properties
 - `$ref?: string`

@@ -1225,8 +1225,8 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     equal: function (a: any, ...args: any[]) {return args.some(b => a === b)},
     messages: function (messages: any[], staticProps: anyObject = {}) {
       const {className: cnSP = {}, ...restSP} = staticProps;
-      return objKeys(messages).map(key => {
-        const {priority = key, norender, textGroups, className = {}, ...rest} = messages[key];
+      return objKeys(messages).map(priority => {
+        const {norender, textGroups, className = {}, ...rest} = messages[priority];
         const texts: any[] = [];
         objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey], {_$widget: 'br'}));
         if (norender || !texts.length) return null;
