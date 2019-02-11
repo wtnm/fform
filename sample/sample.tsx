@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import {FForm, fformObjects} from '../src/components';
 import * as sampleSchema from './sampleSchema.json'
-import * as style from './style.json'
+import * as style from '../addons/styles.json'
 
 const {render} = require('react-dom');
 //const {render} = require('preact');

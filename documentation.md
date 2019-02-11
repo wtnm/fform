@@ -382,7 +382,7 @@ Classes that are used in [fformObjects](#fformobjects):
 `inline` - to place elements in line
 `required` - to mark title as required
 
-All classNames that can be apllied to blocks and sets in [fformObjects](#fformobjects) can be in `sample/style.json` 
+All classNames that can be apllied to [fformObjects](#fformobjects) can be found in `addons/styles.json` 
 
 ##SSR
 

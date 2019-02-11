@@ -342,6 +342,7 @@ class FField extends FRefsGeneric {
     self._blocks.forEach((block: string) => {
       //let {$_maps, rest} = extractMaps(comps[block]);
       const {_$widget, $_reactRef, ...staticProps} = comps[block];
+      if (!_$widget) throw new Error('_$widget for "' + block + '" is empty in path "' + self.path + '"');
       self._widgets[block] = _$widget;
       if ($_reactRef) { // $_reactRef - prop for react ref-function
         const $ref = self._refProcess('@' + block, $_reactRef);
@@ -505,7 +506,6 @@ class FSection extends FRefsGeneric {
 
     const {$branch, $layout, _$cx, arrayStart, LayoutDefaultWidget = 'div', LayoutDefaultClass = 'layout', uniqKey, focusField} = props;
 
-    if (isSelfManaged($branch)) return;
     const mapsKeys = ['build', 'data', 'every'];
     mapsKeys.forEach(k => self._maps[k] = []);
     self.$refs = {};
@@ -639,6 +639,7 @@ class FSection extends FRefsGeneric {
       rest.value = props.$FField.value;
       return React.createElement(_$widget, rest)
     }
+    if (isSelfManaged(props.$branch)) return null;
     if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
     return <FSectionWidget _$widget={self._$widget} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
                            getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
@@ -886,6 +887,11 @@ function normalizeMaps($_maps: any, prePath = '') {
   return result
 }
 
+function processFn(map: any, nextData: any) {
+  const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
+  return deArray(toArray(map.$).reduce((args, fn) => toArray(fn(...args)), map.dataRequest ? map.args.map(getFromData) : map.args), map.arrayResult);
+}
+
 function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
   const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
   const needUpdate = (map: NormalizedPropsMapType) => isUndefined(prevData) || !map.$ || map.update != 'data' ||
@@ -893,7 +899,7 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
   const dataUpdates = {update: {}, replace: {}};
   iterMaps.forEach(m => m && m.forEach(map => {
       if (!needUpdate(map)) return;
-      const value = map.$ ? deArray(toArray(map.$).reduce((args, fn) => toArray(fn(...args)), map.dataRequest ? map.args.map(getFromData) : map.args), map.arrayResult) : getFromData(map.args);
+      const value = map.$ ? processFn(map, nextData) : getIn(nextData, map.args);
       objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, map.replace, map.to[k]));
       if (!map.replace) mappedData = mergeStatePROCEDURE(mappedData, dataUpdates);
     })
@@ -1115,8 +1121,10 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     },
     booleanNullLeft: {
       $_ref: '^/sets/booleanLeft',
-      $_reactRef: {'0': {ref: false, tagRef: true}},
-      Main: {children: [{$_ref: '^/sets/booleanNull/Main'}, {}]}
+      Main: {
+        $_reactRef: {'0': {ref: false, tagRef: true}},
+        children: [{$_ref: '^/sets/booleanNull/Main'}, {}]
+      }
     },
     object: {
       $_ref: '^/sets/base',

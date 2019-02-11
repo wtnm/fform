@@ -88,7 +88,7 @@ interface FFCommonSchemaType {
   ff_presets?: string; // presets for rendering components
   ff_managed?: boolean; // determine that value managed by component itself (for objects and arrays)
   ff_custom?: FFCustomizeType; // components customization
-  ff_layout?: FFLayoutGeneric<FFCustomizeType>; // fields order and object/group extenion
+  ff_layout?: FFLayoutGeneric<FFCustomizeType> | Array<string | FFLayoutGeneric<FFCustomizeType>>; // fields order and object/group extenion
   ff_enumExten?: { [key: string]: undefined | string | object }; // enum extension value taken from enum, string turn to label
 }
 
