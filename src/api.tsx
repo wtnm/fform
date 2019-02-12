@@ -158,7 +158,7 @@ class FFormStateManager {
     let result = this._validator.errors;
     if (!result) return [];
     if (!isArray(result)) result = [result];
-    return result.map((item: any) => [item.field.replace('["','.').replace('"]','').split('.').slice(1), item.message])
+    return result.map((item: any) => [item.field.replace('["', '.').replace('"]', '').split('.').slice(1), item.message])
   }
 
   private _handleChange() {
@@ -672,8 +672,10 @@ function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boole
   objKeys(result).forEach((key) => {
     const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '^/' ? convRef(result[key]) : result[key];
     if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _
-    else if (extract2SymData && key.substr(-5) == '.bind') setIn(retResult, resolvedValue, SymData, string2path(key));
-    else if (isMergeable(resolvedValue)) {
+    else if (extract2SymData && key.substr(-5) == '.bind') {
+      const proccessed = isMergeable(resolvedValue) ? objectResolver(_objects, resolvedValue) : resolvedValue;
+      setIn(retResult, proccessed, SymData, string2path(key));
+    } else if (isMergeable(resolvedValue)) {
       retResult[key] = objectResolver(_objects, resolvedValue, extract2SymData);
       if (retResult[key][SymData]) setIn(retResult, retResult[key][SymData], SymData, key);
       delete retResult[key][SymData];

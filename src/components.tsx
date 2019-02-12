@@ -859,13 +859,23 @@ function extractMaps(obj: any, skip: string[] = []) {
   return {$_maps, rest};
 }
 
-function normalizeMaps($_maps: any, prePath = '') {
-  function normalizeArgs(args: any) {
-    let dataRequest = false;
-    args = toArray(args).map((arg: any) => isString(arg) && arg[0] == '@' ? (dataRequest = true) && normalizePath(arg.substr(1)) : arg);
-    return {dataRequest, args}
-  }
+const isMapFn = (arg: any) => isObject(arg) && arg.$;
 
+function normalizeArgs(args: any) {
+  let dataRequest = false;
+  args = toArray(isUndefined(args) ? [] : args).map((arg: any) => {
+    if (isString(arg) && arg[0] == '@') return (dataRequest = true) && normalizePath(arg.substr(1));
+    if (isMapFn(arg)) {
+      const res = normalizeArgs(arg.args);
+      if (res.dataRequest) dataRequest = true;
+      return {...arg, ...res};
+    }
+    return arg;
+  });
+  return {dataRequest, args}
+}
+
+function normalizeMaps($_maps: any, prePath = '') {
   const result: { data: NormalizedPropsMapType[], every: NormalizedPropsMapType[], build: NormalizedPropsMapType[] } = {data: [], every: [], build: []};
   objKeys($_maps).forEach(key => {
     const map = $_maps[key];
@@ -888,7 +898,11 @@ function normalizeMaps($_maps: any, prePath = '') {
 }
 
 function processFn(map: any, nextData: any) {
-  const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
+  const getFromData = (arg: any) => {
+    if (isNPath(arg)) return getIn(nextData, arg);
+    if (isMapFn(arg)) return processFn(arg, nextData);
+    return arg;
+  };
   return deArray(toArray(map.$).reduce((args, fn) => toArray(fn(...args)), map.dataRequest ? map.args.map(getFromData) : map.args), map.arrayResult);
 }
 
@@ -1201,6 +1215,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
                 '@/fData/enumExten',
                 {useTag: 'label', $_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
                 {_$widget: 'input', type: 'radio', onChange: '^/on/changeBase', onBlur: '^/on/blurBase', onFocus: '^/on/focusBase'},
+                {useTag: 'span'},
                 true
               ],
               replace: false
@@ -1211,7 +1226,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         }
       }
     },
-    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: '^/on/changeCheckboxes'}, '4': '[]'}}}}}},
+    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: '^/on/changeCheckboxes'}, '5': '[]'}}}}}},
 
     // inlineItems: {Main: {stackedProps: false}},
     // buttons: {Main: {inputProps: {className: {'button': true}}, labelProps: {className: {'button': true}}}},
@@ -1227,9 +1242,14 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     inlineLayout: {Main: {LayoutDefaultClass: {'inline': true}}},
   },
   fn: {
-    not: function (v: any) {
-      return !v
+    processing: function (...args: any[]) {
+      const dataObj = this.getData();
+      for (let i = 0; i < args.length; i += 2)
+        isMapFn(args[i + 1]) &&
+        this.api.set(args[i], processFn({...args[i + 1], ...normalizeArgs(args[i + 1].args)}, dataObj), args[i + 1].opts)
     },
+    iif: (iif: boolean, trueVal: any, falseVaL: any) => iif ? trueVal : falseVaL,
+    not: function (v: any) {return !v},
     equal: function (a: any, ...args: any[]) {return args.some(b => a === b)},
     messages: function (messages: any[], staticProps: anyObject = {}) {
       const {className: cnSP = {}, ...restSP} = staticProps;
@@ -1250,14 +1270,14 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         return {value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)), ...extenProps, ...staticProps}
       })
     },
-    enumInputs: function (enumVals: any[], enumExten: any = {}, labelProps: any = {}, inputProps: any = {}, name?: true | string) {
+    enumInputs: function (enumVals: any[], enumExten: any = {}, containerProps: any = {}, inputProps: any = {}, labelProps: any = {}, name?: true | string) {
       return enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
         return {
-          ...labelProps,
+          ...containerProps,
           children: [
             {value: val, key: val, name: name && (this.props.name + (name === true ? '' : name)), ...extenProps, ...inputProps},
-            extenProps.label || val
+            {...labelProps, children: [extenProps.label || val]}
           ]
         }
       })

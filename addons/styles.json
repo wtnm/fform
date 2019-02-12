@@ -80,12 +80,17 @@
               "args": {
                 "2": {
                   "className": {
-                    "radio-label": true
+                    "radio-container": true
                   }
                 },
                 "3": {
                   "className": {
                     "radio-input": true
+                  }
+                },
+                "4": {
+                  "className": {
+                    "radio-label": true
                   }
                 }
               }
