@@ -491,7 +491,7 @@ class FSection extends FRefsGeneric {
     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
       let {$_maps, rest} = extractMaps(layout, ['$_fields']);
       let {$_fields, $_reactRef, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
-      if (isUndefined(className) && !$_fields) className = LayoutDefaultClass;
+      if (isUndefined(className) && $_fields) className = LayoutDefaultClass;
       staticProps.className = className;
       let refObject = self._refProcess('@widget_' + counter, $_reactRef) || {};
       if (isFunction(refObject)) refObject = {'ref': refObject};
@@ -1239,7 +1239,8 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     inlineItems: {Main: {className: {'inline': true}}},
     inlineTitle: {Wrapper: {className: {'inline': true}}},
     inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'inline': true}}}},
-    inlineLayout: {Main: {LayoutDefaultClass: {'inline': true}}},
+    inlineLayout: {Main: {LayoutDefaultClass: {'layout': true, 'inline': true}}},
+    noTitle: {Title: {className: {'hidden': true}}},
   },
   fn: {
     processing: function (...args: any[]) {
