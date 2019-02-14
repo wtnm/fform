@@ -412,7 +412,10 @@ class FSectionWidget extends React.Component<any, any> { // need to be class, as
 
   _cn(props: any) {
     if (!props) return props;
-    if (this.props._$cx && props.className && !isString(props.className) && isString(this.props._$widget)) return {...props, className: this.props._$cx(props.className)};
+    if (this.props._$cx && props.className && !isString(props.className)) {
+      if (isString(this.props._$widget)) return {...props, className: this.props._$cx(props.className)};
+      else return {_$cx: this.props._$cx, ...props}
+    }
     return props;
   }
 
@@ -754,7 +757,7 @@ class UniversalInput extends GenericWidget {
 
 
 class Autowidth extends React.Component<any, any> {
-  static readonly _sizerStyle: { position: 'absolute', top: 0, left: 0, visibility: 'hidden', height: 0, overflow: 'scroll', whiteSpace: 'pre' };
+  static readonly sizerStyle: any = {position: 'absolute', top: 0, left: 0, visibility: 'hidden', height: 0, overflow: 'scroll', whiteSpace: 'pre'};
   private _elem: any;
 
   componentDidMount() {
@@ -767,11 +770,13 @@ class Autowidth extends React.Component<any, any> {
     const self = this;
     const props = self.props;
     const value = (isUndefined(props.value) ? '' : props.value.toString()) || props.placeholder || '';
-    return (<div style={Autowidth._sizerStyle as any} ref={(elem) => {
-      (self._elem = elem) && (props.$FField.$refs['@Main'].style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
+    return (<div style={Autowidth.sizerStyle as any} ref={(elem) => {
+      (self._elem = elem) &&
+      (props.$FField.$refs['@Main'].style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
     }}>{value}</div>)
   }
 }
+
 
 function FBuilder(props: any) {
   const {mapped, widgets} = props;
@@ -1117,6 +1122,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Main: {
         _$widget: '^/widgets/Generic',
         useTag: 'label',
+        _$cx: '^/_$cx',
         $_reactRef: {'0': {ref: true}},
         children: [
           {$_ref: '^/sets/nBase/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: {useTag: 'span'}},
@@ -1213,9 +1219,9 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
               args: [
                 '@/fData/enum',
                 '@/fData/enumExten',
-                {useTag: 'label', $_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
+                {useTag: 'label', _$cx: '^/_$cx', $_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
                 {_$widget: 'input', type: 'radio', onChange: '^/on/changeBase', onBlur: '^/on/blurBase', onFocus: '^/on/focusBase'},
-                {useTag: 'span'},
+                {useTag: 'span', _$cx: '^/_$cx',},
                 true
               ],
               replace: false
@@ -1378,7 +1384,8 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         del: {disabledCheck: 'canDel'},
       },
       $_maps: {'arrayItem': '@/arrayItem', 'className/button-viewer': '@/params/viewer'},
-    }
+    },
+    expander: {_$widget: 'div', className: {expand: true}}
   },
   // presetMap: {
   //   boolean: ['select', 'radio'],

@@ -55,7 +55,6 @@ const AdapterReact16 = require('enzyme-adapter-react-16');
 const {Adapter: AdapterPreact} = require('enzyme-adapter-preact');
 
 
-
 const SymData = Symbol.for('FFormData');
 const SymReset = Symbol.for('FFormReset'); // TODO: Reset tests
 // const RawValuesKeys = ['current', 'inital', 'default'];
@@ -844,7 +843,11 @@ describe('FForm api tests', function () {
 
   const objects = {
     preset: {first: {one: 'one value'}, second: {two: 'two value'}},
-    funcs: {one: function (...a) {return a}, two: function (...a) {return a}},
+    funcs: {
+      one: function (...a) {return a},
+      two: function (...a) {return a},
+      not: function (a) {return !a},
+    },
     parts: {
       first: {
         $_ref: '^/preset',

@@ -56,6 +56,10 @@
     flex-grow: 0;
 }
 
+.expand {
+    flex-grow: 10;
+}
+
 .title, .radio-label {
     margin-right: 1em;
 }

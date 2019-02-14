@@ -112,14 +112,14 @@ class FFormStateManager {
     self.name = props.name || '';
     self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
     self._reducer = formReducer();
-    self._validator = props.JSONValidator && props.JSONValidator(props.schema, {greedy: true});
+    self._validator = props.JSONValidator && props.JSONValidator(self.schema, {greedy: true});
     self.JSONValidator = self._validator && self.JSONValidator.bind(self);
     self._getState = self._getState.bind(self);
     self._setState = self._setState.bind(self);
     if (props.setState && props.store) self._unsubscribe = self.props.store.subscribe(self._handleChange.bind(self));
     if (props.name) _CORES[props.name] = self;
     // self.keyMap = getKeyMapFromSchema(self.schema, self._getState);
-    if (!self._getState()) self._setState(makeStateFromSchema(props.schema));
+    if (!self._getState()) self._setState(makeStateFromSchema(self.schema));
   }
 
   private _dispatch(action: any) {

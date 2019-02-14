@@ -67,6 +67,9 @@
             "shrink": true
           },
           "onClick": "^/user/focusInput"
+        },
+        {
+          "$_ref": "^/parts/expander"
         }
       ]
     }
@@ -253,7 +256,16 @@
       ],
       "title": "booleanNull left",
       "ff_presets": "booleanNullLeft:inlineTitle",
-      "default": false
+      "default": false,
+      "ff_dataMap": [
+        [
+          "./@/value",
+          "../booleanLeft/@/value",
+          {
+            "$": "^/fn/not"
+          }
+        ]
+      ]
     },
     "select": {
       "title": "Select",
@@ -304,6 +316,10 @@
         "option 2",
         "option 3"
       ]
+    },
+    "autowidth": {
+      "type": "number",
+      "ff_presets": "number:autowidth"
     },
     "multiselect": {
       "title": "Multiselect",
