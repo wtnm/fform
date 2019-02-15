@@ -688,9 +688,10 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
     return macro(state, schema, UPDATABLE_object, item);
   }
 
-  const {value, path, replace} = item;
+  let {value, path, replace} = item;
   const keyPath = item[SymData];
-
+  if (isFunction(value)) value = value(getUpdValue([UPDATABLE_object.update, state], path, SymData, keyPath));
+  
   if (path.length == 0 && keyPath[0] == 'inital') {
     state = merge(state, makeSlice(SymData, keyPath, value), {replace: makeSlice(SymData, keyPath, replace)})
   } else {

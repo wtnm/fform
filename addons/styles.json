@@ -69,6 +69,16 @@
         }
       }
     },
+    "booleanLeft": {
+      "Main": {
+        "className": "boolean-left-container",
+        "children": {
+          "0": {
+            "className": "boolean-left"
+          }
+        }
+      }
+    },
     "radio": {
       "Main": {
         "className": {

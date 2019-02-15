@@ -371,7 +371,7 @@ Each field in form receive a set of objects that is parts of fformObjects (due t
 - `fn` - function tha is used in $_maps/$_parse processing 
 - `on` - methotds tha used in event processing
 - `parts` - commonly used parts of components
-- `_$cx` - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" (trusty is classnames), otherwise if value is trusty but not true it process recursively</details>
+- `_$cx` - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
 
 
 ##Styling
@@ -381,6 +381,8 @@ Classes that are used in [fformObjects](#fformobjects):
 `priority_0` - for errors styling
 `inline` - to place elements in line
 `required` - to mark title as required
+`shrink` - to shrink an element
+`expand` - to expand an element
 
 All classNames that can be apllied to [fformObjects](#fformobjects) can be found in `addons/styles.json` 
 

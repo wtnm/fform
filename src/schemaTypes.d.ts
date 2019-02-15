@@ -66,7 +66,7 @@ interface JsonSchemaGeneric<T> {
   not?: T;
 }
 
-type JsonSchemaTypes = 'string' | 'number' | 'object' | 'array' | 'boolean' | 'null';
+type JsonSchemaTypes = 'string' | 'integer' | 'number' | 'object' | 'array' | 'boolean' | 'null';
 type JsonAny = anyObject | string | object | undefined | boolean | number | null;
 
 

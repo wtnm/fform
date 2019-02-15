@@ -929,8 +929,8 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
 const getExten = (enumExten: any, value: any) => (isFunction(enumExten) ? enumExten(value) : getIn(enumExten, value)) || {};
 
 
-function classNames(...styles: any) {
-  const classes = [];
+function classNames(...styles: any[]) {
+  const classes: any[] = [];
 
   for (let i = 0; i < styles.length; i++) {
     let arg = styles[i];
@@ -943,12 +943,12 @@ function classNames(...styles: any) {
     } else if (isArray(arg)) {
       classes.push(classNames.apply(this, arg));
     } else if (argType === 'object') {
-      for (let key in arg) {
-        if (arg.hasOwnProperty(key) && arg[key]) {
-          if (arg[key] === true) classes.push(this && this[key] || key);
+      objKeys(arg).forEach(key => {
+          if (!arg[key]) return;
+          if (typeof arg[key] == 'number' || arg[key] === true) classes.push(this && this[key] || key);
           else classes.push(classNames.call(this, arg[key]));
         }
-      }
+      )
     }
   }
 
@@ -1064,6 +1064,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         $_maps: {
           'className/required': '@/fData/required',
           'children/0': '@/fData/title',
+          'className/hidden': {$: '^/fn/not', args: '@/fData/title'},
           htmlFor: {$: '^/fn/getFFieldProperty', args: ['id'], update: 'build'},
           'className/title-viewer': '@/params/viewer'
         }
@@ -1246,7 +1247,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     inlineTitle: {Wrapper: {className: {'inline': true}}},
     inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'inline': true}}}},
     inlineLayout: {Main: {LayoutDefaultClass: {'layout': true, 'inline': true}}},
-    noTitle: {Title: {className: {'hidden': true}}},
+    noTitle: {Title: false},
   },
   fn: {
     processing: function (...args: any[]) {
@@ -1330,7 +1331,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   parts: {
     Autowidth: {
       _$widget: '^/widgets/Autowidth',
-      addWidth: 45,
+      addWidth: 35,
       minWidth: 60,
       $_maps: {
         value: 'value',

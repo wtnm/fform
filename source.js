@@ -601,7 +601,7 @@ function isSelfManaged(state) {
 }
 exports.isSelfManaged = isSelfManaged;
 function isSchemaSelfManaged(schemaPart, type) {
-    return type !== 'array' && type !== 'object' || commonLib_1.hasIn(schemaPart, 'ff_managed');
+    return type !== 'array' && type !== 'object' || commonLib_1.getIn(schemaPart, 'ff_managed');
 }
 exports.isSchemaSelfManaged = isSchemaSelfManaged;
 function findOneOf(oneOfShemas, value, currentOneOf) {
@@ -757,6 +757,7 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
         replace = item.replace;
 
     var keyPath = item[SymData];
+    value = commonLib_2.isFunction(value) ? value(getUpdValue([UPDATABLE_object.update, state], path, SymData, keyPath)) : value;
     if (path.length == 0 && keyPath[0] == 'inital') {
         state = commonLib_1.merge(state, commonLib_1.makeSlice(SymData, keyPath, value), { replace: commonLib_1.makeSlice(SymData, keyPath, replace) });
     } else {

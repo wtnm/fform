@@ -1,5 +1,5 @@
 "use strict";
-var __$_0__='length',__$_1__='isUndefined',__$_2__='getIn',__$_3__='forEach',__$_4__='push2array',__$_5__='concat',__$_6__='additionalItems',__$_7__='objKeys',__$_8__='value',__$_9__='isArray',__$_10__='replace',__$_11__='merge',__$_12__='makeSlice',__$_13__='oneOf',__$_14__='defaultValues',__$_15__='update',__$_16__='current',__$_17__='slice',__$_18__='isObject',__$_19__='path',__$_20__='moveArrayElems',__$_21__='setIn',__$_22__='isMergeable',__$_23__='setStatus',__$_24__='properties',__$_25__='indexOf',__$_26__='fData',__$_27__='macros',__$_28__='hasOwnProperty',__$_29__='hasIn',__$_30__='setValue',__$_31__='minItems',__$_32__='setOneOf',__$_33__='getOwnPropertySymbols',__$_34__='items',__$_35__='default',__$_36__='dataMap',__$_37__='toString',__$_38__='schemaPart';
+var __$_0__='length',__$_1__='isUndefined',__$_2__='getIn',__$_3__='push2array',__$_4__='forEach',__$_5__='concat',__$_6__='additionalItems',__$_7__='objKeys',__$_8__='value',__$_9__='isArray',__$_10__='replace',__$_11__='merge',__$_12__='update',__$_13__='makeSlice',__$_14__='oneOf',__$_15__='defaultValues',__$_16__='current',__$_17__='slice',__$_18__='isObject',__$_19__='path',__$_20__='moveArrayElems',__$_21__='isMergeable',__$_22__='setIn',__$_23__='setStatus',__$_24__='properties',__$_25__='indexOf',__$_26__='fData',__$_27__='macros',__$_28__='hasOwnProperty',__$_29__='setValue',__$_30__='setOneOf',__$_31__='minItems',__$_32__='hasIn',__$_33__='getOwnPropertySymbols',__$_34__='items',__$_35__='default',__$_36__='dataMap',__$_37__='toString',__$_38__='schemaPart',__$_39__='isFunction';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
@@ -81,12 +81,12 @@ function getBindedMaps2update(branch) {
     var maps2enable = maps2disable.map(function (map) {
         return commonLib_1[__$_11__] (map, { emitter: path });
     });
-    commonLib_1[__$_7__] (branch)[__$_3__] (function (key) {
+    commonLib_1[__$_7__] (branch)[__$_4__] (function (key) {
         var result = void 0;
         if (branch[key]) {
             result = getBindedMaps2update(branch[key], path[__$_5__] (key));
-            commonLib_1[__$_4__] (maps2disable, result.maps2disable);
-            commonLib_1[__$_4__] (maps2enable, result.maps2enable);
+            commonLib_1[__$_3__] (maps2disable, result.maps2disable);
+            commonLib_1[__$_3__] (maps2enable, result.maps2enable);
         }
     });
     return { maps2disable: maps2disable, maps2enable: maps2enable };
@@ -100,7 +100,7 @@ Macros.array = function (state, schema, UPDATABLE_object, item) {
         _b = SymData,
         sym = _a[_b],
         rest = __rest(_a, ["path", "macros", "value", (typeof _b === "undefined" ? "undefined" : _typeof(_b)) === "symbol" ? _b : _b + ""]);
-    var length = getUpdValue([UPDATABLE_object[__$_15__] , state], path, SymData, 'length');
+    var length = getUpdValue([UPDATABLE_object[__$_12__] , state], path, SymData, 'length');
     if (commonLib_2[__$_9__] (item[__$_8__] )) {
         var mergeArrayObj = [];
         var replaceArrayObj = {};
@@ -109,7 +109,7 @@ Macros.array = function (state, schema, UPDATABLE_object, item) {
             replaceArrayObj[length + i] = commonLib_1[__$_2__] (item[__$_10__] , i);
         }
         mergeArrayObj[__$_0__]  = length + item[__$_8__] .length;
-        return updateCurrentPROCEDURE(state, schema, UPDATABLE_object, mergeArrayObj, replaceArrayObj, path, item[__$_32__] );
+        return updateCurrentPROCEDURE(state, schema, UPDATABLE_object, mergeArrayObj, replaceArrayObj, path, item[__$_30__] );
     } else {
         length += item[__$_8__]  || 1;
         if (length < 0) length = 0;
@@ -123,7 +123,7 @@ Macros.arrayItem = function (state, schema, UPDATABLE_object, item) {
     var from = parseInt(path.pop());
     var to = from;
     var min = arrayStart(getSchemaPart(schema, path, oneOfFromState(state))); 
-    var length = getUpdValue([UPDATABLE_object[__$_15__] , state], path, SymData, 'length');
+    var length = getUpdValue([UPDATABLE_object[__$_12__] , state], path, SymData, 'length');
     var max = length - 1;
     if (op == 'up') to--;
     if (op == 'down') to++;
@@ -138,8 +138,8 @@ Macros.arrayItem = function (state, schema, UPDATABLE_object, item) {
     var dataMaps = {};
     var currentObject = {};
     var updObj = [];
-    updObj[0] = commonLib_1[__$_2__] (UPDATABLE_object[__$_15__] , path);
-    updObj[1] = commonLib_1[__$_2__] (UPDATABLE_object[__$_15__] , SymData, 'current', path);
+    updObj[0] = commonLib_1[__$_2__] (UPDATABLE_object[__$_12__] , path);
+    updObj[1] = commonLib_1[__$_2__] (UPDATABLE_object[__$_12__] , SymData, 'current', path);
     updObj[2] = commonLib_1[__$_2__] (UPDATABLE_object[__$_10__] , path);
     updObj[3] = commonLib_1[__$_2__] (UPDATABLE_object[__$_10__] , SymData, 'current', path);
 
@@ -148,8 +148,8 @@ Macros.arrayItem = function (state, schema, UPDATABLE_object, item) {
         arrayItems[i] = stateObject[i][SymData].arrayItem; 
         
         currentObject[i] = commonLib_1[__$_2__] (state, SymData, 'current', path, i);
-        updObj[__$_3__] (function (obj) {
-            return commonLib_2[__$_22__] (obj) && !obj[__$_28__] (i) && (obj[i] = SymClear);
+        updObj[__$_4__] (function (obj) {
+            return commonLib_2[__$_21__] (obj) && !obj[__$_28__] (i) && (obj[i] = SymClear);
         });
     };
 
@@ -163,20 +163,20 @@ Macros.arrayItem = function (state, schema, UPDATABLE_object, item) {
         maps2disable = _getBindedMaps2update.maps2disable,
         maps2enable = _getBindedMaps2update.maps2enable;
 
-    updObj[__$_3__] (function (obj) {
-        if (!commonLib_2[__$_22__] (obj)) return;
+    updObj[__$_4__] (function (obj) {
+        if (!commonLib_2[__$_21__] (obj)) return;
         commonLib_1[__$_20__] (obj, from, to);
         for (var i = Math.min(from, to); i <= Math.max(from, to); i++) {
             if (obj[i] === SymClear) delete obj[i];
         }
     });
-    commonLib_1[__$_7__] (stateObject)[__$_3__] (function (i) {
-        stateObject[i] = commonLib_1[__$_11__] (stateObject[i], commonLib_1[__$_12__] (SymData, 'arrayItem', arrayItems[i]), { replace: commonLib_1[__$_12__] (SymData, 'arrayItem', true) });
+    commonLib_1[__$_7__] (stateObject)[__$_4__] (function (i) {
+        stateObject[i] = commonLib_1[__$_11__] (stateObject[i], commonLib_1[__$_13__] (SymData, 'arrayItem', arrayItems[i]), { replace: commonLib_1[__$_13__] (SymData, 'arrayItem', true) });
         
     }); 
     
-    state = commonLib_1[__$_11__] (state, commonLib_1[__$_12__] (path, stateObject), { replace: trueIfLength(item[__$_19__] .length + 1) }); 
-    state = commonLib_1[__$_11__] (state, commonLib_1[__$_12__] (SymData, 'current', path, currentObject), { replace: trueIfLength(item[__$_19__] .length + 3) }); 
+    state = commonLib_1[__$_11__] (state, commonLib_1[__$_13__] (path, stateObject), { replace: trueIfLength(item[__$_19__] .length + 1) }); 
+    state = commonLib_1[__$_11__] (state, commonLib_1[__$_13__] (SymData, 'current', path, currentObject), { replace: trueIfLength(item[__$_19__] .length + 3) }); 
     if (op == 'del') state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, [__$_0__] , max));
     state = mergeStatePROCEDURE(state, UPDATABLE_object);
     state = setDataMapInState(state, schema, maps2disable, true);
@@ -185,15 +185,15 @@ Macros.arrayItem = function (state, schema, UPDATABLE_object, item) {
 };
 Macros.switch = function (state, schema, UPDATABLE_object, item) {
     var keyPath = item[SymData] || [];
-    var switches = commonLib_1[__$_12__] (keyPath, item[__$_8__] );
-    object2PathValues(switches)[__$_3__] (function (pathValue) {
+    var switches = commonLib_1[__$_13__] (keyPath, item[__$_8__] );
+    object2PathValues(switches)[__$_4__] (function (pathValue) {
         return state = recursivelyUpdate(state, schema, UPDATABLE_object, makeNUpdate(item[__$_19__] , pathValue, pathValue.pop()));
     });
     return state;
 };
 Macros.setExtraStatus = function (state, schema, UPDATABLE_object, item) {
     var keyPath = item[SymData] || [];
-    var prevVal = getUpdValue([UPDATABLE_object[__$_15__] , state], item[__$_19__] , SymData, keyPath);
+    var prevVal = getUpdValue([UPDATABLE_object[__$_12__] , state], item[__$_19__] , SymData, keyPath);
     var value = item[__$_8__]  > 0;
     if (!prevVal == value) {
         state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(item[__$_19__] , keyPath, value));
@@ -207,7 +207,7 @@ Macros[__$_23__]  = function (state, schema, UPDATABLE_object, item) {
     var op = keyPath[1];
     if (!op) return state;
     if (op == 'valid' || op == 'pristine' || op == 'touched') throw new Error('Setting "' + op + '" directly is not allowed');
-    var prevVal = getUpdValue([UPDATABLE_object[__$_15__] , state], item[__$_19__] , SymData, keyPath);
+    var prevVal = getUpdValue([UPDATABLE_object[__$_12__] , state], item[__$_19__] , SymData, keyPath);
     var selfManaged = isSelfManaged(state, item[__$_19__] );
     if (op == 'untouched' && prevVal == 0 && !selfManaged) return state; 
     var value = prevVal + item[__$_8__] ;
@@ -219,20 +219,20 @@ Macros[__$_23__]  = function (state, schema, UPDATABLE_object, item) {
     return state;
 };
 Macros.setCurrent = function (state, schema, UPDATABLE_object, item) {
-    return updateCurrentPROCEDURE(state, schema, UPDATABLE_object, item[__$_8__] , item[__$_10__] , item[__$_19__] , item[__$_32__] );
+    return updateCurrentPROCEDURE(state, schema, UPDATABLE_object, item[__$_8__] , item[__$_10__] , item[__$_19__] , item[__$_30__] );
 };
-Macros[__$_32__]  = function (state, schema, UPDATABLE_object, item) {
+Macros[__$_30__]  = function (state, schema, UPDATABLE_object, item) {
     var oldOneOf = commonLib_1[__$_2__] (state, item[__$_19__] , SymData, 'oneOf');
     if (oldOneOf == item[__$_8__] ) {
-        if (!commonLib_2[__$_1__] (item[__$_30__] )) state = updateCurrentPROCEDURE(state, schema, UPDATABLE_object, item[__$_30__] , false, item[__$_19__] );
+        if (!commonLib_2[__$_1__] (item[__$_29__] )) state = updateCurrentPROCEDURE(state, schema, UPDATABLE_object, item[__$_29__] , false, item[__$_19__] );
         return state;
     }
     var macros = item[__$_27__] ,
         newItem = __rest(item, [__$_27__] );
-    newItem[SymData] = [__$_13__] ;
-    if (commonLib_2[__$_1__] (newItem[__$_30__] )) {
+    newItem[SymData] = [__$_14__] ;
+    if (commonLib_2[__$_1__] (newItem[__$_29__] )) {
         state = mergeStatePROCEDURE(state, UPDATABLE_object);
-        newItem[__$_30__]  = commonLib_1[__$_2__] (state, SymData, 'current', item[__$_19__] );
+        newItem[__$_29__]  = commonLib_1[__$_2__] (state, SymData, 'current', item[__$_19__] );
     }
     return updateStatePROCEDURE(state, schema, UPDATABLE_object, newItem);
 };
@@ -258,7 +258,7 @@ function recursivelyUpdate(state, schema, UPDATABLE_object, item) {
         i[__$_8__]  = item[SymData][1] == 'untouched' ? keys[__$_0__]  : 0;
         state = updateStatePROCEDURE(state, schema, UPDATABLE_object, i);
     } else state = updateStatePROCEDURE(state, schema, UPDATABLE_object, item);
-    keys[__$_3__] (function (key) {
+    keys[__$_4__] (function (key) {
         return state = recursivelyUpdate(state, schema, UPDATABLE_object, commonLib_1[__$_11__] (item, { path: item[__$_19__] [__$_5__] (key) }));
     });
     return state;
@@ -266,7 +266,7 @@ function recursivelyUpdate(state, schema, UPDATABLE_object, item) {
 ;
 function oneOfFromState(state) {
     return function (path) {
-        var s = commonLib_1[__$_2__] (commonLib_2.isFunction(state) ? state() : state, path, SymData);
+        var s = commonLib_1[__$_2__] (commonLib_2[__$_39__] (state) ? state() : state, path, SymData);
         return { oneOf: commonLib_1[__$_2__] (s, 'oneOf'), type: commonLib_1[__$_2__] (s, 'fData', 'type') };
     };
 }
@@ -275,19 +275,19 @@ function oneOfStructure(state, path) {
     if (typeof state == 'function') state = state();
     var result = {};
     var tmp = result;
-    commonLib_1[__$_21__] (tmp, commonLib_1[__$_2__] (state, SymData, 'oneOf'), SymData, 'oneOf');
-    commonLib_1[__$_21__] (tmp, commonLib_1[__$_2__] (state, SymData, 'fData', 'type'), SymData, 'type');
+    commonLib_1[__$_22__] (tmp, commonLib_1[__$_2__] (state, SymData, 'oneOf'), SymData, 'oneOf');
+    commonLib_1[__$_22__] (tmp, commonLib_1[__$_2__] (state, SymData, 'fData', 'type'), SymData, 'type');
     for (var i = 0; i < path[__$_0__] ; i++) {
         if (commonLib_2[__$_1__] (path[i]) || path[i] === '') continue;
         tmp[path[i]] = {};
         tmp = tmp[path[i]];
         state = commonLib_1[__$_2__] (state, path[i]);
-        commonLib_1[__$_21__] (tmp, commonLib_1[__$_2__] (state, SymData, 'oneOf'), SymData, 'oneOf');
-        commonLib_1[__$_21__] (tmp, commonLib_1[__$_2__] (state, SymData, 'fData', 'type'), SymData, 'type');
+        commonLib_1[__$_22__] (tmp, commonLib_1[__$_2__] (state, SymData, 'oneOf'), SymData, 'oneOf');
+        commonLib_1[__$_22__] (tmp, commonLib_1[__$_2__] (state, SymData, 'fData', 'type'), SymData, 'type');
     }
     
     var fn = function fn(path, oneOf) {
-        return commonLib_2[__$_1__] (oneOf) ? commonLib_1[__$_2__] (result, path, SymData) : commonLib_1[__$_21__] (result, oneOf, path, SymData);
+        return commonLib_2[__$_1__] (oneOf) ? commonLib_1[__$_2__] (result, path, SymData) : commonLib_1[__$_22__] (result, oneOf, path, SymData);
     };
     fn._canSet = true;
     return fn;
@@ -329,14 +329,14 @@ function getSchemaPart(schema, path, getOneOf, fullOneOf) {
         }return schemaPart;
     }
     function combineSchemasINNER_PROCEDURE(schemaPart) {
-        if (schemaPart.$ref || schemaPart.allOf || schemaPart[__$_13__] ) {
+        if (schemaPart.$ref || schemaPart.allOf || schemaPart[__$_14__] ) {
             if (combinedSchemas.get(schemaPart)) schemaPart = combinedSchemas.get(schemaPart);else {
                 var schemaPartAsKey = schemaPart;
                 schemaPart = derefAndMergeAllOf(schema, schemaPart); 
-                if (schemaPart[__$_13__] ) {
+                if (schemaPart[__$_14__] ) {
                     var _schemaPart = schemaPart,
-                        oneOf = _schemaPart[__$_13__] ,
-                        restSchemaPart = __rest(schemaPart, [__$_13__] );
+                        oneOf = _schemaPart[__$_14__] ,
+                        restSchemaPart = __rest(schemaPart, [__$_14__] );
 
                     schemaPart = oneOf.map(function (oneOfPart) {
                         return commonLib_1[__$_11__] (derefAndMergeAllOf(schema, oneOfPart), restSchemaPart, { array: 'replace' });
@@ -371,7 +371,7 @@ function getSchemaPart(schema, path, getOneOf, fullOneOf) {
         schemaPart = combineSchemasINNER_PROCEDURE(schemaPart);
 
         var _getOneOf = getOneOf(path[__$_17__] (0, i)),
-            oneOf = _getOneOf[__$_13__] ,
+            oneOf = _getOneOf[__$_14__] ,
             _type = _getOneOf.type;
 
         if (commonLib_2[__$_9__] (schemaPart)) schemaPart = schemaPart[oneOf || 0];
@@ -384,7 +384,7 @@ function getSchemaPart(schema, path, getOneOf, fullOneOf) {
     }
     schemaPart = combineSchemasINNER_PROCEDURE(schemaPart);
     if (fullOneOf) return schemaPart;
-    if (commonLib_2[__$_9__] (schemaPart)) schemaPart = schemaPart[getOneOf(path)[__$_13__]  || 0];
+    if (commonLib_2[__$_9__] (schemaPart)) schemaPart = schemaPart[getOneOf(path)[__$_14__]  || 0];
     return schemaPart;
 }
 exports.getSchemaPart = getSchemaPart;
@@ -430,7 +430,7 @@ var makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type) {
     var result = Object.assign({ params: ff_params }, ff_data);
     if (!commonLib_2[__$_18__] (result.messages)) result.messages = {};
     if (commonLib_2[__$_1__] (value)) value = types.empty[type || 'any'];
-    result[__$_13__]  = oneOf;
+    result[__$_14__]  = oneOf;
     result.status = basicStatus;
     if (!commonLib_2[__$_18__] (result[__$_26__] )) result[__$_26__]  = {};
     result[__$_26__] .type = type;
@@ -452,7 +452,7 @@ var makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type) {
 });
 function normalizeDataMap(dataMap, path) {
     return dataMap.map(function (item) {
-        return { emitter: path, from: item[0], to: item[1], action: (commonLib_2.isFunction(item[2]) ? { $: item[2] } : item[2]) || true };
+        return { emitter: path, from: item[0], to: item[1], action: (commonLib_2[__$_39__] (item[2]) ? { $: item[2] } : item[2]) || true };
     });
 }
 function getUniqKey() {
@@ -465,12 +465,12 @@ function makeStateBranch(schema, getNSetOneOf) {
     var result = {};
     var dataMapObjects = [];
     var defaultValues = void 0;
-    var currentOneOf = (getNSetOneOf(path) || {})[__$_13__] ;
+    var currentOneOf = (getNSetOneOf(path) || {})[__$_14__] ;
     var schemaPartsOneOf = getSchemaPart(schema, path, getNSetOneOf, true);
 
     var _findOneOf = findOneOf(schemaPartsOneOf, value, currentOneOf),
         schemaPart = _findOneOf[__$_38__] ,
-        oneOf = _findOneOf[__$_13__] ,
+        oneOf = _findOneOf[__$_14__] ,
         type = _findOneOf.type;
 
     if (!commonLib_2[__$_1__] (currentOneOf) && currentOneOf != oneOf) {
@@ -479,10 +479,10 @@ function makeStateBranch(schema, getNSetOneOf) {
         value = schemaPartsOneOf[currentOneOf][__$_35__] ; 
         var tmp = findOneOf(schemaPartsOneOf, value, currentOneOf);
         schemaPart = tmp[__$_38__] ;
-        oneOf = tmp[__$_13__] ;
+        oneOf = tmp[__$_14__] ;
         type = tmp.type;
     }
-    commonLib_1[__$_4__] (dataMapObjects, normalizeDataMap(schemaPart.ff_dataMap || [], path));
+    commonLib_1[__$_3__] (dataMapObjects, normalizeDataMap(schemaPart.ff_dataMap || [], path));
     result[SymData] = makeDataStorage(schemaPart, oneOf, type, value);
     getNSetOneOf(path, { oneOf: oneOf, type: type });
     if (result[SymData][__$_28__] ('value')) defaultValues = result[SymData][__$_8__] ;else {
@@ -493,10 +493,10 @@ function makeStateBranch(schema, getNSetOneOf) {
                 var _makeStateBranch = makeStateBranch(schema, getNSetOneOf, path[__$_5__] (i), commonLib_1[__$_2__] (commonLib_2[__$_1__] (value) ? schemaPart[__$_35__]  : value, i)),
                     branch = _makeStateBranch.state,
                     dataMap = _makeStateBranch[__$_36__] ,
-                    dValue = _makeStateBranch[__$_14__] ;
+                    dValue = _makeStateBranch[__$_15__] ;
 
                 defaultValues[i] = dValue;
-                commonLib_1[__$_4__] (dataMapObjects, dataMap);
+                commonLib_1[__$_3__] (dataMapObjects, dataMap);
                 branch = commonLib_1[__$_11__] (branch, _defineProperty({}, SymData, { arrayItem: getArrayItemData(schemaPart, i, defaultValues[__$_0__] ) }), { replace: _defineProperty({}, SymData, { ArrayItem: true }) });
                 branch = commonLib_1[__$_11__] (branch, _defineProperty({}, SymData, { params: { uniqKey: getUniqKey() } }));
                 result[i] = branch;
@@ -505,14 +505,14 @@ function makeStateBranch(schema, getNSetOneOf) {
             defaultValues = {};
             var arrayOfRequired = result[SymData][__$_26__] .required;
             arrayOfRequired = commonLib_2[__$_9__] (arrayOfRequired) && arrayOfRequired[__$_0__]  && arrayOfRequired;
-            commonLib_1[__$_7__] (schemaPart[__$_24__]  || {})[__$_3__] (function (field) {
+            commonLib_1[__$_7__] (schemaPart[__$_24__]  || {})[__$_4__] (function (field) {
                 var _makeStateBranch2 = makeStateBranch(schema, getNSetOneOf, path[__$_5__] (field), value && value[field]),
                     branch = _makeStateBranch2.state,
                     dataMap = _makeStateBranch2[__$_36__] ,
-                    dValue = _makeStateBranch2[__$_14__] ;
+                    dValue = _makeStateBranch2[__$_15__] ;
 
                 defaultValues[field] = dValue;
-                commonLib_1[__$_4__] (dataMapObjects, dataMap);
+                commonLib_1[__$_3__] (dataMapObjects, dataMap);
                 if (arrayOfRequired && ~arrayOfRequired[__$_25__] (field)) branch = commonLib_1[__$_11__] (branch, _defineProperty({}, SymData, { fData: { required: true } }));
                 result[field] = branch;
             });
@@ -527,9 +527,9 @@ var makeStateFromSchema = commonLib_1.memoize(function (schema) {
         state = _makeStateBranch3.state,
         _makeStateBranch3$dat = _makeStateBranch3[__$_36__] ,
         dataMap = _makeStateBranch3$dat === undefined ? [] : _makeStateBranch3$dat,
-        defaultValues = _makeStateBranch3[__$_14__] ;
+        defaultValues = _makeStateBranch3[__$_15__] ;
 
-    state = commonLib_1[__$_11__] (state, commonLib_1[__$_21__] ({}, defaultValues, [SymData, 'current']));
+    state = commonLib_1[__$_11__] (state, commonLib_1[__$_22__] ({}, defaultValues, [SymData, 'current']));
     state = setDataMapInState(state, schema, dataMap);
     var UPDATABLE_object = { update: {}, replace: {} };
     state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], ['inital'], commonLib_1[__$_2__] (state, SymData, 'current')));
@@ -542,14 +542,14 @@ function setDataMapInState(state, schema, dataMaps) {
 
     
     var UPDATABLE_object = { update: {}, replace: {} };
-    dataMaps[__$_3__] (function (dataMap) {
+    dataMaps[__$_4__] (function (dataMap) {
         var emitterPath = dataMap.emitter;
         var bindMap2emitter = false;
-        normalizeUpdate({ path: emitterPath.join('/') + '/' + dataMap.from, to: normalizePath(dataMap.to, emitterPath), value: dataMap.action }, state)[__$_3__] (function (NdataMap) {
+        normalizeUpdate({ path: emitterPath.join('/') + '/' + dataMap.from, to: normalizePath(dataMap.to, emitterPath), value: dataMap.action }, state)[__$_4__] (function (NdataMap) {
             var relTo = path2string(relativePath(NdataMap[__$_19__] , NdataMap.to));
-            if (commonLib_1[__$_2__] (state, NdataMap[__$_19__] )) commonLib_1[__$_21__] (UPDATABLE_object[__$_15__] , unset ? undefined : NdataMap[__$_8__] , NdataMap[__$_19__] , SymDataMapTree, NdataMap[SymData], SymDataMap, relTo);
+            if (commonLib_1[__$_2__] (state, NdataMap[__$_19__] )) commonLib_1[__$_22__] (UPDATABLE_object[__$_12__] , unset ? undefined : NdataMap[__$_8__] , NdataMap[__$_19__] , SymDataMapTree, NdataMap[SymData], SymDataMap, relTo);
             if (!unset) {
-                executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, commonLib_1[__$_12__] (relTo, NdataMap[__$_8__] ), makeNUpdate(NdataMap[__$_19__] , NdataMap[SymData], commonLib_1[__$_2__] (state, NdataMap[__$_19__] , SymData, NdataMap[SymData])));
+                executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, commonLib_1[__$_13__] (relTo, NdataMap[__$_8__] ), makeNUpdate(NdataMap[__$_19__] , NdataMap[SymData], commonLib_1[__$_2__] (state, NdataMap[__$_19__] , SymData, NdataMap[SymData])));
                 if (!bindMap2emitter && relativePath(emitterPath, NdataMap[__$_19__] )[0] != '.') bindMap2emitter = true;
             }
             state = mergeStatePROCEDURE(state, UPDATABLE_object);
@@ -598,11 +598,11 @@ function isSelfManaged(state) {
         pathes[_key - 1] = arguments[_key];
     }
 
-    return commonLib_1[__$_29__] .apply(commonLib_1, [state][__$_5__] (pathes, [SymData, 'value']));
+    return commonLib_1[__$_32__] .apply(commonLib_1, [state][__$_5__] (pathes, [SymData, 'value']));
 }
 exports.isSelfManaged = isSelfManaged;
 function isSchemaSelfManaged(schemaPart, type) {
-    return type !== 'array' && type !== 'object' || commonLib_1[__$_29__] (schemaPart, 'ff_managed');
+    return type !== 'array' && type !== 'object' || commonLib_1[__$_2__] (schemaPart, 'ff_managed');
 }
 exports.isSchemaSelfManaged = isSchemaSelfManaged;
 function findOneOf(oneOfShemas, value, currentOneOf) {
@@ -630,7 +630,7 @@ function updateCurrentPROCEDURE(state, schema, UPDATABLE_object, value, replace)
 
     if (value === SymReset) value = commonLib_1[__$_2__] (state, SymData, 'inital', track);
     if (value === SymClear) value = commonLib_1[__$_2__] (getDefaultFromSchema(schema), track);
-    if (commonLib_1[__$_2__] (state, SymData, 'current', track) === value && !commonLib_1[__$_29__] (UPDATABLE_object[__$_15__] , SymData, 'current', track)) return state;
+    if (commonLib_1[__$_2__] (state, SymData, 'current', track) === value && !commonLib_1[__$_32__] (UPDATABLE_object[__$_12__] , SymData, 'current', track)) return state;
     var branch = commonLib_1[__$_2__] (state, track);
     
     if (!branch) {
@@ -646,23 +646,23 @@ function updateCurrentPROCEDURE(state, schema, UPDATABLE_object, value, replace)
     if (commonLib_2[__$_1__] (value)) value = types.empty[type || 'any'];
     if (!types[type || 'any'](value)) {
         
-        var _findOneOf2 = findOneOf(getSchemaPart(schema, track, oneOfFromState(state), true), value, commonLib_2[__$_1__] (setOneOf) ? branch[SymData][__$_13__]  : setOneOf),
+        var _findOneOf2 = findOneOf(getSchemaPart(schema, track, oneOfFromState(state), true), value, commonLib_2[__$_1__] (setOneOf) ? branch[SymData][__$_14__]  : setOneOf),
             schemaPart = _findOneOf2[__$_38__] ,
-            oneOf = _findOneOf2[__$_13__] ,
+            oneOf = _findOneOf2[__$_14__] ,
             _type2 = _findOneOf2.type;
 
         if (schemaPart) {
-            return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, [__$_13__] , oneOf, false, { type: _type2, setValue: value }));
+            return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, [__$_14__] , oneOf, false, { type: _type2, setValue: value }));
         } else console.warn('Type not found in path [' + track.join('/') + ']');
     }
     if (isSelfManaged(branch)) {
         
         state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, [__$_8__] , value, replace));
     } else {
-        if (commonLib_2[__$_22__] (value)) {
+        if (commonLib_2[__$_21__] (value)) {
             
             if (type == 'array' && !commonLib_2[__$_1__] (value[__$_0__] )) state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, [__$_0__] , value[__$_0__] ));
-            commonLib_1[__$_7__] (value)[__$_3__] (function (key) {
+            commonLib_1[__$_7__] (value)[__$_4__] (function (key) {
                 return state = updateCurrentPROCEDURE(state, schema, UPDATABLE_object, value[key], commonLib_1[__$_2__] (replace, key), track[__$_5__] (key));
             });
         }
@@ -675,7 +675,7 @@ function getUpdValue(states) {
     }
 
     for (var i = 0; i < states[__$_0__] ; i++) {
-        if (commonLib_1[__$_29__] .apply(commonLib_1, [states[i]][__$_5__] (pathes))) return commonLib_1[__$_2__] .apply(commonLib_1, [states[i]][__$_5__] (pathes));
+        if (commonLib_1[__$_32__] .apply(commonLib_1, [states[i]][__$_5__] (pathes))) return commonLib_1[__$_2__] .apply(commonLib_1, [states[i]][__$_5__] (pathes));
     }
 }
 exports.getUpdValue = getUpdValue;
@@ -689,15 +689,15 @@ function splitValuePROCEDURE(state, schema, UPDATABLE_object, item) {
         var value = itemValue[__$_8__] ,
             status = itemValue.status,
             length = itemValue[__$_0__] ,
-            oneOf = itemValue[__$_13__] ,
+            oneOf = itemValue[__$_14__] ,
             rest = __rest(itemValue, ["value", "status", "length", "oneOf"]);
 
-        ['value', 'status', 'length', 'oneOf'][__$_3__] (function (key) {
-            if (commonLib_1[__$_29__] (itemValue, key)) state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, [key], itemValue[key], commonLib_1[__$_2__] (replace, key)));
+        ['value', 'status', 'length', 'oneOf'][__$_4__] (function (key) {
+            if (commonLib_1[__$_32__] (itemValue, key)) state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, [key], itemValue[key], commonLib_1[__$_2__] (replace, key)));
         });
         if (commonLib_1[__$_7__] (rest)[__$_0__] ) state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, keyPath, rest, replace));
     } else {
-        commonLib_1[__$_7__] (itemValue)[__$_3__] (function (key) {
+        commonLib_1[__$_7__] (itemValue)[__$_4__] (function (key) {
             state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, keyPath[__$_5__] (key), itemValue[key], commonLib_1[__$_2__] (replace, key)));
         });
     }
@@ -705,7 +705,7 @@ function splitValuePROCEDURE(state, schema, UPDATABLE_object, item) {
 }
 function updateNormalizationPROCEDURE(state, schema, UPDATABLE_object, item) {
     var items = normalizeUpdate(item, state);
-    items[__$_3__] (function (i) {
+    items[__$_4__] (function (i) {
         if (i[__$_19__] .length === 0 && i[SymData][0] == 'current') {
             i[__$_27__]  = 'setCurrent';
             i[__$_19__]  = i[SymData][__$_17__] (1);
@@ -730,19 +730,19 @@ function setUPDATABLE(UPDATABLE_object, update, replace) {
         pathes[_key3 - 3] = arguments[_key3];
     }
 
-    commonLib_1[__$_21__] .apply(commonLib_1, [UPDATABLE_object, update, 'update'][__$_5__] (pathes));
-    if (replace) commonLib_1[__$_21__] .apply(commonLib_1, [UPDATABLE_object, replace, 'replace'][__$_5__] (pathes));
+    commonLib_1[__$_22__] .apply(commonLib_1, [UPDATABLE_object, update, 'update'][__$_5__] (pathes));
+    if (replace) commonLib_1[__$_22__] .apply(commonLib_1, [UPDATABLE_object, replace, 'replace'][__$_5__] (pathes));
 }
 exports.setUPDATABLE = setUPDATABLE;
 function mergeStatePROCEDURE(state, UPDATABLE_object) {
-    state = commonLib_1[__$_11__] (state, UPDATABLE_object[__$_15__] , { replace: UPDATABLE_object[__$_10__]  });
-    UPDATABLE_object[__$_15__]  = {};
+    state = commonLib_1[__$_11__] (state, UPDATABLE_object[__$_12__] , { replace: UPDATABLE_object[__$_10__]  });
+    UPDATABLE_object[__$_12__]  = {};
     UPDATABLE_object[__$_10__]  = {};
     return state;
 }
 exports.mergeStatePROCEDURE = mergeStatePROCEDURE;
 function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
-    var update = UPDATABLE_object[__$_15__] ,
+    var update = UPDATABLE_object[__$_12__] ,
         replace_UPDATABLE = UPDATABLE_object[__$_10__] ;
     
 
@@ -758,14 +758,15 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
         replace = item[__$_10__] ;
 
     var keyPath = item[SymData];
+    value = commonLib_2[__$_39__] (value) ? value(getUpdValue([UPDATABLE_object[__$_12__] , state], path, SymData, keyPath)) : value;
     if (path[__$_0__]  == 0 && keyPath[0] == 'inital') {
-        state = commonLib_1[__$_11__] (state, commonLib_1[__$_12__] (SymData, keyPath, value), { replace: commonLib_1[__$_12__] (SymData, keyPath, replace) });
+        state = commonLib_1[__$_11__] (state, commonLib_1[__$_13__] (SymData, keyPath, value), { replace: commonLib_1[__$_13__] (SymData, keyPath, replace) });
     } else {
         
-        if (commonLib_2[__$_18__] (value) && (keyPath[__$_0__]  == 0 && (commonLib_1[__$_29__] (value, 'value') || commonLib_1[__$_29__] (value, 'status') || commonLib_1[__$_29__] (value, 'length') || commonLib_1[__$_29__] (value, 'oneOf')) || keyPath[__$_0__]  == 1 && keyPath[0] == 'status')) return splitValuePROCEDURE(state, schema, UPDATABLE_object, item);
+        if (commonLib_2[__$_18__] (value) && (keyPath[__$_0__]  == 0 && (commonLib_1[__$_32__] (value, 'value') || commonLib_1[__$_32__] (value, 'status') || commonLib_1[__$_32__] (value, 'length') || commonLib_1[__$_32__] (value, 'oneOf')) || keyPath[__$_0__]  == 1 && keyPath[0] == 'status')) return splitValuePROCEDURE(state, schema, UPDATABLE_object, item);
         var branch = commonLib_1[__$_2__] (state, path);
         if (!commonLib_2[__$_18__] (branch)) return state; 
-        if (keyPath[0] == 'value' && !commonLib_1[__$_29__] (branch, SymData, 'value')) 
+        if (keyPath[0] == 'value' && !commonLib_1[__$_32__] (branch, SymData, 'value')) 
             return Macros.setCurrent(state, schema, UPDATABLE_object, { value: value, replace: replace, path: path[__$_5__] (keyPath[__$_17__] (1)) });
         
         setUPDATABLE(UPDATABLE_object, value, replace, path, SymData, keyPath);
@@ -774,10 +775,10 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
         
         if (keyPath[0] == 'value') {
             
-            state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], commonLib_1[__$_4__] ([__$_16__] , path, keyPath[__$_17__] (1)), value, replace));
+            state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], commonLib_1[__$_3__] ([__$_16__] , path, keyPath[__$_17__] (1)), value, replace));
         } else if (keyPath[0] == 'length') {
             
-            state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], commonLib_1[__$_4__] ([__$_16__] , path, keyPath), value, replace));
+            state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], commonLib_1[__$_3__] ([__$_16__] , path, keyPath), value, replace));
             var start = branch[SymData][__$_0__] ;
             start = Math.max(start, 0);
             var end = Math.max(value || 0);
@@ -788,26 +789,26 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
             var maps2disable = [];
             for (var i = start; i < end; i++) {
                 var elemPath = path[__$_5__] (i);
-                if (item[__$_32__] ) oneOfStateFn(elemPath, { oneOf: item[__$_32__]  });
+                if (item[__$_30__] ) oneOfStateFn(elemPath, { oneOf: item[__$_30__]  });
 
                 var _makeStateBranch4 = makeStateBranch(schema, oneOfStateFn, elemPath),
                     _branch = _makeStateBranch4.state,
                     _makeStateBranch4$dat = _makeStateBranch4[__$_36__] ,
                     _dataMap = _makeStateBranch4$dat === undefined ? [] : _makeStateBranch4$dat,
-                    defaultValues = _makeStateBranch4[__$_14__] ;
+                    defaultValues = _makeStateBranch4[__$_15__] ;
 
                 _branch = commonLib_1[__$_11__] (_branch, _defineProperty({}, SymData, { params: { uniqKey: getUniqKey() } }));
-                state = commonLib_1[__$_11__] (state, commonLib_1[__$_21__] ({}, _branch, elemPath), { replace: commonLib_1[__$_21__] ({}, true, elemPath) });
-                state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], commonLib_1[__$_4__] ([__$_16__] , elemPath), defaultValues, true));
+                state = commonLib_1[__$_11__] (state, commonLib_1[__$_22__] ({}, _branch, elemPath), { replace: commonLib_1[__$_22__] ({}, true, elemPath) });
+                state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], commonLib_1[__$_3__] ([__$_16__] , elemPath), defaultValues, true));
                 
-                commonLib_1[__$_4__] (maps2enable, _dataMap);
+                commonLib_1[__$_3__] (maps2enable, _dataMap);
                 
                 state = Macros[__$_23__] (state, schema, UPDATABLE_object, makeNUpdate(path, ['status', 'untouched'], 1));
             }
             for (var _i = end; _i < start; _i++) {
                 var _elemPath = path[__$_5__] (_i);
-                commonLib_1[__$_4__] (maps2disable, commonLib_1[__$_2__] (state, _elemPath, SymDataMapTree, SymData) || []);
-                ['invalid', 'dirty', 'untouched', 'pending'][__$_3__] (function (key) {
+                commonLib_1[__$_3__] (maps2disable, commonLib_1[__$_2__] (state, _elemPath, SymDataMapTree, SymData) || []);
+                ['invalid', 'dirty', 'untouched', 'pending'][__$_4__] (function (key) {
                     var statusValue = getUpdValue([update, state], path, SymData, 'status', key);
                     if (statusValue) state = Macros[__$_23__] (state, schema, UPDATABLE_object, makeNUpdate(path, ['status', key], -1));
                 });
@@ -816,7 +817,7 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
                 
             }
             var schemaPart = getSchemaPart(schema, path, oneOfFromState(state));
-            commonLib_1[__$_21__] (update, isArrayCanAdd(schemaPart, end), path, SymData, 'fData', 'canAdd');
+            commonLib_1[__$_22__] (update, isArrayCanAdd(schemaPart, end), path, SymData, 'fData', 'canAdd');
             for (var _i2 = Math.max(Math.min(start, end) - 1, 0); _i2 < end; _i2++) {
                 setUPDATABLE(UPDATABLE_object, getArrayItemData(schemaPart, _i2, end), true, path, _i2, SymData, 'arrayItem');
             }state = mergeStatePROCEDURE(state, UPDATABLE_object);
@@ -834,26 +835,26 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
                 _value = !getUpdValue([update, state], path, SymData, 'status', keyStatus);
                 newKey = keyStatus == 'untouched' ? 'touched' : 'pristine';
             }
-            if (!commonLib_2[__$_1__] (newKey)) commonLib_1[__$_21__] (update, _value, path, SymData, 'status', newKey);
+            if (!commonLib_2[__$_1__] (newKey)) commonLib_1[__$_22__] (update, _value, path, SymData, 'status', newKey);
         } else if (keyPath[0] == 'oneOf') {
             var oldBranch = commonLib_1[__$_2__] (state, path);
             var oldOneOf = commonLib_1[__$_2__] (oldBranch, SymData, 'oneOf') || 0;
-            var newOneOf = commonLib_1[__$_2__] (UPDATABLE_object[__$_15__] , path, SymData, 'oneOf');
+            var newOneOf = commonLib_1[__$_2__] (UPDATABLE_object[__$_12__] , path, SymData, 'oneOf');
             if (oldOneOf != newOneOf || item.type && item.type != commonLib_1[__$_2__] (oldBranch, SymData, 'fData', 'type')) {
                 setIfNotDeeper(UPDATABLE_object, SymReset, 'forceCheck', item[__$_19__] );
                 state = mergeStatePROCEDURE(state, UPDATABLE_object);
                 state = setDataMapInState(state, schema, commonLib_1[__$_2__] (state, path, SymDataMapTree, SymData) || [], true);
 
-                var _makeStateBranch5 = makeStateBranch(schema, oneOfStructure(state, path), path, item[__$_30__] ),
+                var _makeStateBranch5 = makeStateBranch(schema, oneOfStructure(state, path), path, item[__$_29__] ),
                     _branch2 = _makeStateBranch5.state,
                     _makeStateBranch5$dat = _makeStateBranch5[__$_36__] ,
                     _maps2enable = _makeStateBranch5$dat === undefined ? [] : _makeStateBranch5$dat,
-                    defaultValues = _makeStateBranch5[__$_14__] ;
+                    defaultValues = _makeStateBranch5[__$_15__] ;
 
                 var _a = oldBranch[SymData],
                     v1 = _a[__$_8__] ,
                     v2 = _a[__$_0__] ,
-                    v3 = _a[__$_13__] ,
+                    v3 = _a[__$_14__] ,
                     v4 = _a[__$_26__] ,
                     previousBranchData = __rest(_a, ["value", "length", "oneOf", "fData"]); 
                 if (!isSelfManaged(oldBranch) || !isSelfManaged(_branch2)) delete previousBranchData.status; 
@@ -861,7 +862,7 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
                 if (path[__$_0__] ) {
                     var topPath = path[__$_17__] ();
                     var field = topPath.pop();
-                    ['invalid', 'dirty', 'pending'][__$_3__] (function (key) {
+                    ['invalid', 'dirty', 'pending'][__$_4__] (function (key) {
                         var oldStatusValue = commonLib_1[__$_2__] (oldBranch, SymData, 'status', key);
                         var newStatusValue = commonLib_1[__$_2__] (_branch2, SymData, 'status', key);
                         if (!oldStatusValue != !newStatusValue) state = Macros[__$_23__] (state, schema, UPDATABLE_object, makeNUpdate(topPath, ['status', key], newStatusValue ? 1 : -1));
@@ -871,10 +872,10 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
                     if (arrayOfRequired && ~arrayOfRequired[__$_25__] (field)) _branch2 = commonLib_1[__$_11__] (_branch2, _defineProperty({}, SymData, { fData: { required: true } }));
                 }
                 if (commonLib_1[__$_2__] (oldBranch, SymData, 'status', 'untouched') == 0) _branch2 = commonLib_1[__$_11__] (_branch2, _defineProperty({}, SymData, { status: { untouched: 0 } })); 
-                state = commonLib_1[__$_11__] (state, commonLib_1[__$_21__] ({}, _branch2, path), { replace: commonLib_1[__$_21__] ({}, true, path) });
+                state = commonLib_1[__$_11__] (state, commonLib_1[__$_22__] ({}, _branch2, path), { replace: commonLib_1[__$_22__] ({}, true, path) });
                 state = setDataMapInState(state, schema, _maps2enable);
                 if (commonLib_1[__$_2__] (_branch2, SymData, 'status', 'untouched') == 0) state = Macros.switch(state, schema, UPDATABLE_object, makeNUpdate(path, ['status', 'untouched'], 0));
-                state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], commonLib_1[__$_4__] ([__$_16__] , path), defaultValues, true));
+                state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], commonLib_1[__$_3__] ([__$_16__] , path), defaultValues, true));
             }
         }
     }
@@ -882,7 +883,7 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
     var dataMap = commonLib_1[__$_2__] (state, path, SymDataMapTree);
     for (var _i3 = 0; _i3 < keyPath[__$_0__] ; _i3++) {
         if (!dataMap) break;
-        state = executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, dataMap[SymDataMap], makeNUpdate(path, keyPath[__$_17__] (0, _i3), commonLib_1[__$_21__] ({}, value, keyPath[__$_17__] (_i3)), commonLib_1[__$_21__] ({}, replace, keyPath[__$_17__] (_i3))));
+        state = executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, dataMap[SymDataMap], makeNUpdate(path, keyPath[__$_17__] (0, _i3), commonLib_1[__$_22__] ({}, value, keyPath[__$_17__] (_i3)), commonLib_1[__$_22__] ({}, replace, keyPath[__$_17__] (_i3))));
         dataMap = dataMap[keyPath[_i3]];
     }
     if (dataMap) state = recursivelyExecuteDataMaps(dataMap, value, replace, keyPath);
@@ -890,7 +891,7 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
         var track = arguments[__$_0__]  > 3 && arguments[3] !== undefined ? arguments[3] : [];
 
         state = executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, dataMap[SymDataMap], makeNUpdate(path, track, value, replace));
-        commonLib_2[__$_22__] (value) && commonLib_1[__$_7__] (dataMap)[__$_3__] (function (key) {
+        commonLib_2[__$_21__] (value) && commonLib_1[__$_7__] (dataMap)[__$_4__] (function (key) {
             return value[__$_28__] (key) && (state = recursivelyExecuteDataMaps(dataMap[key], value[key], commonLib_1[__$_2__] (replace, key), track[__$_5__] (key)));
         });
         return state;
@@ -905,7 +906,7 @@ function executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, maps, item) {
         replace = item[__$_10__] ;
 
     var keyPath = item[SymData] || [];
-    commonLib_1[__$_7__] (maps || {})[__$_3__] (function (pathTo) {
+    commonLib_1[__$_7__] (maps || {})[__$_4__] (function (pathTo) {
         if (!maps[pathTo]) return; 
         var map = maps[pathTo];
         var NpathTo = path2string(normalizePath(pathTo, path));
@@ -914,10 +915,10 @@ function executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, maps, item) {
             var bindObj = { path: NUpdate2string(item), pathTo: NpathTo, schema: schema, getFromState: getFrom4DataMap(state, UPDATABLE_object) };
             executedValue = commonLib_1.deArray(commonLib_1.toArray(map.$).reduce(function (args, fn) {
                 return commonLib_1.toArray(fn.call.apply(fn, [bindObj][__$_5__] (_toConsumableArray(args))));
-            }, commonLib_1[__$_4__] ([executedValue], map.args)));
+            }, commonLib_1[__$_3__] ([executedValue], map.args)));
         }
         var updates = map.asUpdates ? commonLib_1.toArray(executedValue) : [{ path: NpathTo, value: executedValue, replace: replace }];
-        updates[__$_3__] (function (update) {
+        updates[__$_4__] (function (update) {
             return state = updateStatePROCEDURE(state, schema, UPDATABLE_object, update);
         });
     });
@@ -929,9 +930,9 @@ function getFrom4DataMap(state, UPDATABLE_object) {
             tPath[_key4] = arguments[_key4];
         }
 
-        if (commonLib_1[__$_29__] .apply(commonLib_1, [UPDATABLE_object[__$_15__] ][__$_5__] (_toConsumableArray(tPath.map(function (path) {
+        if (commonLib_1[__$_32__] .apply(commonLib_1, [UPDATABLE_object[__$_12__] ][__$_5__] (_toConsumableArray(tPath.map(function (path) {
             return normalizePath(path);
-        }))))) return commonLib_1[__$_11__] (getFromState.apply(undefined, [state][__$_5__] (tPath)), getFromState.apply(undefined, [UPDATABLE_object[__$_15__] ][__$_5__] (tPath)), { replace: getFromState.apply(undefined, [UPDATABLE_object[__$_10__] ][__$_5__] (tPath)) });
+        }))))) return commonLib_1[__$_11__] (getFromState.apply(undefined, [state][__$_5__] (tPath)), getFromState.apply(undefined, [UPDATABLE_object[__$_12__] ][__$_5__] (tPath)), { replace: getFromState.apply(undefined, [UPDATABLE_object[__$_10__] ][__$_5__] (tPath)) });
         return getFromState.apply(undefined, [state][__$_5__] (tPath));
     };
 }
@@ -944,16 +945,16 @@ function object2PathValues(vals) {
     var track = arguments[__$_0__]  > 2 && arguments[2] !== undefined ? arguments[2] : [];
 
     var fn = options.symbol ? commonLib_1.objKeysNSymb : commonLib_1[__$_7__] ;
-    var check = options.arrayAsValue ? commonLib_2[__$_18__]  : commonLib_2[__$_22__] ;
+    var check = options.arrayAsValue ? commonLib_2[__$_18__]  : commonLib_2[__$_21__] ;
     var result = [];
-    fn(vals)[__$_3__] (function (key) {
+    fn(vals)[__$_4__] (function (key) {
         var path = track[__$_5__] (key);
-        if (check(vals[key])) object2PathValues(vals[key], options, path)[__$_3__] (function (item) {
+        if (check(vals[key])) object2PathValues(vals[key], options, path)[__$_4__] (function (item) {
             return result.push(item);
         }); 
-        else result.push(commonLib_1[__$_4__] (path, vals[key]));
+        else result.push(commonLib_1[__$_3__] (path, vals[key]));
     });
-    if (!result[__$_0__] ) return [commonLib_1[__$_4__] (track[__$_17__] (), {})]; 
+    if (!result[__$_0__] ) return [commonLib_1[__$_3__] (track[__$_17__] (), {})]; 
     return result;
 }
 exports.object2PathValues = object2PathValues;
@@ -988,8 +989,8 @@ function normalizeUpdate(update, state) {
             return branchKeys(commonLib_1[__$_2__] (state, path)).join(',');
         } });
     keyPathes = multiplyPath(keyPathes);
-    commonLib_1[__$_7__] (pathes)[__$_3__] (function (p) {
-        return commonLib_1[__$_7__] (keyPathes)[__$_3__] (function (k) {
+    commonLib_1[__$_7__] (pathes)[__$_4__] (function (p) {
+        return commonLib_1[__$_7__] (keyPathes)[__$_4__] (function (k) {
             return result.push(makeNUpdate(pathes[p], keyPathes[k], value, replace, rest));
         });
     });
@@ -1036,26 +1037,26 @@ function multiplyPath(path) {
     var strReplace = arguments[__$_0__]  > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     var result = { '': [] };
-    path[__$_3__] (function (value) {
+    path[__$_4__] (function (value) {
         var res = {};
         value = strReplace[value] || value;
         if (typeof value == 'string' && ~value[__$_25__] (',')) {
-            commonLib_1[__$_7__] (result)[__$_3__] (function (key) {
-                return value.split(',')[__$_3__] (function (k) {
+            commonLib_1[__$_7__] (result)[__$_4__] (function (key) {
+                return value.split(',')[__$_4__] (function (k) {
                     return res[key && key + ',' + k || k] = result[key][__$_5__] (k.trim());
                 });
             });
         } else if (typeof value == 'function') {
-            commonLib_1[__$_7__] (result)[__$_3__] (function (key) {
+            commonLib_1[__$_7__] (result)[__$_4__] (function (key) {
                 var tmp = value(result[key]);
                 if (typeof tmp == 'string') tmp = string2path(tmp);
                 tmp = multiplyPath(tmp, strReplace);
-                commonLib_1[__$_7__] (tmp)[__$_3__] (function (k) {
+                commonLib_1[__$_7__] (tmp)[__$_4__] (function (k) {
                     return res[key && key + (k ? ',' + k : '') || k] = result[key][__$_5__] (tmp[k]);
                 });
             });
-        } else commonLib_1[__$_7__] (result)[__$_3__] (function (key) {
-            return commonLib_1[__$_4__] (result[key], value);
+        } else commonLib_1[__$_7__] (result)[__$_4__] (function (key) {
+            return commonLib_1[__$_3__] (result[key], value);
         });
         if (commonLib_1[__$_7__] (res)[__$_0__] ) result = res;
     });
@@ -1077,7 +1078,7 @@ function relativePath(base, destination) {
     }for (var j = i; j < base[__$_0__] ; j++) {
         result.push('..');
     }if (!result[__$_0__] ) result.push('.');
-    return commonLib_1[__$_4__] (result, destination[__$_17__] (i));
+    return commonLib_1[__$_3__] (result, destination[__$_17__] (i));
     
 }
 exports.relativePath = relativePath;
@@ -1110,7 +1111,7 @@ exports.setIfNotDeeper = setIfNotDeeper;
 function flattenPath(path) {
     if (commonLib_2[__$_9__] (path)) {
         var result = [];
-        commonLib_1[__$_4__] .apply(commonLib_1, [result][__$_5__] (_toConsumableArray(path.map(flattenPath))));
+        commonLib_1[__$_3__] .apply(commonLib_1, [result][__$_5__] (_toConsumableArray(path.map(flattenPath))));
         return result;
     } else if (typeof path == 'string') return string2path(path);
     return [path];
@@ -1123,7 +1124,7 @@ function string2path(path) {
     path = path[__$_10__] (symConv(SymData), '/' + symConv(SymData) + '/');
     path = path[__$_10__] (/\/+/g, '/');
     var result = [];
-    path.split('/')[__$_3__] (function (key) {
+    path.split('/')[__$_4__] (function (key) {
         return key && (key = symConv.str2sym(key.trim())) && result.push(key);
     });
     return result;
