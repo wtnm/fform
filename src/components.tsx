@@ -446,7 +446,7 @@ class FSection extends FRefsGeneric {
     const self = this;
     //self._setRef = (name: number | string) => (item: any) => self.$refs[name] = item;
     self._setWidRef = (key: number | string) => (item: any) => self._widgets[key] = item;
-    self._build(self.props);
+    // self._build(self.props);
   }
 
   // focus(path: Path) {
@@ -602,7 +602,7 @@ class FSection extends FRefsGeneric {
 
   shouldComponentUpdate(nextProps: any) {
     const self = this;
-    if (nextProps.FFormProps !== self.props.FFormProps) return self._rebuild = true;
+    if (nextProps.FFormProps !== self.props.FFormProps || nextProps.oneOf !== self.props.oneOf) return self._rebuild = true;
 
     let doUpdate = !isEqual(nextProps, self.props, {skipKeys: ['$branch']});
 
@@ -1159,6 +1159,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         viewerProps: {$_ref: '^/sets/nBase/Main/viewerProps'},
         $_maps: {
           length: '@/length',
+          oneOf: '@/oneOf',
           isArray: {$: '^/fn/equal', args: ['@/fData/type', 'array']},
           $branch: {$: '^/fn/getFFieldProperty', args: '$branch', update: 'every'},
           arrayStart: {$: '^/fn/getArrayStart', args: [], update: 'build'},
