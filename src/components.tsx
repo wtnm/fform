@@ -1282,9 +1282,10 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       return enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
         return {
+          key: val,
           ...containerProps,
           children: [
-            {value: val, key: val, name: name && (this.props.name + (name === true ? '' : name)), ...extenProps, ...inputProps},
+            {value: val, name: name && (this.props.name + (name === true ? '' : name)), ...extenProps, ...inputProps},
             {...labelProps, children: [extenProps.label || val]}
           ]
         }
