@@ -542,7 +542,7 @@ class FSection extends FRefsGeneric {
     const self = this;
     return <FField ref={self._setRef(arrayKey || fieldName)} key={arrayKey || fieldName} pFForm={self.props.$FField.pFForm} FFormApi={self.props.FFormApi}
                    id={self.props.id ? self.props.id + (arrayKey || fieldName) : undefined}
-                   name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '' : fieldName) + ']' : undefined}
+                   name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '_$idx$_' + (arrayKey || fieldName) : fieldName) + ']' : undefined}
                    getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
   }
 
@@ -810,7 +810,9 @@ function Wrapper(props: any) {
 
 
 function ItemMenu(props: any) {
-  const {useTag: UseTag = 'div', _$cx = classNames, className, buttonsProps = {}, arrayItem = {}, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
+  const {useTag: UseTag = 'div', _$cx = classNames, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
+  if (!arrayItem) return null;
+  // console.log(arrayItem)
   buttons.forEach((key: string) => delete rest[key]);
   return (
     <UseTag className={_$cx(className)} {...rest}>
