@@ -308,8 +308,6 @@ class FField extends FRefsGeneric {
   _parseValue(value: any, prevData: any) {
     const $_parse = this._$_parse;
     if ($_parse) return processFn({...$_parse, args: push2array([value], $_parse.args || [])}, prevData);
-
-    //return deArray(toArray($_parse.$).reduce((args, fn) => toArray(fn(...args)), $_parse.args || []), $_parse.arrayResult);
     return value
   }
 

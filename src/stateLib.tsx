@@ -1121,7 +1121,8 @@ export {
   multiplyPath,
   normalizeArgs,
   processFn,
-  isMapFn
+  isMapFn,
+  types
 }
 
 export {SymData, SymReset, SymClear, SymDelete}
