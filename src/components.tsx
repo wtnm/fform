@@ -753,7 +753,7 @@ class UniversalInput extends GenericWidget {
       if (type !== 'notInput') rest.type = type;
     }
     if (type !== 'notInput') rest[type === 'checkbox' ? 'checked' : 'value'] = value;
-    if (rest.value === null) rest.value = '';
+    // if (rest.value === null) rest.value = '';
 
     if (rest.className && _$cx) rest.className = _$cx(rest.className);
     return React.createElement(UseTag, rest, self._mapped)
@@ -1077,15 +1077,20 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     },
     integerNull: {
       $_ref: '^/sets/integer',
-      Main: {'onChange.bind': [true, null]}
+      Main: {
+        'onChange.bind': [true, null],
+        $_maps: {
+          value: {$: '^/fn/iif', args: [{$: '^/fn/equal', args: ['@/value', null]}, '', '@/value']},
+        }
+      }
     },
     number: {
       $_ref: '^/sets/integer',
       Main: {'onChange.bind': [false, 0], step: 'any'}
     },
     numberNull: {
-      $_ref: '^/sets/number',
-      Main: {'onChange.bind': [false, null]}
+      $_ref: '^/sets/integerNull',
+      Main: {'onChange.bind': [false, null], step: 'any'}
     },
     //range: {$_ref: '^/sets/nBase', Main: {type: 'range'}},
     'null': {$_ref: '^/sets/base', Main: false},

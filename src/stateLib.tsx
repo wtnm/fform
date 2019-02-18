@@ -905,7 +905,7 @@ function object2PathValues(vals: { [key: string]: any }, options: object2PathVal
 }
 
 function isNPath(path: any) {
-  return getIn(path, SymData) === 'nPath';
+  return isMergeable(path) && getIn(path, SymData) === 'nPath';
 }
 
 function normalizePath(path: string | Path, base: string | Path = []): Path {
