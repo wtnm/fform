@@ -17,6 +17,9 @@ import {
   branchKeys,
   isNPath,
   multiplyPath,
+  normalizeArgs,
+  processFn,
+  isMapFn
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
 import Timeout = NodeJS.Timeout;
@@ -262,14 +265,16 @@ class FField extends FRefsGeneric {
       path = '#/' + path2string(normalizePath(path, self.path)) + (setValue ? '/@/value' : '');
       valueSet = (path == fPath + '/@/value') || (path == '#/@/current/' + fPath.slice(2));
     }
+    // console.log(valueSet, 'setValue=', setValue,'path=',path)
     if (valueSet) {
-      self._cached = {value: self._parseValue(value)};
+      const prevData = self.getData();
+      self._cached = {value: self._parseValue(value, prevData)};
       if (fieldCache) {
         if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
-        const data = merge(self.getData(), {value: self._cached.value});
+        const data = merge(prevData, {value: self._cached.value});
         const mappedData = self._mappedData;
-        self._setMappedData(self.getData(), data, true);
+        self._setMappedData(prevData, data, true);
         if (mappedData != self._mappedData) self.forceUpdate();
       } else self._updateCachedValue();
       return true;
@@ -300,9 +305,11 @@ class FField extends FRefsGeneric {
     ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
   }
 
-  _parseValue(value: any) {
+  _parseValue(value: any, prevData: any) {
     const $_parse = this._$_parse;
-    if ($_parse) return deArray(toArray($_parse.$).reduce((args, fn) => toArray(fn(...args)), $_parse.args || []), $_parse.arrayResult);
+    if ($_parse) return processFn({...$_parse, args: push2array([value], $_parse.args || [])}, prevData);
+
+    //return deArray(toArray($_parse.$).reduce((args, fn) => toArray(fn(...args)), $_parse.args || []), $_parse.arrayResult);
     return value
   }
 
@@ -782,14 +789,14 @@ function FBuilder(props: any) {
   const {mapped, widgets} = props;
   const {Title, Body, Main, Message, Wrapper, Autowidth} = widgets;
 
-  return React.createElement(Wrapper, mapped['Wrapper'],
+  return Wrapper ? React.createElement(Wrapper, mapped['Wrapper'],
     Title ? React.createElement(Title, mapped['Title']) : '',
-    React.createElement(Body, mapped['Body'],
-      React.createElement(Main, mapped['Main']),
+    Body ? React.createElement(Body, mapped['Body'],
+      Main ? React.createElement(Main, mapped['Main']) : '',
       Message ? React.createElement(Message, mapped['Message']) : '',
       Autowidth ? React.createElement(Autowidth, mapped['Autowidth']) : ''
-    )
-  )
+    ) : ''
+  ) : ''
 }
 
 
@@ -866,21 +873,6 @@ function extractMaps(obj: any, skip: string[] = []) {
   return {$_maps, rest};
 }
 
-const isMapFn = (arg: any) => isObject(arg) && arg.$;
-
-function normalizeArgs(args: any) {
-  let dataRequest = false;
-  args = toArray(isUndefined(args) ? [] : args).map((arg: any) => {
-    if (isString(arg) && arg[0] == '@') return (dataRequest = true) && normalizePath(arg.substr(1));
-    if (isMapFn(arg)) {
-      const res = normalizeArgs(arg.args);
-      if (res.dataRequest) dataRequest = true;
-      return {...arg, ...res};
-    }
-    return arg;
-  });
-  return {dataRequest, args}
-}
 
 function normalizeMaps($_maps: any, prePath = '') {
   const result: { data: NormalizedPropsMapType[], every: NormalizedPropsMapType[], build: NormalizedPropsMapType[] } = {data: [], every: [], build: []};
@@ -904,14 +896,6 @@ function normalizeMaps($_maps: any, prePath = '') {
   return result
 }
 
-function processFn(map: any, nextData: any) {
-  const getFromData = (arg: any) => {
-    if (isNPath(arg)) return getIn(nextData, arg);
-    if (isMapFn(arg)) return processFn(arg, nextData);
-    return arg;
-  };
-  return deArray(toArray(map.$).reduce((args, fn) => toArray(fn(...args)), map.dataRequest ? map.args.map(getFromData) : map.args), map.arrayResult);
-}
 
 function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
   const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
@@ -1105,8 +1089,8 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '^/sets/number',
       Main: {'onChange.bind': [false, null]}
     },
-    range: {$_ref: '^/sets/nBase', Main: {type: 'range'}},
-    'null': {$_ref: '^/sets/nBase', Main: {type: 'hidden'}},
+    //range: {$_ref: '^/sets/nBase', Main: {type: 'range'}},
+    'null': {$_ref: '^/sets/base', Main: false},
     hidden: {
       Builder: {
         className: {hidden: true},
@@ -1251,6 +1235,8 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'inline': true}}}},
     inlineLayout: {Main: {LayoutDefaultClass: {'layout': true, 'inline': true}}},
     noTitle: {Title: false},
+    shrink: {Wrapper: {className: {'shrink': true}}},
+    expand: {Wrapper: {className: {'expand': true}}},
   },
   fn: {
     processing: function (...args: any[]) {

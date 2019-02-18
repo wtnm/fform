@@ -381,6 +381,7 @@ Classes that are used in [fformObjects](#fformobjects):
 `priority_0` - for errors styling
 `inline` - to place elements in line
 `required` - to mark title as required
+`layout` - default class for object layout's elemets
 `shrink` - to shrink an element
 `expand` - to expand an element
 

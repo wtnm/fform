@@ -417,8 +417,12 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
 });
 
 function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], path: Path): normalizedDataMapType[] {
-  return dataMap.map((item) => {  // item is array where item[0] - from, item[1] - to
-    return {emitter: path, from: item[0], to: item[1], action: (isFunction(item[2]) ? {$: item[2]} : item[2]) || true} as normalizedDataMapType;
+  return dataMap.map((item) => {
+    let action: any = item[2];
+    if (isFunction(action)) action = {$: action};
+    if (isObject(action)) action = {...action, args: normalizeArgs(action.args)};
+    if (isUndefined(action)) action = true;
+    return {emitter: path, from: item[0], to: item[1], action} as normalizedDataMapType;
   })
 }
 
@@ -691,7 +695,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
   let {value, path, replace} = item;
   const keyPath = item[SymData];
   if (isFunction(value)) value = value(getUpdValue([UPDATABLE_object.update, state], path, SymData, keyPath));
-  
+
   if (path.length == 0 && keyPath[0] == 'inital') {
     state = merge(state, makeSlice(SymData, keyPath, value), {replace: makeSlice(SymData, keyPath, replace)})
   } else {
@@ -828,7 +832,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
   return state;
 }
 
-// todo: rework dataMaps and validation to work ...args and chains '|'
+
 function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, maps: any, item: NormalizedUpdateType) {
   const {value, path, replace} = item;
   const keyPath = item[SymData] || [];
@@ -838,13 +842,40 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
     const NpathTo = path2string(normalizePath(pathTo, path));
     let executedValue = value;
     if (isObject(map)) {
-      const bindObj = {path: NUpdate2string(item), pathTo: NpathTo, schema, getFromState: getFrom4DataMap(state, UPDATABLE_object)};
-      executedValue = deArray(toArray(map.$).reduce((args, fn) => toArray(fn.call(bindObj, ...args)), push2array([executedValue], map.args)))
+      const bindObj = {path: NUpdate2string(item), pathTo: NpathTo, schema, api: {get: getFrom4DataMap(state, UPDATABLE_object)}};
+      executedValue = processFn({...map, args: push2array([value], map.args || [])}, () => bindObj.api.get(path), bindObj)
+      //executedValue = deArray(toArray(map.$).reduce((args, fn) => toArray(fn.call(bindObj, ...args)), push2array([executedValue], map.args)))
     }
     const updates = map.asUpdates ? toArray(executedValue) : [{path: NpathTo, value: executedValue, replace}];
     updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE_object, update));
   });
   return state;
+}
+
+const isMapFn = (arg: any) => isObject(arg) && arg.$;
+
+function normalizeArgs(args: any) {
+  let dataRequest = false;
+  args = toArray(isUndefined(args) ? [] : args).map((arg: any) => {
+    if (isString(arg) && arg[0] == '@') return (dataRequest = true) && normalizePath(arg.substr(1));
+    if (isMapFn(arg)) {
+      const res = normalizeArgs(arg.args);
+      if (res.dataRequest) dataRequest = true;
+      return {...arg, ...res};
+    }
+    return arg;
+  });
+  return {dataRequest, args}
+}
+
+function processFn(map: any, nextData: any, bindObj?: any) {
+  const getFromData = (arg: any) => {
+    if (isNPath(arg)) return getIn(nextData, arg);
+    if (isMapFn(arg)) return processFn(arg, nextData);
+    return arg;
+  };
+  if (map.dataRequest && isFunction(nextData)) nextData = nextData();
+  return deArray(toArray(map.$).reduce((args, fn) => toArray(bindObj ? fn.apply(bindObj, args) : fn(...args)), map.dataRequest ? map.args.map(getFromData) : map.args), map.arrayResult);
 }
 
 function getFrom4DataMap(state: StateType, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType) {
@@ -1087,7 +1118,10 @@ export {
   objMap,
   setUPDATABLE,
   isNPath,
-  multiplyPath
+  multiplyPath,
+  normalizeArgs,
+  processFn,
+  isMapFn
 }
 
 export {SymData, SymReset, SymClear, SymDelete}
