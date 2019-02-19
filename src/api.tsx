@@ -404,7 +404,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
           result.path = track;
           result.selfManaged = selfManaged;
           vPromises.push(result);
-          updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['status', 'validation', 'pending'], 1, true, {macros: 'setStatus'}))
+          state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['status', 'validation', 'pending'], 1, true, {macros: 'setStatus'}))
         } else state = updateMessagesPROCEDURE(state, schema, UPDATABLE_object, track, result, 1)
       })
     }
