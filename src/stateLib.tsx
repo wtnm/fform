@@ -499,7 +499,7 @@ function setDataMapInState(state: StateType, schema: jsJsonSchema, dataMaps: nor
         let relTo = path2string(relativePath(NdataMap.path, NdataMap.to));
         if (getIn(state, NdataMap.path)) setIn(UPDATABLE_object.update, unset ? undefined : NdataMap.value, NdataMap.path, SymDataMapTree, NdataMap[SymData], SymDataMap, relTo);
         if (!unset) {
-          executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, makeSlice(relTo, NdataMap.value),
+          state = executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, makeSlice(relTo, NdataMap.value),
             makeNUpdate(NdataMap.path, NdataMap[SymData], getIn(state, NdataMap.path, SymData, NdataMap[SymData])));
           if (!bindMap2emitter && relativePath(emitterPath, NdataMap.path)[0] != '.') bindMap2emitter = true;
         }
