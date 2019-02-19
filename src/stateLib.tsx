@@ -420,7 +420,7 @@ function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], pa
   return dataMap.map((item) => {
     let action: any = item[2];
     if (isFunction(action)) action = {$: action};
-    if (isObject(action)) action = {...action, args: normalizeArgs(action.args)};
+    if (isObject(action)) action = {...action, ...normalizeArgs(action.args)};
     if (isUndefined(action)) action = true;
     return {emitter: path, from: item[0], to: item[1], action} as normalizedDataMapType;
   })
@@ -843,7 +843,7 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
     let executedValue = value;
     if (isObject(map)) {
       const bindObj = {path: NUpdate2string(item), pathTo: NpathTo, schema, api: {get: getFrom4DataMap(state, UPDATABLE_object)}};
-      executedValue = processFn({...map, args: push2array([value], map.args || [])}, () => bindObj.api.get(path), bindObj)
+      executedValue = processFn({...map, args: push2array([value], map.args || [])}, () => bindObj.api.get(path, SymData), bindObj)
       //executedValue = deArray(toArray(map.$).reduce((args, fn) => toArray(fn.call(bindObj, ...args)), push2array([executedValue], map.args)))
     }
     const updates = map.asUpdates ? toArray(executedValue) : [{path: NpathTo, value: executedValue, replace}];

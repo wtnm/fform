@@ -199,7 +199,7 @@ class FField extends FRefsGeneric {
   private _blocks: string[] = [];
   private _widgets: object;
   private _ff_components: object;
-  private _maps: NPM4WidgetsType;
+  private _maps: NPM4WidgetsType = {};
   private _$_parse: any;
 
 
@@ -223,7 +223,7 @@ class FField extends FRefsGeneric {
     self.state = {branch: self.pFForm.getBranch(self.path)};
     self.$branch = self.state.branch;
     self._bind2self = self._bind2self.bind(self);
-    self._build();
+    // self._build();
   }
 
   // focus(path: Path) {
@@ -361,7 +361,6 @@ class FField extends FRefsGeneric {
   }
 
   // todo: sample schema mount tests
-  // todo: manual
   // todo: SSR support
   // todo: lazy schema compilation?
 
@@ -1094,12 +1093,6 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     },
     //range: {$_ref: '^/sets/nBase', Main: {type: 'range'}},
     'null': {$_ref: '^/sets/base', Main: false},
-    hidden: {
-      Builder: {
-        className: {hidden: true},
-        $_maps: {'className/hidden': false}
-      }
-    },
     boolean: {
       $_ref: '^/sets/nBase',
       Main: {
@@ -1227,6 +1220,12 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
 
     // inlineItems: {Main: {stackedProps: false}},
     // buttons: {Main: {inputProps: {className: {'button': true}}, labelProps: {className: {'button': true}}}},
+    hidden: {
+      Builder: {
+        className: {hidden: true},
+        $_maps: {'className/hidden': false}
+      }
+    },
     autowidth: {
       Autowidth: {$_ref: '^/parts/Autowidth'},
       Wrapper: {className: {shrink: true}},
@@ -1270,7 +1269,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         return {value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)), ...extenProps, ...staticProps}
       })
     },
-    enumInputs: function (enumVals: any[], enumExten: any = {}, containerProps: any = {}, inputProps: any = {}, labelProps: any = {}, name?: true | string) {
+    enumInputs: function (enumVals: any[] = [], enumExten: any = {}, containerProps: any = {}, inputProps: any = {}, labelProps: any = {}, name?: true | string) {
       return enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
         return {
@@ -1283,12 +1282,12 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         }
       })
     },
-    enumInputProps: function (enumVals: any[], ...rest: any[]) {
+    enumInputProps: function (enumVals: any[] = [], ...rest: any[]) {
       let props: any = {};
       for (let i = 0; i < rest.length; i += 2) props[rest[i]] = rest[i + 1];
       return enumVals.map(val => {return {'children': {'0': props}}})
     },
-    enumInputValue: function (enumVals: any[], value: any, property = 'checked') {
+    enumInputValue: function (enumVals: any[] = [], value: any, property = 'checked') {
       value = toArray(value);
       return enumVals.map(val => {return {'children': {'0': {[property]: !!~value.indexOf(val)}}}})
     }
