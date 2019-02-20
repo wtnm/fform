@@ -329,10 +329,10 @@ class FFormStateAPI extends FFormStateManager {
     return this._setExecution((update as StateApiUpdateType), opts);
   };
 
-  getValue = (opts: { path?: string | Path, inital?: boolean } = {}): any => {
-    const path = normalizePath(opts.path || []);
-    return getIn(this.getState(), SymData, opts.inital ? 'inital' : 'current', path);
-  };
+  getValue = (opts: { path?: string | Path, inital?: boolean } = {}): any => this.get(SymData, opts.inital ? 'inital' : 'current', opts.path || []);
+  // const path = normalizePath(opts.path || []);
+  // return getIn(this.getState(), SymData, opts.inital ? 'inital' : 'current', path);
+
 
   setValue = (value: any, opts: APIOptsType & { path?: string | Path, replace?: any, setOneOf?: number, inital?: boolean } = {}) => {
     let {path, inital, ...update} = opts;

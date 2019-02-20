@@ -834,6 +834,7 @@ const makeBindObj = memoize(function (stateApi: any, from: string, to: string) {
   };
   res.api._get = res.api.get;
   res.api.get = false;
+  res.api.getValue = (opts: any = {}) => res.api.get(SymData, opts.inital ? 'inital' : 'current', opts.path || []);
   return res;
 });
 
