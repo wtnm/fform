@@ -117,6 +117,7 @@ type APIOptsType = {
   execute?: boolean | number;
   force?: boolean;
   noValidation?: boolean;
+  setExecution?: Function;
 }
 
 interface apiPromises extends Promise<any> {

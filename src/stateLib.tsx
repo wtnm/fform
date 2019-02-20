@@ -823,6 +823,19 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
   return state;
 }
 
+const makeBindObj = memoize(function (stateApi: any, from: string, to: string) {
+  const path = to.split('@')[0];
+  const updates: any[] = [];
+  const res: any = {from, to, path, stateApi, updates};
+  res.api = stateApi.wrapper(res);
+  res.wrapOpts = (rest: any) => {
+    if (isUndefined(rest.setExecution)) rest.setExecution = (addUpdates: any) => addUpdates && push2array(res.updates, addUpdates);
+    return rest
+  };
+  res.api._get = res.api.get;
+  res.api.get = false;
+  return res;
+});
 
 function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, maps: any, item: NormalizedUpdateType) {
   const {value, path, replace} = item;
@@ -832,13 +845,15 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
     const map: dataMapActionType = maps[pathTo];
     const NpathTo = path2string(normalizePath(pathTo, path));
     let executedValue = value;
+    const updates: any[] = [];
     if (isObject(map)) {
-      const bindObj = {path: NUpdate2string(item), pathTo: NpathTo, schema, api: {get: getFrom4DataMap(state, UPDATABLE)}};
+      const bindObj = makeBindObj(UPDATABLE.api, NUpdate2string(item), NpathTo);
+      bindObj.api.get = getFrom4DataMap(state, UPDATABLE);
+      bindObj.updates = updates;
       executedValue = processFn({...map, args: push2array([value], map.args || [])}, () => bindObj.api.get(path, SymData), bindObj)
-      //executedValue = deArray(toArray(map.$).reduce((args, fn) => toArray(fn.call(bindObj, ...args)), push2array([executedValue], map.args)))
     }
-    const updates = map.asUpdates ? toArray(executedValue) : [{path: NpathTo, value: executedValue, replace}];
-    updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
+    if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace});
+    updates.forEach((update: any) => update && (state = updateStatePROCEDURE(state, schema, UPDATABLE, update)));
   });
   return state;
 }

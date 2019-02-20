@@ -691,7 +691,7 @@ describe('FForm state functions tests', function () {
 
     let state = oneOfCore.getState();
     expect(state[SymData].oneOf).to.be.equal(0);
-    let UPDATABLE_object = {update: {}, replace: {}};
+    let UPDATABLE_object = oneOfCore.UPDATABLE;
     state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, stateLib.makeNUpdate([], ['oneOf'], 1));
     state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
     expect(state[SymData].oneOf).to.be.equal(1);

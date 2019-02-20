@@ -271,6 +271,7 @@ class FFormStateAPI extends FFormStateManager {
   }
 
   private _setExecution(addUpdates: any, opts: APIOptsType = {}) {
+    if (opts.setExecution) return opts.setExecution(addUpdates, opts);
     const self = this;
     if (addUpdates) push2array(self._updates, addUpdates);
     // console.log('---------------- added updates', updates);
