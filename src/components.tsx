@@ -211,6 +211,7 @@ class FField extends FRefsGeneric {
   path: any;
   api: any;
   pFForm: any;
+  stateApi: any;
 
   constructor(props: any, context: any) {
     super(props, context);
@@ -219,17 +220,26 @@ class FField extends FRefsGeneric {
     Object.defineProperty(self, "pFForm", {get: () => self.props.pFForm});
     Object.defineProperty(self, "liveValidate", {get: () => getIn(self.getData(), 'params', 'liveValidate')});
     Object.defineProperty(self, "value", {get: () => self.props.pFForm.getValue(self.state.branch, self)});
-    if (self.pFForm.api) self._apiWrapper();
+    Object.defineProperty(self, "stateApi", {get: () => self.props.pFForm.api});
+    if (self.stateApi) {
+      const api = self.stateApi.wrapper({
+        get path() {return self.path},
+        wrapOpts: (rest: any) => {
+          if (isUndefined(rest.noValidation)) rest.noValidation = !self.liveValidate;
+          return rest
+        }
+      });
+      api._set = api.set;
+      api._setValue = api.setValue;
+      api.set = (...args: any[]) => self._cacheValue(args[0], args[1], 'set') || api._set(...args);
+      api.setValue = (...args: any[]) => self._cacheValue((args[1] || {}).path, args[0], 'setValue') || api._setValue(...args);
+      self.api = api;
+    }
+
     self.state = {branch: self.pFForm.getBranch(self.path)};
     self.$branch = self.state.branch;
     self._bind2self = self._bind2self.bind(self);
-    // self._build();
   }
-
-  // focus(path: Path) {
-  //   const self = this;
-  //   self.$refs['Main'] && self.$refs['Main'].focus && self.$refs['Main'].focus(path); // path.length ? self.$refs.focus(path) : self.$refs.focus();
-  // }
 
   getRef(path: Path | string) {
     path = normalizePath(path);
@@ -249,20 +259,20 @@ class FField extends FRefsGeneric {
     const self = this;
     self._cachedTimeout = undefined;
     if (self._cached) {
-      self.props.pFForm.api.setValue(self._cached.value, {noValidation: !self.liveValidate, path: self.path});
+      self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate, path: self.path});
       self._cached = undefined;
     }
   }
 
-  _cacheValue(path: any, value: any, setValue = false): boolean {
+  _cacheValue(path: any, value: any, fn: string = 'set'): boolean | undefined {
     const self = this;
     let fieldCache = self.pFForm.props.fieldCache;
     if (isUndefined(fieldCache) || fieldCache === true) fieldCache = 40;
 
-    let valueSet = setValue && (!path || path == './' || path == '.');
+    let valueSet = fn === 'setValue' && (!path || path == './' || path == '.');
     if (!valueSet) {
       let fPath = self.path;
-      path = '#/' + path2string(normalizePath(path, self.path)) + (setValue ? '/@/value' : '');
+      path = '#/' + path2string(normalizePath(path, self.path)) + (fn === 'setValue' ? '/@/value' : '');
       valueSet = (path == fPath + '/@/value') || (path == '#/@/current/' + fPath.slice(2));
     }
     // console.log(valueSet, 'setValue=', setValue,'path=',path)
@@ -279,31 +289,31 @@ class FField extends FRefsGeneric {
       } else self._updateCachedValue();
       return true;
     }
-    return false;
+    return;
   }
 
-  _apiWrapper() {
-    const self = this;
-    const api = self.props.pFForm.api;
-    const wrapPath = (path: string | Path = []) => normalizePath(path, self.path);
-    const wrapOpts = (opts: any = {}) => {
-      const {path, noValidation, ...rest} = opts;
-      if (!isUndefined(path)) rest.path = wrapPath(path);
-      rest.noValidation = isUndefined(noValidation) ? !self.liveValidate : noValidation;
-      return rest;
-    };
-
-    self.api = {
-      validate: (path: boolean | string | Path = './', ...args: any[]) => api.validate(typeof path == 'boolean' ? path : wrapPath(path), ...args),
-      get: (...path: any[]) => api.get(wrapPath(path)),
-      set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => self._cacheValue(path, value) || api.set(wrapPath(path), value, wrapOpts(opts), ...args),
-      setValue: (value: any, opts: any = {}, ...args: any[]) => self._cacheValue(opts.path, value, true) || api.setValue(value, wrapOpts(opts), ...args)
-    };
-    ['noExec', 'execute', 'setState', 'getActive',].forEach(fn => self.api[fn] = (...args: any[]) => api[fn](...args));
-    ['arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly', 'getSchemaPart']
-      .forEach(fn => self.api[fn] = (path: string | Path = [], ...args: any[]) => api[fn](wrapPath(path), ...args));
-    ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
-  }
+  // _apiWrapper() {
+  //   const self = this;
+  //   const api = self.props.pFForm.api;
+  //   const wrapPath = (path: string | Path = []) => normalizePath(path, self.path);
+  //   const wrapOpts = (opts: any = {}) => {
+  //     const {path, noValidation, ...rest} = opts;
+  //     if (!isUndefined(path)) rest.path = wrapPath(path);
+  //     rest.noValidation = isUndefined(noValidation) ? !self.liveValidate : noValidation;
+  //     return rest;
+  //   };
+  //
+  //   self.api = {
+  //     validate: (path: boolean | string | Path = './', ...args: any[]) => api.validate(typeof path == 'boolean' ? path : wrapPath(path), ...args),
+  //     get: (...path: any[]) => api.get(wrapPath(path)),
+  //     set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => self._cacheValue(path, value) || api.set(wrapPath(path), value, wrapOpts(opts), ...args),
+  //     setValue: (value: any, opts: any = {}, ...args: any[]) => self._cacheValue(opts.path, value, true) || api.setValue(value, wrapOpts(opts), ...args)
+  //   };
+  //   ['noExec', 'execute', 'setState', 'getActive',].forEach(fn => self.api[fn] = (...args: any[]) => api[fn](...args));
+  //   ['arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly', 'getSchemaPart']
+  //     .forEach(fn => self.api[fn] = (path: string | Path = [], ...args: any[]) => api[fn](wrapPath(path), ...args));
+  //   ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
+  // }
 
   _parseValue(value: any, prevData: any) {
     const $_parse = this._$_parse;
@@ -898,7 +908,7 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
   const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
   const needUpdate = (map: NormalizedPropsMapType) => isUndefined(prevData) || !map.$ || map.update != 'data' ||
     (map.dataRequest && map.args.some(arg => isNPath(arg) && getIn(prevData, arg) !== getIn(nextData, arg)));
-  const dataUpdates = {update: {}, replace: {}};
+  const dataUpdates = {update: {}, replace: {}, api: {}};
   iterMaps.forEach(m => m && m.forEach(map => {
       if (!needUpdate(map)) return;
       const value = map.$ ? processFn(map, nextData) : getIn(nextData, map.args);

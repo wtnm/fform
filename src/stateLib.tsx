@@ -64,9 +64,9 @@ function getBindedMaps2update(branch: StateType, path: Path = []) {
 
 const Macros: { [key: string]: any } = {};
 
-Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
   let {path, macros, value, [SymData]: sym, ...rest} = item as any;
-  let length = getUpdValue([UPDATABLE_object.update, state], path, SymData, 'length');
+  let length = getUpdValue([UPDATABLE.update, state], path, SymData, 'length');
   if (isArray(item.value)) {
     let mergeArrayObj: any = [];
     let replaceArrayObj: any = {};
@@ -75,22 +75,22 @@ Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCED
       replaceArrayObj[length + i] = getIn(item.replace, i);
     }
     mergeArrayObj.length = length + item.value.length;
-    return updateCurrentPROCEDURE(state, schema, UPDATABLE_object, mergeArrayObj, replaceArrayObj, path, item.setOneOf)
+    return updateCurrentPROCEDURE(state, schema, UPDATABLE, mergeArrayObj, replaceArrayObj, path, item.setOneOf)
   } else {
     length += item.value || 1;
     if (length < 0) length = 0;
-    return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['length'], length, false, rest));
+    return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, ['length'], length, false, rest));
   }
 };
 
-Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
   let path = item.path;
   let op = item.op;
   let opVal = item.value || 0;
   const from = parseInt(path.pop());
   let to = from;
   const min = arrayStart(getSchemaPart(schema, path, oneOfFromState(state))); // api.get(path.concat(SymData, 'array', 'arrayStartIndex'));
-  const length = getUpdValue([UPDATABLE_object.update, state], path, SymData, 'length');
+  const length = getUpdValue([UPDATABLE.update, state], path, SymData, 'length');
   const max = length - 1;
   if (op == 'up') to--;
   if (op == 'down') to++;
@@ -106,10 +106,10 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PR
   let dataMaps = {};
   let currentObject: any = {};
   let updObj: any[] = [];
-  updObj[0] = getIn(UPDATABLE_object.update, path);
-  updObj[1] = getIn(UPDATABLE_object.update, SymData, 'current', path);
-  updObj[2] = getIn(UPDATABLE_object.replace, path);
-  updObj[3] = getIn(UPDATABLE_object.replace, SymData, 'current', path);
+  updObj[0] = getIn(UPDATABLE.update, path);
+  updObj[1] = getIn(UPDATABLE.update, SymData, 'current', path);
+  updObj[2] = getIn(UPDATABLE.replace, path);
+  updObj[3] = getIn(UPDATABLE.replace, SymData, 'current', path);
 
 
   for (let i = Math.min(from, to); i <= Math.max(from, to); i++) {
@@ -138,69 +138,69 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PR
   // const length2test = 1 + item.path.length - (item.path[0] == '#' ? 1 : 0);  // length2test can be smaller because of leading '#' in item.path (replace function receives path without leading '#')
   state = merge(state, makeSlice(path, stateObject), {replace: trueIfLength(item.path.length + 1)}); //(path: Path) => path.length === length2test});
   state = merge(state, makeSlice(SymData, 'current', path, currentObject), {replace: trueIfLength(item.path.length + 3)});//(path: Path) => path.length === length2test + 2});
-  if (op == 'del') state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, ['length'], max));
-  state = mergeStatePROCEDURE(state, UPDATABLE_object);
-  state = setDataMapInState(state, schema, maps2disable, true);
-  state = setDataMapInState(state, schema, maps2enable);
+  if (op == 'del') state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, ['length'], max));
+  state = mergeStatePROCEDURE(state, UPDATABLE);
+  state = setDataMapInState(state, UPDATABLE, schema, maps2disable, true);
+  state = setDataMapInState(state, UPDATABLE, schema, maps2enable);
   return state
 };
 
-Macros.switch = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.switch = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
   let keyPath = item[SymData] || [];
   let switches = makeSlice(keyPath, item.value);
-  object2PathValues(switches).forEach(pathValue => state = recursivelyUpdate(state, schema, UPDATABLE_object, makeNUpdate(item.path, pathValue, pathValue.pop())));
+  object2PathValues(switches).forEach(pathValue => state = recursivelyUpdate(state, schema, UPDATABLE, makeNUpdate(item.path, pathValue, pathValue.pop())));
   return state
 };
 
-Macros.setExtraStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.setExtraStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
   const keyPath = item[SymData] || [];
-  let prevVal = getUpdValue([UPDATABLE_object.update, state], item.path, SymData, keyPath);
+  let prevVal = getUpdValue([UPDATABLE.update, state], item.path, SymData, keyPath);
   let value = item.value > 0;
   if (!prevVal == value) {
-    state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(item.path, keyPath, value));
-    state = Macros.setStatus(state, schema, UPDATABLE_object, makeNUpdate(item.path, ['status', keyPath[keyPath.length - 1]], value ? 1 : -1));
+    state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(item.path, keyPath, value));
+    state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(item.path, ['status', keyPath[keyPath.length - 1]], value ? 1 : -1));
   }
   return state
 };
 
-Macros.setStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.setStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
   const keyPath = item[SymData] || [];
-  if (keyPath.length > 2) return Macros.setExtraStatus(state, schema, UPDATABLE_object, item);
+  if (keyPath.length > 2) return Macros.setExtraStatus(state, schema, UPDATABLE, item);
   let op = keyPath[1];
   if (!op) return state;
   if (op == 'valid' || op == 'pristine' || op == 'touched') throw new Error('Setting "' + op + '" directly is not allowed');
 
-  let prevVal = getUpdValue([UPDATABLE_object.update, state], item.path, SymData, keyPath);
+  let prevVal = getUpdValue([UPDATABLE.update, state], item.path, SymData, keyPath);
   const selfManaged = isSelfManaged(state, item.path);
 
   if (op == 'untouched' && prevVal == 0 && !selfManaged) return state;  // stick "untouched" to zero for objects and arrays
   let value = prevVal + item.value;
   if (selfManaged && value > 1) value = 1;
   if (value < 0) value = 0;
-  state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(item.path, ['status', op], value));
+  state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(item.path, ['status', op], value));
   if (!isTopPath(item.path) && (!prevVal != !value)) //(prevVal && !value || !prevVal && value)) 
-    state = Macros.setStatus(state, schema, UPDATABLE_object, makeNUpdate(item.path.slice(0, -1), keyPath, value > 0 ? 1 : -1));
+    state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(item.path.slice(0, -1), keyPath, value > 0 ? 1 : -1));
 
   return state
 };
 
-Macros.setCurrent = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
-  return updateCurrentPROCEDURE(state, schema, UPDATABLE_object, item.value, item.replace, item.path, item.setOneOf)
+Macros.setCurrent = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
+  return updateCurrentPROCEDURE(state, schema, UPDATABLE, item.value, item.replace, item.path, item.setOneOf)
 };
 
-Macros.setOneOf = (state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) => {
+Macros.setOneOf = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
   let oldOneOf = getIn(state, item.path, SymData, 'oneOf');
   if (oldOneOf == item.value) {
-    if (!isUndefined(item.setValue)) state = updateCurrentPROCEDURE(state, schema, UPDATABLE_object, item.setValue, false, item.path);
+    if (!isUndefined(item.setValue)) state = updateCurrentPROCEDURE(state, schema, UPDATABLE, item.setValue, false, item.path);
     return state;
   }
   const {macros, ...newItem} = item;
   newItem[SymData] = ['oneOf'];
   if (isUndefined(newItem.setValue)) {
-    state = mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = mergeStatePROCEDURE(state, UPDATABLE);
     newItem.setValue = getIn(state, SymData, 'current', item.path);
   }
-  return updateStatePROCEDURE(state, schema, UPDATABLE_object, newItem);
+  return updateStatePROCEDURE(state, schema, UPDATABLE, newItem);
 };
 
 
@@ -219,14 +219,14 @@ function isTopPath(path: Path) {
   return path.length == 0 || path.length == 1 && path[0] == '#';
 }
 
-function recursivelyUpdate(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType) {
+function recursivelyUpdate(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) {
   const keys = branchKeys(getIn(state, item.path));
   if (item.value == SymReset && item[SymData][0] == 'status') {
     let i = {...item};
     i.value = item[SymData][1] == 'untouched' ? keys.length : 0;
-    state = updateStatePROCEDURE(state, schema, UPDATABLE_object, i);
-  } else state = updateStatePROCEDURE(state, schema, UPDATABLE_object, item);
-  keys.forEach(key => state = recursivelyUpdate(state, schema, UPDATABLE_object, merge(item, {path: item.path.concat(key)})));
+    state = updateStatePROCEDURE(state, schema, UPDATABLE, i);
+  } else state = updateStatePROCEDURE(state, schema, UPDATABLE, item);
+  keys.forEach(key => state = recursivelyUpdate(state, schema, UPDATABLE, merge(item, {path: item.path.concat(key)})));
   return state
 };
 
@@ -479,53 +479,44 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   return {state: result, defaultValues, dataMap: dataMapObjects}
 }
 
-const makeStateFromSchema = memoize(function (schema: jsJsonSchema) {
-  let {state, dataMap = [], defaultValues} = makeStateBranch(schema, oneOfStructure({}, []));
-  state = merge(state, setIn({}, defaultValues, [SymData, 'current']));
-  state = setDataMapInState(state, schema, dataMap);
-  const UPDATABLE_object: PROCEDURE_UPDATABLE_objectType = {update: {}, replace: {}};
-  state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], ['inital'], getIn(state, SymData, 'current')));
-  state = mergeStatePROCEDURE(state, UPDATABLE_object);
-  return state;
-});
 
-function setDataMapInState(state: StateType, schema: jsJsonSchema, dataMaps: normalizedDataMapType[], unset: boolean = false) {
+function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, schema: jsJsonSchema, dataMaps: normalizedDataMapType[], unset: boolean = false) {
   //let update: StateType = {};
-  const UPDATABLE_object = {update: {}, replace: {}};
+  // const UPDATABLE = {update: {}, replace: {}};
   dataMaps.forEach((dataMap) => {
     const emitterPath = dataMap.emitter;
     let bindMap2emitter: boolean = false;
     normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.from, to: normalizePath(dataMap.to, emitterPath), value: dataMap.action}, state).forEach(NdataMap => {
         let relTo = path2string(relativePath(NdataMap.path, NdataMap.to));
-        if (getIn(state, NdataMap.path)) setIn(UPDATABLE_object.update, unset ? undefined : NdataMap.value, NdataMap.path, SymDataMapTree, NdataMap[SymData], SymDataMap, relTo);
+        if (getIn(state, NdataMap.path)) setIn(UPDATABLE.update, unset ? undefined : NdataMap.value, NdataMap.path, SymDataMapTree, NdataMap[SymData], SymDataMap, relTo);
         if (!unset) {
-          state = executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, makeSlice(relTo, NdataMap.value),
+          state = executeDataMapsPROCEDURE(state, schema, UPDATABLE, makeSlice(relTo, NdataMap.value),
             makeNUpdate(NdataMap.path, NdataMap[SymData], getIn(state, NdataMap.path, SymData, NdataMap[SymData])));
           if (!bindMap2emitter && relativePath(emitterPath, NdataMap.path)[0] != '.') bindMap2emitter = true;
         }
-        state = mergeStatePROCEDURE(state, UPDATABLE_object);
+        state = mergeStatePROCEDURE(state, UPDATABLE);
       }
     );
     if (bindMap2emitter) {
       const emitterBranch = getIn(state, emitterPath);
       if (emitterBranch) {
         let bindedMaps = getIn(emitterBranch, SymDataMapTree, SymData) || [];
-        setUPDATABLE(UPDATABLE_object, bindedMaps.concat(dataMap), true, emitterPath, SymDataMapTree, SymData);
-        // setIn(UPDATABLE_object.replace, true, emitterPath, SymDataMapTree, SymData);
+        setUPDATABLE(UPDATABLE, bindedMaps.concat(dataMap), true, emitterPath, SymDataMapTree, SymData);
+        // setIn(UPDATABLE.replace, true, emitterPath, SymDataMapTree, SymData);
       }
-      state = mergeStatePROCEDURE(state, UPDATABLE_object);
+      state = mergeStatePROCEDURE(state, UPDATABLE);
     }
   });
   return state
 }
 
 // function updDataMap2state(state: StateType, dataMap: normalizedDataMapType[], schema: jsJsonSchema) {
-//   const UPDATABLE_object = {update: {}, replace: {}};
+//   const UPDATABLE = {update: {}, replace: {}};
 //   dataMap.forEach((dataMap) => {
 //     if (dataMap.fn === false) return; // disabled map
 //     const branch = getIn(state, dataMap.path);
-//     executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, [getIn(branch, SymDataMapTree, dataMap[SymData], SymDataMap, dataMap.to)], makeNUpdate(dataMap.path, dataMap[SymData], getIn(branch, SymData, dataMap[SymData])));
-//     state = mergeStatePROCEDURE(state, UPDATABLE_object);
+//     executeDataMapsPROCEDURE(state, schema, UPDATABLE, [getIn(branch, SymDataMapTree, dataMap[SymData], SymDataMap, dataMap.to)], makeNUpdate(dataMap.path, dataMap[SymData], getIn(branch, SymData, dataMap[SymData])));
+//     state = mergeStatePROCEDURE(state, UPDATABLE);
 //   });
 //   return state
 // }
@@ -576,11 +567,11 @@ function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
   return {};
 }
 
-function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, value: any, replace: any, track: Path = [], setOneOf?: number): StateType {
+function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, value: any, replace: any, track: Path = [], setOneOf?: number): StateType {
 
   if (value === SymReset) value = getIn(state, SymData, 'inital', track);
-  if (value === SymClear) value = getIn(getDefaultFromSchema(schema), track);
-  if (getIn(state, SymData, 'current', track) === value && !hasIn(UPDATABLE_object.update, SymData, 'current', track)) return state;
+  if (value === SymClear) value = getIn(UPDATABLE.api.getDefaultValue(), track);
+  if (getIn(state, SymData, 'current', track) === value && !hasIn(UPDATABLE.update, SymData, 'current', track)) return state;
 
   const branch = getIn(state, track);
 
@@ -590,9 +581,9 @@ function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABL
       const topPath = track.slice(0, -1);
       const topBranch = getIn(state, topPath);
       if (topBranch[SymData].fData.type == 'array')
-        return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(topPath, ['length'], value));
+        return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(topPath, ['length'], value));
     }
-    return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], ['current'].concat(track), value, replace));
+    return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
   }
 
   const type = branch[SymData].fData.type;
@@ -600,19 +591,19 @@ function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABL
   if (!types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
     const {schemaPart, oneOf, type} = findOneOf(getSchemaPart(schema, track, oneOfFromState(state), true), value, isUndefined(setOneOf) ? branch[SymData].oneOf : setOneOf);
     if (schemaPart) {
-      return updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
+      return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
 
     } else console.warn('Type not found in path [' + track.join('/') + ']')
   }
 
   if (isSelfManaged(branch)) { // if object has own value then replace it directly
-    state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['value'], value, replace))
+    state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['value'], value, replace))
   } else {
     if (isMergeable(value)) {  // if we receive object or array then apply their values to state
       if (type == 'array' && !isUndefined(value.length))
-        state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(track, ['length'], value.length));
+        state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['length'], value.length));
       objKeys(value).forEach(key =>
-        state = updateCurrentPROCEDURE(state, schema, UPDATABLE_object, value[key], getIn(replace, key), track.concat(key)))
+        state = updateCurrentPROCEDURE(state, schema, UPDATABLE, value[key], getIn(replace, key), track.concat(key)))
     }
   }
 
@@ -626,24 +617,24 @@ function getUpdValue(states: StateType[], ...pathes: Path) {
 }
 
 
-function splitValuePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType): StateType {
+function splitValuePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType): StateType {
   const {value: itemValue, path, replace} = item;
   const keyPath = item[SymData] || [];
   if (keyPath.length == 0) {
     const {value, status, length, oneOf, ...rest} = itemValue;
     ['value', 'status', 'length', 'oneOf'].forEach(key => {
-      if (hasIn(itemValue, key)) state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, [key], itemValue[key], getIn(replace, key)))
+      if (hasIn(itemValue, key)) state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, [key], itemValue[key], getIn(replace, key)))
     });
-    if (objKeys(rest).length) state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, keyPath, rest, replace))
+    if (objKeys(rest).length) state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, keyPath, rest, replace))
   } else {
     objKeys(itemValue).forEach(key => {
-      state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate(path, keyPath.concat(key), itemValue[key], getIn(replace, key)))
+      state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, keyPath.concat(key), itemValue[key], getIn(replace, key)))
     });
   }
   return state
 }
 
-function updateNormalizationPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: StateApiUpdateType): StateType {
+function updateNormalizationPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: StateApiUpdateType): StateType {
   const items = normalizeUpdate(item, state);
   items.forEach(i => {
     if (i.path.length === 0 && i[SymData][0] == 'current') {
@@ -662,68 +653,68 @@ function updateNormalizationPROCEDURE(state: StateType, schema: jsJsonSchema, UP
       i.macros = 'setOneOf';
     }
 
-    state = updateStatePROCEDURE(state, schema, UPDATABLE_object, i);
+    state = updateStatePROCEDURE(state, schema, UPDATABLE, i);
   });
   return state;
 }
 
-function setUPDATABLE(UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, update: any, replace: any, ...pathes: any[]) {
-  setIn(UPDATABLE_object, update, 'update', ...pathes);
-  if (replace) setIn(UPDATABLE_object, replace, 'replace', ...pathes);
+function setUPDATABLE(UPDATABLE: PROCEDURE_UPDATABLE_Type, update: any, replace: any, ...pathes: any[]) {
+  setIn(UPDATABLE, update, 'update', ...pathes);
+  if (replace) setIn(UPDATABLE, replace, 'replace', ...pathes);
 }
 
-function mergeStatePROCEDURE(state: StateType, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType) {
-  state = merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace});
-  UPDATABLE_object.update = {};
-  UPDATABLE_object.replace = {};
+function mergeStatePROCEDURE(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
+  state = merge(state, UPDATABLE.update, {replace: UPDATABLE.replace});
+  UPDATABLE.update = {};
+  UPDATABLE.replace = {};
   return state;
 }
 
-function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, item: NormalizedUpdateType | StateApiUpdateType): StateType {
-  const {update, replace: replace_UPDATABLE} = UPDATABLE_object;
+function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType | StateApiUpdateType): StateType {
+  const {update, replace: replace_UPDATABLE} = UPDATABLE;
 
   // normalize updates
-  if (!isNUpdate(item)) return updateNormalizationPROCEDURE(state, schema, UPDATABLE_object, item);
+  if (!isNUpdate(item)) return updateNormalizationPROCEDURE(state, schema, UPDATABLE, item);
 
   // execute macros
   if (item.macros) {
     let macro = Macros[item.macros];
     if (!macro) throw new Error('"' + macro + '" not found in macros');
-    return macro(state, schema, UPDATABLE_object, item);
+    return macro(state, schema, UPDATABLE, item);
   }
 
   let {value, path, replace} = item;
   const keyPath = item[SymData];
-  if (isFunction(value)) value = value(getUpdValue([UPDATABLE_object.update, state], path, SymData, keyPath));
+  if (isFunction(value)) value = value(getUpdValue([UPDATABLE.update, state], path, SymData, keyPath));
 
   if (path.length == 0 && keyPath[0] == 'inital') {
     state = merge(state, makeSlice(SymData, keyPath, value), {replace: makeSlice(SymData, keyPath, replace)})
   } else {
     // split object for proper state update (for dataMap correct execution)
     if (isObject(value) && (keyPath.length == 0 && (hasIn(value, 'value') || hasIn(value, 'status') || hasIn(value, 'length') || hasIn(value, 'oneOf'))
-      || (keyPath.length == 1 && keyPath[0] == 'status'))) return splitValuePROCEDURE(state, schema, UPDATABLE_object, item);
+      || (keyPath.length == 1 && keyPath[0] == 'status'))) return splitValuePROCEDURE(state, schema, UPDATABLE, item);
 
     let branch = getIn(state, path);
     if (!isObject(branch)) return state; // check if there is branch in state
 
     if (keyPath[0] == 'value' && !hasIn(branch, SymData, 'value')) // value is not self managed, so modify only current
-      return Macros.setCurrent(state, schema, UPDATABLE_object, {value, replace, path: path.concat(keyPath.slice(1))});
+      return Macros.setCurrent(state, schema, UPDATABLE, {value, replace, path: path.concat(keyPath.slice(1))});
 
     // set data
-    setUPDATABLE(UPDATABLE_object, value, replace, path, SymData, keyPath);
+    setUPDATABLE(UPDATABLE, value, replace, path, SymData, keyPath);
     // setIn(update, value, path, SymData, keyPath);
     // if (replace) setIn(replace_UPDATABLE, replace, path, SymData, keyPath);
 
     // additional state modifying if required
     if (keyPath[0] == 'value') { // modify current
-      state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], push2array(['current'], path, keyPath.slice(1)), value, replace))
+      state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], path, keyPath.slice(1)), value, replace))
     } else if (keyPath[0] == 'length') { // modify state with new length
-      state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], push2array(['current'], path, keyPath), value, replace));
+      state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], path, keyPath), value, replace));
       let start = branch[SymData].length;
       start = Math.max(start, 0);
       let end = Math.max(value || 0);
       //setIn(update, end, SymData, 'current', path, 'length');
-      //state = mergeStatePROCEDURE(state, UPDATABLE_object);
+      //state = mergeStatePROCEDURE(state, UPDATABLE);
       const oneOfStateFn = oneOfStructure(state, path);
       const maps2enable: any[] = [];
       const maps2disable: any[] = [];
@@ -733,20 +724,20 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
         let {state: branch, dataMap = [], defaultValues} = makeStateBranch(schema, oneOfStateFn, elemPath);
         branch = merge(branch, {[SymData]: {params: {uniqKey: getUniqKey()}}});
         state = merge(state, setIn({}, branch, elemPath), {replace: setIn({}, true, elemPath)});
-        state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], push2array(['current'], elemPath), defaultValues, true));
+        state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], elemPath), defaultValues, true));
         //state = merge(state, makeSlice(SymData, 'current', elemPath, defaultValues), {replace: makeSlice(SymData, 'current', elemPath, true)});
         push2array(maps2enable, dataMap);
-        //state = updDataMap2state(state, dataMap, schema, UPDATABLE_object);
-        state = Macros.setStatus(state, schema, UPDATABLE_object, makeNUpdate(path, ['status', 'untouched'], 1));
+        //state = updDataMap2state(state, dataMap, schema, UPDATABLE);
+        state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 1));
       }
       for (let i = end; i < start; i++) {
         let elemPath = path.concat(i);
         push2array(maps2disable, getIn(state, elemPath, SymDataMapTree, SymData) || []);
         ['invalid', 'dirty', 'untouched', 'pending'].forEach(key => {
           let statusValue = getUpdValue([update, state], path, SymData, 'status', key);
-          if (statusValue) state = Macros.setStatus(state, schema, UPDATABLE_object, makeNUpdate(path, ['status', key], -1));
+          if (statusValue) state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', key], -1));
         });
-        setUPDATABLE(UPDATABLE_object, SymDelete, true, elemPath);
+        setUPDATABLE(UPDATABLE, SymDelete, true, elemPath);
         // setIn(update, SymDelete, elemPath);
         // setIn(replace_UPDATABLE, SymDelete, elemPath);
       }
@@ -754,11 +745,11 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
       let schemaPart = getSchemaPart(schema, path, oneOfFromState(state));
       setIn(update, isArrayCanAdd(schemaPart, end), path, SymData, 'fData', 'canAdd');
       for (let i = Math.max(Math.min(start, end) - 1, 0); i < end; i++)
-        setUPDATABLE(UPDATABLE_object, getArrayItemData(schemaPart, i, end), true, path, i, SymData, 'arrayItem');
+        setUPDATABLE(UPDATABLE, getArrayItemData(schemaPart, i, end), true, path, i, SymData, 'arrayItem');
 
-      state = mergeStatePROCEDURE(state, UPDATABLE_object);
-      state = setDataMapInState(state, schema, maps2disable, true);
-      state = setDataMapInState(state, schema, maps2enable);
+      state = mergeStatePROCEDURE(state, UPDATABLE);
+      state = setDataMapInState(state, UPDATABLE, schema, maps2disable, true);
+      state = setDataMapInState(state, UPDATABLE, schema, maps2enable);
 
 
     } else if (keyPath[0] == 'status') { // properly set status change
@@ -777,11 +768,11 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
     } else if (keyPath[0] == 'oneOf') {
       const oldBranch = getIn(state, path);
       let oldOneOf = getIn(oldBranch, SymData, 'oneOf') || 0;
-      let newOneOf = getIn(UPDATABLE_object.update, path, SymData, 'oneOf');
+      let newOneOf = getIn(UPDATABLE.update, path, SymData, 'oneOf');
       if ((oldOneOf != newOneOf) || (item.type && item.type != getIn(oldBranch, SymData, 'fData', 'type'))) {
-        setIfNotDeeper(UPDATABLE_object, SymReset, 'forceCheck', item.path);
-        state = mergeStatePROCEDURE(state, UPDATABLE_object);
-        state = setDataMapInState(state, schema, getIn(state, path, SymDataMapTree, SymData) || [], true);
+        setIfNotDeeper(UPDATABLE, SymReset, 'forceCheck', item.path);
+        state = mergeStatePROCEDURE(state, UPDATABLE);
+        state = setDataMapInState(state, UPDATABLE, schema, getIn(state, path, SymDataMapTree, SymData) || [], true);
 
         let {state: branch, dataMap: maps2enable = [], defaultValues} = makeStateBranch(schema, oneOfStructure(state, path), path, item.setValue);
         const {value: v1, length: v2, oneOf: v3, fData: v4, ...previousBranchData} = oldBranch[SymData]; // remove data that should be replaced by new branch
@@ -794,7 +785,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
           ['invalid', 'dirty', 'pending'].forEach(key => { // 'untouched',
             let oldStatusValue = getIn(oldBranch, SymData, 'status', key);
             let newStatusValue = getIn(branch, SymData, 'status', key);
-            if (!oldStatusValue != !newStatusValue) state = Macros.setStatus(state, schema, UPDATABLE_object, makeNUpdate(topPath, ['status', key], newStatusValue ? 1 : -1));
+            if (!oldStatusValue != !newStatusValue) state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(topPath, ['status', key], newStatusValue ? 1 : -1));
           });
           let arrayOfRequired = getIn(state, topPath, SymData, 'fData', 'required');
           arrayOfRequired = isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
@@ -803,9 +794,9 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
 
         if (getIn(oldBranch, SymData, 'status', 'untouched') == 0) branch = merge(branch, {[SymData]: {status: {untouched: 0}}});// stick untouched to zero
         state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});
-        state = setDataMapInState(state, schema, maps2enable);
-        if (getIn(branch, SymData, 'status', 'untouched') == 0) state = Macros.switch(state, schema, UPDATABLE_object, makeNUpdate(path, ['status', 'untouched'], 0));
-        state = updateStatePROCEDURE(state, schema, UPDATABLE_object, makeNUpdate([], push2array(['current'], path), defaultValues, true));
+        state = setDataMapInState(state, UPDATABLE, schema, maps2enable);
+        if (getIn(branch, SymData, 'status', 'untouched') == 0) state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 0));
+        state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], path), defaultValues, true));
       }
     }
   }
@@ -815,7 +806,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
   for (let i = 0; i < keyPath.length; i++) {
     if (!dataMap) break;
 
-    state = executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, dataMap[SymDataMap],
+    state = executeDataMapsPROCEDURE(state, schema, UPDATABLE, dataMap[SymDataMap],
       makeNUpdate(path, keyPath.slice(0, i), setIn({}, value, keyPath.slice(i)), setIn({}, replace, keyPath.slice(i)))
     );
     dataMap = dataMap[keyPath[i]];
@@ -824,7 +815,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
   if (dataMap) state = recursivelyExecuteDataMaps(dataMap, value, replace, keyPath);
 
   function recursivelyExecuteDataMaps(dataMap: any[], value: any, replace: any, track: Path = []) {
-    state = executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, dataMap[SymDataMap], makeNUpdate(path, track, value, replace));
+    state = executeDataMapsPROCEDURE(state, schema, UPDATABLE, dataMap[SymDataMap], makeNUpdate(path, track, value, replace));
     isMergeable(value) && objKeys(dataMap).forEach(key => value.hasOwnProperty(key) && (state = recursivelyExecuteDataMaps(dataMap[key], value[key], getIn(replace, key), track.concat(key))))
     return state;
   }
@@ -833,7 +824,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_
 }
 
 
-function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType, maps: any, item: NormalizedUpdateType) {
+function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, maps: any, item: NormalizedUpdateType) {
   const {value, path, replace} = item;
   const keyPath = item[SymData] || [];
   objKeys(maps || {}).forEach((pathTo) => {
@@ -842,12 +833,12 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
     const NpathTo = path2string(normalizePath(pathTo, path));
     let executedValue = value;
     if (isObject(map)) {
-      const bindObj = {path: NUpdate2string(item), pathTo: NpathTo, schema, api: {get: getFrom4DataMap(state, UPDATABLE_object)}};
+      const bindObj = {path: NUpdate2string(item), pathTo: NpathTo, schema, api: {get: getFrom4DataMap(state, UPDATABLE)}};
       executedValue = processFn({...map, args: push2array([value], map.args || [])}, () => bindObj.api.get(path, SymData), bindObj)
       //executedValue = deArray(toArray(map.$).reduce((args, fn) => toArray(fn.call(bindObj, ...args)), push2array([executedValue], map.args)))
     }
     const updates = map.asUpdates ? toArray(executedValue) : [{path: NpathTo, value: executedValue, replace}];
-    updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE_object, update));
+    updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
   });
   return state;
 }
@@ -878,16 +869,12 @@ function processFn(map: any, nextData: any, bindObj?: any) {
   return deArray(toArray(map.$).reduce((args, fn) => toArray(bindObj ? fn.apply(bindObj, args) : fn(...args)), map.dataRequest ? map.args.map(getFromData) : map.args), map.arrayResult);
 }
 
-function getFrom4DataMap(state: StateType, UPDATABLE_object: PROCEDURE_UPDATABLE_objectType) {
+function getFrom4DataMap(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
   return (...tPath: Array<string | Path>) => {
-    if (hasIn(UPDATABLE_object.update, ...tPath.map(path => normalizePath(path as any))))
-      return merge(getFromState(state, ...tPath), getFromState(UPDATABLE_object.update, ...tPath), {replace: getFromState(UPDATABLE_object.replace, ...tPath)});
+    if (hasIn(UPDATABLE.update, ...tPath.map(path => normalizePath(path as any))))
+      return merge(getFromState(state, ...tPath), getFromState(UPDATABLE.update, ...tPath), {replace: getFromState(UPDATABLE.replace, ...tPath)});
     return getFromState(state, ...tPath);
   }
-}
-
-function getDefaultFromSchema(schema: jsJsonSchema) {
-  return makeStateFromSchema(schema)[SymData].current
 }
 
 
@@ -1092,7 +1079,7 @@ export {
   string2NUpdate,
   //getValue,
   object2PathValues,
-  makeStateFromSchema,
+  setDataMapInState,
   makeStateBranch,
   string2path,
   relativePath,
@@ -1105,7 +1092,6 @@ export {
   makeNUpdate,
   getFromState,
   arrayStart,
-  getDefaultFromSchema,
   updateStatePROCEDURE,
   mergeStatePROCEDURE,
   isSelfManaged,

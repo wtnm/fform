@@ -26,7 +26,7 @@ interface anyObject {
 
 type StateType = { [key: string]: FFieldDataType } | { [key: number]: FFieldDataType };
 
-type PROCEDURE_UPDATABLE_objectType = { update: StateType, replace: StateType, forceCheck?: StateType }
+type PROCEDURE_UPDATABLE_Type = { update: StateType, replace: StateType, forceCheck?: StateType, api: any, [key: string]: any }
 
 interface FFieldDataType extends anyObject {
   value?: any;
