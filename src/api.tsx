@@ -122,7 +122,7 @@ class FFormStateManager {
     if (props.setState && props.store) self._unsubscribe = self.props.store.subscribe(self._handleChange.bind(self));
     if (props.name) _CORES[props.name] = self;
     self.UPDATABLE = {update: {}, replace: {}, api: self};
-    if (!self._getState()) self._setState(self.makeState(self.schema));
+
   }
 
   private _dispatch(action: any) {
@@ -215,12 +215,14 @@ class FFormStateAPI extends FFormStateManager {
   private _validation: StateType | boolean | null = null;
   private _defferedTimerId: any;
   getState = this._getState;
+
   //wrapped: any;
 
-  // constructor(props: FFormApiProps) {
-  //   super(props);
-  //   this._apiWrapper();
-  // }
+  constructor(props: FFormApiProps) {
+    super(props);
+    const self = this;
+    if (!self._getState()) self._setState(self.makeState(self.schema));
+  }
 
   wrapper(self: any = {}) {
     const api = this;
@@ -236,20 +238,22 @@ class FFormStateAPI extends FFormStateManager {
     const wrapped = {
       validate: (path: boolean | string | Path = './', ...args: any[]) => wrapThis('validate')(typeof path == 'boolean' ? path : wrapPath(path), ...args),
       get: (...path: any[]) => wrapThis('get')(wrapPath(path)),
-      set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => wrapThis('set')(wrapPath(path), value, wrapOpts(opts)),
+      // set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => wrapThis('set')(wrapPath(path), value, wrapOpts(opts)),
       setValue: (value: any, opts: any = {}, ...args: any[]) => wrapThis('setValue')(value, wrapOpts(opts)),
       bind: (object: any) => {
         self = object;
-        return wrapped;
+        return wrapped
       },
       getApi: () => api,
     };
-    ['noExec', 'execute', 'setState', 'getActive',]
+    ['noExec', 'setState', 'getActive', 'getDefaultValue']
       .forEach(fn => wrapped[fn] = (...args: any[]) => wrapThis(fn)(...args));
-    ['arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly', 'getSchemaPart']
-      .forEach(fn => wrapped[fn] = (path: string | Path = [], ...args: any[]) => wrapThis(fn)(wrapPath(path), ...args));
-    ['getValue', 'getDefaultValue', 'reset', 'clear']
+    ['getValue', 'reset', 'clear', 'execute']
       .forEach(fn => wrapped[fn] = (opts: any, ...args: any[]) => wrapThis(fn)(wrapOpts(opts), ...args));
+    ['showOnly', 'getSchemaPart']
+      .forEach(fn => wrapped[fn] = (path: string | Path = [], opts: any = {}, ...args: any[]) => wrapThis(fn)(wrapPath(path), wrapOpts(opts), ...args));
+    ['set', 'arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly']
+      .forEach(fn => wrapped[fn] = (path: string | Path = [], value: any, opts: any = {}, ...args: any[]) => wrapThis(fn)(wrapPath(path), value, wrapOpts(opts), ...args));
     return wrapped;
   }
 
@@ -322,7 +326,8 @@ class FFormStateAPI extends FFormStateManager {
 
   get = (...pathes: Array<string | Path>): any => getFromState(this.getState(), ...pathes);
 
-  set = (path: string | Path, value: any, opts: APIOptsType & { replace?: any, setOneOf?: number, macros?: string } = {}) => {
+  set = (path: string | Path | null, value: any, opts: APIOptsType & { replace?: any, setOneOf?: number, macros?: string } = {}) => {
+    if (!path) return this._setExecution([null], opts);
     let {...update} = opts;
     (update as StateApiUpdateType).path = path;
     (update as StateApiUpdateType).value = value;
@@ -330,9 +335,6 @@ class FFormStateAPI extends FFormStateManager {
   };
 
   getValue = (opts: { path?: string | Path, inital?: boolean } = {}): any => this.get(SymData, opts.inital ? 'inital' : 'current', opts.path || []);
-  // const path = normalizePath(opts.path || []);
-  // return getIn(this.getState(), SymData, opts.inital ? 'inital' : 'current', path);
-
 
   setValue = (value: any, opts: APIOptsType & { path?: string | Path, replace?: any, setOneOf?: number, inital?: boolean } = {}) => {
     let {path, inital, ...update} = opts;
@@ -344,24 +346,24 @@ class FFormStateAPI extends FFormStateManager {
   getDefaultValue = () => this._default;
 
   reset = (opts: APIOptsType & { path?: string | Path, status?: string } = {}) =>
-    opts.status ? this.set([(opts.path || '/'), '@status/' + opts.status], SymReset, {macros: 'switch'}) : this.setValue(SymReset, opts);
+    opts.status ? this.set([opts.path || '/', '@status/' + opts.status], SymReset, {macros: 'switch'}) : this.setValue(SymReset, opts);
 
   clear = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymClear, opts);
 
   arrayAdd = (path: string | Path, value: number | any[] = 1, opts: APIOptsType = {}) =>
     this._setExecution({path, value: value, macros: 'array', ...opts}, opts);
 
-  arrayItemOps = (path: string | Path, op: 'up' | 'down' | 'first' | 'last' | 'del' | 'move' | 'shift', opts: APIOptsType & { value?: number } = {}) =>
-    this._setExecution({path, op: op, macros: 'arrayItem', ...opts}, opts);
+  arrayItemOps = (path: string | Path, value: 'up' | 'down' | 'first' | 'last' | 'del' | 'move' | 'shift', opts: APIOptsType & { value?: number } = {}) =>
+    this._setExecution({path, op: value, macros: 'arrayItem', ...opts}, opts);
 
   setHidden = (path: string | Path, value = true, opts: APIOptsType = {}) =>
-    this._setExecution([{path: path + '@' + '/params/hidden', value, ...opts}], opts);
+    this._setExecution([{path: [path, '@', '/params/hidden'], value, ...opts}], opts);
 
   showOnly = (path: string | Path, opts: APIOptsType = {}) => {
     path = normalizePath(path);
     return this._setExecution([
-      {path: path2string(path.slice(0, -1)) + '/*/@/params/hidden', value: true, ...opts},
-      {path: path2string(path) + '@' + '/params/hidden', value: false, ...opts},
+      {path: [path.slice(0, -1), '/*/@/params/hidden'], value: true, ...opts},
+      {path: [path, '@', '/params/hidden'], value: false, ...opts},
     ], opts);
   };
 

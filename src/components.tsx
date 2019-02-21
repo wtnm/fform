@@ -317,7 +317,8 @@ class FField extends FRefsGeneric {
 
   _parseValue(value: any, prevData: any) {
     const $_parse = this._$_parse;
-    if ($_parse) return processFn({...$_parse, args: push2array([value], $_parse.args || [])}, prevData);
+    //{...$_parse, args: push2array([value], $_parse.args || [])}
+    if ($_parse) return processFn($_parse, prevData, {'${value}': value});
     return value
   }
 
@@ -342,8 +343,13 @@ class FField extends FRefsGeneric {
     if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart.ff_presets) throw new Error('schema.ff_presets should be defined explicitly for multi type');
     let components = resolveComponents(self.pFForm.objects, schemaPart.ff_custom, schemaPart.ff_presets || schemaPart.type);
     components = components[SymData] ? merge(components, self._bind2self(components[SymData])) : components;
-    const {$_parse, ...ff_components} = components;
-    self._$_parse = $_parse && (isObject($_parse) ? $_parse : {'$': $_parse});
+    let {$_parse, ...ff_components} = components;
+    if ($_parse) {
+      $_parse = (isObject($_parse) ? $_parse : {'$': $_parse});
+      $_parse = {...$_parse, ...normalizeArgs($_parse.args)};
+      if (!$_parse.args.length) $_parse.args = ['${value}'];
+      self._$_parse = $_parse
+    }
     self._ff_components = ff_components;
     const ff_layout = resolveComponents(self.pFForm.objects, schemaPart.ff_layout);
     self.ff_layout = ff_layout[SymData] ? merge(ff_layout, self._bind2self(ff_layout[SymData])) : ff_layout;
@@ -556,7 +562,7 @@ class FSection extends FRefsGeneric {
     const self = this;
     return <FField ref={self._setRef(arrayKey || fieldName)} key={arrayKey || fieldName} pFForm={self.props.$FField.pFForm} FFormApi={self.props.FFormApi}
                    id={self.props.id ? self.props.id + (arrayKey || fieldName) : undefined}
-                   name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '_$idx$_' + (arrayKey || fieldName) : fieldName) + ']' : undefined}
+                   name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '${idx}_' + (arrayKey || fieldName) : fieldName) + ']' : undefined}
                    getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
   }
 

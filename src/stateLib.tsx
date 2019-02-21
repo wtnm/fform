@@ -420,8 +420,11 @@ function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], pa
   return dataMap.map((item) => {
     let action: any = item[2];
     if (isFunction(action)) action = {$: action};
-    if (isObject(action)) action = {...action, ...normalizeArgs(action.args)};
     if (isUndefined(action)) action = true;
+    if (isObject(action)) {
+      action = {...action, ...normalizeArgs(action.args)};
+      if (!action.args.length) action.args = ['${value}'];
+    }
     return {emitter: path, from: item[0], to: item[1], action} as normalizedDataMapType;
   })
 }
@@ -486,15 +489,19 @@ function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   dataMaps.forEach((dataMap) => {
     const emitterPath = dataMap.emitter;
     let bindMap2emitter: boolean = false;
-    normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.from, to: normalizePath(dataMap.to, emitterPath), value: dataMap.action}, state).forEach(NdataMap => {
-        let relTo = path2string(relativePath(NdataMap.path, NdataMap.to));
-        if (getIn(state, NdataMap.path)) setIn(UPDATABLE.update, unset ? undefined : NdataMap.value, NdataMap.path, SymDataMapTree, NdataMap[SymData], SymDataMap, relTo);
-        if (!unset) {
-          state = executeDataMapsPROCEDURE(state, schema, UPDATABLE, makeSlice(relTo, NdataMap.value),
-            makeNUpdate(NdataMap.path, NdataMap[SymData], getIn(state, NdataMap.path, SymData, NdataMap[SymData])));
-          if (!bindMap2emitter && relativePath(emitterPath, NdataMap.path)[0] != '.') bindMap2emitter = true;
-        }
-        state = mergeStatePROCEDURE(state, UPDATABLE);
+    const toItem = {path: normalizePath(dataMap.to, emitterPath)};
+    normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.from, value: null}, state).forEach(fromItem => {
+        normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.to, value: null}, state).forEach(toItem => {
+          let relTo = path2string(relativePath(fromItem.path, toItem.path.concat(SymData, ...toItem[SymData])));
+          //console.log(relTo);
+          if (getIn(state, fromItem.path)) setIn(UPDATABLE.update, unset ? undefined : dataMap.action, fromItem.path, SymDataMapTree, fromItem[SymData], SymDataMap, relTo);
+          if (!unset) {
+            state = executeDataMapsPROCEDURE(state, schema, UPDATABLE, makeSlice(relTo, dataMap.action),
+              makeNUpdate(fromItem.path, fromItem[SymData], getIn(state, fromItem.path, SymData, fromItem[SymData])));
+            if (!bindMap2emitter && relativePath(emitterPath, fromItem.path)[0] != '.') bindMap2emitter = true;
+          }
+          state = mergeStatePROCEDURE(state, UPDATABLE);
+        })
       }
     );
     if (bindMap2emitter) {
@@ -670,7 +677,8 @@ function mergeStatePROCEDURE(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Ty
   return state;
 }
 
-function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType | StateApiUpdateType): StateType {
+function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType | StateApiUpdateType | null): StateType {
+  if (!item) return state;
   const {update, replace: replace_UPDATABLE} = UPDATABLE;
 
   // normalize updates
@@ -832,9 +840,9 @@ const makeBindObj = memoize(function (stateApi: any, from: string, to: string) {
     if (isUndefined(rest.setExecution)) rest.setExecution = (addUpdates: any) => addUpdates && push2array(res.updates, addUpdates);
     return rest
   };
-  res.api._get = res.api.get;
-  res.api.get = false;
-  res.api.getValue = (opts: any = {}) => res.api.get(SymData, opts.inital ? 'inital' : 'current', opts.path || []);
+  //res.api._get = res.api.get;
+  res.api.get = (...path: any[]) => res.api._get(normalizePath(path, res.path));
+  res.api.getValue = (opts: any = {}) => res.api.get(SymData, opts.inital ? 'inital' : 'current', normalizePath(opts.path || [], res.path));
   return res;
 });
 
@@ -849,12 +857,13 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
     const updates: any[] = [];
     if (isObject(map)) {
       const bindObj = makeBindObj(UPDATABLE.api, NUpdate2string(item), NpathTo);
-      bindObj.api.get = getFrom4DataMap(state, UPDATABLE);
+      bindObj.api._get = getFrom4DataMap(state, UPDATABLE);
       bindObj.updates = updates;
-      executedValue = processFn({...map, args: push2array([value], map.args || [])}, () => bindObj.api.get(path, SymData), bindObj)
+      //{...map, args: push2array([value], map.args || [])}
+      executedValue = processFn(map, () => bindObj.api.get(path, SymData), {'${value}': value}, bindObj)
     }
     if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace});
-    updates.forEach((update: any) => update && (state = updateStatePROCEDURE(state, schema, UPDATABLE, update)));
+    updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
   });
   return state;
 }
@@ -875,14 +884,15 @@ function normalizeArgs(args: any) {
   return {dataRequest, args}
 }
 
-function processFn(map: any, nextData: any, bindObj?: any) {
-  const getFromData = (arg: any) => {
+function processFn(map: any, nextData: any, $values?: any, bindObj?: any) {
+  const processArg = (arg: any) => {
     if (isNPath(arg)) return getIn(nextData, arg);
     if (isMapFn(arg)) return processFn(arg, nextData);
+    if ($values && hasIn($values, arg)) return $values[arg];
     return arg;
   };
   if (map.dataRequest && isFunction(nextData)) nextData = nextData();
-  return deArray(toArray(map.$).reduce((args, fn) => toArray(bindObj ? fn.apply(bindObj, args) : fn(...args)), map.dataRequest ? map.args.map(getFromData) : map.args), map.arrayResult);
+  return deArray(toArray(map.$).reduce((args, fn) => toArray(bindObj ? fn.apply(bindObj, args) : fn(...args)), map.args.map(processArg)), map.arrayResult);
 }
 
 function getFrom4DataMap(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
@@ -920,16 +930,19 @@ function normalizePath(path: string | Path, base: string | Path = []): Path {
 function normalizeUpdate(update: StateApiUpdateType, state: StateType): NormalizedUpdateType[] {
   const {path, value, replace, base, ...rest} = update;
   const result: NormalizedUpdateType[] = [];
-  let pathes = normalizePath(path, base);
-  let keyPathes: any = [];
-  let a = pathes.indexOf(SymData);
-  if (~a) {
-    keyPathes = pathes.slice(a + 1);
-    pathes = pathes.slice(0, a);
-  }
-  pathes = multiplyPath(pathes, {'*': (path: Path) => branchKeys(getIn(state, path)).join(',')});
-  keyPathes = multiplyPath(keyPathes);
-  objKeys(pathes).forEach(p => objKeys(keyPathes).forEach(k => result.push(makeNUpdate(pathes[p], keyPathes[k], value, replace, rest))));
+  let pathArray: string[] = path2string(path).split(';');
+  pathArray.forEach(path => {
+    let pathes = normalizePath(path, base);
+    let keyPathes: any = [];
+    let a = pathes.indexOf(SymData);
+    if (~a) {
+      keyPathes = pathes.slice(a + 1);
+      pathes = pathes.slice(0, a);
+    }
+    pathes = multiplyPath(pathes, {'*': (p: Path) => branchKeys(getIn(state, p)).join(',')});
+    keyPathes = multiplyPath(keyPathes);
+    objKeys(pathes).forEach(p => objKeys(keyPathes).forEach(k => result.push(makeNUpdate(pathes[p], keyPathes[k], value, replace, rest))));
+  });
   return result;
 }
 
