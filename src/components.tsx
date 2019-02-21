@@ -514,7 +514,7 @@ class FSection extends FRefsGeneric {
     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
       let {$_maps, rest} = extractMaps(layout, ['$_fields']);
       let {$_fields, $_reactRef, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
-      if (isUndefined(className) && $_fields) className = LayoutDefaultClass;
+      if (isUndefined(className) && ($_fields || !counter)) className = LayoutDefaultClass;
       staticProps.className = className;
       let refObject = self._refProcess('@widget_' + counter, $_reactRef) || {};
       if (isFunction(refObject)) refObject = {'ref': refObject};
@@ -1165,7 +1165,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           FFormApi: {$: '^/fn/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
           id: {$: '^/fn/getFFieldProperty', args: 'props/id', update: 'build'},
           name: {$: '^/fn/getFFieldProperty', args: 'props/name', update: 'build'},
-          $layout: {$: '^/fn/getFFieldProperty', args: 'ff_layout', update: 'build', arrayResult: true}
+          $layout: {$: '^/fn/getFFieldProperty', args: 'ff_layout', update: 'build'}
         }
       },
       Title: {
@@ -1278,7 +1278,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       })
     },
     getArrayStart: function () {return arrayStart(this.schemaPart)},
-    getFFieldProperty: function (key: string) {return getIn(this, normalizePath(key))},
+    getFFieldProperty: function (key: string) {return [getIn(this, normalizePath(key))]},
     arrayOfEnum: function (enumVals: any[], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
       return enumVals.map(val => {
         let extenProps = getExten(enumExten, val);

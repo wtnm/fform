@@ -227,10 +227,10 @@ class FFormStateAPI extends FFormStateManager {
   wrapper(self: any = {}) {
     const api = this;
     const wrapThis = (fn: string) => self[fn] || api[fn];
-    const wrapPath = (path: string | Path = []) => normalizePath(path, self.path);
-    const wrapOpts = (opts: any = {}) => {
+    const wrapPath = (path: string | Path = './') => path && normalizePath(path, self.path);
+    const wrapOpts = (opts: any = {}, forcePath?: boolean) => {
       const {path, ...rest} = opts;
-      if (!isUndefined(path)) rest.path = wrapPath(path);
+      if (!isUndefined(path) || forcePath) rest.path = wrapPath(path || './');
       return self.wrapOpts ? self.wrapOpts(rest) : rest;
       //rest.noValidation = isUndefined(noValidation) ? !self.liveValidate : noValidation;
     };
@@ -249,7 +249,7 @@ class FFormStateAPI extends FFormStateManager {
     ['noExec', 'setState', 'getActive', 'getDefaultValue']
       .forEach(fn => wrapped[fn] = (...args: any[]) => wrapThis(fn)(...args));
     ['getValue', 'reset', 'clear', 'execute']
-      .forEach(fn => wrapped[fn] = (opts: any, ...args: any[]) => wrapThis(fn)(wrapOpts(opts), ...args));
+      .forEach(fn => wrapped[fn] = (opts: any, ...args: any[]) => wrapThis(fn)(wrapOpts(opts, true), ...args));
     ['showOnly', 'getSchemaPart']
       .forEach(fn => wrapped[fn] = (path: string | Path = [], opts: any = {}, ...args: any[]) => wrapThis(fn)(wrapPath(path), wrapOpts(opts), ...args));
     ['set', 'arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly']
