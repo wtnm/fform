@@ -416,16 +416,16 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   return result;
 });
 
-function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], path: Path): normalizedDataMapType[] {
-  return dataMap.map((item) => {
-    let action: any = item[2];
-    if (isFunction(action)) action = {$: action};
-    if (isUndefined(action)) action = true;
-    if (isObject(action)) {
+function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], emitter: Path): normalizedDataMapType[] {
+  return dataMap.map((item:any) => {
+    let {from, to, ...action} = item;
+    if (!action.$) action = true;
+    else {
       action = {...action, ...normalizeArgs(action.args)};
       if (!action.args.length) action.args = ['${value}'];
     }
-    return {emitter: path, from: item[0], to: item[1], action} as normalizedDataMapType;
+    return {emitter, from, to, action} as normalizedDataMapType;
+
   })
 }
 

@@ -258,13 +258,11 @@
       "ff_presets": "booleanNullLeft:inlineTitle",
       "default": false,
       "ff_dataMap": [
-        [
-          "./@/value",
-          "../booleanLeft/@/value",
-          {
-            "$": "^/fn/not"
-          }
-        ]
+        {
+          "from": "./@/value",
+          "to": "../booleanLeft/@/value",
+          "$": "^/fn/not"
+        }
       ]
     },
     "select": {

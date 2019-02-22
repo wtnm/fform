@@ -85,7 +85,7 @@ export default {
       items: {
         oneOf: [{
           type: 'object',
-          ff_dataMap: [['./@oneOf', './stringRecursiveValue@objMappedOneOf'], ['../@length', './@objMappedLength']],
+          ff_dataMap: [{from: './@oneOf', to: './stringRecursiveValue@objMappedOneOf'}, {from: '../@length', to: './@objMappedLength'}],
           title: 'recursive Object',
           properties: {
             recusion: {
@@ -94,17 +94,17 @@ export default {
             },
             stringRecursiveValue: {
               type: 'string',
-              ff_dataMap: [['../../@length', './@value', n => n.toString()], ['../@oneOf', './@selfMappedOneOf']]
+              ff_dataMap: [{from: '../../@length', to: './@value', $: n => n.toString()}, {from: '../@oneOf', to: './@selfMappedOneOf'}]
             }
           }
         }, {
           title: 'selfManagedType',
           allOf: [{$ref: '#/definition/selfManagedType'}],
-          ff_dataMap: [['./@oneOf', './@selfManagedMappedOneOf'], ['../@length', './@selfManagedMappedLength']],
+          ff_dataMap: [{from: './@oneOf', to: './@selfManagedMappedOneOf'}, {from: '../@length', to: './@selfManagedMappedLength'}],
         }, {
           title: 'stringType',
           allOf: [{$ref: '#/definition/stringType'}],
-          ff_dataMap: [['../@oneOf', './@stringTypeMappedOneOf'], ['../@length', './@stringTypeMappedLength']],
+          ff_dataMap: [{from: '../@oneOf', to: './@stringTypeMappedOneOf'}, {from: '../@length', to: './@stringTypeMappedLength'}],
         }, {
           title: 'multitypeObject',
           required: ['propOne', 'propTwo'],

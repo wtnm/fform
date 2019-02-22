@@ -48,10 +48,10 @@ export default {
           "default": "strValue default",
 
           "ff_dataMap": [
-            ['./@/value', '../mapValue/@/value'],
-            ['./@/controls', '../mapArrValue/@/controls'],
-            ['./@/controls/hidden', '../mapValue/@/controls/hidden', (v) => !v],
-            ['./@/controls/disabled', '../mapValue/@/controls/disabled']
+            {"from": './@/value', to: '../mapValue/@/value'},
+            {"from": './@/controls', to: '../mapArrValue/@/controls'},
+            {"from": './@/controls/hidden', to: '../mapValue/@/controls/hidden', $: (v) => !v},
+            {"from": './@/controls/disabled', to: '../mapValue/@/controls/disabled'}
           ],
         },
         "mapArrValue": {
@@ -60,7 +60,7 @@ export default {
           "items": {
             "type": "string",
             "default": 'mapArrValue default',
-            "ff_dataMap": [['../../mapValue/@/value', './@/value']],
+            "ff_dataMap": [{"from": '../../mapValue/@/value', to: './@/value'}],
           }
         },
         "arrValue": {
