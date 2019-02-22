@@ -67,6 +67,8 @@ const Macros: { [key: string]: any } = {};
 Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
   let {path, macros, value, [SymData]: sym, ...rest} = item as any;
   let length = getUpdValue([UPDATABLE.update, state], path, SymData, 'length');
+  if (!isNumber(length)) return state;
+  
   if (isArray(item.value)) {
     let mergeArrayObj: any = [];
     let replaceArrayObj: any = {};
@@ -417,7 +419,7 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
 });
 
 function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], emitter: Path): normalizedDataMapType[] {
-  return dataMap.map((item:any) => {
+  return dataMap.map((item: any) => {
     let {from, to, ...action} = item;
     if (!action.$) action = true;
     else {
@@ -802,9 +804,9 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
 
         if (getIn(oldBranch, SymData, 'status', 'untouched') == 0) branch = merge(branch, {[SymData]: {status: {untouched: 0}}});// stick untouched to zero
         state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});
+        state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], path), defaultValues, true));
         state = setDataMapInState(state, UPDATABLE, schema, maps2enable);
         if (getIn(branch, SymData, 'status', 'untouched') == 0) state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 0));
-        state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], path), defaultValues, true));
       }
     }
   }

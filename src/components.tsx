@@ -514,7 +514,7 @@ class FSection extends FRefsGeneric {
     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
       let {$_maps, rest} = extractMaps(layout, ['$_fields']);
       let {$_fields, $_reactRef, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
-      if (isUndefined(className) && ($_fields || !counter)) className = LayoutDefaultClass;
+      if ($_fields || !counter) className = merge(LayoutDefaultClass, className);
       staticProps.className = className;
       let refObject = self._refProcess('@widget_' + counter, $_reactRef) || {};
       if (isFunction(refObject)) refObject = {'ref': refObject};
@@ -527,7 +527,7 @@ class FSection extends FRefsGeneric {
 
     const self = this;
 
-    const {$branch, $layout, _$cx, arrayStart, LayoutDefaultWidget = 'div', LayoutDefaultClass = 'layout', uniqKey, focusField} = props;
+    const {$branch, $layout, _$cx, arrayStart, LayoutDefaultWidget = 'div', LayoutDefaultClass = {}, uniqKey, focusField} = props;
 
     const mapsKeys = ['build', 'data', 'every'];
     mapsKeys.forEach(k => self._maps[k] = []);
@@ -980,7 +980,7 @@ function classNames(...styles: any[]) {
 
 let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   extend: function (obj) {
-    return merge(this, obj, {symbol: false}) // merge without symbols, as there (in symbol keys) will be stored cache data which MUST be recalculated after each extend
+    return merge(this, obj)
   },
   types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
   widgets: {
@@ -1108,7 +1108,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Main: {'onChange.bind': [false, null], step: 'any'}
     },
     //range: {$_ref: '^/sets/nBase', Main: {type: 'range'}},
-    'null': {$_ref: '^/sets/base', Main: false},
+    'null': {$_ref: '^/sets/nBase', Main: false},
     boolean: {
       $_ref: '^/sets/nBase',
       Main: {
@@ -1292,7 +1292,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           key: val,
           ...containerProps,
           children: [
-            {value: val, name: name && (this.props.name + (name === true ? '' : name)), ...extenProps, ...inputProps},
+            {value: val, name: name && (this.props.name + (name === true ? '' : name)), ...merge(inputProps, extenProps)},
             {...labelProps, children: [extenProps.label || val]}
           ]
         }
