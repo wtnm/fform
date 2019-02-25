@@ -17,14 +17,16 @@
             "disabled": "@/params/viewer",
             "className/button-viewer": false
           },
-          "onClick": "^/user/set",
-          "onClick.bind": [
-            "/@/params/viewer",
-            true,
-            {
-              "macros": "switch"
-            }
-          ]
+          "onClick": {
+            "$": "^/user/set",
+            "args": [
+              "/@/params/viewer",
+              true,
+              {
+                "macros": "switch"
+              }
+            ]
+          }
         },
         {
           "$_ref": "^/parts/Button",
@@ -39,19 +41,23 @@
             },
             "className/button-viewer": false
           },
-          "onClick": "^/user/set",
-          "onClick.bind": [
-            "/@/params/viewer",
-            false,
-            {
-              "macros": "switch"
-            }
-          ]
+          "onClick": {
+            "$": "^/user/set",
+            "args": [
+              "/@/params/viewer",
+              false,
+              {
+                "macros": "switch"
+              }
+            ]
+          }
         },
         {
           "_$widget": "input",
           "type": "text",
-          "onChange": "^/user/focusInputChange",
+          "onChange": {
+            "$": "^/user/focusInputChange"
+          },
           "$_reactRef": {
             "ref": "!focusInput"
           },
@@ -66,7 +72,9 @@
           "className": {
             "shrink": true
           },
-          "onClick": "^/user/focusInput"
+          "onClick": {
+            "$": "^/user/focusInput"
+          }
         },
         {
           "$_ref": "^/parts/expander"
@@ -130,39 +138,45 @@
                   "children": [
                     "+string"
                   ],
-                  "onClick.bind": [
-                    "./",
-                    1,
-                    {
-                      "setOneOf": 0
-                    }
-                  ]
+                  "onClick": {
+                    "args": [
+                      "./",
+                      1,
+                      {
+                        "setOneOf": 0
+                      }
+                    ]
+                  }
                 },
                 {
                   "$_ref": "^/parts/ArrayAddButton",
                   "children": [
                     "+number"
                   ],
-                  "onClick.bind": [
-                    "./",
-                    1,
-                    {
-                      "setOneOf": 1
-                    }
-                  ]
+                  "onClick": {
+                    "args": [
+                      "./",
+                      1,
+                      {
+                        "setOneOf": 1
+                      }
+                    ]
+                  }
                 },
                 {
                   "$_ref": "^/parts/ArrayAddButton",
                   "children": [
                     "+boolean"
                   ],
-                  "onClick.bind": [
-                    "./",
-                    1,
-                    {
-                      "setOneOf": 2
-                    }
-                  ]
+                  "onClick": {
+                    "args": [
+                      "./",
+                      1,
+                      {
+                        "setOneOf": 2
+                      }
+                    ]
+                  }
                 },
                 {
                   "$_ref": "^/parts/ArrayDelButton"

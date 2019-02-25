@@ -238,7 +238,7 @@ class FField extends FRefsGeneric {
 
     self.state = {branch: self.pFForm.getBranch(self.path)};
     self.$branch = self.state.branch;
-    self._bind2self = self._bind2self.bind(self);
+    self.wrapFns = self.wrapFns.bind(self);
   }
 
   getRef(path: Path | string) {
@@ -251,8 +251,8 @@ class FField extends FRefsGeneric {
 
   _resolver(obj: any) {
     const self = this;
-    let result = objectResolver(self.pFForm.objects, obj, true);
-    return result[SymData] ? merge(result, self._bind2self(result[SymData])) : result;
+    return objectResolver(self.pFForm.objects, obj);
+    //return result[SymData] ? merge(result, self._bind2self(result[SymData])) : result;
   }
 
   _updateCachedValue() {
@@ -278,7 +278,7 @@ class FField extends FRefsGeneric {
     // console.log(valueSet, 'setValue=', setValue,'path=',path)
     if (valueSet) {
       const prevData = self.getData();
-      self._cached = {value: self._parseValue(value, prevData)};
+      self._cached = {value}; //{value: self._parseValue(value, prevData)};
       if (fieldCache) {
         if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
@@ -314,20 +314,34 @@ class FField extends FRefsGeneric {
   //     .forEach(fn => self.api[fn] = (path: string | Path = [], ...args: any[]) => api[fn](wrapPath(path), ...args));
   //   ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
   // }
+  //
+  // _parseValue(value: any, prevData: any) {
+  //   const $_parse = this._$_parse;
+  //   //{...$_parse, args: push2array([value], $_parse.args || [])}
+  //   if ($_parse) return processFn($_parse, prevData, {'${value}': value});
+  //   return value
+  // }
+  //
+  // _bind2self(obj: any) {
+  //   const result = isArray(obj) ? [] : {};
+  //   objKeys(obj).forEach(key => {
+  //     if (typeof obj[key] == 'function') result[key] = obj[key].bind(this, ...(isArray(obj[key + '.bind']) ? obj[key + '.bind'] : []));
+  //     else if (key.substr(-5) == '.bind') return;
+  //     else if (isMergeable(obj[key])) result[key] = this._bind2self(obj[key])
+  //   });
+  //   return result
+  // }
 
-  _parseValue(value: any, prevData: any) {
-    const $_parse = this._$_parse;
-    //{...$_parse, args: push2array([value], $_parse.args || [])}
-    if ($_parse) return processFn($_parse, prevData, {'${value}': value});
-    return value
-  }
-
-  _bind2self(obj: any) {
+  wrapFns(obj: any, ignore: string[] = []) {
     const result = isArray(obj) ? [] : {};
     objKeys(obj).forEach(key => {
-      if (typeof obj[key] == 'function') result[key] = obj[key].bind(this, ...(isArray(obj[key + '.bind']) ? obj[key + '.bind'] : []));
-      else if (key.substr(-5) == '.bind') return;
-      else if (isMergeable(obj[key])) result[key] = this._bind2self(obj[key])
+      if (~ignore.indexOf(key)) result[key] = obj[key]
+      else if (isMapFn(obj[key])) {
+        let map = {...obj[key], ...normalizeArgs(obj[key].args)};
+        if (!map.args.length) map.args = ['${value}'];
+        result[key] = processFn.bind(this, map);
+      } else if (isMergeable(obj[key])) result[key] = this.wrapFns(obj[key], ignore);
+      else result[key] = obj[key]
     });
     return result
   }
@@ -341,28 +355,18 @@ class FField extends FRefsGeneric {
 
     self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
     if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart.ff_presets) throw new Error('schema.ff_presets should be defined explicitly for multi type');
-    let components = resolveComponents(self.pFForm.objects, schemaPart.ff_custom, schemaPart.ff_presets || schemaPart.type);
-    components = components[SymData] ? merge(components, self._bind2self(components[SymData])) : components;
-    let {$_parse, ...ff_components} = components;
-    if ($_parse) {
-      $_parse = (isObject($_parse) ? $_parse : {'$': $_parse});
-      $_parse = {...$_parse, ...normalizeArgs($_parse.args)};
-      if (!$_parse.args.length) $_parse.args = ['${value}'];
-      self._$_parse = $_parse
-    }
-    self._ff_components = ff_components;
-    const ff_layout = resolveComponents(self.pFForm.objects, schemaPart.ff_layout);
-    self.ff_layout = ff_layout[SymData] ? merge(ff_layout, self._bind2self(ff_layout[SymData])) : ff_layout;
 
-    // self._enumOptions = getEnumOptions(schemaPart);
+    self.ff_layout = resolveComponents(self.pFForm.objects, schemaPart.ff_layout);
+
+    let ff_components = resolveComponents(self.pFForm.objects, schemaPart.ff_custom, schemaPart.ff_presets || schemaPart.type);
+    let {$_maps, rest: components} = extractMaps(ff_components);
+    components = self.wrapFns(components);
+    self._maps = normalizeMaps(self, $_maps);
     self._widgets = {};
-    const {$_maps, rest: comps} = extractMaps(self._ff_components);
-    self._maps = normalizeMaps($_maps);
-
-    self._blocks = objKeys(comps).filter(key => comps[key]);
+    self._ff_components = components;
+    self._blocks = objKeys(components).filter(key => components[key]);
     self._blocks.forEach((block: string) => {
-      //let {$_maps, rest} = extractMaps(comps[block]);
-      const {_$widget, $_reactRef, ...staticProps} = comps[block];
+      const {_$widget, $_reactRef, ...staticProps} = components[block];
       if (!_$widget) throw new Error('_$widget for "' + block + '" is empty in path "' + self.path + '"');
       self._widgets[block] = _$widget;
       if ($_reactRef) { // $_reactRef - prop for react ref-function
@@ -383,7 +387,7 @@ class FField extends FRefsGeneric {
 
   _setMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build') {
     const self = this;
-    const _mappedData = updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
+    const _mappedData = updateProps(self, self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
     if (self._mappedData != _mappedData) {
       self._mappedData = _mappedData;
       return true
@@ -513,13 +517,14 @@ class FSection extends FRefsGeneric {
 
     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
       let {$_maps, rest} = extractMaps(layout, ['$_fields']);
+      rest = self.props.$FField.wrapFns(rest, ['$_maps']);
       let {$_fields, $_reactRef, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
       if ($_fields || !counter) className = merge(LayoutDefaultClass, className);
       staticProps.className = className;
       let refObject = self._refProcess('@widget_' + counter, $_reactRef) || {};
       if (isFunction(refObject)) refObject = {'ref': refObject};
       Object.assign(staticProps, refObject);
-      let maps = normalizeMaps($_maps, counter.toString());
+      let maps = normalizeMaps(props.$FField, $_maps, counter.toString());
       mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
       self._mappedData[counter] = staticProps;
       return {_$widget, $_fields}
@@ -613,7 +618,7 @@ class FSection extends FRefsGeneric {
 
   _updateMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build' = prevData !== nextData) {
     const self = this;
-    return updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
+    return updateProps(self.props.$FField, self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
   }
 
   _getData(branch = this.props.$branch) {
@@ -789,9 +794,10 @@ class Autowidth extends React.Component<any, any> {
   render() {
     const self = this;
     const props = self.props;
-    const value = (isUndefined(props.value) ? '' : props.value.toString()) || props.placeholder || '';
+    const value = (isUndefined(props.value) || props.value === null ? '' : props.value.toString()) || props.placeholder || '';
     return (<div style={Autowidth.sizerStyle as any} ref={(elem) => {
       (self._elem = elem) &&
+      props.$FField.$refs['@Main'] &&
       (props.$FField.$refs['@Main'].style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
     }}>{value}</div>)
   }
@@ -865,10 +871,12 @@ function CheckboxNull(props: any) {
 
 const resolveComponents = memoize((fformObjects: formObjectsType, customizeFields: FFCustomizeType = {}, sets?: string): jsFFCustomizeType => {
   if (sets) {
-    let $_ref = sets.split(':').map(v => v[0] != '^' && '^/sets/' + v).join(':') + ':' + (customizeFields.$_ref || '');
+    let $_ref = sets.split(':')
+      .map(v => (v = v.trim()) && (v[0] != '^' ? '^/sets/' + v : v))
+      .join(':') + ':' + (customizeFields.$_ref || '');
     customizeFields = merge(customizeFields, {$_ref});
   }
-  return objectResolver(fformObjects, customizeFields, true);
+  return objectResolver(fformObjects, customizeFields);
 });
 
 function extractMaps(obj: any, skip: string[] = []) {
@@ -887,7 +895,7 @@ function extractMaps(obj: any, skip: string[] = []) {
 }
 
 
-function normalizeMaps($_maps: any, prePath = '') {
+function normalizeMaps(field: any, $_maps: any, prePath = '') {
   const result: { data: NormalizedPropsMapType[], every: NormalizedPropsMapType[], build: NormalizedPropsMapType[] } = {data: [], every: [], build: []};
   objKeys($_maps).forEach(key => {
     const map = $_maps[key];
@@ -910,14 +918,18 @@ function normalizeMaps($_maps: any, prePath = '') {
 }
 
 
-function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
+function updateProps(field: any, mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
   const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
-  const needUpdate = (map: NormalizedPropsMapType) => isUndefined(prevData) || !map.$ || map.update != 'data' ||
-    (map.dataRequest && map.args.some(arg => isNPath(arg) && getIn(prevData, arg) !== getIn(nextData, arg)));
+  const needUpdate = (map: NormalizedPropsMapType): boolean => isUndefined(prevData) || !map.$ ||
+    (map.dataRequest && map.args.some(arg => {
+      if (isNPath(arg)) return getIn(prevData, arg) !== getIn(nextData, arg);
+      if (isMapFn(arg)) return needUpdate(arg);
+      return false
+    }));
   const dataUpdates = {update: {}, replace: {}, api: {}};
   iterMaps.forEach(m => m && m.forEach(map => {
-      if (!needUpdate(map)) return;
-      const value = map.$ ? processFn(map, nextData) : getIn(nextData, map.args);
+      if (map.update == 'data' && !needUpdate(map)) return;
+      const value = map.$ ? processFn.call(field, map, undefined, nextData) : getIn(nextData, map.args);
       objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, map.replace, map.to[k]));
       if (!map.replace) mappedData = mergeStatePROCEDURE(mappedData, dataUpdates);
     })
@@ -1037,9 +1049,9 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         _$cx: '^/_$cx',
         $_reactRef: {ref: true},
         viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {viewer: true}},
-        onChange: '^/on/changeBase',
-        onBlur: '^/on/blurBase',
-        onFocus: '^/on/focusBase',
+        onChange: {$: '^/fn/eventValue|^/fn/setValue'},
+        onBlur: {$: '^/fn/blur'},
+        onFocus: {$: '^/fn/focus'},
         $_maps: {
           // priority: '@/status/priority',
           value: '@/value',
@@ -1086,14 +1098,13 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '^/sets/nBase',
       Main: {
         type: 'number',
-        onChange: '^/on/changeNumber',
-        'onChange.bind': [true, 0]
+        onChange: {$: '^/fn/eventValue|^/fn/parseNumber|^/fn/setValue', args: ['${value}', true, 9]},
       }
     },
     integerNull: {
       $_ref: '^/sets/integer',
       Main: {
-        'onChange.bind': [true, null],
+        onChange: {args: {2: null}},
         $_maps: {
           value: {$: '^/fn/iif', args: [{$: '^/fn/equal', args: ['@/value', null]}, '', '@/value']},
         }
@@ -1101,19 +1112,18 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     },
     number: {
       $_ref: '^/sets/integer',
-      Main: {'onChange.bind': [false, 0], step: 'any'}
+      Main: {onChange: {args: {1: false}}, step: 'any'}
     },
     numberNull: {
       $_ref: '^/sets/integerNull',
-      Main: {'onChange.bind': [false, null], step: 'any'}
+      Main: {onChange: {args: {1: false, 2: null}}, step: 'any'}
     },
-    //range: {$_ref: '^/sets/nBase', Main: {type: 'range'}},
     'null': {$_ref: '^/sets/nBase', Main: false},
     boolean: {
       $_ref: '^/sets/nBase',
       Main: {
         type: 'checkbox',
-        onChange: '^/on/changeBoolean'
+        onChange: {$: '^/fn/eventChecked|^/fn/setValue'}
       },
     },
     booleanLeft: {
@@ -1135,7 +1145,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Main: {
         useTag: '^/widgets/CheckboxNull',
         $_reactRef: {tagRef: true},
-        onChange: '^/on/changeDirect'
+        onChange: {$: '^/fn/setValue'},
       },
     },
     booleanNullLeft: {
@@ -1196,7 +1206,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '^/sets/select',
       Main: {
         multiple: true,
-        onChange: '^/on/changeSelectMultiple'
+        onChange: {$: '^/fn/eventMultiple|^/fn/setValue'}
       }
     },
     radio: {
@@ -1220,7 +1230,13 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
                 '@/fData/enum',
                 '@/fData/enumExten',
                 {useTag: 'label', _$cx: '^/_$cx', $_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
-                {_$widget: 'input', type: 'radio', onChange: '^/on/changeBase', onBlur: '^/on/blurBase', onFocus: '^/on/focusBase'},
+                {
+                  _$widget: 'input',
+                  type: 'radio',
+                  onChange: {$: '^/fn/eventValue|^/fn/setValue'},
+                  onBlur: {$: '^/fn/blur'},
+                  onFocus: {$: '^/fn/focus'},
+                },
                 {useTag: 'span', _$cx: '^/_$cx',},
                 true
               ],
@@ -1232,7 +1248,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         }
       }
     },
-    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: '^/on/changeCheckboxes'}, '5': '[]'}}}}}},
+    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|^/fn/setValue'}}, '5': '[]'}}}}}},
 
     // inlineItems: {Main: {stackedProps: false}},
     // buttons: {Main: {inputProps: {className: {'button': true}}, labelProps: {className: {'button': true}}}},
@@ -1258,14 +1274,13 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   },
   fn: {
     processing: function (...args: any[]) {
-      const dataObj = this.getData();
       for (let i = 0; i < args.length; i += 2)
         isMapFn(args[i + 1]) &&
-        this.api.set(args[i], processFn({...args[i + 1], ...normalizeArgs(args[i + 1].args)}, dataObj), args[i + 1].opts)
+        this.api.set(args[i], processFn.call(this, {...args[i + 1], ...normalizeArgs(args[i + 1].args)}), args[i + 1].opts)
     },
-    iif: (iif: boolean, trueVal: any, falseVaL: any) => iif ? trueVal : falseVaL,
-    not: function (v: any) {return !v},
-    equal: function (a: any, ...args: any[]) {return args.some(b => a === b)},
+    iif: (iif: boolean, trueVal: any, falseVaL: any) => iif ? [trueVal] : [falseVaL],
+    not: function (v: any) {return [!v]},
+    equal: function (a: any, ...args: any[]) {return [args.some(b => a === b)]},
     messages: function (messages: any[], staticProps: anyObject = {}) {
       const {className: cnSP = {}, ...restSP} = staticProps;
       return objKeys(messages).map(priority => {
@@ -1277,7 +1292,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
         return {children: texts, ...restSP, className: {['priority_' + priority]: true, ...cnSP, ...className}, ...rest}
       })
     },
-    getArrayStart: function () {return arrayStart(this.schemaPart)},
+    getArrayStart: function () {return [arrayStart(this.schemaPart)]},
     getFFieldProperty: function (key: string) {return [getIn(this, normalizePath(key))]},
     arrayOfEnum: function (enumVals: any[], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
       return enumVals.map(val => {
@@ -1286,6 +1301,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       })
     },
     enumInputs: function (enumVals: any[] = [], enumExten: any = {}, containerProps: any = {}, inputProps: any = {}, labelProps: any = {}, name?: true | string) {
+      inputProps = this.wrapFns(inputProps);
       return enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
         return {
@@ -1306,19 +1322,25 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     enumInputValue: function (enumVals: any[] = [], value: any, property = 'checked') {
       value = toArray(value);
       return enumVals.map(val => {return {'children': {'0': {[property]: !!~value.indexOf(val)}}}})
-    }
-  },
-  on: {
-    clickArrayAdd: function (path: any, value: number, opts: any) {this.api.arrayAdd(path, value, opts)},
-    clickArrayItemOps: function (path: any, key: any, opts: any) {this.api.arrayItemOps(path, key, opts)},
-    changeBase: function (event: any) {this.api.setValue(event.target.value, {})},
-    changeDirect: function (value: any) {this.api.setValue(value, {})},
-    changeNumber: function (int: boolean, empty: number | null, event: any) {this.api.setValue(event.target.value == '' ? empty : (int ? parseInt : parseFloat)(event.target.value), {})},
-    changeBoolean: function (event: any) {this.api.setValue(event.target.checked, {})},
-    changeSelectMultiple: function (event: any) {
-      this.api.setValue(Array.from(event.target.options).filter((opt: any) => opt.selected).map((opt: any) => opt.value))
     },
-    changeCheckboxes: function (event: any) {
+
+    eventValue: (event: any, ...args: any[]) => [event.target.value, ...args],
+    eventChecked: (event: any, ...args: any[]) => [event.target.checked, ...args],
+    eventMultiple: (event: any, ...args: any[]) =>
+      [Array.from(event.target.options).filter((o: any) => o.selected).map((v: any) => v.value), ...args],
+    parseNumber: (value: any, opts: any = {}, int: boolean = false, empty: number | null = null) =>
+      [value == '' ? empty : (int ? parseInt : parseFloat)(value), opts],
+
+    setValue: function (value: any, opts: any = {}) {this.api.setValue(value, opts)},
+    arrayAdd: function (path: any, value: number = 1, opts: any = {}) {this.api.arrayAdd(path, value, opts)},
+    arrayItemOps: function (path: any, key: any, opts: any = {}) {this.api.arrayItemOps(path, key, opts)},
+    focus: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
+    blur: function (value: any) {
+      this.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
+      this.api.set('/@/active', undefined, {noValidation: true});
+      return !this.liveValidate ? this.api.validate() : null;
+    },
+    eventCheckboxes: function (event: any) {
       const selected = (this.getData().value || []).slice();
       const value = event.target.value;
       const at = selected.indexOf(value);
@@ -1326,15 +1348,36 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       if (at == -1) updated.push(value); else updated.splice(at, 1);
       const all = this.getData().fData.enum;
       updated.sort((a: any, b: any) => all.indexOf(a) > all.indexOf(b));
-      this.api.setValue(updated)
+      return [updated]
     },
-    focusBase: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
-    blurBase: function (value: any) {
-      const self = this;
-      self.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
-      self.api.set('/@/active', undefined, {noValidation: true});
-      return !self.liveValidate ? self.api.validate() : null;
-    }
+  },
+  on: {
+    // clickArrayAdd: function (path: any, value: number, opts: any) {this.api.arrayAdd(path, value, opts)},
+    // clickArrayItemOps: function (path: any, key: any, opts: any) {this.api.arrayItemOps(path, key, opts)},
+    // changeBase: function (event: any) {this.api.setValue(event.target.value, {})},
+    // changeDirect: function (value: any) {this.api.setValue(value, {})},
+    // changeNumber: function (int: boolean, empty: number | null, event: any) {this.api.setValue(event.target.value == '' ? empty : (int ? parseInt : parseFloat)(event.target.value), {})},
+    // changeBoolean: function (event: any) {this.api.setValue(event.target.checked, {})},
+    // changeSelectMultiple: function (event: any) {
+    //   this.api.setValue(Array.from(event.target.options).filter((opt: any) => opt.selected).map((opt: any) => opt.value))
+    // },
+    // changeCheckboxes: function (event: any) {
+    //   const selected = (this.getData().value || []).slice();
+    //   const value = event.target.value;
+    //   const at = selected.indexOf(value);
+    //   const updated = selected.slice();
+    //   if (at == -1) updated.push(value); else updated.splice(at, 1);
+    //   const all = this.getData().fData.enum;
+    //   updated.sort((a: any, b: any) => all.indexOf(a) > all.indexOf(b));
+    //   this.api.setValue(updated)
+    // },
+    // focusBase: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
+    // blurBase: function (value: any) {
+    //   const self = this;
+    //   self.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
+    //   self.api.set('/@/active', undefined, {noValidation: true});
+    //   return !self.liveValidate ? self.api.validate() : null;
+    //}
   },
   parts: {
     Autowidth: {
@@ -1358,8 +1401,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     ArrayAddButton: {
       $_ref: '^/parts/Button',
       children: ['+'],
-      onClick: '^/on/clickArrayAdd',
-      'onClick.bind': ['./', 1],
+      onClick: {$: '^/fn/arrayAdd', args: ['./']},
       $_maps: {
         'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
         'disabled': {$: '^/fn/not', args: '@/fData/canAdd'}
@@ -1368,8 +1410,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     ArrayDelButton: {
       $_ref: '^/parts/Button',
       children: ['-'],
-      onClick: '^/on/clickArrayAdd',
-      'onClick.bind': ['./', -1],
+      onClick: {$: '^/fn/arrayAdd', args: ['./', -1]},
       $_maps: {
         'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
         'disabled': {$: '^/fn/not', args: '@/length'}
@@ -1383,8 +1424,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     ArrayItemMenu: {
       _$widget: '^/widgets/ItemMenu',
       buttons: ['first', 'last', 'up', 'down', 'del'],
-      onClick: '^/on/clickArrayItemOps',
-      'onClick.bind': ['./'],
+      onClick: {$: '^/fn/arrayItemOps', args: ['./']},
       buttonsProps: {
         first: {disabledCheck: 'canUp'},
         last: {disabledCheck: 'canDown'},

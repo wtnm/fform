@@ -928,12 +928,12 @@ describe('FForm api tests', function () {
     expect(obj.part._some).to.be.equal(objects.funcs.two);
     expect(obj.part._more.f3).to.be.equal('^/funcs/three');
 
-    obj2SymData = apiLib.objectResolver(objects, exampleObj, true);
-    expect(obj2SymData[SymData].func).to.be.equal(objects.funcs.two);
-    expect(obj2SymData[SymData].part.f1).to.be.equal(objects.funcs.one);
-    expect(obj2SymData[SymData].part['f1.bind']).to.be.eql([1]);
-    expect(obj2SymData[SymData].part.f2).to.be.equal(objects.funcs.two);
-    expect(obj2SymData[SymData].part['f2.bind']).to.be.eql([6, 10]);
+    obj2SymData = apiLib.objectResolver(objects, exampleObj);
+    expect(obj2SymData.func).to.be.equal(objects.funcs.two);
+    expect(obj2SymData.part.f1).to.be.equal(objects.funcs.one);
+    expect(obj2SymData.part['f1.bind']).to.be.eql([1]);
+    expect(obj2SymData.part.f2).to.be.equal(objects.funcs.two);
+    expect(obj2SymData.part['f2.bind']).to.be.eql([6, 10]);
     expect(obj2SymData.part.first.one).to.be.equal('one value');
     expect(obj2SymData.part.first.three).to.be.equal('three value');
     expect(obj2SymData.part._some).to.be.equal(objects.funcs.two);
@@ -975,14 +975,14 @@ describe('FForm api tests', function () {
 
   it('test components.updateProps', function () {
     const value = {};
-    let mapped = components.updateProps(undefined, undefined, {value, fData: {type: 'string'}}, NMaps.build, NMaps.data, NMaps.every);
+    let mapped = components.updateProps({}, undefined, undefined, {value, fData: {type: 'string'}}, NMaps.build, NMaps.data, NMaps.every);
     expect(mapped.part.value).to.be.equal(value);
     expect(mapped.part.first.$branch).to.be.eql("state/branch");
     expect(mapped.part.first.arrayStart).to.be.eql([]);
     expect(mapped.part._more.value).to.be.equal(value);
     expect(mapped.part.first.isArray).to.be.eql(['string', 'array']);
 
-    mapped = components.updateProps(mapped, undefined, {value: 'value', fData: {type: 'object'}}, NMaps.data, NMaps.every);
+    mapped = components.updateProps({}, mapped, undefined, {value: 'value', fData: {type: 'object'}}, NMaps.data, NMaps.every);
     expect(mapped.part.first.isArray).to.be.eql(['object', 'array']);
     expect(mapped.part._more.value).to.be.equal('value');
   });

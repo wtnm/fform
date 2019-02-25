@@ -718,7 +718,7 @@ function objectDerefer(_objects: any, obj2deref: any) { // todo: test
   //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
 }
 
-function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boolean): any { // todo: test
+function objectResolver(_objects: any, obj2resolve: any): any { // todo: test
   const convRef = (refs: string) => deArray(refs.split('|').map(r => getIn(_objs, string2path(r.trim()))));
   const _objs = {'^': _objects};
   const result = objectDerefer(_objects, obj2resolve);
@@ -726,14 +726,15 @@ function objectResolver(_objects: any, obj2resolve: any, extract2SymData?: boole
   objKeys(result).forEach((key) => {
     const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '^/' ? convRef(result[key]) : result[key];
     if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _
-    else if (extract2SymData && key.substr(-5) == '.bind') {
-      const proccessed = isMergeable(resolvedValue) ? objectResolver(_objects, resolvedValue) : resolvedValue;
-      setIn(retResult, proccessed, SymData, string2path(key));
-    } else if (isMergeable(resolvedValue)) {
-      retResult[key] = objectResolver(_objects, resolvedValue, extract2SymData);
-      if (retResult[key][SymData]) setIn(retResult, retResult[key][SymData], SymData, key);
-      delete retResult[key][SymData];
-    } else if (extract2SymData && typeof resolvedValue == 'function') setIn(retResult, resolvedValue, SymData, key);
+    // else if (extract2SymData && key.substr(-5) == '.bind') {
+    //   const proccessed = isMergeable(resolvedValue) ? objectResolver(_objects, resolvedValue) : resolvedValue;
+    //   setIn(retResult, proccessed, SymData, string2path(key));
+    // } 
+    else if (isMergeable(resolvedValue)) {
+      retResult[key] = objectResolver(_objects, resolvedValue);
+      //if (retResult[key][SymData]) setIn(retResult, retResult[key][SymData], SymData, key);
+      //delete retResult[key][SymData];
+    } //else if (extract2SymData && typeof resolvedValue == 'function') setIn(retResult, resolvedValue, SymData, key);
     else retResult[key] = resolvedValue;
   });
 

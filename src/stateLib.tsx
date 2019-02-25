@@ -68,7 +68,7 @@ Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPD
   let {path, macros, value, [SymData]: sym, ...rest} = item as any;
   let length = getUpdValue([UPDATABLE.update, state], path, SymData, 'length');
   if (!isNumber(length)) return state;
-  
+
   if (isArray(item.value)) {
     let mergeArrayObj: any = [];
     let replaceArrayObj: any = {};
@@ -833,19 +833,20 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
   return state;
 }
 
-const makeBindObj = memoize(function (stateApi: any, from: string, to: string) {
+const makeSynthField = memoize(function (stateApi: any, from: string, to: string) {
   const path = to.split('@')[0];
   const updates: any[] = [];
-  const res: any = {from, to, path, stateApi, updates};
-  res.api = stateApi.wrapper(res);
-  res.wrapOpts = (rest: any) => {
-    if (isUndefined(rest.setExecution)) rest.setExecution = (addUpdates: any) => addUpdates && push2array(res.updates, addUpdates);
+  const field: any = {from, to, path, stateApi, updates};
+  field.api = stateApi.wrapper(field);
+  field.wrapOpts = (rest: any) => {
+    if (isUndefined(rest.setExecution)) rest.setExecution = (addUpdates: any) => addUpdates && push2array(field.updates, addUpdates);
     return rest
   };
-  //res.api._get = res.api.get;
-  res.api.get = (...path: any[]) => res.api._get(normalizePath(path, res.path));
-  res.api.getValue = (opts: any = {}) => res.api.get(SymData, opts.inital ? 'inital' : 'current', normalizePath(opts.path || [], res.path));
-  return res;
+  field.api._orig_get = field.api.get;
+  field.api.get = (...path: any[]) => field.api._get(normalizePath(path, field.path));
+  field.api.getValue = (opts: any = {}) => field.api.get(SymData, opts.inital ? 'inital' : 'current', normalizePath(opts.path || [], field.path));
+  field.getData = () => field.api.get(path, SymData);
+  return field;
 });
 
 function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, maps: any, item: NormalizedUpdateType) {
@@ -858,11 +859,10 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
     let executedValue = value;
     const updates: any[] = [];
     if (isObject(map)) {
-      const bindObj = makeBindObj(UPDATABLE.api, NUpdate2string(item), NpathTo);
-      bindObj.api._get = getFrom4DataMap(state, UPDATABLE);
-      bindObj.updates = updates;
-      //{...map, args: push2array([value], map.args || [])}
-      executedValue = processFn(map, () => bindObj.api.get(path, SymData), {'${value}': value}, bindObj)
+      const field = makeSynthField(UPDATABLE.api, NUpdate2string(item), NpathTo);
+      field.api._get = getFrom4DataMap(state, UPDATABLE);
+      field.updates = updates;
+      executedValue = processFn.call(field, map, value)
     }
     if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace});
     updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
@@ -886,15 +886,17 @@ function normalizeArgs(args: any) {
   return {dataRequest, args}
 }
 
-function processFn(map: any, nextData: any, $values?: any, bindObj?: any) {
+function processFn(map: any, value: any, nextData?: any) {
   const processArg = (arg: any) => {
     if (isNPath(arg)) return getIn(nextData, arg);
-    if (isMapFn(arg)) return processFn(arg, nextData);
-    if ($values && hasIn($values, arg)) return $values[arg];
+    if (isMapFn(arg)) return processFn.call(this, arg, value, nextData);
+    // if (arg == '${field}') return this;
+    if (arg == '${value}') return value;
+    //if (hasIn($value, arg)) return $value[arg];
     return arg;
   };
-  if (map.dataRequest && isFunction(nextData)) nextData = nextData();
-  return deArray(toArray(map.$).reduce((args, fn) => toArray(bindObj ? fn.apply(bindObj, args) : fn(...args)), map.args.map(processArg)), map.arrayResult);
+  if (map.dataRequest && !nextData) nextData = this.getData();
+  return deArray(toArray(map.$).reduce((args, fn) => toArray(fn.apply(this, args)), map.args.map(processArg)), map.arrayResult);
 }
 
 function getFrom4DataMap(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
