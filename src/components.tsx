@@ -1272,6 +1272,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     inlineTitle: {Wrapper: {className: {'inline': true}}},
     inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'inline': true}}}},
     inlineLayout: {Main: {LayoutDefaultClass: {'layout': true, 'inline': true}}},
+    arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
     noTitle: {Title: false},
     shrink: {Wrapper: {className: {'shrink': true}}},
     expand: {Wrapper: {className: {'expand': true}}},
