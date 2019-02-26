@@ -418,14 +418,20 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   return result;
 });
 
+function normalizeFn(fn: any, wrapFn?: Function, dontAddValue?: boolean) {
+  let nFn = isFunction(fn) ? {$: fn} : fn;
+  nFn = {...nFn, ...normalizeArgs(nFn.args, wrapFn)};
+  if (!nFn.args.length && !dontAddValue) nFn.args = ['${value}'];
+  return nFn
+}
+
 function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], emitter: Path): normalizedDataMapType[] {
   return dataMap.map((item: any) => {
     let {from, to, ...action} = item;
     if (!action.$) action = true;
-    else {
-      action = {...action, ...normalizeArgs(action.args)};
-      if (!action.args.length) action.args = ['${value}'];
-    }
+    else action = normalizeFn(action);
+    // {action = {...action, ...normalizeArgs(action.args)};
+    //   if (!action.args.length) action.args = ['${value}'];}
     return {emitter, from, to, action} as normalizedDataMapType;
 
   })
@@ -882,13 +888,14 @@ function normalizeArgs(args: any, wrapFn?: any) {
   args = toArray(isUndefined(args) ? [] : args).map((arg: any) => {
     if (isString(arg) && arg[0] == '@') return (dataRequest = true) && normalizePath(arg.substr(1));
     if (isMapFn(arg)) {
-      const res = normalizeArgs(arg.args, wrapFn);
+      let res = normalizeArgs(arg.args, wrapFn);
       if (res.dataRequest) dataRequest = true;
-      return {...arg, ...res};
-    }
+      res = {...arg, ...res};
+      return wrapFn ? wrapFn(res) : res
+    } else if (wrapFn && isMergeable(arg)) return wrapFn(arg);
     return arg;
   });
-  return {dataRequest, args: wrapFn ? wrapFn(args) : args}
+  return {dataRequest, args, norm: true}
 }
 
 function processFn(map: any, value: any, nextData?: any) {
@@ -1144,8 +1151,10 @@ export {
   isNPath,
   multiplyPath,
   normalizeArgs,
+  normalizeFn,
   processFn,
   isMapFn,
+  makeSynthField,
   types
 }
 

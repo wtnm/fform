@@ -954,38 +954,38 @@ describe('FForm api tests', function () {
     expect($_maps['part/first/$layout'].$).to.be.equal(objects.funcs.one);
   });
 
-  it('test components.normalizeMaps', function () {
-    NMaps = components.normalizeMaps($_maps);
-    expect(NMaps.build[0].to['']).to.be.eql(["part", "first", "arrayStart"]);
-    expect(NMaps.build[0].dataRequest).to.be.equal(false);
-    expect(NMaps.data[0].to['']).to.be.eql(["part", "value"]);
-    expect(NMaps.data[0].dataRequest).to.be.equal(true);
-    expect(NMaps.data[1].dataRequest).to.be.equal(true);
-    expect(NMaps.data[1].to['']).to.be.eql(["part", "first", "isArray"]);
-    expect(stateLib.isNPath(NMaps.data[1].args[0])).to.be.equal(true);
-    const preNMaps = components.normalizeMaps($_maps, '0');
-    expect(preNMaps.build[0].to['']).to.be.eql(["0", "part", "first", "arrayStart"]);
-    expect(preNMaps.build[0].dataRequest).to.be.equal(false);
-    expect(preNMaps.data[0].args[0]).to.be.equal("value");
-    expect(stateLib.isNPath(preNMaps.data[0].args)).to.be.equal(true);
-    expect(preNMaps.data[0].to['']).to.be.eql(["0", "part", "value"]);
-    expect(preNMaps.data[0].dataRequest).to.be.equal(true);
-
-  });
-
-  it('test components.updateProps', function () {
-    const value = {};
-    let mapped = components.updateProps(undefined, undefined, {value, fData: {type: 'string'}}, NMaps.build, NMaps.data, NMaps.every);
-    expect(mapped.part.value).to.be.equal(value);
-    expect(mapped.part.first.$branch).to.be.eql("state/branch");
-    expect(mapped.part.first.arrayStart).to.be.eql([]);
-    expect(mapped.part._more.value).to.be.equal(value);
-    expect(mapped.part.first.isArray).to.be.eql(['string', 'array']);
-
-    mapped = components.updateProps(mapped, undefined, {value: 'value', fData: {type: 'object'}}, NMaps.data, NMaps.every);
-    expect(mapped.part.first.isArray).to.be.eql(['object', 'array']);
-    expect(mapped.part._more.value).to.be.equal('value');
-  });
+  // it('test components.normalizeMaps', function () {
+  //   NMaps = components.normalizeMaps($_maps);
+  //   expect(NMaps.build[0].to['']).to.be.eql(["part", "first", "arrayStart"]);
+  //   expect(NMaps.build[0].dataRequest).to.be.equal(false);
+  //   expect(NMaps.data[0].to['']).to.be.eql(["part", "value"]);
+  //   expect(NMaps.data[0].dataRequest).to.be.equal(true);
+  //   expect(NMaps.data[1].dataRequest).to.be.equal(true);
+  //   expect(NMaps.data[1].to['']).to.be.eql(["part", "first", "isArray"]);
+  //   expect(stateLib.isNPath(NMaps.data[1].args[0])).to.be.equal(true);
+  //   const preNMaps = components.normalizeMaps($_maps, '0');
+  //   expect(preNMaps.build[0].to['']).to.be.eql(["0", "part", "first", "arrayStart"]);
+  //   expect(preNMaps.build[0].dataRequest).to.be.equal(false);
+  //   expect(preNMaps.data[0].args[0]).to.be.equal("value");
+  //   expect(stateLib.isNPath(preNMaps.data[0].args)).to.be.equal(true);
+  //   expect(preNMaps.data[0].to['']).to.be.eql(["0", "part", "value"]);
+  //   expect(preNMaps.data[0].dataRequest).to.be.equal(true);
+  //
+  // });
+  //
+  // it('test components.updateProps', function () {
+  //   const value = {};
+  //   let mapped = components.updateProps(undefined, undefined, {value, fData: {type: 'string'}}, NMaps.build, NMaps.data, NMaps.every);
+  //   expect(mapped.part.value).to.be.equal(value);
+  //   expect(mapped.part.first.$branch).to.be.eql("state/branch");
+  //   expect(mapped.part.first.arrayStart).to.be.eql([]);
+  //   expect(mapped.part._more.value).to.be.equal(value);
+  //   expect(mapped.part.first.isArray).to.be.eql(['string', 'array']);
+  //
+  //   mapped = components.updateProps(mapped, undefined, {value: 'value', fData: {type: 'object'}}, NMaps.data, NMaps.every);
+  //   expect(mapped.part.first.isArray).to.be.eql(['object', 'array']);
+  //   expect(mapped.part._more.value).to.be.equal('value');
+  // });
 });
 
 describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel_2.array_1[0][0].bazinga[Symbol.for('FFormData')]

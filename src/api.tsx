@@ -34,7 +34,13 @@ import {
   mergeStatePROCEDURE,
   isSelfManaged,
   normalizeUpdate,
-  setIfNotDeeper, objMap, makeStateBranch, oneOfStructure
+  setIfNotDeeper,
+  objMap,
+  makeStateBranch,
+  oneOfStructure,
+  makeSynthField,
+  processFn,
+  normalizeFn
 } from "./stateLib";
 
 
@@ -399,10 +405,7 @@ function updateMessagesPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATAB
       return updateMessagesPROCEDURE(state, schema, UPDATABLE, path, itemNoPath, defaultGroup)
     } else {
       let {group = defaultGroup, text, priority = 0, ...rest} = itemNoPath;
-      //if (!hasIn(UPDATABLE.update, track, SymData, 'messages')) setIn(UPDATABLE.update, {}, track, SymData, 'messages', priority);
-      //const messageData = getIn(UPDATABLE.update, track, SymData, 'messages', priority);
       const messageData = getCreateIn(UPDATABLE.update, {}, track, SymData, 'messages', priority);
-      // setIn(UPDATABLE.replace, true, track, SymData, 'messages', priority, group);
       Object.assign(messageData, rest);
       if (!isObject(messageData.textGroups)) messageData.textGroups = {};
       if (!isArray(messageData.textGroups[group])) messageData.textGroups[group] = [];
@@ -450,16 +453,21 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
     let ff_validators = schemaPart.ff_validators;
 
     if (ff_validators) {
-      const props = {state, path: path2string(track), schema, getFromState: (...tPath: Array<string | Path>) => getFromState(state, ...tPath)};
+      // const props = {state, path: path2string(track), schema, getFromState: (...tPath: Array<string | Path>) => getFromState(state, ...tPath)};
+      const field = makeSynthField(UPDATABLE.api, path2string(track));
       ff_validators.forEach((validator: any) => {
-        let result = validator.$.call(props, validatedValue, validator.args || []);
+        const updates: any[] = [];
+        field.updates = updates;
+        let result = processFn.call(field, validator, validatedValue); //validator.$.call(props, validatedValue, validator.args || []);
         if (result && result.then && typeof result.then === 'function') { //Promise
           result.validatedValue = validatedValue;
           result.path = track;
           result.selfManaged = selfManaged;
           vPromises.push(result);
           state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['status', 'validation', 'pending'], 1, true, {macros: 'setStatus'}))
-        } else state = updateMessagesPROCEDURE(state, schema, UPDATABLE, track, result, 1)
+        } else state = updateMessagesPROCEDURE(state, schema, UPDATABLE, track, result, 1);
+        if (updates.length) updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
+        field.updates = null
       })
     }
     return state
@@ -662,7 +670,7 @@ function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema):
   let {ff_validators, ff_dataMap, ...rest} = schema;
   const result: any = isArray(schema) ? [] : {ff_compiled: true};
 
-  ff_validators && (result.ff_validators = toArray(objectResolver(fformObjects, ff_validators)).map((v) => isObject(v) ? (v as any) : {$: v}));
+  ff_validators && (result.ff_validators = toArray(objectResolver(fformObjects, ff_validators)).map(f => normalizeFn(f)));
   ff_dataMap && (result.ff_dataMap = objectResolver(fformObjects, ff_dataMap));
 
   objKeys(rest).forEach(key => {

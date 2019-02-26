@@ -19,7 +19,8 @@ import {
   multiplyPath,
   normalizeArgs,
   processFn,
-  isMapFn
+  isMapFn,
+  normalizeFn
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
 import Timeout = NodeJS.Timeout;
@@ -142,7 +143,7 @@ class FForm extends React.Component<any, any> {
 
   render() {
     const self = this;
-    let {core, state, value, inital, extData, fieldCache, noInitValidate, parent, onSubmit, onChange, onStateChange, useTag: UseTag = 'form', ...rest} = self.props;
+    let {core, state, value, inital, extData, fieldCache, noInitValidate, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = 'form', ...rest} = self.props;
 
     return (
       <UseTag {...rest} onSubmit={self._submit}>
@@ -332,22 +333,20 @@ class FField extends FRefsGeneric {
   //   return result
   // }
 
-  wrapFns(obj: any, ignore: string[] = []) {
-    const result = isArray(obj) ? [] : {};
-    Object.assign(result,obj);
-    objKeys(obj).forEach(key => {
-      let val = obj[key];
-      if (~ignore.indexOf(key) || key[0] == '_') return;//result[key] = val;
-      else if (isMapFn(val) || isFunction(val)) {
-        if (isFunction(val)) val = {$: val};
-        let map = {...val, ...normalizeArgs(val.args, this.wrapFns)};
-        if (!map.args.length) map.args = ['${value}'];
-        result[key] = processFn.bind(this, map);
-        result[key]._map = map;
-      } else if (isMergeable(obj[key])) result[key] = this.wrapFns(val, ignore);
-      //else result[key] = val
-    });
-    return result
+  wrapFns(val: any) {
+    const self = this;
+    if (isMapFn(val) || isFunction(val)) {
+      if (isFunction(val)) val = {$: val};
+      const map = val.norm ? val : normalizeFn(val, self.wrapFns);
+      const fn = processFn.bind(self, map);
+      fn._map = map;
+      return fn
+    } else if (isMergeable(val)) {
+      const result = isArray(val) ? [] : {};
+      objKeys(val).forEach(key => result[key] = key[0] != '_' ? self.wrapFns(val[key]) : val[key]); //!~ignore.indexOf(key) &&
+      return result
+    }
+    return val
   }
 
   _build() {
@@ -728,7 +727,7 @@ class GenericWidget extends FRefsGeneric {
   render(): any {
     const self = this;
     if (self.props.norender) return null;
-    const {useTag: UseTag = 'div', _$cx, className, $_reactRef, children, ...rest} = self.props;
+    const {_$useTag: UseTag = 'div', _$cx, className, $_reactRef, children, ...rest} = self.props;
     self._mapChildren(children, $_reactRef);
     self.setRef2rest(rest, $_reactRef);
     return (<UseTag children={self._mapped} className={_$cx ? _$cx(className) : className} {...rest} />)
@@ -748,7 +747,7 @@ function toString(emptyMock: any, enumExten: any = {}, value: any): string {
 }
 
 function UniversalViewer(props: any) {
-  let {useTag: UseTag = 'div', value, inputProps, _$cx, enumExten = {}, emptyMock = '(none)', ...rest} = props;
+  let {_$useTag: UseTag = 'div', value, inputProps, _$cx, enumExten = {}, emptyMock = '(none)', ...rest} = props;
   if (rest.className && _$cx) rest.className = _$cx(rest.className);
 
   return React.createElement(UseTag, rest, toString(emptyMock, enumExten, value))
@@ -766,7 +765,7 @@ class UniversalInput extends GenericWidget {
       return React.createElement(_$widget, rest)
     }
 
-    let {value, useTag: UseTag, type, $_reactRef, _$cx, viewer, viewerProps, children, ...rest} = props;
+    let {value, _$useTag: UseTag, type, $_reactRef, _$cx, viewer, viewerProps, children, ...rest} = props;
 
     self._mapChildren(children, $_reactRef);
     self.setRef2rest(rest, $_reactRef);
@@ -824,7 +823,7 @@ function FBuilder(props: any) {
 
 
 function Wrapper(props: any) {
-  let {useTag: WrapperW = 'div', _$cx = classNames, className, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
+  let {_$useTag: WrapperW = 'div', _$cx = classNames, className, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
   const {_$widget: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
   const {_$widget: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
   const result = <WrapperW className={_$cx ? _$cx(className) : className} {...rest} />;
@@ -840,7 +839,7 @@ function Wrapper(props: any) {
 
 
 function ItemMenu(props: any) {
-  const {useTag: UseTag = 'div', _$cx = classNames, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
+  const {_$useTag: UseTag = 'div', _$cx = classNames, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
   if (!arrayItem) return null;
   // console.log(arrayItem)
   buttons.forEach((key: string) => delete rest[key]);
@@ -1075,7 +1074,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Title: {
         _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
-        useTag: 'label',
+        _$useTag: 'label',
         children: [],
         $_maps: {
           'className/required': '@/fData/required',
@@ -1135,12 +1134,12 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       $_ref: '^/sets/base',
       Main: {
         _$widget: '^/widgets/Generic',
-        useTag: 'label',
+        _$useTag: 'label',
         _$cx: '^/_$cx',
         $_reactRef: {'0': {ref: true}},
         children: [
-          {$_ref: '^/sets/nBase/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: {useTag: 'span'}},
-          {$_ref: '^/sets/nBase/Title', useTag: 'span', $_maps: {'className/hidden': '@/params/viewer'}}
+          {$_ref: '^/sets/nBase/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: {_$useTag: 'span'}},
+          {$_ref: '^/sets/nBase/Title', _$useTag: 'span', $_maps: {'className/hidden': '@/params/viewer'}}
         ]
       },
       Title: {$_ref: '^/sets/nBase/Title', $_maps: {'className/hidden': {$: '^/fn/not', args: '@/params/viewer'}}},
@@ -1148,7 +1147,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     booleanNull: {
       $_ref: '^/sets/boolean',
       Main: {
-        useTag: '^/widgets/CheckboxNull',
+        _$useTag: '^/widgets/CheckboxNull',
         $_reactRef: {tagRef: true},
         onChange: {$: '^/fn/setValue'},
       },
@@ -1186,14 +1185,14 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Title: {
         _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
-        useTag: 'legend',
+        _$useTag: 'legend',
         children: [
-          {$_ref: '^/sets/nBase/Title', useTag: 'span'},
+          {$_ref: '^/sets/nBase/Title', _$useTag: 'span'},
           {$_ref: '^/parts/ArrayAddButton'},
           {$_ref: '^/parts/ArrayDelButton'},
           {$_ref: '^/parts/ArrayEmpty'}],
       },
-      Wrapper: {useTag: 'fieldset'},
+      Wrapper: {_$useTag: 'fieldset'},
     },
     array: {$_ref: '^/sets/object'},
     select: {
@@ -1220,7 +1219,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       Main: {
         _$widget: '^/widgets/Input',
         _$cx: '^/_$cx',
-        useTag: 'div',
+        _$useTag: 'div',
         $_reactRef: true,
         type: 'notInput',
         viewerProps: {$_ref: '^/sets/nBase/Main/viewerProps'},
@@ -1234,7 +1233,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
               args: [
                 '@/fData/enum',
                 '@/fData/enumExten',
-                {useTag: 'label', _$cx: '^/_$cx', $_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
+                {_$useTag: 'label', _$cx: '^/_$cx', $_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
                 {
                   _$widget: 'input',
                   type: 'radio',
@@ -1242,7 +1241,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
                   onBlur: {$: '^/fn/blur'},
                   onFocus: {$: '^/fn/focus'},
                 },
-                {useTag: 'span', _$cx: '^/_$cx',},
+                {_$useTag: 'span', _$cx: '^/_$cx',},
                 true
               ],
               replace: false
@@ -1279,9 +1278,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
   },
   fn: {
     processing: function (...args: any[]) {
-      for (let i = 0; i < args.length; i += 2)
-        isMapFn(args[i + 1]) &&
-        this.api.set(args[i], processFn.call(this, {...args[i + 1], ...normalizeArgs(args[i + 1].args)}), args[i + 1].opts)
+      for (let i = 0; i < args.length; i += 2) args[i + 1]._map && this.api.set(args[i], args[i + 1](), args[i + 1]._map.opts || {})
     },
     iif: (iif: boolean, trueVal: any, falseVaL: any) => iif ? [trueVal] : [falseVaL],
     not: function (v: any) {return [!v]},
@@ -1371,7 +1368,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     Button: {
       _$widget: '^/widgets/Generic',
       _$cx: '^/_$cx',
-      useTag: 'button',
+      _$useTag: 'button',
       type: 'button',
       $_maps: {'className/button-viewer': '@/params/viewer'}
     },
@@ -1395,7 +1392,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     },
     ArrayEmpty: {
       children: '(array is empty)',
-      useTag: 'span',
+      _$useTag: 'span',
       $_maps: {'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/length', 0]}}
     },
     ArrayItemMenu: {
