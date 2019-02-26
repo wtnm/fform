@@ -334,14 +334,18 @@ class FField extends FRefsGeneric {
 
   wrapFns(obj: any, ignore: string[] = []) {
     const result = isArray(obj) ? [] : {};
+    Object.assign(result,obj);
     objKeys(obj).forEach(key => {
-      if (~ignore.indexOf(key)) result[key] = obj[key]
-      else if (isMapFn(obj[key])) {
-        let map = {...obj[key], ...normalizeArgs(obj[key].args)};
+      let val = obj[key];
+      if (~ignore.indexOf(key) || key[0] == '_') return;//result[key] = val;
+      else if (isMapFn(val) || isFunction(val)) {
+        if (isFunction(val)) val = {$: val};
+        let map = {...val, ...normalizeArgs(val.args, this.wrapFns)};
         if (!map.args.length) map.args = ['${value}'];
         result[key] = processFn.bind(this, map);
-      } else if (isMergeable(obj[key])) result[key] = this.wrapFns(obj[key], ignore);
-      else result[key] = obj[key]
+        result[key]._map = map;
+      } else if (isMergeable(obj[key])) result[key] = this.wrapFns(val, ignore);
+      //else result[key] = val
     });
     return result
   }
@@ -356,12 +360,12 @@ class FField extends FRefsGeneric {
     self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
     if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart.ff_presets) throw new Error('schema.ff_presets should be defined explicitly for multi type');
 
-    self.ff_layout = resolveComponents(self.pFForm.objects, schemaPart.ff_layout);
+    self.ff_layout = self.wrapFns(resolveComponents(self.pFForm.objects, schemaPart.ff_layout));
 
     let ff_components = resolveComponents(self.pFForm.objects, schemaPart.ff_custom, schemaPart.ff_presets || schemaPart.type);
+    ff_components = self.wrapFns(ff_components);
     let {$_maps, rest: components} = extractMaps(ff_components);
-    components = self.wrapFns(components);
-    self._maps = normalizeMaps(self, $_maps);
+    self._maps = normalizeMaps($_maps);
     self._widgets = {};
     self._ff_components = components;
     self._blocks = objKeys(components).filter(key => components[key]);
@@ -387,7 +391,7 @@ class FField extends FRefsGeneric {
 
   _setMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build') {
     const self = this;
-    const _mappedData = updateProps(self, self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
+    const _mappedData = updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
     if (self._mappedData != _mappedData) {
       self._mappedData = _mappedData;
       return true
@@ -517,14 +521,14 @@ class FSection extends FRefsGeneric {
 
     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
       let {$_maps, rest} = extractMaps(layout, ['$_fields']);
-      rest = self.props.$FField.wrapFns(rest, ['$_maps']);
+      // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
       let {$_fields, $_reactRef, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
       if ($_fields || !counter) className = merge(LayoutDefaultClass, className);
       staticProps.className = className;
       let refObject = self._refProcess('@widget_' + counter, $_reactRef) || {};
       if (isFunction(refObject)) refObject = {'ref': refObject};
       Object.assign(staticProps, refObject);
-      let maps = normalizeMaps(props.$FField, $_maps, counter.toString());
+      let maps = normalizeMaps($_maps, counter.toString());
       mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
       self._mappedData[counter] = staticProps;
       return {_$widget, $_fields}
@@ -618,7 +622,7 @@ class FSection extends FRefsGeneric {
 
   _updateMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build' = prevData !== nextData) {
     const self = this;
-    return updateProps(self.props.$FField, self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
+    return updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
   }
 
   _getData(branch = this.props.$branch) {
@@ -895,19 +899,20 @@ function extractMaps(obj: any, skip: string[] = []) {
 }
 
 
-function normalizeMaps(field: any, $_maps: any, prePath = '') {
+function normalizeMaps($_maps: any, prePath = '') {
   const result: { data: NormalizedPropsMapType[], every: NormalizedPropsMapType[], build: NormalizedPropsMapType[] } = {data: [], every: [], build: []};
   objKeys($_maps).forEach(key => {
-    const map = $_maps[key];
-    if (!map) return;
+    const value = $_maps[key];
+    if (!value) return;
     const to = multiplyPath(normalizePath((prePath ? prePath + '/' : '') + key));
-    if (isMergeable(map)) {
-      toArray(map).forEach(m => {
-        const {update = 'data', replace = true, args = [], $, ...rest} = m;
-        result[update].push({update, replace, $, to, ...rest, ...normalizeArgs(args)});
+    if (isFunction(value) || isArray(value)) {
+      toArray(value).forEach((fn: any) => {
+        const {update = 'data', replace = true, ...rest} = fn._map;
+        //fn._map = {update, replace, to, ...rest};
+        result[update].push({update, replace, ...rest, to, $: fn});
       })
     } else {
-      let path = map;
+      let path = value;
       if (!isString(path)) throw new Error('$_maps value is not recognized');
       if (path[0] !== '@') console.warn('Expected "@" at the begining of string');
       else path = path.substr(1);
@@ -918,7 +923,7 @@ function normalizeMaps(field: any, $_maps: any, prePath = '') {
 }
 
 
-function updateProps(field: any, mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
+function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
   const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
   const needUpdate = (map: NormalizedPropsMapType): boolean => isUndefined(prevData) || !map.$ ||
     (map.dataRequest && map.args.some(arg => {
@@ -927,9 +932,9 @@ function updateProps(field: any, mappedData: any, prevData: any, nextData: any, 
       return false
     }));
   const dataUpdates = {update: {}, replace: {}, api: {}};
-  iterMaps.forEach(m => m && m.forEach(map => {
+  iterMaps.forEach(maps => maps && maps.forEach(map => {
       if (map.update == 'data' && !needUpdate(map)) return;
-      const value = map.$ ? processFn.call(field, map, undefined, nextData) : getIn(nextData, map.args);
+      const value = map.$ ? map.$(undefined, nextData) : getIn(nextData, map.args);
       objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, map.replace, map.to[k]));
       if (!map.replace) mappedData = mergeStatePROCEDURE(mappedData, dataUpdates);
     })
@@ -1301,7 +1306,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       })
     },
     enumInputs: function (enumVals: any[] = [], enumExten: any = {}, containerProps: any = {}, inputProps: any = {}, labelProps: any = {}, name?: true | string) {
-      inputProps = this.wrapFns(inputProps);
+      // inputProps = this.wrapFns(inputProps);
       return enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
         return {
@@ -1351,34 +1356,6 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
       return [updated]
     },
   },
-  on: {
-    // clickArrayAdd: function (path: any, value: number, opts: any) {this.api.arrayAdd(path, value, opts)},
-    // clickArrayItemOps: function (path: any, key: any, opts: any) {this.api.arrayItemOps(path, key, opts)},
-    // changeBase: function (event: any) {this.api.setValue(event.target.value, {})},
-    // changeDirect: function (value: any) {this.api.setValue(value, {})},
-    // changeNumber: function (int: boolean, empty: number | null, event: any) {this.api.setValue(event.target.value == '' ? empty : (int ? parseInt : parseFloat)(event.target.value), {})},
-    // changeBoolean: function (event: any) {this.api.setValue(event.target.checked, {})},
-    // changeSelectMultiple: function (event: any) {
-    //   this.api.setValue(Array.from(event.target.options).filter((opt: any) => opt.selected).map((opt: any) => opt.value))
-    // },
-    // changeCheckboxes: function (event: any) {
-    //   const selected = (this.getData().value || []).slice();
-    //   const value = event.target.value;
-    //   const at = selected.indexOf(value);
-    //   const updated = selected.slice();
-    //   if (at == -1) updated.push(value); else updated.splice(at, 1);
-    //   const all = this.getData().fData.enum;
-    //   updated.sort((a: any, b: any) => all.indexOf(a) > all.indexOf(b));
-    //   this.api.setValue(updated)
-    // },
-    // focusBase: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
-    // blurBase: function (value: any) {
-    //   const self = this;
-    //   self.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
-    //   self.api.set('/@/active', undefined, {noValidation: true});
-    //   return !self.liveValidate ? self.api.validate() : null;
-    //}
-  },
   parts: {
     Autowidth: {
       _$widget: '^/widgets/Autowidth',
@@ -1424,7 +1401,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     ArrayItemMenu: {
       _$widget: '^/widgets/ItemMenu',
       buttons: ['first', 'last', 'up', 'down', 'del'],
-      onClick: {$: '^/fn/arrayItemOps', args: ['./']},
+      onClick: {$: '^/fn/arrayItemOps', args: ['./', '${value}']},
       buttonsProps: {
         first: {disabledCheck: 'canUp'},
         last: {disabledCheck: 'canDown'},

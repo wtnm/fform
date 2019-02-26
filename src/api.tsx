@@ -662,8 +662,8 @@ function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema):
   let {ff_validators, ff_dataMap, ...rest} = schema;
   const result: any = isArray(schema) ? [] : {ff_compiled: true};
 
-  ff_validators && (result.ff_validators = toArray(objectResolver(fformObjects, ff_validators, false)).map((v) => isObject(v) ? (v as any) : {$: v}));
-  ff_dataMap && (result.ff_dataMap = objectResolver(fformObjects, ff_dataMap, false));
+  ff_validators && (result.ff_validators = toArray(objectResolver(fformObjects, ff_validators)).map((v) => isObject(v) ? (v as any) : {$: v}));
+  ff_dataMap && (result.ff_dataMap = objectResolver(fformObjects, ff_dataMap));
 
   objKeys(rest).forEach(key => {
     switch (key) {

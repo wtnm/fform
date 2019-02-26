@@ -72,9 +72,7 @@
           "className": {
             "shrink": true
           },
-          "onClick": {
-            "$": "^/user/focusInput"
-          }
+          "onClick": "^/user/focusInput"
         },
         {
           "$_ref": "^/parts/expander"

@@ -975,14 +975,14 @@ describe('FForm api tests', function () {
 
   it('test components.updateProps', function () {
     const value = {};
-    let mapped = components.updateProps({}, undefined, undefined, {value, fData: {type: 'string'}}, NMaps.build, NMaps.data, NMaps.every);
+    let mapped = components.updateProps(undefined, undefined, {value, fData: {type: 'string'}}, NMaps.build, NMaps.data, NMaps.every);
     expect(mapped.part.value).to.be.equal(value);
     expect(mapped.part.first.$branch).to.be.eql("state/branch");
     expect(mapped.part.first.arrayStart).to.be.eql([]);
     expect(mapped.part._more.value).to.be.equal(value);
     expect(mapped.part.first.isArray).to.be.eql(['string', 'array']);
 
-    mapped = components.updateProps({}, mapped, undefined, {value: 'value', fData: {type: 'object'}}, NMaps.data, NMaps.every);
+    mapped = components.updateProps(mapped, undefined, {value: 'value', fData: {type: 'object'}}, NMaps.data, NMaps.every);
     expect(mapped.part.first.isArray).to.be.eql(['object', 'array']);
     expect(mapped.part._more.value).to.be.equal('value');
   });

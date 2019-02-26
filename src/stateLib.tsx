@@ -833,25 +833,27 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
   return state;
 }
 
-const makeSynthField = memoize(function (stateApi: any, from: string, to: string) {
+const makeSynthField = memoize(function (stateApi: any, to: string, from?: string) {
   const path = to.split('@')[0];
+  const pathData = from ? from.split('@')[0] : path;
   const updates: any[] = [];
   const field: any = {from, to, path, stateApi, updates};
   field.api = stateApi.wrapper(field);
   field.wrapOpts = (rest: any) => {
-    if (isUndefined(rest.setExecution)) rest.setExecution = (addUpdates: any) => addUpdates && push2array(field.updates, addUpdates);
+    if (field.updates && isUndefined(rest.setExecution)) rest.setExecution = (addUpdates: any) => addUpdates && push2array(field.updates, addUpdates);
     return rest
   };
-  field.api._orig_get = field.api.get;
+  field.api._get = field.api.get;
   field.api.get = (...path: any[]) => field.api._get(normalizePath(path, field.path));
   field.api.getValue = (opts: any = {}) => field.api.get(SymData, opts.inital ? 'inital' : 'current', normalizePath(opts.path || [], field.path));
-  field.getData = () => field.api.get(path, SymData);
+  field.getData = () => field.api.get(pathData, SymData);
   return field;
 });
 
 function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, maps: any, item: NormalizedUpdateType) {
   const {value, path, replace} = item;
   const keyPath = item[SymData] || [];
+  const from = NUpdate2string(item);
   objKeys(maps || {}).forEach((pathTo) => {
     if (!maps[pathTo]) return; // disabled map
     const map: dataMapActionType = maps[pathTo];
@@ -859,10 +861,13 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
     let executedValue = value;
     const updates: any[] = [];
     if (isObject(map)) {
-      const field = makeSynthField(UPDATABLE.api, NUpdate2string(item), NpathTo);
+      const field = makeSynthField(UPDATABLE.api, NpathTo, from);
+      let _get = field.api._get;
       field.api._get = getFrom4DataMap(state, UPDATABLE);
       field.updates = updates;
-      executedValue = processFn.call(field, map, value)
+      executedValue = processFn.call(field, map, value);
+      field.api._get = _get;
+      field.updates = null;
     }
     if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace});
     updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
@@ -872,24 +877,24 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
 
 const isMapFn = (arg: any) => isObject(arg) && arg.$;
 
-function normalizeArgs(args: any) {
+function normalizeArgs(args: any, wrapFn?: any) {
   let dataRequest = false;
   args = toArray(isUndefined(args) ? [] : args).map((arg: any) => {
     if (isString(arg) && arg[0] == '@') return (dataRequest = true) && normalizePath(arg.substr(1));
     if (isMapFn(arg)) {
-      const res = normalizeArgs(arg.args);
+      const res = normalizeArgs(arg.args, wrapFn);
       if (res.dataRequest) dataRequest = true;
       return {...arg, ...res};
     }
     return arg;
   });
-  return {dataRequest, args}
+  return {dataRequest, args: wrapFn ? wrapFn(args) : args}
 }
 
 function processFn(map: any, value: any, nextData?: any) {
   const processArg = (arg: any) => {
     if (isNPath(arg)) return getIn(nextData, arg);
-    if (isMapFn(arg)) return processFn.call(this, arg, value, nextData);
+    if (isMapFn(arg)) return !arg._map ? processFn.call(this, arg, value, nextData) : processFn(value, nextData);
     // if (arg == '${field}') return this;
     if (arg == '${value}') return value;
     //if (hasIn($value, arg)) return $value[arg];
