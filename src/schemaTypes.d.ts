@@ -78,7 +78,7 @@ interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaTy
 
 interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
   ff_validators?: JsonFunctionGeneric<string>[]; // sync/async validators
-  ff_dataMap?: FFDataMapGeneric<string>[]; // mapping values in state
+  ff_dataMap?: FFDataMapGeneric<string>[] | anyObject; // mapping values in state
 }
 
 interface FFCommonSchemaType {
@@ -93,14 +93,14 @@ interface FFCommonSchemaType {
 }
 
 type ReplaceType = boolean | { [key: string]: ReplaceType } | { [key: number]: ReplaceType }
-type FFDataMapGeneric<FN> = { from: string, to: string, $?: FN, args?: JsonAny[] | JsonAny }
+type FFDataMapGeneric<FN> = { from?: string, to?: string, $?: FN, args?: JsonAny[] | JsonAny }
 type PropsMapGeneric<FN> = { [key: string]: boolean | string | [FN, ...JsonAny[]] | { $: FN, args?: JsonAny[] | JsonAny, replace?: ReplaceType, arrayResult?: boolean, update?: 'build' | 'data' | 'every' } }
 type NormalizedPropsMapType = { $?: Function, args: any[], replace?: ReplaceType, update: 'build' | 'data' | 'every', arrayResult?: boolean, dataRequest: boolean, to: { [key: string]: Path } };
 type NPM4WidgetsType = { [key: string]: NormalizedPropsMapType[] }
 type JsonFunctionGeneric<FN> = { $: FN, args?: JsonAny[] | JsonAny }
 
 type FFLayoutGeneric<T> = T & {
-  $_fields?: Array<string | FFLayoutGeneric<T>>,
+  $_fields?: Array<string | FFLayoutGeneric<T>> | anyObject,
 }
 
 interface FFCustomizeType {

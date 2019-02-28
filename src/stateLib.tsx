@@ -477,7 +477,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
       let arrayOfRequired = result[SymData].fData.required;
       arrayOfRequired = isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
       objKeys(schemaPart.properties || {}).forEach(field => {
-        let {state: branch, dataMap, defaultValues: dValue} = makeStateBranch(schema, getNSetOneOf, path.concat(field), value && value[field]);
+        let {state: branch, dataMap, defaultValues: dValue} = makeStateBranch(schema, getNSetOneOf, path.concat(field), getIn(isUndefined(value) ? schemaPart.default : value, field));
         defaultValues[field] = dValue;
         push2array(dataMapObjects, dataMap);
         if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {[SymData]: {fData: {required: true}}});

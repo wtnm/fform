@@ -856,10 +856,10 @@ function ItemMenu(props: any) {
 
 function CheckboxNull(props: any) {
   const self = this;
-  let {checked, onChange, nullValue = null, tagRef, type, ...rest} = props;
+  let {checked, onChange, nullValue = null, dual, tagRef, type, ...rest} = props;
   return <input type="checkbox" checked={checked === true} {...rest}
                 onChange={(event: any) => {
-                  onChange(checked === nullValue ? true : (checked === true ? false : nullValue), event)
+                  onChange(dual ? !checked : (checked === nullValue ? true : (checked === true ? false : nullValue)), event)
                 }}
                 ref={elem => {
                   tagRef && tagRef(elem);
@@ -1155,7 +1155,7 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     booleanNullLeft: {
       $_ref: '^/sets/booleanLeft',
       Main: {
-        $_reactRef: {'0': {ref: false, tagRef: true}},
+        $_reactRef: {'0': {ref: null, tagRef: true}},
         children: [{$_ref: '^/sets/booleanNull/Main'}, {}]
       }
     },
@@ -1271,11 +1271,12 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     inlineItems: {Main: {className: {'inline': true}}},
     inlineTitle: {Wrapper: {className: {'inline': true}}},
     inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'inline': true}}}},
-    inlineLayout: {Main: {LayoutDefaultClass: {'layout': true, 'inline': true}}},
+    inlineLayout: {Main: {LayoutDefaultClass: {'inline': true}}},
     arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
     noTitle: {Title: false},
     shrink: {Wrapper: {className: {'shrink': true}}},
     expand: {Wrapper: {className: {'expand': true}}},
+    bnnDual: {Main: {children: {0: {dual: true}}}}
   },
   fn: {
     processing: function (...args: any[]) {
