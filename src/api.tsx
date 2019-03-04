@@ -343,9 +343,17 @@ class FFormStateAPI extends FFormStateManager {
   getValue = (opts: { path?: string | Path, inital?: boolean } = {}): any => this.get(SymData, opts.inital ? 'inital' : 'current', opts.path || []);
 
   setValue = (value: any, opts: APIOptsType & { path?: string | Path, replace?: any, setOneOf?: number, inital?: boolean } = {}) => {
-    let {path, inital, ...update} = opts;
-    (update as StateApiUpdateType).path = [inital ? '@inital' : '@current'].concat(normalizePath(path || []));
+    let {path, inital, replace, ...update} = opts;
+    path = normalizePath(path || []).slice();
+    let state = this.getState();
+    while (!getIn(state, path) && path.length) {
+      let nm = path.pop();
+      value = {[nm]: value};
+      replace = {[nm]: replace};
+    }
+    (update as StateApiUpdateType).path = [inital ? '@inital' : '@current'].concat(path);
     (update as StateApiUpdateType).value = value;
+    (update as StateApiUpdateType).replace = replace;
     return this._setExecution(update, opts);
   };
 

@@ -2,8 +2,8 @@ declare type mixed = string | number | boolean | null | {}
 declare type Path = Array<string | number | symbol | any>;  // [Path, Path, any] | [Path, any]
 declare type PathItem = { path: Path, keyPath?: Path, fullPath?: Path };
 declare type MapValuesItem = { from: PathItem, to: PathItem, fn: any };
-declare type StateApiUpdateType = { path: any, value: any, replace?: boolean, macros?: string, [key: string]: any };
-declare type NormalizedUpdateType = { path: Path, value: any, replace?: boolean, [key: string]: any };
+declare type StateApiUpdateType = { path: any, value: any, replace?: any, macros?: string, [key: string]: any };
+declare type NormalizedUpdateType = { path: Path, value: any, replace?: any, [key: string]: any };
 
 
 declare type PathSlice = Array<string | number | any | Array<string | number | any>>;

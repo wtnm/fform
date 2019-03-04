@@ -23,9 +23,6 @@
       },
       "Message": {
         "className": {}
-      },
-      "Main": {
-        "className": {}
       }
     },
     "nBase": {
@@ -33,6 +30,9 @@
         "className": {
           "title": true
         }
+      },
+      "Main": {
+        "className": {}
       }
     },
     "object": {

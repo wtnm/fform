@@ -193,7 +193,7 @@ class FField extends FRefsGeneric {
   private _mappedData: any = {};
   private _builderData: any = {};
   private _rebuild = true;
-  private _cached?: { value: any };
+  private _cached?: { value: any, opts: any };
   private _cachedTimeout?: Timeout;
   // private _enumOptions: any;
   private _isNotSelfManaged: boolean | undefined;
@@ -232,8 +232,8 @@ class FField extends FRefsGeneric {
       });
       api._set = api.set;
       api._setValue = api.setValue;
-      api.set = (...args: any[]) => self._cacheValue(args[0], args[1], 'set') || api._set(...args);
-      api.setValue = (...args: any[]) => self._cacheValue((args[1] || {}).path, args[0], 'setValue') || api._setValue(...args);
+      api.set = (...args: any[]) => self._cacheValue(args[0], args[1], 'set', args[2]) || api._set(...args);
+      api.setValue = (...args: any[]) => self._cacheValue((args[1] || {}).path, args[0], 'setValue', args[1]) || api._setValue(...args);
       self.api = api;
     }
 
@@ -260,12 +260,12 @@ class FField extends FRefsGeneric {
     const self = this;
     self._cachedTimeout = undefined;
     if (self._cached) {
-      self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate, path: self.path});
+      self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate, ...self._cached.opts, path: self.path});
       self._cached = undefined;
     }
   }
 
-  _cacheValue(path: any, value: any, fn: string = 'set'): boolean | undefined {
+  _cacheValue(path: any, value: any, fn: string = 'set', opts: any = {}): boolean | undefined {
     const self = this;
     let fieldCache = self.pFForm.props.fieldCache;
     if (isUndefined(fieldCache) || fieldCache === true) fieldCache = 40;
@@ -279,11 +279,11 @@ class FField extends FRefsGeneric {
     // console.log(valueSet, 'setValue=', setValue,'path=',path)
     if (valueSet) {
       const prevData = self.getData();
-      self._cached = {value}; //{value: self._parseValue(value, prevData)};
+      self._cached = {value, opts}; //{value: self._parseValue(value, prevData)};
       if (fieldCache) {
         if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
-        const data = merge(prevData, {value: self._cached.value});
+        const data = merge(prevData, {value: self._cached.value}, {replace: {value: opts.replace}});
         const mappedData = self._mappedData;
         self._setMappedData(prevData, data, true);
         if (mappedData != self._mappedData) self.forceUpdate();
@@ -994,9 +994,9 @@ function classNames(...styles: any[]) {
 /////////////////////////////////////////////
 
 
-let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
-  extend: function (obj) {
-    return merge(this, obj)
+let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeStateOptionsArgument) => any } = {
+  extend: function (objects: any[], opts?: MergeStateOptionsArgument) {
+    return merge.all(this, objects, opts)
   },
   types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
   widgets: {
@@ -1029,13 +1029,13 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
           widgets: {$: '^/fn/getFFieldProperty', args: ['_widgets'], update: 'build'},
         },
       },
-      Title: {},
+      //Title: {},
       Body: {
         _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
         className: 'body',
       },
-      Main: {},
+      //Main: {},
       Message: {
         _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
@@ -1279,11 +1279,17 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     bnnDual: {Main: {children: {0: {dual: true}}}}
   },
   fn: {
-    processing: function (...args: any[]) {
-      for (let i = 0; i < args.length; i += 2) args[i + 1]._map && this.api.set(args[i], args[i + 1](), args[i + 1]._map.opts || {})
+    api: function (fn: string, ...args: any[]) {this.api[fn](...args)},
+    set: function (...args: any[]) {
+      for (let i = 0; i < args.length; i += 2) {
+        let {path, ...opts} = isString(args[i]) ? {path: args[i]} : args[i];
+        this.api.set(path, isFunction(args[i + 1]) ? args[i + 1]() : args[i + 1], opts)
+      }
     },
     iif: (iif: boolean, trueVal: any, falseVaL: any) => iif ? [trueVal] : [falseVaL],
-    not: function (v: any) {return [!v]},
+    not: function (v: any) {
+      return [!v]
+    },
     equal: function (a: any, ...args: any[]) {return [args.some(b => a === b)]},
     messages: function (messages: any[], staticProps: anyObject = {}) {
       const {className: cnSP = {}, ...restSP} = staticProps;
@@ -1299,14 +1305,14 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
     getArrayStart: function () {return [arrayStart(this.schemaPart)]},
     getFFieldProperty: function (key: string) {return [getIn(this, normalizePath(key))]},
     arrayOfEnum: function (enumVals: any[], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
-      return enumVals.map(val => {
+      return [enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
         return {value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)), ...extenProps, ...staticProps}
-      })
+      })]
     },
     enumInputs: function (enumVals: any[] = [], enumExten: any = {}, containerProps: any = {}, inputProps: any = {}, labelProps: any = {}, name?: true | string) {
       // inputProps = this.wrapFns(inputProps);
-      return enumVals.map(val => {
+      return [enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
         return {
           key: val,
@@ -1316,16 +1322,16 @@ let fformObjects: formObjectsType & { extend: (obj: any) => any } = {
             {...labelProps, children: [extenProps.label || val]}
           ]
         }
-      })
+      })]
     },
     enumInputProps: function (enumVals: any[] = [], ...rest: any[]) {
       let props: any = {};
       for (let i = 0; i < rest.length; i += 2) props[rest[i]] = rest[i + 1];
-      return enumVals.map(val => {return {'children': {'0': props}}})
+      return [enumVals.map(val => {return {'children': {'0': props}}})]
     },
     enumInputValue: function (enumVals: any[] = [], value: any, property = 'checked') {
       value = toArray(value);
-      return enumVals.map(val => {return {'children': {'0': {[property]: !!~value.indexOf(val)}}}})
+      return [enumVals.map(val => {return {'children': {'0': {[property]: !!~value.indexOf(val)}}}})]
     },
 
     eventValue: (event: any, ...args: any[]) => [event.target.value, ...args],

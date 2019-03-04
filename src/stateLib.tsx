@@ -281,7 +281,7 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf: (path: Path) 
     else {
       if (schemaPart.additionalItems !== false) {
         if (schemaPart.additionalItems && schemaPart.additionalItems !== true) return schemaPart.additionalItems;
-        return items[items.length - 1]
+        return items[index % items.length]
       }
     }
     throw new Error(errorText + path.join('/'));

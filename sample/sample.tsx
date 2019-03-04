@@ -7,11 +7,11 @@ import * as style from '../addons/styles.json'
 const {render} = require('react-dom');
 //const {render} = require('preact');
 
-const JSONValidator:any = require('../addons/is-my-json-valid-lite');
+const JSONValidator: any = require('../addons/is-my-json-valid-lite');
 
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');
-  let sampleObjects = fformObjects.extend(style).extend({
+  let sampleObjects = fformObjects.extend([style, {
     'user': {
       set: function (path: string, value: any, opts: any) {
         this.api.set(path, value, opts)
@@ -28,7 +28,7 @@ if (typeof window != 'undefined') {
         target.focus();
       }
     }
-  });
+  }]);
 
   render(<div>
     <h3>FForm sample</h3>

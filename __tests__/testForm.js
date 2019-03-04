@@ -254,9 +254,9 @@ describe('FForm state functions tests', function () {
     expect(state[SymData].current[2][0].turpleValue.length).to.be.equal(3);
     expect(state[SymData].current[2][0].turpleValue[0]).to.be.equal('turpleValue level 2 default');
     expect(state[SymData].current[2][0].turpleValue[1]).to.be.equal(1);
-    expect(state[SymData].current[2][0].turpleValue[2]).to.be.equal(1);
+    expect(state[SymData].current[2][0].turpleValue[2]).to.be.equal('turpleValue default');
     expect(state[SymData].current[1][0].turpleValue[1]).to.be.equal(4);
-    expect(state[SymData].current[1][0].turpleValue[2]).to.be.equal(1);
+    expect(state[SymData].current[1][0].turpleValue[2]).to.be.equal('turpleValue default');
 
     expect(state[1][0].arrValue[SymData].fData.canAdd).to.be.equal(true);
     expect(state[1][0].turpleValue[SymData].fData.canAdd).to.be.equal(false);
