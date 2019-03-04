@@ -390,7 +390,10 @@ class FField extends FRefsGeneric {
 
   _setMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build') {
     const self = this;
+    let _gData = self.getData;
+    self.getData = () => nextData;
     const _mappedData = updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
+    self.getData = _gData;
     if (self._mappedData != _mappedData) {
       self._mappedData = _mappedData;
       return true
@@ -1110,7 +1113,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       Main: {
         onChange: {args: {2: null}},
         $_maps: {
-          value: {$: '^/fn/iif', args: [{$: '^/fn/equal', args: ['@/value', null]}, '', '@/value']},
+          value: {$: '^/fn/iif', args: [{$: '^/fn/equal', args: ['@value', null]}, '', '@value']},
         }
       }
     },
@@ -1286,7 +1289,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
         this.api.set(path, isFunction(args[i + 1]) ? args[i + 1]() : args[i + 1], opts)
       }
     },
-    iif: (iif: boolean, trueVal: any, falseVaL: any) => iif ? [trueVal] : [falseVaL],
+    iif: (iif: any, trueVal: any, falseVaL: any) => ((isFunction(iif) ? iif() : iif) ? [trueVal] : [falseVaL]),
     not: function (v: any) {
       return [!v]
     },
