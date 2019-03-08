@@ -74,11 +74,13 @@ interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaTy
   ff_compiled: boolean;
   ff_validators?: JsonFunctionGeneric<Function>[]; // sync/async validators
   ff_dataMap?: FFDataMapGeneric<Function | Function[]>[]; // mapping values in state
+  ff_oneOfSelector?: number | JsonFunctionGeneric<Function | Function[]> // oneOf selector for field
 }
 
 interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
   ff_validators?: JsonFunctionGeneric<string>[]; // sync/async validators
   ff_dataMap?: FFDataMapGeneric<string>[] | anyObject; // mapping values in state
+  ff_oneOfSelector?: number | JsonFunctionGeneric<string> // oneOf selector for field
 }
 
 interface FFCommonSchemaType {
@@ -90,6 +92,7 @@ interface FFCommonSchemaType {
   ff_custom?: FFCustomizeType; // components customization
   ff_layout?: FFLayoutGeneric<FFCustomizeType> | Array<string | FFLayoutGeneric<FFCustomizeType>>; // fields order and object/group extenion
   ff_enumExten?: { [key: string]: undefined | string | object }; // enum extension value taken from enum, string turn to label
+
 }
 
 type ReplaceType = boolean | { [key: string]: ReplaceType } | { [key: number]: ReplaceType }

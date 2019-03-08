@@ -398,12 +398,14 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   result.oneOf = oneOf;
   result.status = basicStatus;
   if (!isObject(result.fData)) result.fData = {};
-  result.fData.type = type;
-  result.fData.required = schemaPart.required;
-  if (schemaPart.title) result.fData.title = schemaPart.title;
-  if (schemaPart.ff_placeholder) result.fData.placeholder = schemaPart.ff_placeholder;
-  if (schemaPart.enum) result.fData.enum = schemaPart.enum;
-  if (schemaPart.ff_enumExten) result.fData.enumExten = schemaPart.ff_enumExten;
+  const fData = result.fData;
+  fData.type = type;
+  fData.required = schemaPart.required;
+  if (schemaPart.title) fData.title = schemaPart.title;
+  if (schemaPart.ff_placeholder) fData.placeholder = schemaPart.ff_placeholder;
+  if (schemaPart.enum) fData.enum = schemaPart.enum;
+  if (schemaPart.ff_enumExten) fData.enumExten = schemaPart.ff_enumExten;
+  if (schemaPart.ff_oneOfSelector) fData.oneOfSelector = true;
 
   if (isSchemaSelfManaged(schemaPart, type)) result.value = value;
   else delete result.value;
@@ -419,7 +421,7 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
 });
 
 function normalizeFn(fn: any, wrapFn?: Function, dontAddValue?: boolean) {
-  let nFn = isFunction(fn) ? {$: fn} : fn;
+  let nFn = !isObject(fn) ? {$: fn} : fn;
   nFn = {...nFn, ...normalizeArgs(nFn.args, wrapFn)};
   if (!nFn.args.length && !dontAddValue) nFn.args = ['${value}'];
   return nFn
@@ -566,7 +568,6 @@ function isSchemaSelfManaged(schemaPart: jsJsonSchema, type: string) {
 function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
   if (!isArray(oneOfShemas)) oneOfShemas = [oneOfShemas];
   const oneOfKeys = oneOfShemas.map((v: any, i: number) => i);
-  //for (let i = 0; i < oneOfShemas.length; i++) oneOfKeys.push(i);
   if (currentOneOf) moveArrayElems(oneOfKeys, currentOneOf, 0); // currentOneOf should be checked first to match type
   for (let k = 0; k < oneOfKeys.length; k++) {
     let oneOf = oneOfKeys[k];
@@ -601,14 +602,29 @@ function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABL
     return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
   }
 
+  if (branch[SymData].fData.oneOfSelector) {
+    const field = makeSynthField(UPDATABLE.api, path2string(track));
+
+  }
+  const oneOfSelector = branch[SymData].fData.oneOfSelector;
   const type = branch[SymData].fData.type;
   if (isUndefined(value)) value = types.empty[type || 'any'];
-  if (!types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
-    const {schemaPart, oneOf, type} = findOneOf(getSchemaPart(schema, track, oneOfFromState(state), true), value, isUndefined(setOneOf) ? branch[SymData].oneOf : setOneOf);
-    if (schemaPart) {
-      return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
+  if (oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
+    // setOneOf = 
+    const parts = getSchemaPart(schema, track, oneOfFromState(state), true);
+    let currentOneOf = branch[SymData].oneOf;
+    if (oneOfSelector) {
+      const field = makeSynthField(UPDATABLE.api, path2string(track));
+      const ff_oneOfSelector = parts[currentOneOf].ff_oneOfSelector;
+      setOneOf = processFn.call(field, ff_oneOfSelector, value);
+    }
 
-    } else console.warn('Type not found in path [' + track.join('/') + ']')
+    const {schemaPart, oneOf, type} = findOneOf(parts, value, isUndefined(setOneOf) ? currentOneOf : setOneOf);
+    if (currentOneOf !== oneOf) {
+      if (schemaPart) {
+        return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
+      } else console.warn('Type not found in path [' + track.join('/') + ']')
+    }
   }
 
   if (isSelfManaged(branch)) { // if object has own value then replace it directly
@@ -883,7 +899,7 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
       field.get = null;
       //field.api._get = _get;
     }
-    if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace});
+    if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace:map.replace || replace});
     updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
   });
   return state;
@@ -916,7 +932,7 @@ function processFn(map: any, value: any, nextData?: any) {
     return arg;
   };
   if (map.dataRequest && !nextData) nextData = this.getData();
-  return deArray(toArray(map.$).reduce((args, fn) => toArray(fn.apply(this, args)), map.args.map(processArg)), map.arrayResult);
+  return deArray(toArray(map.$).reduce((args, fn) => toArray(fn.apply(this, args)), (map.args || []).map(processArg)), map.arrayResult);
 }
 
 function getFromUPD(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {

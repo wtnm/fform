@@ -15,7 +15,7 @@ import {
   isUndefined,
   getCreateIn,
   isString,
-  deArray, toArray
+  deArray, toArray, isFunction
 } from "./commonLib";
 
 import {
@@ -679,11 +679,13 @@ const compileSchema = memoize((fformObjects: formObjectsType, schema: JsonSchema
 function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema): jsJsonSchema {
   if (isCompiled(schema)) return schema;
 
-  let {ff_validators, ff_dataMap, ...rest} = schema;
+  let {ff_validators, ff_dataMap, ff_oneOfSelector, ...rest} = schema;
   const result: any = isArray(schema) ? [] : {ff_compiled: true};
 
   ff_validators && (result.ff_validators = toArray(objectResolver(fformObjects, ff_validators)).map(f => normalizeFn(f)));
   ff_dataMap && (result.ff_dataMap = objectResolver(fformObjects, ff_dataMap));
+  ff_oneOfSelector && (result.ff_oneOfSelector = objectResolver(fformObjects, normalizeFn(ff_oneOfSelector)));
+  //if (isFunction(result.ff_oneOfSelector)) result.ff_oneOfSelector = {$: result.ff_oneOfSelector};
 
   objKeys(rest).forEach(key => {
     switch (key) {
