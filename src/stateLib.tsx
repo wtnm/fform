@@ -617,8 +617,13 @@ function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABL
     if (isMergeable(value)) {  // if we receive object or array then apply their values to state
       if (type == 'array' && !isUndefined(value.length))
         state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['length'], value.length));
+      if (replace === true) {
+        let v = {};
+        branchKeys(branch).forEach(k => v[k] = undefined);
+        value = Object.assign(v, value);
+      }
       objKeys(value).forEach(key =>
-        state = updateCurrentPROCEDURE(state, schema, UPDATABLE, value[key], getIn(replace, key), track.concat(key)))
+        state = updateCurrentPROCEDURE(state, schema, UPDATABLE, value[key], replace === true ? true : getIn(replace, key), track.concat(key)))
     }
   }
 
@@ -676,6 +681,7 @@ function updateNormalizationPROCEDURE(state: StateType, schema: jsJsonSchema, UP
 function setUPDATABLE(UPDATABLE: PROCEDURE_UPDATABLE_Type, update: any, replace: any, ...pathes: any[]) {
   setIn(UPDATABLE, update, 'update', ...pathes);
   if (replace) setIn(UPDATABLE, replace, 'replace', ...pathes);
+  return UPDATABLE;
 }
 
 function mergeStatePROCEDURE(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
@@ -849,9 +855,9 @@ const makeSynthField = memoize(function (stateApi: any, to: string, from?: strin
     if (field.updates && isUndefined(rest.setExecution)) rest.setExecution = (addUpdates: any) => addUpdates && push2array(field.updates, addUpdates);
     return rest
   };
-  field.api._get = field.api.get;
-  field.api.get = (...path: any[]) => field.api._get(normalizePath(path, field.path));
-  field.api.getValue = (opts: any = {}) => field.api.get(SymData, opts.inital ? 'inital' : 'current', normalizePath(opts.path || [], field.path));
+  //field.api._get = field.api.get;
+  //field.api.get = (...path: any[]) => field.api._get(normalizePath(path, field.path));
+  //field.api.getValue = (opts: any = {}) => field.api.get(SymData, opts.inital ? 'inital' : 'current', normalizePath(opts.path || [], field.path));
   field.getData = () => field.api.get(pathData, SymData);
   return field;
 });
@@ -868,12 +874,14 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
     const updates: any[] = [];
     if (isObject(map)) {
       const field = makeSynthField(UPDATABLE.api, NpathTo, from);
-      let _get = field.api._get;
-      field.api._get = getFrom4DataMap(state, UPDATABLE);
+      //let _get = field.api._get;
+      //field.api._get = getFromUPD(state, UPDATABLE);
+      field.get = getFromUPD(state, UPDATABLE);
       field.updates = updates;
       executedValue = processFn.call(field, map, value);
-      field.api._get = _get;
       field.updates = null;
+      field.get = null;
+      //field.api._get = _get;
     }
     if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace});
     updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
@@ -911,7 +919,7 @@ function processFn(map: any, value: any, nextData?: any) {
   return deArray(toArray(map.$).reduce((args, fn) => toArray(fn.apply(this, args)), map.args.map(processArg)), map.arrayResult);
 }
 
-function getFrom4DataMap(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
+function getFromUPD(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
   return (...tPath: Array<string | Path>) => {
     if (hasIn(UPDATABLE.update, ...tPath.map(path => normalizePath(path as any))))
       return merge(getFromState(state, ...tPath), getFromState(UPDATABLE.update, ...tPath), {replace: getFromState(UPDATABLE.replace, ...tPath)});
@@ -980,7 +988,7 @@ function string2NUpdate(path: string | Path, base: string | Path = [], rest: any
 
 function NUpdate2string(item: PathItem): string {
   let path = path2string(item.path);
-  return path + (item.keyPath && !~path.indexOf('@') ? '/@/' + path2string(item.keyPath) : '');
+  return path + (item[SymData] && !~path.indexOf('@') ? '/@/' + path2string(item[SymData]) : '');
 }
 
 const makeNUpdate = (path: Path, keyPath: Path, value?: any, replace?: any, rest: any = {}): NormalizedUpdateType => {return {path, [SymData]: keyPath, value, replace, ...rest}};
@@ -1155,7 +1163,7 @@ export {
   processFn,
   isMapFn,
   makeSynthField,
-  types
+  types,
 }
 
 export {SymData, SymReset, SymClear, SymDelete}

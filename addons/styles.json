@@ -78,39 +78,37 @@
           }
         }
       }
-    },
-    "radio": {
-      "Main": {
-        "className": {
-          "radio": true
-        },
-        "$_maps": {
-          "children": {
-            "0": {
-              "args": {
-                "2": {
-                  "className": {
-                    "radio-container": true
-                  }
-                },
-                "3": {
-                  "className": {
-                    "radio-input": true
-                  }
-                },
-                "4": {
-                  "className": {
-                    "radio-label": true
-                  }
+    }
+  },
+  "parts": {
+    "RadioSelector": {
+      "className": {
+        "radio": true
+      },
+      "$_maps": {
+        "children": {
+          "0": {
+            "args": {
+              "2": {
+                "className": {
+                  "radio-container": true
+                }
+              },
+              "3": {
+                "className": {
+                  "radio-input": true
+                }
+              },
+              "4": {
+                "className": {
+                  "radio-label": true
                 }
               }
             }
           }
         }
       }
-    }
-  },
-  "parts": {
+    },
     "ArrayItemMenu": {
       "buttonsProps": {
         "first": {

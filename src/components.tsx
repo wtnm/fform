@@ -20,7 +20,7 @@ import {
   normalizeArgs,
   processFn,
   isMapFn,
-  normalizeFn
+  normalizeFn,
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
 import Timeout = NodeJS.Timeout;
@@ -67,8 +67,8 @@ class FForm extends React.Component<any, any> {
     const {state, value, inital, extData, noValidate} = nextProps;
     const self = this;
     if (state && state !== prevProps.state) self.api.setState(state);
-    if (inital && inital !== prevProps.inital) self.api.setValue(inital, {inital: true, noValidate});
-    if (value && value !== prevProps.value) self.api.setValue(value, {noValidate});
+    if (inital && inital !== prevProps.inital) self.api.setValue(inital, {replace: true, inital: true, noValidate});
+    if (value && value !== prevProps.value) self.api.setValue(value, {replace: true, noValidate});
     if (extData && extData !== prevProps.extData) objKeys(extData).forEach(key => (self.api.set(key, (extData as any)[key], {replace: true})));
   }
 
@@ -203,7 +203,7 @@ class FField extends FRefsGeneric {
   private _maps: NPM4WidgetsType = {};
   private _$_parse: any;
 
-
+  get: Function | null = null;
   ff_layout: FFLayoutGeneric<jsFFCustomizeType>;
   $branch: any;
   schemaPart: jsJsonSchema;
@@ -285,7 +285,14 @@ class FField extends FRefsGeneric {
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
         const data = merge(prevData, {value: self._cached.value}, {replace: {value: opts.replace}});
         const mappedData = self._mappedData;
+
+        self.get = (...pathes: any[]) => {
+          let path = normalizePath(pathes, self.path);
+          if (isEqual(path, normalizePath('./@value', self.path))) return data.value;
+          return self.stateApi.get(path)
+        };
         self._setMappedData(prevData, data, true);
+        self.get = null;
         if (mappedData != self._mappedData) self.forceUpdate();
       } else self._updateCachedValue();
       return true;
@@ -388,11 +395,11 @@ class FField extends FRefsGeneric {
   // todo: lazy schema compilation?
 
 
-  _setMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build') {
+  _setMappedData(prevData: any, nextData: any, updateStage: boolean | 'build') {
     const self = this;
     let _gData = self.getData;
     self.getData = () => nextData;
-    const _mappedData = updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
+    const _mappedData = updateProps(self._mappedData, prevData, nextData, updateStage == 'build' && self._maps.build, updateStage && self._maps.data, self._maps.every);
     self.getData = _gData;
     if (self._mappedData != _mappedData) {
       self._mappedData = _mappedData;
@@ -904,7 +911,7 @@ function extractMaps(obj: any, skip: string[] = []) {
 function normalizeMaps($_maps: any, prePath = '') {
   const result: { data: NormalizedPropsMapType[], every: NormalizedPropsMapType[], build: NormalizedPropsMapType[] } = {data: [], every: [], build: []};
   objKeys($_maps).forEach(key => {
-    const value = $_maps[key];
+    let value = $_maps[key];
     if (!value) return;
     const to = multiplyPath(normalizePath((prePath ? prePath + '/' : '') + key));
     if (isFunction(value) || isArray(value)) {
@@ -914,17 +921,18 @@ function normalizeMaps($_maps: any, prePath = '') {
         result[update].push({update, replace, ...rest, to, $: fn});
       })
     } else {
-      let path = value;
+      if (isString(value)) value = {args: value};
+      let {args: path, update = 'data', replace = true, ...rest} = value;
       if (!isString(path)) throw new Error('$_maps value is not recognized');
       if (path[0] !== '@') console.warn('Expected "@" at the begining of string');
       else path = path.substr(1);
-      result.data.push({update: 'data', replace: true, to, dataRequest: true, args: normalizePath(path)})
+      result.data.push({update, replace, to, dataRequest: true, args: normalizePath(path), ...rest})
     }
   });
   return result
 }
 
-
+//!map.$ && map.args[0] == 'selectorValue' && args[0]
 function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
   const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
   const needUpdate = (map: NormalizedPropsMapType): boolean => isUndefined(prevData) || !map.$ ||
@@ -1220,45 +1228,30 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       $_ref: '^/sets/base',
       Title: {$_ref: '^/sets/nBase/Title'},
       Main: {
-        _$widget: '^/widgets/Input',
-        _$cx: '^/_$cx',
-        _$useTag: 'div',
+        $_ref: '^/parts/RadioSelector',
         $_reactRef: true,
-        type: 'notInput',
         viewerProps: {$_ref: '^/sets/nBase/Main/viewerProps'},
-        children: [],
         $_maps: {
           value: '@/value',
           viewer: '@/params/viewer',
           children: [
             {
-              $: '^/fn/enumInputs',
               args: [
                 '@/fData/enum',
                 '@/fData/enumExten',
-                {_$useTag: 'label', _$cx: '^/_$cx', $_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
-                {
-                  _$widget: 'input',
-                  type: 'radio',
-                  onChange: {$: '^/fn/eventValue|^/fn/setValue'},
-                  onBlur: {$: '^/fn/blur'},
-                  onFocus: {$: '^/fn/focus'},
-                },
-                {_$useTag: 'span', _$cx: '^/_$cx',},
+                {$_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
+                {onChange: {args: []}},
+                {},
                 true
               ],
-              replace: false
             },
-            {$: '^/fn/enumInputProps', args: ['@/fData/enum', 'readOnly', '@/params/readonly', 'disabled', '@/params/disabled'], replace: false},
-            {$: '^/fn/enumInputValue', args: ['@/fData/enum', '@/value'], replace: false}
+            {args: ['@/fData/enum', '@/value']},
+            {$: '^/fn/enumInputProps', args: ['@/fData/enum', 'readOnly', '@/params/readonly', 'disabled', '@/params/disabled'], replace: false}
           ]
         }
       }
     },
     checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|^/fn/setValue'}}, '5': '[]'}}}}}},
-
-    // inlineItems: {Main: {stackedProps: false}},
-    // buttons: {Main: {inputProps: {className: {'button': true}}, labelProps: {className: {'button': true}}}},
     hidden: {
       Builder: {
         className: {hidden: true},
@@ -1365,6 +1358,37 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
     },
   },
   parts: {
+    RadioSelector: {
+      _$widget: '^/widgets/Input',
+      _$cx: '^/_$cx',
+      _$useTag: 'div',
+      type: 'notInput',
+      children: [],
+      $_maps: {
+        value: '@/selector/value',
+        children: [
+          {
+            $: '^/fn/enumInputs',
+            args: [
+              '@/selector/enum',
+              '@/selector/exten',
+              {_$useTag: 'label', _$cx: '^/_$cx'},
+              {
+                _$widget: 'input',
+                type: 'radio',
+                onChange: {$: '^/fn/eventValue|^/fn/setValue', args: ['${value}', {path: './@/selector/value'}]},
+                onBlur: {$: '^/fn/blur'},
+                onFocus: {$: '^/fn/focus'},
+              },
+              {_$useTag: 'span', _$cx: '^/_$cx',},
+              true
+            ],
+            replace: false,
+          },
+          {$: '^/fn/enumInputValue', args: ['@/selector/enum', '@/selector/value'], replace: false},
+        ]
+      }
+    },
     Autowidth: {
       _$widget: '^/widgets/Autowidth',
       addWidth: 35,

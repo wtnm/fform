@@ -232,8 +232,8 @@ class FFormStateAPI extends FFormStateManager {
 
   wrapper(self: any = {}) {
     const api = this;
-    const wrapThis = (fn: string) => self[fn] || api[fn];
-    const wrapPath = (path: string | Path = './') => path && normalizePath(path, self.path);
+    const wrapApi = (fn: string) => self[fn] || api[fn];
+    const wrapPath = (path: null | string | Path = './') => path && normalizePath(path, self.path);
     const wrapOpts = (opts: any = {}, forcePath?: boolean) => {
       const {path, ...rest} = opts;
       if (!isUndefined(path) || forcePath) rest.path = wrapPath(path || './');
@@ -242,24 +242,25 @@ class FFormStateAPI extends FFormStateManager {
     };
 
     const wrapped = {
-      validate: (path: boolean | string | Path = './', ...args: any[]) => wrapThis('validate')(typeof path == 'boolean' ? path : wrapPath(path), ...args),
-      get: (...path: any[]) => wrapThis('get')(wrapPath(path)),
+      validate: (path: boolean | string | Path = './', ...args: any[]) => wrapApi('validate')(typeof path == 'boolean' ? path : wrapPath(path), ...args),
+      get: (...path: any[]) => wrapApi('get')(wrapPath(path)),
       // set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => wrapThis('set')(wrapPath(path), value, wrapOpts(opts)),
-      setValue: (value: any, opts: any = {}, ...args: any[]) => wrapThis('setValue')(value, wrapOpts(opts)),
+      setValue: (value: any, opts: any = {}, ...args: any[]) => wrapApi('setValue')(value, wrapOpts(opts)),
       bind: (object: any) => {
         self = object;
         return wrapped
       },
+      getValue: (opts: any = {}) => wrapped.get(SymData, opts.inital ? 'inital' : 'current', wrapPath(opts.path)),
       getApi: () => api,
     };
     ['noExec', 'setState', 'getActive', 'getDefaultValue']
-      .forEach(fn => wrapped[fn] = (...args: any[]) => wrapThis(fn)(...args));
-    ['getValue', 'reset', 'clear', 'execute']
-      .forEach(fn => wrapped[fn] = (opts: any, ...args: any[]) => wrapThis(fn)(wrapOpts(opts, true), ...args));
+      .forEach(fn => wrapped[fn] = (...args: any[]) => wrapApi(fn)(...args));
+    ['reset', 'clear', 'execute']
+      .forEach(fn => wrapped[fn] = (opts: any, ...args: any[]) => wrapApi(fn)(wrapOpts(opts, true), ...args));
     ['showOnly', 'getSchemaPart']
-      .forEach(fn => wrapped[fn] = (path: string | Path = [], opts: any = {}, ...args: any[]) => wrapThis(fn)(wrapPath(path), wrapOpts(opts), ...args));
+      .forEach(fn => wrapped[fn] = (path: string | Path = [], opts: any = {}, ...args: any[]) => wrapApi(fn)(wrapPath(path), wrapOpts(opts), ...args));
     ['set', 'arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly']
-      .forEach(fn => wrapped[fn] = (path: string | Path = [], value: any, opts: any = {}, ...args: any[]) => wrapThis(fn)(wrapPath(path), value, wrapOpts(opts), ...args));
+      .forEach(fn => wrapped[fn] = (path: string | Path = [], value: any, opts: any = {}, ...args: any[]) => wrapApi(fn)(wrapPath(path), value, wrapOpts(opts), ...args));
     return wrapped;
   }
 
@@ -345,13 +346,16 @@ class FFormStateAPI extends FFormStateManager {
   setValue = (value: any, opts: APIOptsType & { path?: string | Path, replace?: any, setOneOf?: number, inital?: boolean } = {}) => {
     let {path, inital, replace, ...update} = opts;
     path = normalizePath(path || []).slice();
-    let state = this.getState();
-    while (!getIn(state, path) && path.length) {
-      let nm = path.pop();
-      value = {[nm]: value};
-      replace = {[nm]: replace};
+    if (~path.indexOf(SymData)) (update as StateApiUpdateType).path = path;
+    else {
+      let state = this.getState();
+      while (!getIn(state, path) && path.length) {
+        let nm = path.pop();
+        value = {[nm]: value};
+        replace = {[nm]: replace};
+      }
+      (update as StateApiUpdateType).path = [inital ? '@inital' : '@current'].concat(path);
     }
-    (update as StateApiUpdateType).path = [inital ? '@inital' : '@current'].concat(path);
     (update as StateApiUpdateType).value = value;
     (update as StateApiUpdateType).replace = replace;
     return this._setExecution(update, opts);
