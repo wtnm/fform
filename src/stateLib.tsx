@@ -51,15 +51,20 @@ types.empty = {'any': null, 'null': null, 'boolean': false, 'number': 0, 'intege
 function getBindedMaps2update(branch: StateType, path: Path = []) {
   const maps2disable: normalizedDataMapType[] = getIn(branch, SymDataMapTree, SymData) || [];
   const maps2enable = maps2disable.map((map => merge(map, {emitter: path})));
+  let clearBinded: any = (maps2disable.length) ? {[SymDataMapTree]: {[SymData]: []}} : undefined
   objKeys(branch).forEach(key => {
     let result: any;
     if (branch[key]) {
       result = getBindedMaps2update(branch[key], path.concat(key));
       push2array(maps2disable, result.maps2disable);
       push2array(maps2enable, result.maps2enable);
+      if (result.clearBinded) {
+        if (!clearBinded) clearBinded = {};
+        clearBinded[key] = result.clearBinded;
+      }
     }
   });
-  return {maps2disable, maps2enable}
+  return {maps2disable, maps2enable, clearBinded}
 }
 
 const Macros: { [key: string]: any } = {};
@@ -123,7 +128,8 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
   }
   stateObject = moveArrayElems(stateObject, from, to);
   currentObject = moveArrayElems(currentObject, from, to);
-  const {maps2disable, maps2enable} = getBindedMaps2update(stateObject, path);
+  const {maps2disable, maps2enable, clearBinded} = getBindedMaps2update(stateObject, path);
+  if (clearBinded) stateObject = merge(stateObject, clearBinded);
   updObj.forEach(obj => {
     if (!isMergeable(obj)) return;
     moveArrayElems(obj, from, to);
@@ -518,7 +524,15 @@ function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
       const emitterBranch = getIn(state, emitterPath);
       if (emitterBranch) {
         let bindedMaps = getIn(emitterBranch, SymDataMapTree, SymData) || [];
-        setUPDATABLE(UPDATABLE, bindedMaps.concat(dataMap), true, emitterPath, SymDataMapTree, SymData);
+        //if (unset) {
+        let i;
+        for (i = 0; i < bindedMaps.length; i++) {
+          if (dataMap.from === bindedMaps[i].from && dataMap.to === bindedMaps[i].to) break;
+        }
+        bindedMaps = bindedMaps.slice();
+        bindedMaps[i] = dataMap;
+        //} else bindedMaps = bindedMaps.concat(dataMap);
+        setUPDATABLE(UPDATABLE, bindedMaps, true, emitterPath, SymDataMapTree, SymData);
         // setIn(UPDATABLE.replace, true, emitterPath, SymDataMapTree, SymData);
       }
       state = mergeStatePROCEDURE(state, UPDATABLE);
@@ -883,6 +897,7 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
   const keyPath = item[SymData] || [];
   const from = NUpdate2string(item);
   objKeys(maps || {}).forEach((pathTo) => {
+    console.log('maps=', maps);
     if (!maps[pathTo]) return; // disabled map
     const map: dataMapActionType = maps[pathTo];
     const NpathTo = path2string(normalizePath(pathTo, path));
@@ -899,7 +914,7 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
       field.get = null;
       //field.api._get = _get;
     }
-    if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace:map.replace || replace});
+    if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace: map.replace || replace});
     updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
   });
   return state;

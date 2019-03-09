@@ -746,17 +746,14 @@ function objectResolver(_objects: any, obj2resolve: any): any { // todo: test
   const result = objectDerefer(_objects, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
-    const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '^/' ? convRef(result[key]) : result[key];
-    if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _
-    // else if (extract2SymData && key.substr(-5) == '.bind') {
-    //   const proccessed = isMergeable(resolvedValue) ? objectResolver(_objects, resolvedValue) : resolvedValue;
-    //   setIn(retResult, proccessed, SymData, string2path(key));
-    // } 
-    else if (isMergeable(resolvedValue)) {
-      retResult[key] = objectResolver(_objects, resolvedValue);
-      //if (retResult[key][SymData]) setIn(retResult, retResult[key][SymData], SymData, key);
-      //delete retResult[key][SymData];
-    } //else if (extract2SymData && typeof resolvedValue == 'function') setIn(retResult, resolvedValue, SymData, key);
+    //const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '^/' ? convRef(result[key]) : result[key];
+    let resolvedValue = result[key];
+    if (isString(resolvedValue) && resolvedValue.substr(0, 2) == '^/') {
+      resolvedValue = convRef(resolvedValue);
+      if (key !== '$' && key[0] !== '_' && (isFunction(resolvedValue) || isArray(resolvedValue) && resolvedValue.every(isFunction))) resolvedValue = {$: resolvedValue}
+    }
+    if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _ 
+    else if (isMergeable(resolvedValue)) retResult[key] = objectResolver(_objects, resolvedValue);
     else retResult[key] = resolvedValue;
   });
 

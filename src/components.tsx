@@ -342,8 +342,8 @@ class FField extends FRefsGeneric {
 
   wrapFns(val: any) {
     const self = this;
-    if (isMapFn(val) || isFunction(val)) {
-      if (isFunction(val)) val = {$: val};
+    if (isFunction(val)) val = {$: val};
+    if (isMapFn(val)) {      
       const map = val.norm ? val : normalizeFn(val, self.wrapFns);
       const fn = processFn.bind(self, map);
       fn._map = map;

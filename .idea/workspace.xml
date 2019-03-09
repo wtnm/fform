@@ -36,8 +36,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="265">
-              <caret line="148" lean-forward="true" selection-start-line="148" selection-end-line="148" />
+            <state relative-caret-position="1945">
+              <caret line="148" selection-start-line="148" selection-end-line="148" />
             </state>
           </provider>
         </entry>
@@ -1167,13 +1167,7 @@
       <workItem from="1551708516330" duration="1510000" />
       <workItem from="1551714452955" duration="1598000" />
       <workItem from="1552053860694" duration="70000" />
-    </task>
-    <task id="LOCAL-00040" summary="components fixes">
-      <created>1548320622840</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1548320622840</updated>
+      <workItem from="1552079189878" duration="70000" />
     </task>
     <task id="LOCAL-00041" summary="components fixes">
       <created>1548394637475</created>
@@ -1511,7 +1505,14 @@
       <option name="project" value="LOCAL" />
       <updated>1552053920910</updated>
     </task>
-    <option name="localTasksCounter" value="89" />
+    <task id="LOCAL-00089" summary="fixes">
+      <created>1552079249647</created>
+      <option name="number" value="00089" />
+      <option name="presentableId" value="LOCAL-00089" />
+      <option name="project" value="LOCAL" />
+      <updated>1552079249648</updated>
+    </task>
+    <option name="localTasksCounter" value="90" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1547,7 +1548,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3438734000" />
+    <option name="totallyTimeSpent" value="3438804000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1563,8 +1564,8 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.47566372" visible="true" weight="0.11357633" />
-      <window_info id="Structure" order="2" sideWeight="0.5243363" side_tool="true" visible="true" weight="0.124669835" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.4745011" visible="true" weight="0.11304807" />
+      <window_info id="Structure" order="2" sideWeight="0.52549887" side_tool="true" visible="true" weight="0.124669835" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.4978903" side_tool="true" weight="0.124404445" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
@@ -2054,8 +2055,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="265">
-          <caret line="148" lean-forward="true" selection-start-line="148" selection-end-line="148" />
+        <state relative-caret-position="1945">
+          <caret line="148" selection-start-line="148" selection-end-line="148" />
         </state>
       </provider>
     </entry>
