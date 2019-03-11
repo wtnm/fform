@@ -147,7 +147,7 @@ class FForm extends React.Component<any, any> {
 
     return (
       <UseTag {...rest} onSubmit={self._submit}>
-        <FField ref={self._setRef} id={rest.id ? rest.id + '/#' : undefined} name={self.api.name} pFForm={self} getPath={self._getPath} FFrormApi={self.api}/>
+        <FField ref={self._setRef} id={rest.id ? rest.id + '/#' : undefined} name={self.api.name} pFForm={self} getPath={self._getPath} FFormApi={self.api}/>
       </UseTag>
     )
   }
@@ -222,23 +222,9 @@ class FField extends FRefsGeneric {
     Object.defineProperty(self, "liveValidate", {get: () => getIn(self.getData(), 'params', 'liveValidate')});
     Object.defineProperty(self, "value", {get: () => self.props.pFForm.getValue(self.state.branch, self)});
     Object.defineProperty(self, "stateApi", {get: () => self.props.pFForm.api});
-    if (self.stateApi) {
-      const api = self.stateApi.wrapper({
-        get path() {return self.path},
-        wrapOpts: (rest: any) => {
-          if (isUndefined(rest.noValidation)) rest.noValidation = !self.liveValidate;
-          return rest
-        }
-      });
-      api._set = api.set;
-      api._setValue = api.setValue;
-      api.set = (...args: any[]) => self._cacheValue(args[0], args[1], 'set', args[2]) || api._set(...args);
-      api.setValue = (...args: any[]) => self._cacheValue((args[1] || {}).path, args[0], 'setValue', args[1]) || api._setValue(...args);
-      self.api = api;
-    }
-
     self.state = {branch: self.pFForm.getBranch(self.path)};
     self.$branch = self.state.branch;
+    self._updateStateApi(props.pFForm.api);
     self.wrapFns = self.wrapFns.bind(self);
   }
 
@@ -254,6 +240,26 @@ class FField extends FRefsGeneric {
     const self = this;
     return objectResolver(self.pFForm.objects, obj);
     //return result[SymData] ? merge(result, self._bind2self(result[SymData])) : result;
+  }
+
+  _updateStateApi(stateApi: any) {
+    const self = this;
+
+
+    if (stateApi) {
+      const api = stateApi.wrapper({
+        get path() {return self.path},
+        wrapOpts: (rest: any) => {
+          if (isUndefined(rest.noValidation)) rest.noValidation = !self.liveValidate;
+          return rest
+        }
+      });
+      api._set = api.set;
+      api._setValue = api.setValue;
+      api.set = (...args: any[]) => self._cacheValue(args[0], args[1], 'set', args[2]) || api._set(...args);
+      api.setValue = (...args: any[]) => self._cacheValue((args[1] || {}).path, args[0], 'setValue', args[1]) || api._setValue(...args);
+      self.api = api;
+    }
   }
 
   _updateCachedValue() {
@@ -343,7 +349,7 @@ class FField extends FRefsGeneric {
   wrapFns(val: any) {
     const self = this;
     if (isFunction(val)) val = {$: val};
-    if (isMapFn(val)) {      
+    if (isMapFn(val)) {
       const map = val.norm ? val : normalizeFn(val, self.wrapFns);
       const fn = processFn.bind(self, map);
       fn._map = map;
@@ -358,9 +364,10 @@ class FField extends FRefsGeneric {
 
   _build() {
     const self = this;
-    const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
-    const funcs: any = {};
+    self.state = {branch: self.pFForm.getBranch(self.path)};
+    self.$branch = self.state.branch;
 
+    const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
     self.schemaPart = schemaPart;
 
     self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
@@ -413,12 +420,16 @@ class FField extends FRefsGeneric {
   }
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
-    if (isUndefined(nextState.branch)) return true;
     const self = this;
+    if (nextProps.FFormApi !== self.props.FFormApi) {
+      self._updateStateApi(nextProps.FFormApi);
+      return (self._rebuild = true);
+    }
+    if (!isEqual(nextProps, self.props)) return (self._rebuild = true);
+
+    if (isUndefined(nextState.branch)) return true;
     self.$branch = nextState.branch;
     let updateComponent = false;
-
-    if (!isEqual(nextProps, self.props)) return (self._rebuild = true);
 
     const nextData = self.getData(getIn(nextState, 'branch'));
     const prevData = self.getData();
@@ -640,7 +651,7 @@ class FSection extends FRefsGeneric {
 
   shouldComponentUpdate(nextProps: any) {
     const self = this;
-    if (nextProps.FFormProps !== self.props.FFormProps || nextProps.oneOf !== self.props.oneOf) return self._rebuild = true;
+    if (nextProps.FFormApi !== self.props.FFormApi || nextProps.oneOf !== self.props.oneOf) return self._rebuild = true;
 
     let doUpdate = !isEqual(nextProps, self.props, {skipKeys: ['$branch']});
 
