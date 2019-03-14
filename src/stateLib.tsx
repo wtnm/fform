@@ -657,13 +657,19 @@ function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABL
     if (isMergeable(value)) {  // if we receive object or array then apply their values to state
       if (type == 'array' && !isUndefined(value.length))
         state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['length'], value.length));
-      if (replace === true) {
-        let v = {};
+      if (replace === true) { // restore value's props-structure that are exist in state
+        let v = isArray(value) ? [] : {};
         branchKeys(branch).forEach(k => v[k] = undefined);
         value = Object.assign(v, value);
       }
       objKeys(value).forEach(key =>
         state = updateCurrentPROCEDURE(state, schema, UPDATABLE, value[key], replace === true ? true : getIn(replace, key), track.concat(key)))
+      if (replace === true) { // this code removes props from current that are not preset in value and not exists in state
+        state = mergeStatePROCEDURE(state, UPDATABLE);
+        let current = getIn(state, SymData, 'current', track);
+        branchKeys(branch).forEach(k => value[k] = current[k]); // value was reassigned in block below, so change it directly
+        state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
+      }
     }
   }
 

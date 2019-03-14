@@ -36,8 +36,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="217">
-              <caret line="220" column="59" lean-forward="true" selection-start-line="220" selection-start-column="59" selection-end-line="220" selection-end-column="59" />
+            <state relative-caret-position="345">
+              <caret line="228" column="51" lean-forward="true" selection-start-line="228" selection-start-column="51" selection-end-line="228" selection-end-column="51" />
             </state>
           </provider>
         </entry>
@@ -84,7 +84,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/commonLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="264">
+            <state relative-caret-position="4400">
               <caret line="275" column="115" selection-start-line="275" selection-start-column="115" selection-end-line="275" selection-end-column="115" />
             </state>
           </provider>
@@ -343,6 +343,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -374,7 +375,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1172,13 +1172,7 @@
       <workItem from="1552323278178" duration="644000" />
       <workItem from="1552567016002" duration="1104000" />
       <workItem from="1552571297183" duration="981000" />
-    </task>
-    <task id="LOCAL-00044" summary="components fixes">
-      <created>1548577773391</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1548577773391</updated>
+      <workItem from="1552584862762" duration="184000" />
     </task>
     <task id="LOCAL-00045" summary="components fixes">
       <created>1548659123254</created>
@@ -1516,7 +1510,14 @@
       <option name="project" value="LOCAL" />
       <updated>1552575820759</updated>
     </task>
-    <option name="localTasksCounter" value="93" />
+    <task id="LOCAL-00093" summary="fixes">
+      <created>1552585041463</created>
+      <option name="number" value="00093" />
+      <option name="presentableId" value="LOCAL-00093" />
+      <option name="project" value="LOCAL" />
+      <updated>1552585041463</updated>
+    </task>
+    <option name="localTasksCounter" value="94" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1552,7 +1553,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3441589000" />
+    <option name="totallyTimeSpent" value="3441773000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1568,8 +1569,8 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.46741572" visible="true" weight="0.1098785" />
-      <window_info id="Structure" order="2" sideWeight="0.53258425" side_tool="true" visible="true" weight="0.124669835" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.4662162" visible="true" weight="0.109350234" />
+      <window_info id="Structure" order="2" sideWeight="0.5337838" side_tool="true" visible="true" weight="0.124669835" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.4978903" side_tool="true" weight="0.124404445" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
@@ -2039,6 +2040,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/commonLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4400">
+          <caret line="275" column="115" selection-start-line="275" selection-start-column="115" selection-end-line="275" selection-end-column="115" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1552">
@@ -2053,17 +2061,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/commonLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="275" column="115" selection-start-line="275" selection-start-column="115" selection-end-line="275" selection-end-column="115" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="217">
-          <caret line="220" column="59" lean-forward="true" selection-start-line="220" selection-start-column="59" selection-end-line="220" selection-end-column="59" />
+        <state relative-caret-position="345">
+          <caret line="228" column="51" lean-forward="true" selection-start-line="228" selection-start-column="51" selection-end-line="228" selection-end-column="51" />
         </state>
       </provider>
     </entry>
