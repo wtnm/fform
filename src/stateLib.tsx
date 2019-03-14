@@ -274,6 +274,15 @@ function branchKeys(branch: StateType) {
   return keys;
 }
 
+const additionalItemsSchema = memoize(function (items: jsJsonSchema[]): jsJsonSchema {
+  return {
+    ff_compiled: true,
+    oneOf: items,
+    ff_oneOfSelector: normalizeFn(function () {
+      return items.length % string2path(this.path).pop();
+    })
+  }
+});
 
 function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf: (path: Path) => oneOfStructureType, fullOneOf?: boolean): jsJsonSchema {
 
@@ -287,7 +296,8 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf: (path: Path) 
     else {
       if (schemaPart.additionalItems !== false) {
         if (schemaPart.additionalItems && schemaPart.additionalItems !== true) return schemaPart.additionalItems;
-        return items[index % items.length]
+        return additionalItemsSchema(items);
+        //return items[index % items.length]
       }
     }
     throw new Error(errorText + path.join('/'));
@@ -426,8 +436,8 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   return result;
 });
 
-function normalizeFn(fn: any, wrapFn?: Function, dontAddValue?: boolean) {
-  let nFn = !isObject(fn) ? {$: fn} : fn;
+function normalizeFn(fn: any, wrapFn?: Function, dontAddValue?: boolean): JsonFunctionGeneric<Function | Function[]> {
+  let nFn: any = !isObject(fn) ? {$: fn} : fn;
   nFn = {...nFn, ...normalizeArgs(nFn.args, wrapFn)};
   if (!nFn.args.length && !dontAddValue) nFn.args = ['${value}'];
   return nFn
