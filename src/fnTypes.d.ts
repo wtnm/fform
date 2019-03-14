@@ -74,11 +74,9 @@ interface MergeStateOptionsArgument {
   noSymbol?: boolean;
   del?: boolean;  // remove props with SymDelete
   diff?: boolean;
-  arrays?: 'replace' | 'merge' | 'concat'; // 'mergeWithoutLength'
+  arrays?: Function; // 'mergeWithoutLength'
   replace?: replaceType; // force replace for mergeable object instead of merge, should be and object with true value for the keys that must be replaced, can be recursive for deep objects
   SymbolDelete?: any;
-  // mergeArrays?: boolean;
-  // setArrayLength?: boolean;
 }
 
 type replaceType = { [key: string]: boolean | replaceType } | boolean | ((path: Path) => boolean);

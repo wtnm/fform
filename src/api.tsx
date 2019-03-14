@@ -40,7 +40,8 @@ import {
   oneOfStructure,
   makeSynthField,
   processFn,
-  normalizeFn
+  normalizeFn,
+  object2PathValues
 } from "./stateLib";
 
 
@@ -277,6 +278,7 @@ class FFormStateAPI extends FFormStateManager {
     const self = this;
     let action = {type: actionNameUpdateState, state: self._newState, updates, api: self, forceValidation, opts, promises};
     self._clearActions();
+    //console.log(' _execBatch.forceValidation', JSON.stringify(forceValidation));
     self.dispatch(updateState.bind(action));
     return promises;
   }
@@ -290,6 +292,7 @@ class FFormStateAPI extends FFormStateManager {
     let promises = self._promise();
     if (opts.execute === false || self._noExec) return promises;
     if (self._defferedTimerId) clearTimeout(self._defferedTimerId);
+    //console.log(' _setExecution._validation', JSON.stringify(self._validation));
     if (opts.execute === true) self._execBatch(self._updates, opts, promises, self._validation);
     else self._defferedTimerId = setTimeout(self._execBatch.bind(self, self._updates, opts, promises, self._validation), opts.execute || 0);
 
@@ -503,6 +506,9 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
   // let UPDATABLE = {update: {}, replace: {}};
 
   const modifiedValues = force === true ? currentValues : force;
+  //console.log('modifiedValues ', modifiedValues);
+
+
   if (!modifiedValues || objKeys(modifiedValues).length == 0) { // no changes, no validation
     promises.resolve();
     promises.vAsync.resolve();
@@ -523,10 +529,10 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
       let UPDATABLE = api.UPDATABLE;
       let newValues = state[SymData].current; //getRawValues().current;
       for (let i = 0; i < vPromises.length; i++) {
-        if (!results[i]) continue;
+        //if (!results[i]) continue;
         let {validatedValue, path, selfManaged} = vPromises[i];
         if (validatedValue == getIn(newValues, path)) {
-          state = updateMessagesPROCEDURE(state, schema, UPDATABLE, path, results[i], 2);
+          state = updateMessagesPROCEDURE(state, schema, UPDATABLE, path, results[i] || '', 2);
           state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}))
           // pendingStatus[path2string(path)] = false;
         }
@@ -624,15 +630,29 @@ function updateState(dispatch: any) {
   state = setCurrentPristine(state, schema, UPDATABLE, state[SymData].inital);
   state = mergeStatePROCEDURE(state, UPDATABLE);
 
-  if (opts.noValidation) {
-    promises.resolve();
-    promises.vAsync.resolve();
-  } else if (forceValidation !== false) {
-    UPDATABLE = {update: {}, replace: {}};
-    let force = forceValidation === true ? true : currentChanges; //merge(forceValidation || {}, mergeState(prevRawValues['current'], rawValues['current']).changes);
-    state = makeValidation(state, dispatch, {force, api, opts, promises});
-    // state = merge(state, UPDATABLE.update, {replace: UPDATABLE.replace});
+  let force;
+  if (opts.noValidation) force = forceValidation;
+  else {
+    if (forceValidation) {
+      object2PathValues(currentChanges).forEach(path => {
+        path.pop();
+        setIfNotDeeper(forceValidation, true, path)
+      });
+      force = forceValidation;
+    } else force = isMergeable(currentChanges) ? currentChanges : !isUndefined(currentChanges);
   }
+
+  if (force) state = makeValidation(state, dispatch, {force, api, opts, promises});
+
+  // if (opts.noValidation) {
+  //   promises.resolve();
+  //   promises.vAsync.resolve();
+  // } else if (forceValidation !== false) {
+  //   UPDATABLE = {update: {}, replace: {}};
+  //   let force = forceValidation === true ? true : forceValidation || currentChanges; //merge(forceValidation || {}, mergeState(prevRawValues['current'], rawValues['current']).changes);
+  //   state = makeValidation(state, dispatch, {force, api, opts, promises});
+  //   // state = merge(state, UPDATABLE.update, {replace: UPDATABLE.replace});
+  // }
   dispatch({type: actionNameSetState, state, api});
 
   // console.timeEnd('execActions');
@@ -720,7 +740,12 @@ function isCompiled(schema: any): schema is jsJsonSchema {
   return getIn(schema, 'ff_objects');
 }
 
-function objectDerefer(_objects: any, obj2deref: any) { // todo: test
+function testRef(refRes: any, $_ref: string, track: string[]) {
+  if (isUndefined(refRes)) throw new Error('Reference "' + $_ref + '" leads to undefined object\'s property in path: ' + path2string(track));
+  return true;
+}
+
+function objectDerefer(_objects: any, obj2deref: any, track: string[] = []) { // todo: test
   if (!isMergeable(obj2deref)) return obj2deref;
   let {$_ref = '', ...restObj} = obj2deref;
   $_ref = $_ref.split(':');
@@ -729,19 +754,24 @@ function objectDerefer(_objects: any, obj2deref: any) { // todo: test
     if (!$_ref[i]) continue;
     let path = string2path($_ref[i]);
     if (path[0] !== '^') throw new Error('Can reffer only to ^');
-    let refObj = getIn({'^': _objects}, path);
-    if (isMergeable(refObj)) refObj = objectDerefer(_objects, refObj);
-    objs2merge.push(refObj);
+    let refRes = getIn({'^': _objects}, path);
+    testRef(refRes, $_ref[i], track.concat('@' + i));
+    if (isMergeable(refRes)) refRes = objectDerefer(_objects, refRes, track.concat('@' + i));
+    objs2merge.push(refRes);
   }
   let result = isArray(obj2deref) ? [] : {};
 
   for (let i = 0; i < objs2merge.length; i++) result = merge(result, objs2merge[i]);
-  return merge(result, objMap(restObj, objectDerefer.bind(null, _objects)));
+  return merge(result, objMap(restObj, objectDerefer.bind(null, _objects), track));
   //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
 }
 
-function objectResolver(_objects: any, obj2resolve: any): any { // todo: test
-  const convRef = (refs: string) => deArray(refs.split('|').map(r => getIn(_objs, string2path(r.trim()))));
+function objectResolver(_objects: any, obj2resolve: any, track: string[] = []): any { // todo: test
+  const convRef = (refs: string) => deArray(refs.split('|').map((r, i) => {
+    let refRes = getIn(_objs, string2path(r.trim()));
+    testRef(refRes, r.trim(), track.concat('@' + i));
+    return refRes;
+  }));
   const _objs = {'^': _objects};
   const result = objectDerefer(_objects, obj2resolve);
   const retResult = isArray(result) ? [] : {};
@@ -753,7 +783,7 @@ function objectResolver(_objects: any, obj2resolve: any): any { // todo: test
       if (key !== '$' && key[0] !== '_' && (isFunction(resolvedValue) || isArray(resolvedValue) && resolvedValue.every(isFunction))) resolvedValue = {$: resolvedValue}
     }
     if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _ 
-    else if (isMergeable(resolvedValue)) retResult[key] = objectResolver(_objects, resolvedValue);
+    else if (isMergeable(resolvedValue)) retResult[key] = objectResolver(_objects, resolvedValue, track.concat(key));
     else retResult[key] = resolvedValue;
   });
 

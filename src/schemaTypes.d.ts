@@ -97,7 +97,7 @@ interface FFCommonSchemaType {
 
 type ReplaceType = boolean | { [key: string]: ReplaceType } | { [key: number]: ReplaceType }
 type FFDataMapGeneric<FN> = { from?: string, to?: string, $?: FN, args?: JsonAny[] | JsonAny }
-type PropsMapGeneric<FN> = { [key: string]: boolean | string | [FN, ...JsonAny[]] | { $: FN, args?: JsonAny[] | JsonAny, replace?: ReplaceType, arrayResult?: boolean, update?: 'build' | 'data' | 'every' } }
+type PropsMapGeneric<FN> = { [key: string]: boolean | string | [FN, ...JsonAny[]] | { $?: FN, args?: JsonAny[] | JsonAny, replace?: ReplaceType, arrayResult?: boolean, update?: 'build' | 'data' | 'every' } }
 type NormalizedPropsMapType = { $?: Function, args: any[], replace?: ReplaceType, update: 'build' | 'data' | 'every', arrayResult?: boolean, dataRequest: boolean, to: { [key: string]: Path } };
 type NPM4WidgetsType = { [key: string]: NormalizedPropsMapType[] }
 type JsonFunctionGeneric<FN> = { $: FN, args?: JsonAny[] | JsonAny } | FN
@@ -117,8 +117,8 @@ interface FFCustomizeType {
 
 interface jsFFCustomizeType {
   _$widget?: Function,
-  $propsMap?: PropsMapGeneric<Function>;
-  $reactRef?: string | boolean;
+  $_maps?: PropsMapGeneric<Function>;
+  $_reactRef?: string | boolean;
 
   [key: string]: any;
 }

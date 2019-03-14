@@ -709,8 +709,11 @@ function updateNormalizationPROCEDURE(state: StateType, schema: jsJsonSchema, UP
 }
 
 function setUPDATABLE(UPDATABLE: PROCEDURE_UPDATABLE_Type, update: any, replace: any, ...pathes: any[]) {
-  setIn(UPDATABLE, update, 'update', ...pathes);
-  if (replace) setIn(UPDATABLE, replace, 'replace', ...pathes);
+  object2PathValues(replace).forEach(path => {
+    let replaceValue = path.pop();
+    setIn(UPDATABLE, getIn(update, path), 'update', ...pathes, path);
+    if (replaceValue) setIn(UPDATABLE, replaceValue, 'replace', ...pathes, path);
+  });
   return UPDATABLE;
 }
 
@@ -897,7 +900,7 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
   const keyPath = item[SymData] || [];
   const from = NUpdate2string(item);
   objKeys(maps || {}).forEach((pathTo) => {
-    console.log('maps=', maps);
+    //console.log('maps=', maps);
     if (!maps[pathTo]) return; // disabled map
     const map: dataMapActionType = maps[pathTo];
     const NpathTo = path2string(normalizePath(pathTo, path));
@@ -912,15 +915,14 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
       executedValue = processFn.call(field, map, value);
       field.updates = null;
       field.get = null;
-      //field.api._get = _get;
     }
-    if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace: map.replace || replace});
+    if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace: isUndefined(map.replace) ? replace : map.replace});
     updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
   });
   return state;
 }
 
-const isMapFn = (arg: any) => isObject(arg) && arg.$;
+const isMapFn = (arg: any) => isObject(arg) && arg.$ || isFunction(arg) && arg._map;
 
 function normalizeArgs(args: any, wrapFn?: any) {
   let dataRequest = false;
@@ -940,14 +942,15 @@ function normalizeArgs(args: any, wrapFn?: any) {
 function processFn(map: any, value: any, nextData?: any) {
   const processArg = (arg: any) => {
     if (isNPath(arg)) return getIn(nextData, arg);
-    if (isMapFn(arg)) return !arg._map ? processFn.call(this, arg, value, nextData) : processFn(value, nextData);
+    if (isMapFn(arg)) return !arg._map ? processFn.call(this, arg, value, nextData) : arg(value, nextData);
     // if (arg == '${field}') return this;
     if (arg == '${value}') return value;
     //if (hasIn($value, arg)) return $value[arg];
     return arg;
   };
   if (map.dataRequest && !nextData) nextData = this.getData();
-  return deArray(toArray(map.$).reduce((args, fn) => toArray(fn.apply(this, args)), (map.args || []).map(processArg)), map.arrayResult);
+  return deArray(toArray(map.$).reduce((args, fn) => isFunction(fn) ? toArray(fn.apply(this, args)) : args,
+    (map.args || []).map(processArg)), map.arrayResult);
 }
 
 function getFromUPD(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
@@ -962,6 +965,7 @@ function getFromUPD(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
 function object2PathValues(vals: { [key: string]: any }, options: object2PathValuesOptions = {}, track: Path = []): PathValueType[] {
   const fn = options.symbol ? objKeysNSymb : objKeys;
   const check = options.arrayAsValue ? isObject : isMergeable;
+  if (!check(vals)) return [[vals]];
   let result: any[] = [];
   fn(vals).forEach((key) => {
     let path = track.concat(key);
@@ -1114,8 +1118,8 @@ function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
   return getIn(state, ...pathes.map(path => normalizePath(path as any)));
 }
 
-const objMap = (object: any, fn: (item: any, key: string, obj: anyObject) => any) =>
-  objKeys(object).reduce((result, key) => ((result[key] = fn(object[key], key, object)) || true) && result, isArray(object) ? [] : {});
+const objMap = (object: any, fn: (item: any, track: string[]) => any, track: string[] = []) =>
+  objKeys(object).reduce((result, key) => ((result[key] = fn(object[key], track.concat(key))) || true) && result, isArray(object) ? [] : {});
 
 // function objKeysMap(obj: any, fn: Function, symbol = false) {
 //   if (!isMergeable(obj)) return obj;

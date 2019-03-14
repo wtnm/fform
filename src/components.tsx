@@ -86,7 +86,7 @@ class FForm extends React.Component<any, any> {
 
   _submit() {
     const self = this;
-    self.api.set('/@untoched', 0, {execte: true, macros: 'switch'});
+    self.api.set('/@/status/untoched', 0, {execute: true, macros: 'switch'});
     if (self.props.onSubmit) return self.props.onSubmit(self._savedValue, self)
   }
 
@@ -238,13 +238,21 @@ class FField extends FRefsGeneric {
 
   _resolver(obj: any) {
     const self = this;
-    return objectResolver(self.pFForm.objects, obj);
+    try {
+      return objectResolver(self.pFForm.objects, obj);
+    } catch (e) {
+      throw self._addErrPath(e)
+    }
     //return result[SymData] ? merge(result, self._bind2self(result[SymData])) : result;
+  }
+
+  _addErrPath(e: any) {
+    e.message = e.message + ', in form \'' + (this.pFForm.props.name || '') + '\', path: \'' + this.path + '\'';
+    return e
   }
 
   _updateStateApi(stateApi: any) {
     const self = this;
-
 
     if (stateApi) {
       const api = stateApi.wrapper({
@@ -306,46 +314,6 @@ class FField extends FRefsGeneric {
     return;
   }
 
-  // _apiWrapper() {
-  //   const self = this;
-  //   const api = self.props.pFForm.api;
-  //   const wrapPath = (path: string | Path = []) => normalizePath(path, self.path);
-  //   const wrapOpts = (opts: any = {}) => {
-  //     const {path, noValidation, ...rest} = opts;
-  //     if (!isUndefined(path)) rest.path = wrapPath(path);
-  //     rest.noValidation = isUndefined(noValidation) ? !self.liveValidate : noValidation;
-  //     return rest;
-  //   };
-  //
-  //   self.api = {
-  //     validate: (path: boolean | string | Path = './', ...args: any[]) => api.validate(typeof path == 'boolean' ? path : wrapPath(path), ...args),
-  //     get: (...path: any[]) => api.get(wrapPath(path)),
-  //     set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => self._cacheValue(path, value) || api.set(wrapPath(path), value, wrapOpts(opts), ...args),
-  //     setValue: (value: any, opts: any = {}, ...args: any[]) => self._cacheValue(opts.path, value, true) || api.setValue(value, wrapOpts(opts), ...args)
-  //   };
-  //   ['noExec', 'execute', 'setState', 'getActive',].forEach(fn => self.api[fn] = (...args: any[]) => api[fn](...args));
-  //   ['arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly', 'getSchemaPart']
-  //     .forEach(fn => self.api[fn] = (path: string | Path = [], ...args: any[]) => api[fn](wrapPath(path), ...args));
-  //   ['getValue', 'getDefaultValue', 'reset', 'clear'].forEach(fn => self.api[fn] = (opts: any, ...args: any[]) => api[fn](wrapOpts(opts), ...args));
-  // }
-  //
-  // _parseValue(value: any, prevData: any) {
-  //   const $_parse = this._$_parse;
-  //   //{...$_parse, args: push2array([value], $_parse.args || [])}
-  //   if ($_parse) return processFn($_parse, prevData, {'${value}': value});
-  //   return value
-  // }
-  //
-  // _bind2self(obj: any) {
-  //   const result = isArray(obj) ? [] : {};
-  //   objKeys(obj).forEach(key => {
-  //     if (typeof obj[key] == 'function') result[key] = obj[key].bind(this, ...(isArray(obj[key + '.bind']) ? obj[key + '.bind'] : []));
-  //     else if (key.substr(-5) == '.bind') return;
-  //     else if (isMergeable(obj[key])) result[key] = this._bind2self(obj[key])
-  //   });
-  //   return result
-  // }
-
   wrapFns(val: any) {
     const self = this;
     if (isFunction(val)) val = {$: val};
@@ -371,7 +339,8 @@ class FField extends FRefsGeneric {
     self.schemaPart = schemaPart;
 
     self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
-    if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart.ff_presets) throw new Error('schema.ff_presets should be defined explicitly for multi type');
+    if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart.ff_presets)
+      throw new Error('schema.ff_presets should be defined explicitly for multi type');
 
     self.ff_layout = self.wrapFns(resolveComponents(self.pFForm.objects, schemaPart.ff_layout));
 
@@ -384,7 +353,7 @@ class FField extends FRefsGeneric {
     self._blocks = objKeys(components).filter(key => components[key]);
     self._blocks.forEach((block: string) => {
       const {_$widget, $_reactRef, ...staticProps} = components[block];
-      if (!_$widget) throw new Error('_$widget for "' + block + '" is empty in path "' + self.path + '"');
+      if (!_$widget) throw new Error('_$widget for "' + block + '" is empty');
       self._widgets[block] = _$widget;
       if ($_reactRef) { // $_reactRef - prop for react ref-function
         const $ref = self._refProcess('@' + block, $_reactRef);
@@ -397,10 +366,7 @@ class FField extends FRefsGeneric {
     self._rebuild = false;
   }
 
-  // todo: sample schema mount tests
   // todo: SSR support
-  // todo: lazy schema compilation?
-
 
   _setMappedData(prevData: any, nextData: any, updateStage: boolean | 'build') {
     const self = this;
@@ -435,18 +401,29 @@ class FField extends FRefsGeneric {
     const prevData = self.getData();
     if (getIn(nextData, 'oneOf') !== getIn(prevData, 'oneOf')) return (self._rebuild = true);
 
-    updateComponent = self._setMappedData(prevData, nextData, nextData !== prevData) || updateComponent;
-    updateComponent = updateComponent || getIn(nextData, 'params', 'norender') !== getIn(prevData, 'params', 'norender');
+    try {
+      updateComponent = self._setMappedData(prevData, nextData, nextData !== prevData) || updateComponent;
+      updateComponent = updateComponent || getIn(nextData, 'params', 'norender') !== getIn(prevData, 'params', 'norender');
+    } catch (e) {
+      throw self._addErrPath(e)
+    }
+
     return updateComponent
   }
 
+
   render() {
     const self = this;
-    if (isUndefined(self.state.branch)) return null;
-    if (getIn(self.getData(), 'params', 'norender')) return false;
-    if (self._rebuild) this._build();
-    const BuilderWidget = self._widgets['Builder'];
-    return <BuilderWidget {...self._mappedData['Builder']} mapped={self._mappedData}/>
+    try {
+      if (isUndefined(self.state.branch)) return null;
+      if (getIn(self.getData(), 'params', 'norender')) return false;
+      if (self._rebuild) this._build();
+      const BuilderWidget = self._widgets['Builder'];
+      return <BuilderWidget {...self._mappedData['Builder']} mapped={self._mappedData}/>
+    } catch (e) {
+      throw self._addErrPath(e)
+    }
+
   }
 }
 
@@ -659,7 +636,13 @@ class FSection extends FRefsGeneric {
     let nextBranch = nextProps.$branch;
 
     if (prevBranch != nextBranch) {
-      const newMapped = self._updateMappedData(self._getData(prevBranch), self._getData(nextBranch));
+      let newMapped: any;
+      try {
+        newMapped = self._updateMappedData(self._getData(prevBranch), self._getData(nextBranch));
+      } catch (e) {
+        throw self.props.$FField._addErrPath(e)
+      }
+
       if (newMapped != self._mappedData) { // update self._widgets
         const oldMapped = self._mappedData;
         self._mappedData = newMapped;
@@ -685,17 +668,20 @@ class FSection extends FRefsGeneric {
   render() {
     const self = this;
     let props = self.props;
-    if (props.viewer) {
-      let {_$widget = UniversalViewer, ...rest} = props.viewerProps || {};
-      rest.inputProps = props;
-      rest.value = props.$FField.value;
-      return React.createElement(_$widget, rest)
+    try {
+      if (props.viewer) {
+        let {_$widget = UniversalViewer, ...rest} = props.viewerProps || {};
+        rest.inputProps = props;
+        rest.value = props.$FField.value;
+        return React.createElement(_$widget, rest)
+      }
+      if (isSelfManaged(props.$branch)) return null;
+      if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
+      return <FSectionWidget _$widget={self._$widget} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
+                             getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
+    } catch (e) {
+      throw self.props.$FField._addErrPath(e)
     }
-    if (isSelfManaged(props.$branch)) return null;
-    if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-    return <FSectionWidget _$widget={self._$widget} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
-                           getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
-
   }
 }
 
@@ -935,8 +921,8 @@ function normalizeMaps($_maps: any, prePath = '') {
       if (isString(value)) value = {args: value};
       let {args: path, update = 'data', replace = true, ...rest} = value;
       if (!isString(path)) throw new Error('$_maps value is not recognized');
-      if (path[0] !== '@') console.warn('Expected "@" at the begining of string');
-      else path = path.substr(1);
+      if (path[0] === '@') path = path.substr(1);
+      // lse console.warn('Expected "@" at the begining of string');
       result.data.push({update, replace, to, dataRequest: true, args: normalizePath(path), ...rest})
     }
   });
@@ -945,13 +931,13 @@ function normalizeMaps($_maps: any, prePath = '') {
 
 //!map.$ && map.args[0] == 'selectorValue' && args[0]
 function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
-  const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
+  // const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
   const needUpdate = (map: NormalizedPropsMapType): boolean => isUndefined(prevData) || !map.$ ||
     (map.dataRequest && map.args.some(arg => {
       if (isNPath(arg)) return getIn(prevData, arg) !== getIn(nextData, arg);
-      if (isMapFn(arg)) return needUpdate(arg);
+      if (isMapFn(arg)) return needUpdate(arg._map || arg);
       return false
-    }));
+    }));//isFunction(map.args[0])
   const dataUpdates = {update: {}, replace: {}, api: {}};
   iterMaps.forEach(maps => maps && maps.forEach(map => {
       if (map.update == 'data' && !needUpdate(map)) return;
@@ -1293,7 +1279,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
         this.api.set(path, isFunction(args[i + 1]) ? args[i + 1]() : args[i + 1], opts)
       }
     },
-    iif: (iif: any, trueVal: any, falseVaL: any) => ((isFunction(iif) ? iif() : iif) ? [trueVal] : [falseVaL]),
+    iif: (iif: any, trueVal: any, falseVaL: any) => (iif ? [trueVal] : [falseVaL]),
     not: function (v: any) {
       return [!v]
     },
@@ -1351,11 +1337,16 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
     setValue: function (value: any, opts: any = {}) {this.api.setValue(value, opts)},
     arrayAdd: function (path: any, value: number = 1, opts: any = {}) {this.api.arrayAdd(path, value, opts)},
     arrayItemOps: function (path: any, key: any, opts: any = {}) {this.api.arrayItemOps(path, key, opts)},
-    focus: function (value: any) {this.api.set('/@/active', this.path, {noValidation: true})},
+    focus: function (value: any) {
+      this.api.set('/@/active', this.path, {noValidation: true})
+      //console.log('focus ', this.path);
+    },
     blur: function (value: any) {
       this.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
       this.api.set('/@/active', undefined, {noValidation: true});
-      return !this.liveValidate ? this.api.validate() : null;
+      //console.log('blur ', this.path);
+      return !this.liveValidate ? this.api.validate('./',) : null; // {execute: true}
+
     },
     eventCheckboxes: function (event: any) {
       const selected = (this.getData().value || []).slice();

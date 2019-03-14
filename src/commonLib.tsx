@@ -216,32 +216,33 @@ function getCreateIn(state: any, value: any, ...pathes: any[]) {
 function mergeState(state: any, source: any, options: MergeStateOptionsArgument = {}): MergeStateResult {
   const fn = options.noSymbol ? objKeys : objKeysNSymb;
   // let arrayMergeFn: any = false;
-  const {SymbolDelete, del, diff, replace, arrays = 'merge'} = options;
+  let {SymbolDelete, del, diff, replace, arrays} = options;
   let forceReplace: any = replace;
   if (typeof forceReplace !== 'function') {
     if (!isMergeable(replace)) forceReplace = () => false;
     else forceReplace = (path: any) => getIn(replace, path)
   }
-  if (replace === true || forceReplace([]) === true) return {state: source, changes: state !== source ? source : undefined};
-  const mergeArrays = arrays != 'replace';
-  const setLength = arrays == 'merge';
-  const concatArray = arrays == 'concat';
-
-
+  if (replace === true || forceReplace([], state, source) === true) return {state: source, changes: state !== source ? source : undefined};
+  //const mergeArrays = arrays != 'replace';
+  //const setLength = arrays == 'merge';
   // if (typeof mergeArrays === 'function') arrayMergeFn = mergeArrays;
-  const canMerge = mergeArrays === true ? isMergeable : isObject;
+  //const canMerge = mergeArrays === true ? isMergeable : isObject;
+  if (!isFunction(arrays)) arrays = undefined;
 
   function recusion(state: any, source: any, track: Path = []): MergeStateResult {
     const changes: any = {};
     const isSourceArray = isArray(source);
-    // const forceReplace = getIn(replace, track) || {}; // force replace for mergeable object instead of merge
-    // console.log('forceReplace', forceReplace)
     if (!isMergeable(state)) {
       state = isSourceArray ? [] : {};  // return only objects
-      if (isArray(state) && setLength) changes.length = 0;
+      if (isArray(state)) changes.length = 0;
     }
     const isStateArray = isArray(state);
     if (!isMergeable(source)) return {state};  // merge only mergeable objects, may be throw here
+
+    if (isStateArray && isSourceArray) {
+      if (arrays) source = arrays(state, source, track);
+      if (state.length != source.length) changes.length = source.length;
+    }
 
     let stateKeys = fn(state);
     if (stateKeys.length == 0 && !del) {
@@ -252,38 +253,27 @@ function mergeState(state: any, source: any, options: MergeStateOptionsArgument 
         return (fn(source).length || source.length !== state.length) ? {state: source, changes: source} : {state};
       }
     }
+
     let srcKeys = fn(source);
 
     const changedObjects: any = {};
-    const result = (isStateArray ? [] : {}); //
+    const result = (isStateArray ? [] : {});
+
+
     if (diff) {
       stateKeys.forEach(key => {
         if (!~srcKeys.indexOf(key))
           changes[key] = SymbolDelete;
       });
     }
-    if (isStateArray && isSourceArray) {
-      if (concatArray) {
-        if (!source.length) return {state};
-        let srcPrev = source;
-        if (!del) {
-          srcPrev.forEach((item: any, idx: number) => changes[state.length + idx] = item);
-          srcKeys = []
-        } else {
-          source = [];
-          srcPrev.forEach((item: any, idx: number) => source[state.length + idx] = item);
-          srcKeys = fn(source)
-        }
-      }
-      if (setLength && state.length != source.length) changes.length = source.length;
-    }
+
 
     srcKeys.forEach(key => {
       if (del && source[key] === SymbolDelete) {
         if (state.hasOwnProperty(key)) changes[key] = SymbolDelete;
       } else {
         let keyTrack = track.concat(key);
-        if (!canMerge(source[key]) || !canMerge(state[key]) || forceReplace(keyTrack) === true) {
+        if (!isMergeable(source[key]) || !isMergeable(state[key]) || forceReplace(keyTrack, state[key], source[key]) === true) {
           if (!state.hasOwnProperty(key) || !is(state[key], source[key])) changes[key] = source[key];
         } else {
           if (state[key] !== source[key]) {

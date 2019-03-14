@@ -144,13 +144,13 @@ describe('FForm comommon functions tests', function () {
     // this.object.test.EmptyObject = {};
     // this.object.test.EmptyArray = [];
 
-    let result = commonLib.mergeState({val: [1, 2, 3, 4]}, {val: {1: 5}}, {arrays: 'replace'});
+    let result = commonLib.mergeState({val: [1, 2, 3, 4]}, {val: {1: 5}}, {replace: (p, a) => Array.isArray(a)});
     expect(result.state.val).to.be.eql({1: 5});
 
     result = commonLib.merge({a: [[1]]}, {a: [[2, 3]]});
     expect(result).to.be.eql({a: [[2, 3]]});
 
-    result = commonLib.mergeState({val: [1, 2, 3, 4]}, {val: {1: 5}}, {arrays: 'merge'});
+    result = commonLib.mergeState({val: [1, 2, 3, 4]}, {val: {1: 5}}, {});
     expect(result.state.val).to.be.eql([1, 5, 3, 4]);
 
     result = commonLib.mergeState({val: [1, 2, 3, 4]}, {val: {length: 1}});
@@ -195,7 +195,7 @@ describe('FForm comommon functions tests', function () {
     expect(result.state).to.be.eql({b: 2});
     expect(result.changes).to.be.eql({a: undefined, b: 2});
 
-    result = commonLib.mergeState([1, 2, 3, 4], [3, 4, 5], {arrays: 'merge'});
+    result = commonLib.mergeState([1, 2, 3, 4], [3, 4, 5], {});
     expect(result.state).to.be.eql([3, 4, 5]);
 
     result = commonLib.mergeState([1, 2, 3, 4], {0: 3, 1: 4, 2: 5});
@@ -205,14 +205,14 @@ describe('FForm comommon functions tests', function () {
     expect(result.state.val).to.be.eql([]);
 
     let arr = [1, 2, 3, 4];
-    result = commonLib.mergeState({val: arr}, {val: [3, 4, 5]}, {arrays: 'concat'});
+    result = commonLib.mergeState({val: arr}, {val: [3, 4, 5]}, {arrays: (a, b) => a.concat(b)});
     expect(result.state.val).to.be.eql([1, 2, 3, 4, 3, 4, 5]);
     expect(result.state.val).not.to.be.equal(arr);
 
     let newArr = {val: []};
     newArr.val.length = 3;
     newArr.val[1] = 8;
-    result = commonLib.mergeState({val: arr}, newArr, {arrays: 'merge'});
+    result = commonLib.mergeState({val: arr}, newArr, {});
     expect(result.state.val).to.be.eql([1, 8, 3]);
     expect(result.state.val).not.to.be.equal(arr);
 
@@ -220,18 +220,18 @@ describe('FForm comommon functions tests', function () {
       "array_1": [],
       "array_2": [[{"v1": 1, "v2": 2}, {"t1": 4, "t2": 5}]]
     };
-    result = commonLib.mergeState(undefined, obj, {del: true, arrays: 'merge'});
+    result = commonLib.mergeState(undefined, obj, {del: true, });
     expect(result.state).to.be.eql(obj);
 
     let arr2 = [];
-    result = commonLib.mergeState(obj, {array_1: arr2}, {arrays: 'replace'});
+    result = commonLib.mergeState(obj, {array_1: arr2}, {replace: (p, a) => Array.isArray(a)});
     expect(result.state).not.to.be.equal(obj);
     expect(result.state.array_1).to.be.equal(arr2);
 
-    result = commonLib.mergeState(obj, {array_1: []}, {arrays: 'merge'});
+    result = commonLib.mergeState(obj, {array_1: []}, {});
     expect(result.state).to.be.equal(obj);
 
-    result = commonLib.mergeState(obj, {array_1: []}, {arrays: 'concat'});
+    result = commonLib.mergeState(obj, {array_1: []}, {arrays: (a, b) => a.concat(b)});
     expect(result.state).to.be.equal(obj);
   });
 
@@ -301,7 +301,7 @@ describe('FForm state functions tests', function () {
     expect(state[SymData].current[0][0].strValue).to.be.equal('array level 1 objValue default 0');
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, updateItem);
     state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
-    // state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    // state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[0][0].strValue).to.be.equal(updateItem.value);
     expect(state[0][0].strValue[SymData].value).to.be.equal(updateItem.value);
     expect(state[SymData].current[0][0].mapValue).to.be.equal(state[SymData].current[0][0].strValue);
@@ -312,7 +312,7 @@ describe('FForm state functions tests', function () {
     //UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'mapArrValue', SymData, 'length'], value: 3});
     state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
-    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[0][0].mapArrValue[1]).to.be.equal(state[SymData].current[0][0].mapValue);
     expect(state[0][0].mapArrValue[1][SymData].value).to.be.equal(state[0][0].mapValue[SymData].value);
     expect(state[SymData].current[0][0].mapArrValue[2]).to.be.equal(state[SymData].current[0][0].mapValue);
@@ -322,7 +322,7 @@ describe('FForm state functions tests', function () {
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'strValue', SymData, 'value'], value: '555'});
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'mapArrValue', SymData, 'length'], value: 2});
     state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
-    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[0][0].mapValue[SymDataMapTree].value[SymDataMap]['../mapArrValue/2/@/value']).not.to.be.ok;
     expect(state[SymData].current[0][0].mapArrValue[0]).to.be.equal('555');
     expect(state[0][0].mapArrValue[0][SymData].value).to.be.equal('555');
@@ -335,7 +335,7 @@ describe('FForm state functions tests', function () {
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'strValue', SymData, 'value'], value: '777'});
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'mapArrValue@length'], value: 3});
     state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
-    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[0][0].mapArrValue[0]).to.be.equal('777');
     expect(state[0][0].mapArrValue[0][SymData].value).to.be.equal('777');
     expect(state[SymData].current[0][0].mapArrValue[1]).to.be.equal('777');
@@ -347,14 +347,14 @@ describe('FForm state functions tests', function () {
     //UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: '@length', value: 4});
     state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
-    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[3][0].strValue).to.be.equal('array level 2 objValue default');
     expect(state[3][0].strValue[SymData].value).to.be.equal('array level 2 objValue default');
 
     //UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: '@length', value: 2});
     state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
-    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[2]).to.be.equal(undefined);
     expect(state[2]).to.be.equal(undefined);
     expect(state[3]).to.be.equal(undefined);
@@ -362,7 +362,7 @@ describe('FForm state functions tests', function () {
     //UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: '@current', value: {1: [{strValue: 'new test value'}]}});
     state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
-    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[1][0].strValue).to.be.equal('new test value');
     expect(state[SymData].current[1].length).to.be.equal(1);
     expect(state[1][0].strValue[SymData].value).to.be.equal('new test value');
@@ -378,7 +378,7 @@ describe('FForm state functions tests', function () {
     expect(state[2][SymData].arrayItem.canDown).to.be.equal(false);
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [], value: 1, macros: 'array'});
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [], value: 2, macros: 'array'});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current.length).to.be.equal(6);
     expect(state[2][SymData].arrayItem.canDown).to.be.equal(true);
     expect(state[5][SymData].arrayItem.canDown).to.be.equal(false);
@@ -388,7 +388,7 @@ describe('FForm state functions tests', function () {
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [], value: -1, macros: 'array'});
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['2'], op: 'del', macros: 'arrayItem'});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current.length).to.be.equal(4);
     expect(state[4]).to.be.equal(undefined);
     expect(state[5]).to.be.equal(undefined);
@@ -404,7 +404,7 @@ describe('FForm state functions tests', function () {
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [1], op: 'del', macros: 'arrayItem'});
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [1], op: 'up', macros: 'arrayItem'});
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [1], op: 'last', macros: 'arrayItem'});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current.length).to.be.equal(3);
     expect(state[SymData].length).to.be.equal(3);
     expect(state[SymData].current[0][0].strValue).to.be.equal('array level 2 objValue default');
@@ -415,12 +415,12 @@ describe('FForm state functions tests', function () {
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'strValue@status/invalid'], value: 5});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].status.invalid).to.be.equal(0);
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 0, 'strValue'], ['status', 'invalid'], 5, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].status.invalid).to.be.equal(1);
     expect(state[0][SymData].status.invalid).to.be.equal(1);
     expect(state[1][SymData].status.invalid).to.be.equal(0);
@@ -434,7 +434,7 @@ describe('FForm state functions tests', function () {
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'strValue'], ['status', 'pending'], 5, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].status.pending).to.be.equal(1);
     expect(state[0][SymData].status.pending).to.be.equal(1);
     expect(state[1][SymData].status.pending).to.be.equal(0);
@@ -453,7 +453,7 @@ describe('FForm state functions tests', function () {
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'strValue'], ['status', 'pending'], -10, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].status.pending).to.be.equal(0);
     expect(state[0][SymData].status.pending).to.be.equal(0);
     expect(state[1][SymData].status.pending).to.be.equal(0);
@@ -469,7 +469,7 @@ describe('FForm state functions tests', function () {
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 0], ['status', 'validation', 'pending'], 3, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].status.pending).to.be.equal(1);
     expect(state[0][SymData].status.pending).to.be.equal(1);
     expect(state[1][SymData].status.pending).to.be.equal(0);
@@ -487,7 +487,7 @@ describe('FForm state functions tests', function () {
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 0], ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].status.pending).to.be.equal(0);
     expect(state[0][SymData].status.pending).to.be.equal(0);
     expect(state[1][SymData].status.pending).to.be.equal(0);
@@ -503,7 +503,7 @@ describe('FForm state functions tests', function () {
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([], ['status', 'invalid'], 0, false, {macros: 'switch'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].status.invalid).to.be.equal(0);
     expect(state[0][SymData].status.invalid).to.be.equal(0);
     expect(state[1][SymData].status.invalid).to.be.equal(0);
@@ -518,14 +518,14 @@ describe('FForm state functions tests', function () {
     UPDATABLE_object = {update: {}, replace: {}};
     expect(state[0][1].arrValue[SymData].status.untouched).to.be.equal(2);
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'arrValue', 0], ['status', 'untouched'], -2, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[0][1].arrValue[SymData].status.untouched).to.be.equal(1);
     expect(state[0][1].arrValue[0][SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[1][SymData].status.untouched).to.be.equal(1);
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 1, 'arrValue'], value: 1, macros: 'array'});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[0][1].arrValue[SymData].status.untouched).to.be.equal(2);
     expect(state[0][1].arrValue[0][SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[1][SymData].status.untouched).to.be.equal(1);
@@ -533,7 +533,7 @@ describe('FForm state functions tests', function () {
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'arrValue'], ['status', 'untouched'], 0, false, {macros: 'switch'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[0][1].arrValue[SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[0][SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[1][SymData].status.untouched).to.be.equal(0);
@@ -541,7 +541,7 @@ describe('FForm state functions tests', function () {
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 1, 'arrValue'], value: 1, macros: 'array'});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[0][1].arrValue[SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[0][SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[1][SymData].status.untouched).to.be.equal(0);
@@ -550,7 +550,7 @@ describe('FForm state functions tests', function () {
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/0,2/@/params/hidden'], value: true});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[0][1].arrValue[0][SymData].params.hidden).to.be.equal(true);
     expect(state[0][1].arrValue[1][SymData].params.hidden).to.be.equal(undefined);
     expect(state[0][1].arrValue[2][SymData].params.hidden).to.be.equal(true);
@@ -560,7 +560,7 @@ describe('FForm state functions tests', function () {
     //state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue@/params/hidden'], value: null, macros: 'setAll', skipFields: ['3']});
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/*@/params/hidden'], value: null});
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/3@/params/hidden'], value: undefined});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[0][1].arrValue[0][SymData].params.hidden).to.be.equal(null);
     expect(state[0][1].arrValue[1][SymData].params.hidden).to.be.equal(null);
     expect(state[0][1].arrValue[2][SymData].params.hidden).to.be.equal(null);
@@ -570,7 +570,7 @@ describe('FForm state functions tests', function () {
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/*/@/params/hidden, disabled'], value: true});
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/mapValue, arrValue/@/params/hidden, disabled'], value: undefined});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[0][1].arrValue[SymData].params.hidden).to.be.equal(undefined);
     expect(state[0][1].strValue[SymData].params.hidden).to.be.equal(true);
     expect(state[0][1].mapArrValue[SymData].params.hidden).to.be.equal(true);
@@ -584,7 +584,7 @@ describe('FForm state functions tests', function () {
 
     UPDATABLE_object = {update: {}, replace: {}};
     state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue, turpleValue@params/hidden,disabled'], value: null});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, arrays: 'merge'});
+    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[0][1].arrValue[SymData].params.hidden).to.be.equal(null);
     expect(state[0][1].strValue[SymData].params.hidden).to.be.equal(true);
     expect(state[0][1].mapArrValue[SymData].params.hidden).to.be.equal(true);
@@ -917,42 +917,42 @@ describe('FForm api tests', function () {
     expect(obj.part.first.three).to.be.equal('three value');
   });
 
-  it('test api.objectResolver', function () {
-
-    let obj = apiLib.objectResolver(objects, exampleObj);
-    expect(obj.func).to.be.equal(objects.funcs.two);
-    expect(obj.part.f1).to.be.equal(objects.funcs.one);
-    expect(obj.part['f1.bind']).to.be.eql([1]);
-    expect(obj.part.f2).to.be.equal(objects.funcs.two);
-    expect(obj.part['f2.bind']).to.be.eql([6, 10]);
-    expect(obj.part._some).to.be.equal(objects.funcs.two);
-    expect(obj.part._more.f3).to.be.equal('^/funcs/three');
-
-    obj2SymData = apiLib.objectResolver(objects, exampleObj);
-    expect(obj2SymData.func).to.be.equal(objects.funcs.two);
-    expect(obj2SymData.part.f1).to.be.equal(objects.funcs.one);
-    expect(obj2SymData.part['f1.bind']).to.be.eql([1]);
-    expect(obj2SymData.part.f2).to.be.equal(objects.funcs.two);
-    expect(obj2SymData.part['f2.bind']).to.be.eql([6, 10]);
-    expect(obj2SymData.part.first.one).to.be.equal('one value');
-    expect(obj2SymData.part.first.three).to.be.equal('three value');
-    expect(obj2SymData.part._some).to.be.equal(objects.funcs.two);
-    expect(obj2SymData.part._more.f3).to.be.equal('^/funcs/three');
-  });
-
-  it('test components.extractMaps', function () {
-    let mObj = commonLib.merge(obj2SymData, obj2SymData[SymData]);
-    let res = components.extractMaps(mObj, ['$fields']);
-    $_maps = res.$_maps;
-    expect(res.rest.part.$fields[0].$_maps).to.be.eql({length: '@/length'});
-    expect(res.rest.part.$_maps).to.be.equal(undefined);
-    expect(res.rest.part.first.$_maps).to.be.equal(undefined);
-    expect(res.rest.part._more.$_maps).to.be.equal(undefined);
-    expect($_maps['part/value']).to.be.equal('@/value');
-    expect($_maps['part/first/$branch'].$).to.be.equal(objects.funcs.one);
-    expect($_maps['part/first/$branch'].args).to.be.equal('state/branch');
-    expect($_maps['part/first/$layout'].$).to.be.equal(objects.funcs.one);
-  });
+  // it('test api.objectResolver', function () {
+  //
+  //   let obj = apiLib.objectResolver(objects, exampleObj);
+  //   expect(obj.func).to.be.equal(objects.funcs.two);
+  //   expect(obj.part.f1).to.be.equal(objects.funcs.one);
+  //   expect(obj.part['f1.bind']).to.be.eql([1]);
+  //   expect(obj.part.f2).to.be.equal(objects.funcs.two);
+  //   expect(obj.part['f2.bind']).to.be.eql([6, 10]);
+  //   expect(obj.part._some).to.be.equal(objects.funcs.two);
+  //   expect(obj.part._more.f3).to.be.equal('^/funcs/three');
+  //
+  //   obj2SymData = apiLib.objectResolver(objects, exampleObj);
+  //   expect(obj2SymData.func).to.be.equal(objects.funcs.two);
+  //   expect(obj2SymData.part.f1).to.be.equal(objects.funcs.one);
+  //   expect(obj2SymData.part['f1.bind']).to.be.eql([1]);
+  //   expect(obj2SymData.part.f2).to.be.equal(objects.funcs.two);
+  //   expect(obj2SymData.part['f2.bind']).to.be.eql([6, 10]);
+  //   expect(obj2SymData.part.first.one).to.be.equal('one value');
+  //   expect(obj2SymData.part.first.three).to.be.equal('three value');
+  //   expect(obj2SymData.part._some).to.be.equal(objects.funcs.two);
+  //   expect(obj2SymData.part._more.f3).to.be.equal('^/funcs/three');
+  // });
+  //
+  // it('test components.extractMaps', function () {
+  //   let mObj = commonLib.merge(obj2SymData, obj2SymData[SymData]);
+  //   let res = components.extractMaps(mObj, ['$fields']);
+  //   $_maps = res.$_maps;
+  //   expect(res.rest.part.$fields[0].$_maps).to.be.eql({length: '@/length'});
+  //   expect(res.rest.part.$_maps).to.be.equal(undefined);
+  //   expect(res.rest.part.first.$_maps).to.be.equal(undefined);
+  //   expect(res.rest.part._more.$_maps).to.be.equal(undefined);
+  //   expect($_maps['part/value']).to.be.equal('@/value');
+  //   expect($_maps['part/first/$branch'].$).to.be.equal(objects.funcs.one);
+  //   expect($_maps['part/first/$branch'].args).to.be.equal('state/branch');
+  //   expect($_maps['part/first/$layout'].$).to.be.equal(objects.funcs.one);
+  // });
 
   // it('test components.normalizeMaps', function () {
   //   NMaps = components.normalizeMaps($_maps);
