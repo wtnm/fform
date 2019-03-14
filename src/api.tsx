@@ -367,7 +367,7 @@ class FFormStateAPI extends FFormStateManager {
   getDefaultValue = () => this._default;
 
   reset = (opts: APIOptsType & { path?: string | Path, status?: string } = {}) =>
-    opts.status ? this.set([opts.path || '/', '@status/' + opts.status], SymReset, {macros: 'switch'}) : this.setValue(SymReset, opts);
+    opts.status ? this.set(normalizePath(opts.path || '/'), SymReset, {[SymData]: ['status', opts.status], macros: 'switch'}) : this.setValue(SymReset, opts);
 
   clear = (opts: APIOptsType & { path?: string | Path } = {}) => this.setValue(SymClear, opts);
 

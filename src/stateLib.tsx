@@ -228,10 +228,11 @@ function isTopPath(path: Path) {
 }
 
 function recursivelyUpdate(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) {
-  const keys = branchKeys(getIn(state, item.path));
+  const branch = getIn(state, item.path);
+  const keys = branchKeys(branch);
   if (item.value == SymReset && item[SymData][0] == 'status') {
     let i = {...item};
-    i.value = item[SymData][1] == 'untouched' ? keys.length : 0;
+    i.value = item[SymData][1] == 'untouched' ? isSelfManaged(branch) ? 1 : keys.length : 0;
     state = updateStatePROCEDURE(state, schema, UPDATABLE, i);
   } else state = updateStatePROCEDURE(state, schema, UPDATABLE, item);
   keys.forEach(key => state = recursivelyUpdate(state, schema, UPDATABLE, merge(item, {path: item.path.concat(key)})));
@@ -784,8 +785,6 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
       let start = branch[SymData].length;
       start = Math.max(start, 0);
       let end = Math.max(value || 0);
-      //setIn(update, end, SymData, 'current', path, 'length');
-      //state = mergeStatePROCEDURE(state, UPDATABLE);
       const oneOfStateFn = oneOfStructure(state, path);
       const maps2enable: any[] = [];
       const maps2disable: any[] = [];
@@ -793,13 +792,14 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
         let elemPath = path.concat(i);
         if (item.setOneOf) oneOfStateFn(elemPath, {oneOf: item.setOneOf});
         let {state: branch, dataMap = [], defaultValues} = makeStateBranch(schema, oneOfStateFn, elemPath);
-        branch = merge(branch, {[SymData]: {params: {uniqKey: getUniqKey()}}});
+        const untouched = getUpdValue([state, UPDATABLE.update], path, SymData, 'status', 'untouched');
+        const mergeBranch: any = {[SymData]: {params: {uniqKey: getUniqKey()}}};
+        if (!untouched) setIn(mergeBranch[SymData], {untouched: 0, touched: true}, 'status');
+        branch = merge(branch, mergeBranch);
         state = merge(state, setIn({}, branch, elemPath), {replace: setIn({}, true, elemPath)});
         state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], elemPath), defaultValues, true));
-        //state = merge(state, makeSlice(SymData, 'current', elemPath, defaultValues), {replace: makeSlice(SymData, 'current', elemPath, true)});
         push2array(maps2enable, dataMap);
-        //state = updDataMap2state(state, dataMap, schema, UPDATABLE);
-        state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 1));
+        if (untouched) state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 1));
       }
       for (let i = end; i < start; i++) {
         let elemPath = path.concat(i);

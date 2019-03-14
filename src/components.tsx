@@ -51,6 +51,7 @@ class FForm extends React.Component<any, any> {
     self.parent = props.parent;
     // self.focus = self.focus.bind(self);
     self._updateValues(props);
+    self.api.reset({status: 'untouched'});
     if (!noInitValidate) self.api.validate(true);
     self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
     self._setRef = self._setRef.bind(self);
@@ -64,11 +65,11 @@ class FForm extends React.Component<any, any> {
   }
 
   _updateValues(nextProps: FFormProps, prevProps: any = {}) {
-    const {state, value, inital, extData, noValidate} = nextProps;
+    const {state, value, inital, extData, noValidation} = nextProps;
     const self = this;
     if (state && state !== prevProps.state) self.api.setState(state);
-    if (inital && inital !== prevProps.inital) self.api.setValue(inital, {replace: true, inital: true, noValidate});
-    if (value && value !== prevProps.value) self.api.setValue(value, {replace: true, noValidate});
+    if (inital && inital !== prevProps.inital) self.api.setValue(inital, {replace: true, inital: true, noValidation});
+    if (value && value !== prevProps.value) self.api.setValue(value, {replace: true, noValidation});
     if (extData && extData !== prevProps.extData) objKeys(extData).forEach(key => (self.api.set(key, (extData as any)[key], {replace: true})));
   }
 
@@ -1344,7 +1345,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
     blur: function (value: any) {
       this.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
       this.api.set('/@/active', undefined, {noValidation: true});
-      //console.log('blur ', this.path);
+      console.log('blur ', this.path);
       return !this.liveValidate ? this.api.validate('./',) : null; // {execute: true}
 
     },
