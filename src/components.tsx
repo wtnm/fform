@@ -43,14 +43,14 @@ class FForm extends React.Component<any, any> {
   constructor(props: FFormProps, context: any) {
     super(props, context);
     const self = this;
-    let {core: coreParams, noInitValidate} = props;
+    let {core: coreParams} = props;
 
     self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
     self.parent = props.parent;
     // self.focus = self.focus.bind(self);
     self._updateValues(props);
-    self.api.reset({status: 'untouched'});
-    if (!noInitValidate) self.api.validate(true);
+    // self.api.reset({status: 'untouched'});
+    if (!props.noValidation) self.api.validate(true);
     self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
     self._setRef = self._setRef.bind(self);
     self._submit = self._submit.bind(self);
@@ -63,12 +63,13 @@ class FForm extends React.Component<any, any> {
   }
 
   _updateValues(nextProps: FFormProps, prevProps: any = {}) {
-    const {state, value, inital, extData, noValidation} = nextProps;
+    const {state, value, inital, extData, noValidation, touched} = nextProps;
     const self = this;
     if (state && state !== prevProps.state) self.api.setState(state);
     if (inital && inital !== prevProps.inital) self.api.setValue(inital, {replace: true, inital: true, noValidation});
     if (value && value !== prevProps.value) self.api.setValue(value, {replace: true, noValidation});
     if (extData && extData !== prevProps.extData) objKeys(extData).forEach(key => (self.api.set(key, (extData as any)[key], {replace: true})));
+    if (touched !== prevProps.touched) self.api.reset({status: 'untouched', value: touched ? 0 : undefined});
   }
 
   _handleStateUpdate(state: StateType) {
@@ -142,7 +143,7 @@ class FForm extends React.Component<any, any> {
 
   render() {
     const self = this;
-    let {core, state, value, inital, extData, fieldCache, noInitValidate, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = 'form', ...rest} = self.props;
+    let {core, state, value, inital, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = 'form', ...rest} = self.props;
 
     return (
       <UseTag {...rest} onSubmit={self._submit}>
@@ -256,10 +257,10 @@ class FField extends FRefsGeneric {
     if (stateApi) {
       const api = stateApi.wrapper({
         get path() {return self.path},
-        wrapOpts: (rest: any) => {
-          if (isUndefined(rest.noValidation)) rest.noValidation = !self.liveValidate;
-          return rest
-        }
+        // wrapOpts: (rest: any) => {
+        //   if (isUndefined(rest.noValidation)) rest.noValidation = !self.liveValidate;
+        //   return rest
+        // }
       });
       api._set = api.set;
       api._setValue = api.setValue;
@@ -713,8 +714,9 @@ class GenericWidget extends FRefsGeneric {
     if (children !== self._children || self._reactRef !== $_reactRef) {
       const prev = self._children && toArray(self._children);
       const next = children && toArray(children);
-      self._mapped = next && next.map((ch: any, i: number) => !isObject(ch) || ch.$$typeof ? ch :
-        ((!getIn(self._mapped, i) ||
+      self._mapped = next && next.map((ch: any, i: number) => (!isObject(ch) || ch.$$typeof) ? ch :
+        ((!self._mapped ||
+          !getIn(self._mapped, i) ||
           prev[i] !== next[i] ||
           getIn(self._reactRef, i) !== getIn($_reactRef, i)) ? self._newWidget(i, ch, getIn($_reactRef, i)) :
           self._mapped[i]));
@@ -1286,12 +1288,12 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
     messages: function (messages: any[], staticProps: anyObject = {}) {
       const {className: cnSP = {}, ...restSP} = staticProps;
       return objKeys(messages).map(priority => {
-        const {norender, textGroups, className = {}, ...rest} = messages[priority];
-        const texts: any[] = [];
-        objKeys(textGroups).forEach((groupKey: string) => push2array(texts, textGroups[groupKey], {_$widget: 'br'}));
-        if (norender || !texts.length) return null;
-        texts.pop();
-        return {children: texts, ...restSP, className: {['priority_' + priority]: true, ...cnSP, ...className}, ...rest}
+        const {norender, texts, className = {}, ...rest} = messages[priority];
+        const children: any[] = [];
+        objKeys(texts).forEach((key: string) => push2array(children, ...toArray(texts[key]).map(v => [v, {_$widget: 'br'}])));
+        if (norender || !children.length) return null;
+        children.pop();
+        return {children, ...restSP, className: {['priority_' + priority]: true, ...cnSP, ...className}, ...rest}
       })
     },
     getArrayStart: function () {return [arrayStart(this.schemaPart)]},
@@ -1334,7 +1336,9 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       [value == '' ? empty : (int ? parseInt : parseFloat)(value), opts],
 
     setValue: function (value: any, opts: any = {}) {this.api.setValue(value, opts)},
-    arrayAdd: function (path: any, value: number = 1, opts: any = {}) {this.api.arrayAdd(path, value, opts)},
+    arrayAdd: function (path: any, value: number = 1, opts: any = {}) {
+      this.api.arrayAdd(path, value, opts)
+    },
     arrayItemOps: function (path: any, key: any, opts: any = {}) {this.api.arrayItemOps(path, key, opts)},
     focus: function (value: any) {
       this.api.set('/@/active', this.path, {noValidation: true})

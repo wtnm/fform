@@ -34,7 +34,7 @@ module.exports = {
     rules: [
       {
         test: /\.(ts|tsx)$/,
-        loader: `${process.env.NODE_ENV === 'production' ? './props-loader!babel-loader!' : ''}ts-loader`
+        loader: `${process.env.NODE_ENV === 'production' ? 'babel-loader!' : ''}ts-loader` //./props-loader!
       },
       {
         test: /\.css$/,

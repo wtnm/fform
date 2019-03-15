@@ -1142,7 +1142,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/0/turpleValue/0')).not.to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/1')).not.to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/2')).not.to.be.equal(undefined);
-        expect(core.get('0/0/turpleValue/@/messages/0/textGroups/0/0')).to.be.equal(undefined);
+        expect(core.get('0/0/turpleValue/@/messages/0/texts/0/0')).to.be.equal(undefined);
 
         let newVal = [];
         newVal.length = 3;
@@ -1160,7 +1160,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/0/turpleValue/0')).to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/1')).to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/2')).to.be.equal(undefined);
-        expect(core.get('0/0/turpleValue/@/messages/0/textGroups/0/0')).to.be.equal('has less items than allowed');
+        expect(core.get('0/0/turpleValue/@/messages/0/texts/0/0')).to.be.equal('has less items than allowed');
 
         core.setValue([], {path: '0/1/arrValue', inital: true});
         core.setValue([], {path: '0/1/turpleValue', inital: true, execute: true});
@@ -1219,10 +1219,10 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
       });
 
       it('test api.arrayAdd with sync validation' + core.name, async function () {
-        expect(core.get('0/0/turpleValue/@/messages/0/textGroups/0/0')).to.be.equal('has less items than allowed');
+        expect(core.get('0/0/turpleValue/@/messages/0/texts/0/0')).to.be.equal('has less items than allowed');
         core.arrayAdd('0/0/turpleValue', ['te'], {execute: 1});
         core.arrayAdd('0/0/turpleValue', [5, 8], {execute: true});
-        expect(core.get('0/0/turpleValue/@/messages/0/textGroups/0/0')).to.be.equal(undefined);
+        expect(core.get('0/0/turpleValue/@/messages/0/texts/0/0')).to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/0@value')).to.be.equal('te');
         expect(core.get('0/0/turpleValue/1@value')).to.be.equal(5);
         expect(core.get('0/0/turpleValue/2@value')).to.be.equal(8);
@@ -1230,29 +1230,29 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
 
       it('test async validation' + core.name, async function () {
         expect(core.get('0/0/strValue@messages/0/1/0')).to.be.equal(undefined);
-        expect(core.get('0/@/messages/0/textGroups/1/0')).to.be.equal(undefined);
+        expect(core.get('0/@/messages/0/texts/1/0')).to.be.equal(undefined);
         core.set('0/0/strValue@value', 'test validation', {execute: true});
-        expect(core.get('0/@/messages/0/textGroups/1/0')).to.be.equal('simple text message');
-        expect(core.get('0/@/messages/0/textGroups/1/1')).to.be.equal('more simple text message');
-        expect(core.get('0/@/messages/0/textGroups/1/length')).to.be.equal(2);
-        expect(core.get('0/0/mapValue@messages/0/textGroups/1/0')).to.be.equal('text message for mapValue');
-        expect(core.get('0/0/arrValue@messages/0/textGroups/2/0')).to.be.equal(undefined);
+        expect(core.get('0/@/messages/0/texts/1/0')).to.be.equal('simple text message');
+        expect(core.get('0/@/messages/0/texts/1/1')).to.be.equal('more simple text message');
+        expect(core.get('0/@/messages/0/texts/1/length')).to.be.equal(2);
+        expect(core.get('0/0/mapValue@messages/0/texts/1/0')).to.be.equal('text message for mapValue');
+        expect(core.get('0/0/arrValue@messages/0/texts/2/0')).to.be.equal(undefined);
         await sleep(10);
-        expect(core.get('0/0/arrValue@messages/0/textGroups/2/0')).to.be.equal('async text message for arrValue test validation');
+        expect(core.get('0/0/arrValue@messages/0/texts/2/0')).to.be.equal('async text message for arrValue test validation');
 
         core.set('0/0/strValue@value', 'no validation', {execute: true});
-        expect(core.get('0/0/arrValue@messages/0/textGroups/2/0')).to.be.equal('async text message for arrValue test validation');
+        expect(core.get('0/0/arrValue@messages/0/texts/2/0')).to.be.equal('async text message for arrValue test validation');
         await sleep(10);
-        expect(core.get('0/0/arrValue@messages/0/textGroups/2/0')).to.be.equal(undefined);
+        expect(core.get('0/0/arrValue@messages/0/texts/2/0')).to.be.equal(undefined);
       });
 
       it('test async validation with changing validated value during the validation' + core.name, async function () {
         core.set('0/0/strValue@value', 'test validation', {execute: true});
-        expect(core.get('0/0/arrValue@messages/0/textGroups/2/0')).to.be.equal(undefined);
+        expect(core.get('0/0/arrValue@messages/0/texts/2/0')).to.be.equal(undefined);
         core.set('0/0/strValue@value', 'another validation', {execute: true});
         await sleep(10);
-        expect(core.get('0/0/arrValue@messages/0/textGroups/2/0')).to.be.equal('async text message for arrValue another validation');
-        expect(core.get('0/@/messages/0/textGroups/1/0')).to.be.equal(undefined);
+        expect(core.get('0/0/arrValue@messages/0/texts/2/0')).to.be.equal('async text message for arrValue another validation');
+        expect(core.get('0/@/messages/0/texts/1/0')).to.be.equal(undefined);
       });
 
       it('test deffered execution ' + core.name, async function () {

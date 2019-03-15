@@ -184,7 +184,7 @@
                 },
                 {
                   "$_ref": "^/parts/ArrayItemMenu",
-                  "useTag": "span",
+                  "_$useTag": "span",
                   "buttons": [
                     "up",
                     "down",
@@ -221,7 +221,7 @@
               }
             }
           },
-          "maxItems": 3,
+          "maxItems": 4,
           "items": {
             "oneOf": [
               {

@@ -518,9 +518,9 @@ function updateMessagesPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Typ
       let {group = defaultGroup, text, priority = 0, ...rest} = itemNoPath;
       const messageData = getCreateIn(UPDATABLE.update, {}, track, SymData, 'messages', priority);
       Object.assign(messageData, rest);
-      if (!isObject(messageData.textGroups)) messageData.textGroups = {};
-      if (!isArray(messageData.textGroups[group])) messageData.textGroups[group] = [];
-      if (text) push2array(messageData.textGroups[group], text);
+      if (!isObject(messageData.texts)) messageData.texts = {};
+      if (!isArray(messageData.texts[group])) messageData.texts[group] = [];
+      if (text) push2array(messageData.texts[group], text);
     }
   });
   return state
@@ -833,7 +833,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
 }
 
 
-function splitValuePROCEDURE(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType): StateType {
+function splitValuePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType): StateType {
   const {value: itemValue, path, replace} = item;
   const keyPath = item[SymData] || [];
   if (keyPath.length == 0) {
@@ -913,7 +913,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
   } else {
     // split object for proper state update (for dataMap correct execution)
     if (isObject(value) && (keyPath.length == 0 && (hasIn(value, 'value') || hasIn(value, 'status') || hasIn(value, 'length') || hasIn(value, 'oneOf'))
-      || (keyPath.length == 1 && keyPath[0] == 'status'))) return splitValuePROCEDURE(state, UPDATABLE, item);
+      || (keyPath.length == 1 && keyPath[0] == 'status'))) return splitValuePROC(state, UPDATABLE, item);
 
     let branch = getIn(state, path);
     if (!isObject(branch)) return state; // check if there is branch in state
@@ -1026,7 +1026,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
   for (let i = 0; i < keyPath.length; i++) {
     if (!dataMap) break;
 
-    state = executeDataMapsPROCEDURE(state, UPDATABLE, dataMap[SymDataMap],
+    state = executeDataMapsPROC(state, UPDATABLE, dataMap[SymDataMap],
       makeNUpdate(path, keyPath.slice(0, i), setIn({}, value, keyPath.slice(i)), setIn({}, replace, keyPath.slice(i)))
     );
     dataMap = dataMap[keyPath[i]];
@@ -1035,7 +1035,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
   if (dataMap) state = recursivelyExecuteDataMaps(dataMap, value, replace, keyPath);
 
   function recursivelyExecuteDataMaps(dataMap: any[], value: any, replace: any, track: Path = []) {
-    state = executeDataMapsPROCEDURE(state, UPDATABLE, dataMap[SymDataMap], makeNUpdate(path, track, value, replace));
+    state = executeDataMapsPROC(state, UPDATABLE, dataMap[SymDataMap], makeNUpdate(path, track, value, replace));
     isMergeable(value) && objKeys(dataMap).forEach(key => value.hasOwnProperty(key) && (state = recursivelyExecuteDataMaps(dataMap[key], value[key], getIn(replace, key), track.concat(key))))
     return state;
   }
@@ -1069,7 +1069,7 @@ function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
           //console.log(relTo);
           if (getIn(state, fromItem.path)) setIn(UPDATABLE.update, unset ? undefined : dataMap.action, fromItem.path, SymDataMapTree, fromItem[SymData], SymDataMap, relTo);
           if (!unset) {
-            state = executeDataMapsPROCEDURE(state, UPDATABLE, makeSlice(relTo, dataMap.action),
+            state = executeDataMapsPROC(state, UPDATABLE, makeSlice(relTo, dataMap.action),
               makeNUpdate(fromItem.path, fromItem[SymData], getIn(state, fromItem.path, SymData, fromItem[SymData])));
             if (!bindMap2emitter && relativePath(emitterPath, fromItem.path)[0] != '.') bindMap2emitter = true;
           }
@@ -1099,7 +1099,7 @@ function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
 }
 
 
-function executeDataMapsPROCEDURE(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, maps: any, item: NormalizedUpdateType) {
+function executeDataMapsPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, maps: any, item: NormalizedUpdateType) {
   const {value, path, replace} = item;
   const keyPath = item[SymData] || [];
   const from = NUpdate2string(item);

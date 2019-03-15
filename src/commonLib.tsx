@@ -194,7 +194,8 @@ function getIn(state: any, ...paths: any[]): any {
     if (typeof track === 'function') track = track(res);
     if (!isArray(track)) track = [track];
     for (let j = 0; j < track.length; j++) {
-      if (isUndefined(res)) return res;
+      //if (isUndefined(res) ) return res;
+      if (!isMergeable(res)) return undefined;
       if (isUndefined(track[j])) continue;
       res = res[track[j]];
     }

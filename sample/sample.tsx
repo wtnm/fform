@@ -34,7 +34,7 @@ if (typeof window != 'undefined') {
     <h3>FForm sample</h3>
     <div>
       <div>
-        <FForm id="sampleForm" core={{schema: sampleSchema, name: "sampleForm", objects: sampleObjects, JSONValidator}}/>
+        <FForm id="sampleForm" touched core={{schema: sampleSchema, name: "sampleForm", objects: sampleObjects, JSONValidator}}/>
       </div>
     </div>
   </div>, container);
