@@ -8,12 +8,10 @@ import {
   path2string,
   string2path,
   SymData,
-  SymDelete,
-  stateUpdates,
   normalizePath,
   objMap,
   setUPDATABLE,
-  mergeStatePROCEDURE,
+  mergeUPD_PROC,
   branchKeys,
   isNPath,
   multiplyPath,
@@ -944,10 +942,10 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
       if (map.update == 'data' && !needUpdate(map)) return;
       const value = map.$ ? map.$(undefined, nextData) : getIn(nextData, map.args);
       objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, map.replace, map.to[k]));
-      if (!map.replace) mappedData = mergeStatePROCEDURE(mappedData, dataUpdates);
+      if (!map.replace) mappedData = mergeUPD_PROC(mappedData, dataUpdates);
     })
   );
-  return mergeStatePROCEDURE(mappedData, dataUpdates);
+  return mergeUPD_PROC(mappedData, dataUpdates);
 }
 
 const getExten = (enumExten: any, value: any) => (isFunction(enumExten) ? enumExten(value) : getIn(enumExten, value)) || {};

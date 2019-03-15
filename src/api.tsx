@@ -3,45 +3,31 @@
 /////////////////////////////////////////////
 import {
   getIn,
-  setIn,
   isMergeable,
-  isObject,
   memoize,
   merge,
-  mergeState,
   push2array,
   objKeys,
   isArray,
   isUndefined,
-  getCreateIn,
   isString,
   deArray, toArray, isFunction
 } from "./commonLib";
 
 import {
-  setDataMapInState,
+  objMap,
   getFromState,
   getSchemaPart,
   oneOfFromState,
-  // makeStateFromSchema,
-  makeNUpdate,
-  branchKeys,
   path2string,
   string2path,
-  SymData, SymDelete, SymReset, SymClear,
+  normalizeFn,
   normalizePath,
-  updateStatePROCEDURE,
-  mergeStatePROCEDURE,
-  isSelfManaged,
   normalizeUpdate,
   setIfNotDeeper,
-  objMap,
-  makeStateBranch,
-  oneOfStructure,
-  makeSynthField,
-  processFn,
-  normalizeFn,
-  object2PathValues
+  initState,
+  updateState,
+  SymData, SymReset, SymClear
 } from "./stateLib";
 
 
@@ -102,8 +88,6 @@ class FFormStateManager {
   private _unsubscribe: any;
   private _listeners: Array<(state: StateType) => void> = [];
 
-  protected _default: any;
-
   UPDATABLE: PROCEDURE_UPDATABLE_Type;
   props: FFormApiProps;
   schema: jsJsonSchema;
@@ -156,7 +140,7 @@ class FFormStateManager {
   }
 
   private _setStoreState(state: any) {
-    return this.props.store.dispatch({type: actionNameSetState, state, api: this});
+    return this.props.store.dispatch({type: anSetState, state, api: this});
   }
 
   private _getStoreState() {
@@ -178,16 +162,6 @@ class FFormStateManager {
     if (nextState !== curState) self._setState(nextState);
   }
 
-  makeState(schema: jsJsonSchema) {
-    const self = this;
-    let {state, dataMap = [], defaultValues} = makeStateFromSchema(schema);
-    state = merge(state, setIn({}, defaultValues, [SymData, 'current']));
-    state = setDataMapInState(state, self.UPDATABLE, schema, dataMap);
-    self._default = getIn(state, SymData, 'current');
-    state = updateStatePROCEDURE(state, schema, self.UPDATABLE, makeNUpdate([], ['inital'], self._default));
-    state = mergeStatePROCEDURE(state, self.UPDATABLE);
-    return state;
-  }
 
   addListener(fn: (state: StateType) => void) {
     const self = this;
@@ -228,7 +202,7 @@ class FFormStateAPI extends FFormStateManager {
   constructor(props: FFormApiProps) {
     super(props);
     const self = this;
-    if (!self._getState()) self._setState(self.makeState(self.schema));
+    if (!self._getState()) self._setState(initState(self.UPDATABLE));
   }
 
   wrapper(self: any = {}) {
@@ -276,7 +250,7 @@ class FFormStateAPI extends FFormStateManager {
 
   private _execBatch(updates: StateApiUpdateType[], opts: APIOptsType, promises: any, forceValidation: StateType | boolean | null) {
     const self = this;
-    let action = {type: actionNameUpdateState, state: self._newState, updates, api: self, forceValidation, opts, promises};
+    let action = {type: anUpdateState, state: self._newState, updates, api: self, forceValidation, opts, promises};
     self._clearActions();
     //console.log(' _execBatch.forceValidation', JSON.stringify(forceValidation));
     self.dispatch(updateState.bind(action));
@@ -364,7 +338,7 @@ class FFormStateAPI extends FFormStateManager {
     return this._setExecution(update, opts);
   };
 
-  getDefaultValue = () => this._default;
+  getDefaultValue = () => this.get(SymData, 'default');
 
   reset = (opts: APIOptsType & { path?: string | Path, status?: string } = {}) =>
     opts.status ? this.set(normalizePath(opts.path || '/'), SymReset, {[SymData]: ['status', opts.status], macros: 'switch'}) : this.setValue(SymReset, opts);
@@ -397,268 +371,16 @@ class FFormStateAPI extends FFormStateManager {
 
 
 /////////////////////////////////////////////
+//  Actions names
+/////////////////////////////////////////////
+
+const anSetState = 'FFROM_SET_STATE';
+const anUpdateState = 'FFROM_UPDATE_STATE';
+
+/////////////////////////////////////////////
 //  Reducer
 /////////////////////////////////////////////
-const makeStateFromSchema = memoize(function (schema: jsJsonSchema) {
-  return makeStateBranch(schema, oneOfStructure({}, []));
 
-});
-
-function getDefaultFromSchema(schema: jsJsonSchema) {
-  return makeStateFromSchema(schema)[SymData].current
-}
-
-function updateMessagesPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, track: Path, result?: MessageData, defaultGroup = 0) {
-  function conv(item: MessageGroupType | string): MessageGroupType {
-    return (typeof item === 'object') ? item : {group: defaultGroup, text: item};
-  };
-  let messages: MessageGroupType[] = isArray(result) ? (result as any).map(conv) : [conv(result as any)];
-  messages.forEach((item) => {
-    let {path, ...itemNoPath} = item;
-    if (path) {
-      path = normalizePath(path, track);
-      return updateMessagesPROCEDURE(state, schema, UPDATABLE, path, itemNoPath, defaultGroup)
-    } else {
-      let {group = defaultGroup, text, priority = 0, ...rest} = itemNoPath;
-      const messageData = getCreateIn(UPDATABLE.update, {}, track, SymData, 'messages', priority);
-      Object.assign(messageData, rest);
-      if (!isObject(messageData.textGroups)) messageData.textGroups = {};
-      if (!isArray(messageData.textGroups[group])) messageData.textGroups[group] = [];
-      if (text) push2array(messageData.textGroups[group], text);
-    }
-  });
-  return state
-}
-
-function setValidStatusPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, track: Path = []) {
-  let schemaPart: jsJsonSchema;
-  try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {return state}
-  const selfManaged = isSelfManaged(state, track);
-  let priorities = objKeys(Object.assign({}, getIn(state, track, SymData, 'messages') || {}, getIn(UPDATABLE.update, track, SymData, 'messages') || {}));
-  let currentPriority;
-  for (let i = 0; i < priorities.length; i++) {
-    let groups = objKeys(Object.assign({}, getIn(state, track, SymData, 'messages', priorities[i]) || {}, getIn(UPDATABLE.update, track, SymData, 'messages', priorities[i]) || {}));
-    for (let j = 0; j < groups.length; j++) {
-      if (getIn(groups, groups[j], 'length')) {
-        currentPriority = parseInt(priorities[i]);
-        break;
-      }
-    }
-    if (!isUndefined(currentPriority)) break;
-  }
-
-  state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['status', 'validation', 'invalid'], currentPriority === 0 ? 1 : 0, true, {macros: 'setStatus'}));
-  state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['status', 'priority'], currentPriority));
-
-  if (!selfManaged) objKeys(getIn(UPDATABLE.update, track)).forEach(key => state = setValidStatusPROCEDURE(state, schema, UPDATABLE, track.concat(key)));
-
-  return state
-}
-
-function makeValidation(state: StateType, dispatch: any, action: any) {
-
-  function recurseValidationInnerPROCEDURE(state: StateType, validatedValue: StateType, modifiedValues: StateType, track: Path = []) {
-    let schemaPart: jsJsonSchema;
-    try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {return state}
-
-    const selfManaged = isSelfManaged(state, track);
-    if (!selfManaged)
-      modifiedValues && objKeys(modifiedValues).forEach(key => state = recurseValidationInnerPROCEDURE(state, validatedValue[key], modifiedValues[key], track.concat(key)));
-
-    let ff_validators = schemaPart.ff_validators;
-
-    if (ff_validators) {
-      // const props = {state, path: path2string(track), schema, getFromState: (...tPath: Array<string | Path>) => getFromState(state, ...tPath)};
-      const field = makeSynthField(UPDATABLE.api, path2string(track));
-      ff_validators.forEach((validator: any) => {
-        const updates: any[] = [];
-        field.updates = updates;
-        let result = processFn.call(field, validator, validatedValue); //validator.$.call(props, validatedValue, validator.args || []);
-        if (result && result.then && typeof result.then === 'function') { //Promise
-          result.validatedValue = validatedValue;
-          result.path = track;
-          result.selfManaged = selfManaged;
-          vPromises.push(result);
-          state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['status', 'validation', 'pending'], 1, true, {macros: 'setStatus'}))
-        } else state = updateMessagesPROCEDURE(state, schema, UPDATABLE, track, result, 1);
-        if (updates.length) updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
-        field.updates = null
-      })
-    }
-    return state
-  }
-
-  function clearDefaultMessagesInnerPROCEDURE(state: StateType, modifiedValues: StateType, track: Path = []) {
-    const type = getIn(state, track, SymData, 'fData', 'type');
-    if (!type) return state;
-    if (type == 'object' || type == 'array')
-      modifiedValues && objKeys(modifiedValues).forEach(key => clearDefaultMessagesInnerPROCEDURE(state, modifiedValues[key], track.concat(key)));
-    return updateMessagesPROCEDURE(state, schema, UPDATABLE, track); // sets empty array for 0-level messages
-  }
-
-  let {api, force, opts, promises} = action;
-  const schemaDataObj = api.schema[SymData];
-  const {JSONValidator, schema, getState, UPDATABLE} = api;
-  const currentValues = state[SymData].current;
-  const pendingStatus = {};
-  const vPromises: vPromisesType[] = [];
-
-  // let UPDATABLE = {update: {}, replace: {}};
-
-  const modifiedValues = force === true ? currentValues : force;
-  //console.log('modifiedValues ', modifiedValues);
-
-
-  if (!modifiedValues || objKeys(modifiedValues).length == 0) { // no changes, no validation
-    promises.resolve();
-    promises.vAsync.resolve();
-    return state;
-  }
-  if (JSONValidator) {
-    state = clearDefaultMessagesInnerPROCEDURE(state, modifiedValues);
-    let errs = JSONValidator(currentValues);  // Validate, using JSONSchemaValidator;
-    errs.forEach((item: any) => updateMessagesPROCEDURE(state, schema, UPDATABLE, item[0], item[1]));
-  }
-  state = recurseValidationInnerPROCEDURE(state, currentValues, modifiedValues);
-  state = setValidStatusPROCEDURE(state, schema, UPDATABLE);
-  state = mergeStatePROCEDURE(state, UPDATABLE);
-  promises.resolve();
-  if (vPromises.length) {
-    Promise.all(vPromises).then((results) => {
-      let state = getState();
-      let UPDATABLE = api.UPDATABLE;
-      let newValues = state[SymData].current; //getRawValues().current;
-      for (let i = 0; i < vPromises.length; i++) {
-        //if (!results[i]) continue;
-        let {validatedValue, path, selfManaged} = vPromises[i];
-        if (validatedValue == getIn(newValues, path)) {
-          state = updateMessagesPROCEDURE(state, schema, UPDATABLE, path, results[i] || '', 2);
-          state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}))
-          // pendingStatus[path2string(path)] = false;
-        }
-      }
-      state = setValidStatusPROCEDURE(state, schema, UPDATABLE);
-      state = mergeStatePROCEDURE(state, UPDATABLE);// merge(state, UPDATABLE.update, {replace: UPDATABLE.replace});
-      dispatch({type: actionNameSetState, state, api});
-      promises.vAsync.resolve();
-    }).catch(reason => {
-      let state = getState();
-      let UPDATABLE = api.UPDATABLE; // let UPDATABLE = {update: {}, replace: {}, api: {};
-      let newValues = state[SymData].current; //getRawValues().current;
-      for (let i = 0; i < vPromises.length; i++) {
-        let {validatedValue, path, selfManaged} = vPromises[i];
-        if (validatedValue == getIn(newValues, path)) {
-          state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}))
-        }
-      }
-      state = setValidStatusPROCEDURE(state, schema, UPDATABLE);
-      state = mergeStatePROCEDURE(state, UPDATABLE);
-      dispatch({type: actionNameSetState, state, api});
-      promises.vAsync.reject(reason);
-    })
-  } else promises.vAsync.resolve();
-  return state;
-}
-
-function setDirtyPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, inital: any, current: any, track: Path = []) {
-  if (current === inital) return state;
-  let schemaPart;
-  try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {}
-
-  if (!schemaPart || isSelfManaged(state, track)) { //direct compare
-    let path: Path = schemaPart ? track : track.slice(0, -1);
-    state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'dirty'], 1, false, {macros: 'setStatus'}))
-  } else {
-    let keys = objKeys(Object.assign({}, inital, current));
-    keys.forEach(key => state = setDirtyPROCEDURE(state, schema, UPDATABLE, getIn(inital, key), getIn(current, key), track.concat(key)))
-  }
-  return state
-}
-
-function updateDirtyPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, inital: any, currentChanges: any, track: Path = [], forceDirty = false) {
-  let schemaPart;
-  try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {}
-  if (!schemaPart || isSelfManaged(state, track)) { //direct compare
-    let current = getIn(state, SymData, 'current', track);
-    let value = forceDirty || current !== inital ? 1 : -1;
-    let path: Path = schemaPart ? track : track.slice(0, -1);
-    state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'dirty'], value, false, {macros: 'setStatus',}))
-  } else {
-    let keys = objKeys(currentChanges || {});
-    if (schemaPart.type == 'array') {
-      let existKeys = branchKeys(getIn(state, track));
-      keys = keys.filter(k => isNaN(parseInt(k)) || ~existKeys.indexOf(k))
-    }
-    // if (schemaPart.type == 'array' && !~keys.indexOf('length')) keys.push('length');
-    forceDirty = forceDirty || !isMergeable(inital);
-    keys.forEach(key => state = updateDirtyPROCEDURE(state, schema, UPDATABLE, getIn(inital, key), currentChanges[key], track.concat(key), forceDirty))
-  }
-  return state
-}
-
-function setCurrentPristine(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, inital: any, track: Path = []) {
-  if (getIn(UPDATABLE.update, track, SymData, 'status', 'pristine')) {
-    if (isMergeable(inital) && getIn(state, SymData, 'current', track) !== inital) {
-      setIn(UPDATABLE.update, inital, SymData, 'current', track);
-      setIn(UPDATABLE.replace, true, SymData, 'current', track);
-    }
-  } else {
-    objKeys(getIn(UPDATABLE.update, track)).forEach(key => setCurrentPristine(state, schema, UPDATABLE, getIn(inital, key), track.concat(key)))
-  }
-  return state
-}
-
-function updateState(dispatch: any) {
-  // console.time('execActions');
-
-  let {updates, state, api, forceValidation, opts, promises} = this;
-  let {getState, schema, UPDATABLE} = api;
-  if (!state) state = getState();
-  let prevState = state;
-  //let UPDATABLE: PROCEDURE_UPDATABLE_Type = {update: {}, replace: {}};
-
-  updates.forEach((update: StateApiUpdateType) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
-  state = mergeStatePROCEDURE(state, UPDATABLE);
-  let oldCurrent = getIn(prevState, SymData, 'current');
-  if (UPDATABLE.forceCheck) oldCurrent = merge(oldCurrent, UPDATABLE.forceCheck);
-  let currentChanges = mergeState(oldCurrent, getIn(state, SymData, 'current'), {diff: true}).changes;
-  if (prevState[SymData].inital !== state[SymData].inital) {  // check dirty for all
-    state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], ['status', 'dirty'], 0, false, {macros: 'switch'}));  //reset all dirty
-    state = setDirtyPROCEDURE(state, schema, UPDATABLE, state[SymData].inital, state[SymData].current);
-  } else if (currentChanges)
-    state = updateDirtyPROCEDURE(state, schema, UPDATABLE, state[SymData].inital, currentChanges); // check dirty only for changes
-  state = setCurrentPristine(state, schema, UPDATABLE, state[SymData].inital);
-  state = mergeStatePROCEDURE(state, UPDATABLE);
-
-  let force;
-  if (opts.noValidation) force = forceValidation;
-  else {
-    if (forceValidation) {
-      object2PathValues(currentChanges).forEach(path => {
-        path.pop();
-        setIfNotDeeper(forceValidation, true, path)
-      });
-      force = forceValidation;
-    } else force = isMergeable(currentChanges) ? currentChanges : !isUndefined(currentChanges);
-  }
-
-  if (force) state = makeValidation(state, dispatch, {force, api, opts, promises});
-
-  // if (opts.noValidation) {
-  //   promises.resolve();
-  //   promises.vAsync.resolve();
-  // } else if (forceValidation !== false) {
-  //   UPDATABLE = {update: {}, replace: {}};
-  //   let force = forceValidation === true ? true : forceValidation || currentChanges; //merge(forceValidation || {}, mergeState(prevRawValues['current'], rawValues['current']).changes);
-  //   state = makeValidation(state, dispatch, {force, api, opts, promises});
-  //   // state = merge(state, UPDATABLE.update, {replace: UPDATABLE.replace});
-  // }
-  dispatch({type: actionNameSetState, state, api});
-
-  // console.timeEnd('execActions');
-  return promises;
-
-}
 
 let formReducerValue = 'fforms';
 
@@ -679,7 +401,7 @@ function formReducer(name?: string): any {
     return storageState
   }
 
-  reducersFunction[actionNameSetState] = (state: any, action: any): any => {
+  reducersFunction[anSetState] = (state: any, action: any): any => {
     if (action.api.props.store) return replaceFormState(state, action.api.name, action.state);
     return action.state
   };
@@ -790,11 +512,5 @@ function objectResolver(_objects: any, obj2resolve: any, track: string[] = []): 
   return retResult
 }
 
-/////////////////////////////////////////////
-//  Actions names
-/////////////////////////////////////////////
 
-const actionNameSetState = 'FFROM_SET_STATE';
-const actionNameUpdateState = 'FFROM_UPDATE_STATE';
-
-export {getFRVal, FFormStateAPI, formReducer, fformCores, objectDerefer, objectResolver}
+export {anSetState, getFRVal, FFormStateAPI, formReducer, fformCores, objectDerefer, objectResolver}

@@ -1,38 +1,25 @@
-import {getCreateIn, setIn, hasIn, getIn, objKeys, moveArrayElems, makeSlice, memoize, merge, objKeysNSymb, push2array, toArray, deArray} from "./commonLib";
+import {getCreateIn, setIn, hasIn, getIn, objKeys, moveArrayElems, makeSlice, memoize, merge, objKeysNSymb, push2array, toArray, deArray, mergeState} from "./commonLib";
 import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction} from "./commonLib";
-import {number} from "prop-types";
+import {anSetState} from './api';
+
+/////////////////////////////////////////////
+//  Symbols
+/////////////////////////////////////////////
 
 const SymData: any = Symbol.for('FFormData');
 const SymDataMapTree: any = Symbol.for('FFormDataMapTree');
 const SymDataMap: any = Symbol.for('FFormDataMap');
-// const SymBranch: any = Symbol.for('FFormBranch');
 const SymReset: any = Symbol.for('FFormReset');
 const SymClear: any = Symbol.for('FFormClear');
 const SymDelete = undefined; // Symbol.for('FFormDelete'); // 
-// const _rawValuesKeys = ['current', 'inital', 'default'];
+// const SymBranch: any = Symbol.for('FFormBranch');
 
 
-const symConv: any = function (key: any, anotherKey?: any) {
-  if (!isUndefined(anotherKey)) {
-    symConv._data[key] = anotherKey;
-    symConv._data[anotherKey] = key;
-  } else return symConv._data[key]
-};
-
-symConv._data = {'#': ''};
-symConv.sym2str = (sym: any) => typeof sym == 'symbol' && !isUndefined(symConv(sym)) ? symConv(sym) : sym;
-symConv.str2sym = (str: any) => typeof str == 'string' && !isUndefined(symConv(str)) ? symConv(str) : str;
-
-symConv('@', SymData);
-
-class stateUpdates {  // used for passing stateUpdates instead of value in dataMap hook
-  constructor(items: any) {
-    this[SymData] = items;
-  }
-}
+/////////////////////////////////////////////
+//  JSON types detector
+/////////////////////////////////////////////
 
 const types: any = ['null', 'boolean', 'integer', 'number', 'string', 'array', 'object'];
-
 types.any = () => true;
 types.null = (value: any) => value === null;
 types.boolean = (value: any) => typeof value === "boolean";
@@ -82,11 +69,11 @@ Macros.array = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPD
       replaceArrayObj[length + i] = getIn(item.replace, i);
     }
     mergeArrayObj.length = length + item.value.length;
-    return updateCurrentPROCEDURE(state, schema, UPDATABLE, mergeArrayObj, replaceArrayObj, path, item.setOneOf)
+    return updateCurrentPROC(state, UPDATABLE, mergeArrayObj, replaceArrayObj, path, item.setOneOf)
   } else {
     length += item.value || 1;
     if (length < 0) length = 0;
-    return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, ['length'], length, false, rest));
+    return updatePROC(state, UPDATABLE, makeNUpdate(path, ['length'], length, false, rest));
   }
 };
 
@@ -146,10 +133,10 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
   // const length2test = 1 + item.path.length - (item.path[0] == '#' ? 1 : 0);  // length2test can be smaller because of leading '#' in item.path (replace function receives path without leading '#')
   state = merge(state, makeSlice(path, stateObject), {replace: trueIfLength(item.path.length + 1)}); //(path: Path) => path.length === length2test});
   state = merge(state, makeSlice(SymData, 'current', path, currentObject), {replace: trueIfLength(item.path.length + 3)});//(path: Path) => path.length === length2test + 2});
-  if (op == 'del') state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, ['length'], max));
-  state = mergeStatePROCEDURE(state, UPDATABLE);
-  state = setDataMapInState(state, UPDATABLE, schema, maps2disable, true);
-  state = setDataMapInState(state, UPDATABLE, schema, maps2enable);
+  if (op == 'del') state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['length'], max));
+  state = mergeUPD_PROC(state, UPDATABLE);
+  state = setDataMapInState(state, UPDATABLE, maps2disable, true);
+  state = setDataMapInState(state, UPDATABLE, maps2enable);
   return state
 };
 
@@ -165,7 +152,7 @@ Macros.setExtraStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROC
   let prevVal = getUpdValue([UPDATABLE.update, state], item.path, SymData, keyPath);
   let value = item.value > 0;
   if (!prevVal == value) {
-    state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(item.path, keyPath, value));
+    state = updatePROC(state, UPDATABLE, makeNUpdate(item.path, keyPath, value));
     state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(item.path, ['status', keyPath[keyPath.length - 1]], value ? 1 : -1));
   }
   return state
@@ -185,7 +172,7 @@ Macros.setStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
   let value = prevVal + item.value;
   if (selfManaged && value > 1) value = 1;
   if (value < 0) value = 0;
-  state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(item.path, ['status', op], value));
+  state = updatePROC(state, UPDATABLE, makeNUpdate(item.path, ['status', op], value));
   if (!isTopPath(item.path) && (!prevVal != !value)) //(prevVal && !value || !prevVal && value)) 
     state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(item.path.slice(0, -1), keyPath, value > 0 ? 1 : -1));
 
@@ -193,39 +180,29 @@ Macros.setStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
 };
 
 Macros.setCurrent = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
-  return updateCurrentPROCEDURE(state, schema, UPDATABLE, item.value, item.replace, item.path, item.setOneOf)
+  return updateCurrentPROC(state, UPDATABLE, item.value, item.replace, item.path, item.setOneOf)
 };
 
 Macros.setOneOf = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
   let oldOneOf = getIn(state, item.path, SymData, 'oneOf');
   if (oldOneOf == item.value) {
-    if (!isUndefined(item.setValue)) state = updateCurrentPROCEDURE(state, schema, UPDATABLE, item.setValue, false, item.path);
+    if (!isUndefined(item.setValue)) state = updateCurrentPROC(state, UPDATABLE, item.setValue, false, item.path);
     return state;
   }
   const {macros, ...newItem} = item;
   newItem[SymData] = ['oneOf'];
   if (isUndefined(newItem.setValue)) {
-    state = mergeStatePROCEDURE(state, UPDATABLE);
+    state = mergeUPD_PROC(state, UPDATABLE);
     newItem.setValue = getIn(state, SymData, 'current', item.path);
   }
-  return updateStatePROCEDURE(state, schema, UPDATABLE, newItem);
+  return updatePROC(state, UPDATABLE, newItem);
 };
 
 
 /////////////////////////////////////////////
-//  End Macros
+//  Macros utils
 /////////////////////////////////////////////
 
-
-const schemaStorage = memoize(function (schema: jsJsonSchema) { // object that used to store and cache data for schema without modifying schema itself  
-  return {};
-});
-
-const trueIfLength = (length: number) => (path: any) => getIn(path, 'length') === length;
-
-function isTopPath(path: Path) {
-  return path.length == 0 || path.length == 1 && path[0] == '#';
-}
 
 function recursivelyUpdate(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) {
   const branch = getIn(state, item.path);
@@ -233,11 +210,29 @@ function recursivelyUpdate(state: StateType, schema: jsJsonSchema, UPDATABLE: PR
   if (item.value == SymReset && item[SymData][0] == 'status') {
     let i = {...item};
     i.value = item[SymData][1] == 'untouched' ? isSelfManaged(branch) ? 1 : keys.length : 0;
-    state = updateStatePROCEDURE(state, schema, UPDATABLE, i);
-  } else state = updateStatePROCEDURE(state, schema, UPDATABLE, item);
+    state = updatePROC(state, UPDATABLE, i);
+  } else state = updatePROC(state, UPDATABLE, item);
   keys.forEach(key => state = recursivelyUpdate(state, schema, UPDATABLE, merge(item, {path: item.path.concat(key)})));
   return state
 };
+
+
+function branchKeys(branch: StateType) {
+  let keys: string[] = [];
+  if (isSelfManaged(branch)) return keys;
+  if (branch[SymData].fData.type == 'array') for (let j = 0; j < getIn(branch, SymData, 'length'); j++) keys.push(j.toString());
+  else keys = objKeys(branch).filter(v => v);
+  return keys;
+}
+
+
+/////////////////////////////////////////////
+//      Schema processing functions
+/////////////////////////////////////////////
+
+const schemaStorage = memoize(function (schema: jsJsonSchema) { // object that used to store and cache data for schema without modifying schema itself  
+  return {};
+});
 
 function oneOfFromState(state: StateType | Function): (path: Path) => oneOfStructureType {
   return (path: Path) => {
@@ -266,14 +261,6 @@ function oneOfStructure(state: StateType | Function, path: Path) { // makes obje
   return fn
 }
 
-
-function branchKeys(branch: StateType) {
-  let keys: string[] = [];
-  if (isSelfManaged(branch)) return keys;
-  if (branch[SymData].fData.type == 'array') for (let j = 0; j < getIn(branch, SymData, 'length'); j++) keys.push(j.toString());
-  else keys = objKeys(branch).filter(v => v);
-  return keys;
-}
 
 const additionalItemsSchema = memoize(function (items: jsJsonSchema[]): jsJsonSchema {
   return {
@@ -369,24 +356,6 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf: (path: Path) 
   return schemaPart;
 }
 
-// function getParentArrayValue(schema: jsJsonSchema, path: Path) {
-//   let pathPart = path.slice();
-//   let keyPart: Path = [];
-//   let result;
-//   for (let i = 0; i < path.length; i++) {
-//     let key = pathPart.pop();
-//     keyPart.unshift(key);
-//     let schemaPart = getSchemaPart(schema, pathPart);
-//     if (!schemaPart) return;
-//     if (schemaPart.type == 'array') {
-//       let tmp = getIn(schemaPart.default, keyPart);
-//       if (tmp) result = tmp;
-//     }
-//   }
-//   return result;
-// }
-
-
 const arrayStart = memoize(function (schemaPart: jsJsonSchema) {
     if (!isArray(schemaPart.items)) return 0;
     if (schemaPart.additionalItems === false) return schemaPart.items.length;
@@ -395,12 +364,6 @@ const arrayStart = memoize(function (schemaPart: jsJsonSchema) {
     return schemaPart.items.length - 1;
   }
 );
-
-// const getEnumOptions = (schemaPart: jsJsonSchema) => {
-//   if (!schemaPart.enum) return undefined;
-//   let exten: any[] = schemaPart.ff_enumExten || [];
-//   return schemaPart.enum.map((value, i) => isObject(exten[i]) ? merge(exten[i], {value}) : {value, label: exten[i] || value});
-// };
 
 const basicStatus = {invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true, touched: false, pristine: true};
 
@@ -437,24 +400,6 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   return result;
 });
 
-function normalizeFn(fn: any, wrapFn?: Function, dontAddValue?: boolean): JsonFunctionGeneric<Function | Function[]> {
-  let nFn: any = !isObject(fn) ? {$: fn} : fn;
-  nFn = {...nFn, ...normalizeArgs(nFn.args, wrapFn)};
-  if (!nFn.args.length && !dontAddValue) nFn.args = ['${value}'];
-  return nFn
-}
-
-function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], emitter: Path): normalizedDataMapType[] {
-  return dataMap.map((item: any) => {
-    let {from, to, ...action} = item;
-    if (!action.$) action = true;
-    else action = normalizeFn(action);
-    // {action = {...action, ...normalizeArgs(action.args)};
-    //   if (!action.args.length) action.args = ['${value}'];}
-    return {emitter, from, to, action} as normalizedDataMapType;
-
-  })
-}
 
 function getUniqKey() {return Date.now().toString(36) + Math.random().toString(36) }
 
@@ -509,60 +454,6 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   return {state: result, defaultValues, dataMap: dataMapObjects}
 }
 
-
-function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, schema: jsJsonSchema, dataMaps: normalizedDataMapType[], unset: boolean = false) {
-  //let update: StateType = {};
-  // const UPDATABLE = {update: {}, replace: {}};
-  dataMaps.forEach((dataMap) => {
-    const emitterPath = dataMap.emitter;
-    let bindMap2emitter: boolean = false;
-    const toItem = {path: normalizePath(dataMap.to, emitterPath)};
-    normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.from, value: null}, state).forEach(fromItem => {
-        normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.to, value: null}, state).forEach(toItem => {
-          let relTo = path2string(relativePath(fromItem.path, toItem.path.concat(SymData, ...toItem[SymData])));
-          //console.log(relTo);
-          if (getIn(state, fromItem.path)) setIn(UPDATABLE.update, unset ? undefined : dataMap.action, fromItem.path, SymDataMapTree, fromItem[SymData], SymDataMap, relTo);
-          if (!unset) {
-            state = executeDataMapsPROCEDURE(state, schema, UPDATABLE, makeSlice(relTo, dataMap.action),
-              makeNUpdate(fromItem.path, fromItem[SymData], getIn(state, fromItem.path, SymData, fromItem[SymData])));
-            if (!bindMap2emitter && relativePath(emitterPath, fromItem.path)[0] != '.') bindMap2emitter = true;
-          }
-          state = mergeStatePROCEDURE(state, UPDATABLE);
-        })
-      }
-    );
-    if (bindMap2emitter) {
-      const emitterBranch = getIn(state, emitterPath);
-      if (emitterBranch) {
-        let bindedMaps = getIn(emitterBranch, SymDataMapTree, SymData) || [];
-        //if (unset) {
-        let i;
-        for (i = 0; i < bindedMaps.length; i++) {
-          if (dataMap.from === bindedMaps[i].from && dataMap.to === bindedMaps[i].to) break;
-        }
-        bindedMaps = bindedMaps.slice();
-        bindedMaps[i] = dataMap;
-        //} else bindedMaps = bindedMaps.concat(dataMap);
-        setUPDATABLE(UPDATABLE, bindedMaps, true, emitterPath, SymDataMapTree, SymData);
-        // setIn(UPDATABLE.replace, true, emitterPath, SymDataMapTree, SymData);
-      }
-      state = mergeStatePROCEDURE(state, UPDATABLE);
-    }
-  });
-  return state
-}
-
-// function updDataMap2state(state: StateType, dataMap: normalizedDataMapType[], schema: jsJsonSchema) {
-//   const UPDATABLE = {update: {}, replace: {}};
-//   dataMap.forEach((dataMap) => {
-//     if (dataMap.fn === false) return; // disabled map
-//     const branch = getIn(state, dataMap.path);
-//     executeDataMapsPROCEDURE(state, schema, UPDATABLE, [getIn(branch, SymDataMapTree, dataMap[SymData], SymDataMap, dataMap.to)], makeNUpdate(dataMap.path, dataMap[SymData], getIn(branch, SymData, dataMap[SymData])));
-//     state = mergeStatePROCEDURE(state, UPDATABLE);
-//   });
-//   return state
-// }
-
 function isArrayCanAdd(schemaPart: jsJsonSchema, length: number) {
   const arrayStartIndex = arrayStart(schemaPart); //; dataItem.array.arrayStartIndex;
   const minItems = schemaPart.minItems || 0;
@@ -608,10 +499,274 @@ function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
   return {};
 }
 
-function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, value: any, replace: any, track: Path = [], setOneOf?: number): StateType {
+/////////////////////////////////////////////
+//      state update PROCEDURES
+/////////////////////////////////////////////
+
+
+function updateMessagesPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, track: Path, result?: MessageData, defaultGroup = 0) {
+  function conv(item: MessageGroupType | string): MessageGroupType {
+    return (typeof item === 'object') ? item : {group: defaultGroup, text: item};
+  };
+  let messages: MessageGroupType[] = isArray(result) ? (result as any).map(conv) : [conv(result as any)];
+  messages.forEach((item) => {
+    let {path, ...itemNoPath} = item;
+    if (path) {
+      path = normalizePath(path, track);
+      return updateMessagesPROC(state, UPDATABLE, path, itemNoPath, defaultGroup)
+    } else {
+      let {group = defaultGroup, text, priority = 0, ...rest} = itemNoPath;
+      const messageData = getCreateIn(UPDATABLE.update, {}, track, SymData, 'messages', priority);
+      Object.assign(messageData, rest);
+      if (!isObject(messageData.textGroups)) messageData.textGroups = {};
+      if (!isArray(messageData.textGroups[group])) messageData.textGroups[group] = [];
+      if (text) push2array(messageData.textGroups[group], text);
+    }
+  });
+  return state
+}
+
+function setValidStatusPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, track: Path = []) {
+  let schemaPart: jsJsonSchema;
+  try {schemaPart = getSchemaPart(UPDATABLE.api.schema, track, oneOfFromState(state))} catch (e) {return state}
+  const selfManaged = isSelfManaged(state, track);
+  let priorities = objKeys(Object.assign({}, getIn(state, track, SymData, 'messages') || {}, getIn(UPDATABLE.update, track, SymData, 'messages') || {}));
+  let currentPriority;
+  for (let i = 0; i < priorities.length; i++) {
+    let groups = objKeys(Object.assign({}, getIn(state, track, SymData, 'messages', priorities[i]) || {}, getIn(UPDATABLE.update, track, SymData, 'messages', priorities[i]) || {}));
+    for (let j = 0; j < groups.length; j++) {
+      if (getIn(groups, groups[j], 'length')) {
+        currentPriority = parseInt(priorities[i]);
+        break;
+      }
+    }
+    if (!isUndefined(currentPriority)) break;
+  }
+
+  state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['status', 'validation', 'invalid'], currentPriority === 0 ? 1 : 0, true, {macros: 'setStatus'}));
+  state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['status', 'priority'], currentPriority));
+
+  if (!selfManaged) objKeys(getIn(UPDATABLE.update, track)).forEach(key => state = setValidStatusPROC(state, UPDATABLE, track.concat(key)));
+
+  return state
+}
+
+function makeValidation(state: StateType, dispatch: any, action: any) {
+
+  function recurseValidationInnerPROCEDURE(state: StateType, validatedValue: StateType, modifiedValues: StateType, track: Path = []) {
+    let schemaPart: jsJsonSchema;
+    try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {return state}
+
+    const selfManaged = isSelfManaged(state, track);
+    if (!selfManaged)
+      modifiedValues && objKeys(modifiedValues).forEach(key => state = recurseValidationInnerPROCEDURE(state, validatedValue[key], modifiedValues[key], track.concat(key)));
+
+    let ff_validators = schemaPart.ff_validators;
+
+    if (ff_validators) {
+      const field = makeSynthField(UPDATABLE.api, path2string(track));
+      ff_validators.forEach((validator: any) => {
+        const updates: any[] = [];
+        field.updates = updates;
+        let result = processFn.call(field, validator, validatedValue);
+        if (result && result.then && typeof result.then === 'function') { //Promise
+          result.validatedValue = validatedValue;
+          result.path = track;
+          result.selfManaged = selfManaged;
+          vPromises.push(result);
+          state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['status', 'validation', 'pending'], 1, true, {macros: 'setStatus'}))
+        } else state = updateMessagesPROC(state, UPDATABLE, track, result, 1);
+        if (updates.length) updates.forEach((update: any) => state = updatePROC(state, UPDATABLE, update));
+        field.updates = null
+      })
+    }
+    return state
+  }
+
+  function clearDefaultMessagesInnerPROCEDURE(state: StateType, modifiedValues: StateType, track: Path = []) {
+    const type = getIn(state, track, SymData, 'fData', 'type');
+    if (!type) return state;
+    if (type == 'object' || type == 'array')
+      modifiedValues && objKeys(modifiedValues).forEach(key => clearDefaultMessagesInnerPROCEDURE(state, modifiedValues[key], track.concat(key)));
+    return updateMessagesPROC(state, UPDATABLE, track); // sets empty array for 0-level messages
+  }
+
+  let {api, force, opts, promises} = action;
+  const schemaDataObj = api.schema[SymData];
+  const {JSONValidator, schema, getState, UPDATABLE} = api;
+  const currentValues = state[SymData].current;
+  const pendingStatus = {};
+  const vPromises: vPromisesType[] = [];
+  const modifiedValues = force === true ? currentValues : force;
+  //console.log('modifiedValues ', modifiedValues);
+
+  if (!modifiedValues || objKeys(modifiedValues).length == 0) { // no changes, no validation
+    promises.resolve();
+    promises.vAsync.resolve();
+    return state;
+  }
+  if (JSONValidator) {
+    state = clearDefaultMessagesInnerPROCEDURE(state, modifiedValues);
+    let errs = JSONValidator(currentValues);  // Validate, using JSONSchemaValidator;
+    errs.forEach((item: any) => updateMessagesPROC(state, UPDATABLE, item[0], item[1]));
+  }
+  state = recurseValidationInnerPROCEDURE(state, currentValues, modifiedValues);
+  state = setValidStatusPROC(state, UPDATABLE);
+  state = mergeUPD_PROC(state, UPDATABLE);
+  promises.resolve();
+  if (vPromises.length) {
+    Promise.all(vPromises).then((results) => {
+      let state = getState();
+      let UPDATABLE = api.UPDATABLE;
+      let newValues = state[SymData].current; //getRawValues().current;
+      for (let i = 0; i < vPromises.length; i++) {
+        //if (!results[i]) continue;
+        let {validatedValue, path, selfManaged} = vPromises[i];
+        if (validatedValue == getIn(newValues, path)) {
+          state = updateMessagesPROC(state, UPDATABLE, path, results[i] || '', 2);
+          state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}))
+          // pendingStatus[path2string(path)] = false;
+        }
+      }
+      state = setValidStatusPROC(state, UPDATABLE);
+      state = mergeUPD_PROC(state, UPDATABLE);// merge(state, UPDATABLE.update, {replace: UPDATABLE.replace});
+      dispatch({type: anSetState, state, api});
+      promises.vAsync.resolve();
+    }).catch(reason => {
+      let state = getState();
+      let UPDATABLE = api.UPDATABLE; // let UPDATABLE = {update: {}, replace: {}, api: {};
+      let newValues = state[SymData].current; //getRawValues().current;
+      for (let i = 0; i < vPromises.length; i++) {
+        let {validatedValue, path, selfManaged} = vPromises[i];
+        if (validatedValue == getIn(newValues, path)) {
+          state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}))
+        }
+      }
+      state = setValidStatusPROC(state, UPDATABLE);
+      state = mergeUPD_PROC(state, UPDATABLE);
+      dispatch({type: anSetState, state, api});
+      promises.vAsync.reject(reason);
+    })
+  } else promises.vAsync.resolve();
+  return state;
+}
+
+function setDirtyPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, inital: any, current: any, track: Path = []) {
+  if (current === inital) return state;
+  const {schema} = UPDATABLE.api;
+  let schemaPart;
+  try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {}
+
+  if (!schemaPart || isSelfManaged(state, track)) { //direct compare
+    let path: Path = schemaPart ? track : track.slice(0, -1);
+    state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['status', 'dirty'], 1, false, {macros: 'setStatus'}))
+  } else {
+    let keys = objKeys(Object.assign({}, inital, current));
+    keys.forEach(key => state = setDirtyPROC(state, UPDATABLE, getIn(inital, key), getIn(current, key), track.concat(key)))
+  }
+  return state
+}
+
+function updateDirtyPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, inital: any, currentChanges: any, track: Path = [], forceDirty = false) {
+  const {schema} = UPDATABLE.api;
+  let schemaPart;
+  try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {}
+  if (!schemaPart || isSelfManaged(state, track)) { //direct compare
+    let current = getIn(state, SymData, 'current', track);
+    let value = forceDirty || current !== inital ? 1 : -1;
+    let path: Path = schemaPart ? track : track.slice(0, -1);
+    state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['status', 'dirty'], value, false, {macros: 'setStatus',}))
+  } else {
+    let keys = objKeys(currentChanges || {});
+    if (schemaPart.type == 'array') {
+      let existKeys = branchKeys(getIn(state, track));
+      keys = keys.filter(k => isNaN(parseInt(k)) || ~existKeys.indexOf(k))
+    }
+    // if (schemaPart.type == 'array' && !~keys.indexOf('length')) keys.push('length');
+    forceDirty = forceDirty || !isMergeable(inital);
+    keys.forEach(key => state = updateDirtyPROC(state, UPDATABLE, getIn(inital, key), currentChanges[key], track.concat(key), forceDirty))
+  }
+  return state
+}
+
+function setPristinePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, inital: any, track: Path = []) {
+  if (getIn(UPDATABLE.update, track, SymData, 'status', 'pristine')) {
+    if (isMergeable(inital) && getIn(state, SymData, 'current', track) !== inital) {
+      setIn(UPDATABLE.update, inital, SymData, 'current', track);
+      setIn(UPDATABLE.replace, true, SymData, 'current', track);
+    }
+  } else {
+    objKeys(getIn(UPDATABLE.update, track)).forEach(key => setPristinePROC(state, UPDATABLE, getIn(inital, key), track.concat(key)))
+  }
+  return state
+}
+
+function updateState(dispatch: any) {
+  // console.time('execActions');
+
+  let {updates, state, api, forceValidation, opts, promises} = this;
+  let {getState, schema, UPDATABLE} = api;
+  if (!state) state = getState();
+  let prevState = state;
+
+  updates.forEach((update: StateApiUpdateType) => state = updatePROC(state, UPDATABLE, update));
+  state = mergeUPD_PROC(state, UPDATABLE);
+  let oldCurrent = getIn(prevState, SymData, 'current');
+  if (UPDATABLE.forceCheck) oldCurrent = merge(oldCurrent, UPDATABLE.forceCheck);
+  let currentChanges = mergeState(oldCurrent, getIn(state, SymData, 'current'), {diff: true}).changes;
+  if (prevState[SymData].inital !== state[SymData].inital) {  // check dirty for all
+    state = updatePROC(state, UPDATABLE, makeNUpdate([], ['status', 'dirty'], 0, false, {macros: 'switch'}));  //reset all dirty
+    state = setDirtyPROC(state, UPDATABLE, state[SymData].inital, state[SymData].current);
+  } else if (currentChanges)
+    state = updateDirtyPROC(state, UPDATABLE, state[SymData].inital, currentChanges); // check dirty only for changes
+  state = setPristinePROC(state, UPDATABLE, state[SymData].inital);
+  state = mergeUPD_PROC(state, UPDATABLE);
+
+  let force;
+  if (opts.noValidation) force = forceValidation;
+  else {
+    if (forceValidation) {
+      object2PathValues(currentChanges).forEach(path => {
+        path.pop();
+        setIfNotDeeper(forceValidation, true, path)
+      });
+      force = forceValidation;
+    } else force = isMergeable(currentChanges) ? currentChanges : !isUndefined(currentChanges);
+  }
+
+  if (force) state = makeValidation(state, dispatch, {force, api, opts, promises});
+
+  dispatch({type: anSetState, state, api});
+
+  return promises;
+
+}
+
+const makeStateFromSchema = memoize(function (schema: jsJsonSchema) {
+  return makeStateBranch(schema, oneOfStructure({}, []));
+});
+
+function initState(UPDATABLE: PROCEDURE_UPDATABLE_Type) {
+  let {state, dataMap = [], defaultValues} = makeStateFromSchema(UPDATABLE.api.schema);
+  state = merge(state, setIn({}, defaultValues, [SymData, 'current']));
+  state = setDataMapInState(state, UPDATABLE, dataMap);
+  const current: any = getIn(state, SymData, 'current');
+  state = updatePROC(state, UPDATABLE, makeNUpdate([], ['inital'], current));
+  state = updatePROC(state, UPDATABLE, makeNUpdate([], ['default'], current));
+  state = mergeUPD_PROC(state, UPDATABLE);
+  return state;
+}
+
+
+/////////////////////////////////////////////
+//      items updating PROCEDURES
+/////////////////////////////////////////////
+
+
+function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, value: any, replace: any, track: Path = [], setOneOf?: number): StateType {
 
   if (value === SymReset) value = getIn(state, SymData, 'inital', track);
-  if (value === SymClear) value = getIn(UPDATABLE.api.getDefaultValue(), track);
+  if (value === SymClear) value = getIn(state, SymData, 'default', track);
   if (getIn(state, SymData, 'current', track) === value && !hasIn(UPDATABLE.update, SymData, 'current', track)) return state;
 
   const branch = getIn(state, track);
@@ -622,9 +777,9 @@ function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABL
       const topPath = track.slice(0, -1);
       const topBranch = getIn(state, topPath);
       if (topBranch[SymData].fData.type == 'array')
-        return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(topPath, ['length'], value));
+        return updatePROC(state, UPDATABLE, makeNUpdate(topPath, ['length'], value));
     }
-    return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
+    return updatePROC(state, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
   }
 
   if (branch[SymData].fData.oneOfSelector) {
@@ -636,7 +791,7 @@ function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABL
   if (isUndefined(value)) value = types.empty[type || 'any'];
   if (oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
     // setOneOf = 
-    const parts = getSchemaPart(schema, track, oneOfFromState(state), true);
+    const parts = getSchemaPart(UPDATABLE.api.schema, track, oneOfFromState(state), true);
     let currentOneOf = branch[SymData].oneOf;
     if (oneOfSelector) {
       const field = makeSynthField(UPDATABLE.api, path2string(track));
@@ -647,29 +802,29 @@ function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABL
     const {schemaPart, oneOf, type} = findOneOf(parts, value, isUndefined(setOneOf) ? currentOneOf : setOneOf);
     if (currentOneOf !== oneOf) {
       if (schemaPart) {
-        return updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
+        return updatePROC(state, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
       } else console.warn('Type not found in path [' + track.join('/') + ']')
     }
   }
 
   if (isSelfManaged(branch)) { // if object has own value then replace it directly
-    state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['value'], value, replace))
+    state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['value'], value, replace))
   } else {
     if (isMergeable(value)) {  // if we receive object or array then apply their values to state
       if (type == 'array' && !isUndefined(value.length))
-        state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(track, ['length'], value.length));
+        state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['length'], value.length));
       if (replace === true) { // restore value's props-structure that are exist in state
         let v = isArray(value) ? [] : {};
         branchKeys(branch).forEach(k => v[k] = undefined);
         value = Object.assign(v, value);
       }
       objKeys(value).forEach(key =>
-        state = updateCurrentPROCEDURE(state, schema, UPDATABLE, value[key], replace === true ? true : getIn(replace, key), track.concat(key)))
+        state = updateCurrentPROC(state, UPDATABLE, value[key], replace === true ? true : getIn(replace, key), track.concat(key)))
       if (replace === true) { // this code removes props from current that are not preset in value and not exists in state
-        state = mergeStatePROCEDURE(state, UPDATABLE);
+        state = mergeUPD_PROC(state, UPDATABLE);
         let current = getIn(state, SymData, 'current', track);
         branchKeys(branch).forEach(k => value[k] = current[k]); // value was reassigned in block below, so change it directly
-        state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
+        state = updatePROC(state, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
       }
     }
   }
@@ -677,31 +832,25 @@ function updateCurrentPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABL
   return state
 }
 
-function getUpdValue(states: StateType[], ...pathes: Path) {
-  for (let i = 0; i < states.length; i++) {
-    if (hasIn(states[i], ...pathes)) return getIn(states[i], ...pathes);
-  }
-}
 
-
-function splitValuePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType): StateType {
+function splitValuePROCEDURE(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType): StateType {
   const {value: itemValue, path, replace} = item;
   const keyPath = item[SymData] || [];
   if (keyPath.length == 0) {
     const {value, status, length, oneOf, ...rest} = itemValue;
     ['value', 'status', 'length', 'oneOf'].forEach(key => {
-      if (hasIn(itemValue, key)) state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, [key], itemValue[key], getIn(replace, key)))
+      if (hasIn(itemValue, key)) state = updatePROC(state, UPDATABLE, makeNUpdate(path, [key], itemValue[key], getIn(replace, key)))
     });
-    if (objKeys(rest).length) state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, keyPath, rest, replace))
+    if (objKeys(rest).length) state = updatePROC(state, UPDATABLE, makeNUpdate(path, keyPath, rest, replace))
   } else {
     objKeys(itemValue).forEach(key => {
-      state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate(path, keyPath.concat(key), itemValue[key], getIn(replace, key)))
+      state = updatePROC(state, UPDATABLE, makeNUpdate(path, keyPath.concat(key), itemValue[key], getIn(replace, key)))
     });
   }
   return state
 }
 
-function updateNormalizationPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: StateApiUpdateType): StateType {
+function updateNormalizationPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: StateApiUpdateType): StateType {
   const items = normalizeUpdate(item, state);
   items.forEach(i => {
     if (i.path.length === 0 && i[SymData][0] == 'current') {
@@ -720,7 +869,7 @@ function updateNormalizationPROCEDURE(state: StateType, schema: jsJsonSchema, UP
       i.macros = 'setOneOf';
     }
 
-    state = updateStatePROCEDURE(state, schema, UPDATABLE, i);
+    state = updatePROC(state, UPDATABLE, i);
   });
   return state;
 }
@@ -734,19 +883,19 @@ function setUPDATABLE(UPDATABLE: PROCEDURE_UPDATABLE_Type, update: any, replace:
   return UPDATABLE;
 }
 
-function mergeStatePROCEDURE(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
+function mergeUPD_PROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
   state = merge(state, UPDATABLE.update, {replace: UPDATABLE.replace});
   UPDATABLE.update = {};
   UPDATABLE.replace = {};
   return state;
 }
 
-function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType | StateApiUpdateType | null): StateType {
+function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType | StateApiUpdateType | null): StateType {
   if (!item) return state;
-  const {update, replace: replace_UPDATABLE} = UPDATABLE;
-
+  const {update, replace: replace_UPDATABLE, api} = UPDATABLE;
+  const {schema} = api;
   // normalize updates
-  if (!isNUpdate(item)) return updateNormalizationPROCEDURE(state, schema, UPDATABLE, item);
+  if (!isNUpdate(item)) return updateNormalizationPROC(state, UPDATABLE, item);
 
   // execute macros
   if (item.macros) {
@@ -759,12 +908,12 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
   const keyPath = item[SymData];
   if (isFunction(value)) value = value(getUpdValue([UPDATABLE.update, state], path, SymData, keyPath));
 
-  if (path.length == 0 && keyPath[0] == 'inital') {
+  if (path.length == 0 && (keyPath[0] == 'inital' || keyPath[0] == 'default')) {
     state = merge(state, makeSlice(SymData, keyPath, value), {replace: makeSlice(SymData, keyPath, replace)})
   } else {
     // split object for proper state update (for dataMap correct execution)
     if (isObject(value) && (keyPath.length == 0 && (hasIn(value, 'value') || hasIn(value, 'status') || hasIn(value, 'length') || hasIn(value, 'oneOf'))
-      || (keyPath.length == 1 && keyPath[0] == 'status'))) return splitValuePROCEDURE(state, schema, UPDATABLE, item);
+      || (keyPath.length == 1 && keyPath[0] == 'status'))) return splitValuePROCEDURE(state, UPDATABLE, item);
 
     let branch = getIn(state, path);
     if (!isObject(branch)) return state; // check if there is branch in state
@@ -779,9 +928,9 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
 
     // additional state modifying if required
     if (keyPath[0] == 'value') { // modify current
-      state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], path, keyPath.slice(1)), value, replace))
+      state = updatePROC(state, UPDATABLE, makeNUpdate([], push2array(['current'], path, keyPath.slice(1)), value, replace))
     } else if (keyPath[0] == 'length') { // modify state with new length
-      state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], path, keyPath), value, replace));
+      state = updatePROC(state, UPDATABLE, makeNUpdate([], push2array(['current'], path, keyPath), value, replace));
       let start = branch[SymData].length;
       start = Math.max(start, 0);
       let end = Math.max(value || 0);
@@ -797,7 +946,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
         if (!untouched) setIn(mergeBranch[SymData], {untouched: 0, touched: true}, 'status');
         branch = merge(branch, mergeBranch);
         state = merge(state, setIn({}, branch, elemPath), {replace: setIn({}, true, elemPath)});
-        state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], elemPath), defaultValues, true));
+        state = updatePROC(state, UPDATABLE, makeNUpdate([], push2array(['current'], elemPath), defaultValues, true));
         push2array(maps2enable, dataMap);
         if (untouched) state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 1));
       }
@@ -818,9 +967,9 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
       for (let i = Math.max(Math.min(start, end) - 1, 0); i < end; i++)
         setUPDATABLE(UPDATABLE, getArrayItemData(schemaPart, i, end), true, path, i, SymData, 'arrayItem');
 
-      state = mergeStatePROCEDURE(state, UPDATABLE);
-      state = setDataMapInState(state, UPDATABLE, schema, maps2disable, true);
-      state = setDataMapInState(state, UPDATABLE, schema, maps2enable);
+      state = mergeUPD_PROC(state, UPDATABLE);
+      state = setDataMapInState(state, UPDATABLE, maps2disable, true);
+      state = setDataMapInState(state, UPDATABLE, maps2enable);
 
 
     } else if (keyPath[0] == 'status') { // properly set status change
@@ -842,8 +991,8 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
       let newOneOf = getIn(UPDATABLE.update, path, SymData, 'oneOf');
       if ((oldOneOf != newOneOf) || (item.type && item.type != getIn(oldBranch, SymData, 'fData', 'type'))) {
         setIfNotDeeper(UPDATABLE, SymReset, 'forceCheck', item.path);
-        state = mergeStatePROCEDURE(state, UPDATABLE);
-        state = setDataMapInState(state, UPDATABLE, schema, getIn(state, path, SymDataMapTree, SymData) || [], true);
+        state = mergeUPD_PROC(state, UPDATABLE);
+        state = setDataMapInState(state, UPDATABLE, getIn(state, path, SymDataMapTree, SymData) || [], true);
 
         let {state: branch, dataMap: maps2enable = [], defaultValues} = makeStateBranch(schema, oneOfStructure(state, path), path, item.setValue);
         const {value: v1, length: v2, oneOf: v3, fData: v4, ...previousBranchData} = oldBranch[SymData]; // remove data that should be replaced by new branch
@@ -865,8 +1014,8 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
 
         if (getIn(oldBranch, SymData, 'status', 'untouched') == 0) branch = merge(branch, {[SymData]: {status: {untouched: 0}}});// stick untouched to zero
         state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});
-        state = updateStatePROCEDURE(state, schema, UPDATABLE, makeNUpdate([], push2array(['current'], path), defaultValues, true));
-        state = setDataMapInState(state, UPDATABLE, schema, maps2enable);
+        state = updatePROC(state, UPDATABLE, makeNUpdate([], push2array(['current'], path), defaultValues, true));
+        state = setDataMapInState(state, UPDATABLE, maps2enable);
         if (getIn(branch, SymData, 'status', 'untouched') == 0) state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 0));
       }
     }
@@ -877,7 +1026,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
   for (let i = 0; i < keyPath.length; i++) {
     if (!dataMap) break;
 
-    state = executeDataMapsPROCEDURE(state, schema, UPDATABLE, dataMap[SymDataMap],
+    state = executeDataMapsPROCEDURE(state, UPDATABLE, dataMap[SymDataMap],
       makeNUpdate(path, keyPath.slice(0, i), setIn({}, value, keyPath.slice(i)), setIn({}, replace, keyPath.slice(i)))
     );
     dataMap = dataMap[keyPath[i]];
@@ -886,7 +1035,7 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
   if (dataMap) state = recursivelyExecuteDataMaps(dataMap, value, replace, keyPath);
 
   function recursivelyExecuteDataMaps(dataMap: any[], value: any, replace: any, track: Path = []) {
-    state = executeDataMapsPROCEDURE(state, schema, UPDATABLE, dataMap[SymDataMap], makeNUpdate(path, track, value, replace));
+    state = executeDataMapsPROCEDURE(state, UPDATABLE, dataMap[SymDataMap], makeNUpdate(path, track, value, replace));
     isMergeable(value) && objKeys(dataMap).forEach(key => value.hasOwnProperty(key) && (state = recursivelyExecuteDataMaps(dataMap[key], value[key], getIn(replace, key), track.concat(key))))
     return state;
   }
@@ -894,24 +1043,63 @@ function updateStatePROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE:
   return state;
 }
 
-const makeSynthField = memoize(function (stateApi: any, to: string, from?: string) {
-  const path = to.split('@')[0];
-  const pathData = from ? from.split('@')[0] : path;
-  const updates: any[] = [];
-  const field: any = {from, to, path, stateApi, updates};
-  field.api = stateApi.wrapper(field);
-  field.wrapOpts = (rest: any) => {
-    if (field.updates && isUndefined(rest.setExecution)) rest.setExecution = (addUpdates: any) => addUpdates && push2array(field.updates, addUpdates);
-    return rest
-  };
-  //field.api._get = field.api.get;
-  //field.api.get = (...path: any[]) => field.api._get(normalizePath(path, field.path));
-  //field.api.getValue = (opts: any = {}) => field.api.get(SymData, opts.inital ? 'inital' : 'current', normalizePath(opts.path || [], field.path));
-  field.getData = () => field.api.get(pathData, SymData);
-  return field;
-});
 
-function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, maps: any, item: NormalizedUpdateType) {
+function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], emitter: Path): normalizedDataMapType[] {
+  return dataMap.map((item: any) => {
+    let {from, to, ...action} = item;
+    if (!action.$) action = true;
+    else action = normalizeFn(action);
+    // {action = {...action, ...normalizeArgs(action.args)};
+    //   if (!action.args.length) action.args = ['${value}'];}
+    return {emitter, from, to, action} as normalizedDataMapType;
+
+  })
+}
+
+function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, dataMaps: normalizedDataMapType[], unset: boolean = false) {
+  //let update: StateType = {};
+  // const UPDATABLE = {update: {}, replace: {}};
+  dataMaps.forEach((dataMap) => {
+    const emitterPath = dataMap.emitter;
+    let bindMap2emitter: boolean = false;
+    const toItem = {path: normalizePath(dataMap.to, emitterPath)};
+    normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.from, value: null}, state).forEach(fromItem => {
+        normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.to, value: null}, state).forEach(toItem => {
+          let relTo = path2string(relativePath(fromItem.path, toItem.path.concat(SymData, ...toItem[SymData])));
+          //console.log(relTo);
+          if (getIn(state, fromItem.path)) setIn(UPDATABLE.update, unset ? undefined : dataMap.action, fromItem.path, SymDataMapTree, fromItem[SymData], SymDataMap, relTo);
+          if (!unset) {
+            state = executeDataMapsPROCEDURE(state, UPDATABLE, makeSlice(relTo, dataMap.action),
+              makeNUpdate(fromItem.path, fromItem[SymData], getIn(state, fromItem.path, SymData, fromItem[SymData])));
+            if (!bindMap2emitter && relativePath(emitterPath, fromItem.path)[0] != '.') bindMap2emitter = true;
+          }
+          state = mergeUPD_PROC(state, UPDATABLE);
+        })
+      }
+    );
+    if (bindMap2emitter) {
+      const emitterBranch = getIn(state, emitterPath);
+      if (emitterBranch) {
+        let bindedMaps = getIn(emitterBranch, SymDataMapTree, SymData) || [];
+        //if (unset) {
+        let i;
+        for (i = 0; i < bindedMaps.length; i++) {
+          if (dataMap.from === bindedMaps[i].from && dataMap.to === bindedMaps[i].to) break;
+        }
+        bindedMaps = bindedMaps.slice();
+        bindedMaps[i] = dataMap;
+        //} else bindedMaps = bindedMaps.concat(dataMap);
+        setUPDATABLE(UPDATABLE, bindedMaps, true, emitterPath, SymDataMapTree, SymData);
+        // setIn(UPDATABLE.replace, true, emitterPath, SymDataMapTree, SymData);
+      }
+      state = mergeUPD_PROC(state, UPDATABLE);
+    }
+  });
+  return state
+}
+
+
+function executeDataMapsPROCEDURE(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, maps: any, item: NormalizedUpdateType) {
   const {value, path, replace} = item;
   const keyPath = item[SymData] || [];
   const from = NUpdate2string(item);
@@ -933,41 +1121,36 @@ function executeDataMapsPROCEDURE(state: StateType, schema: jsJsonSchema, UPDATA
       field.get = null;
     }
     if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace: isUndefined(map.replace) ? replace : map.replace});
-    updates.forEach((update: any) => state = updateStatePROCEDURE(state, schema, UPDATABLE, update));
+    updates.forEach((update: any) => state = updatePROC(state, UPDATABLE, update));
   });
   return state;
 }
 
-const isMapFn = (arg: any) => isObject(arg) && arg.$ || isFunction(arg) && arg._map;
 
-function normalizeArgs(args: any, wrapFn?: any) {
-  let dataRequest = false;
-  args = toArray(isUndefined(args) ? [] : args).map((arg: any) => {
-    if (isString(arg) && arg[0] == '@') return (dataRequest = true) && normalizePath(arg.substr(1));
-    if (isMapFn(arg)) {
-      let res = normalizeArgs(arg.args, wrapFn);
-      if (res.dataRequest) dataRequest = true;
-      res = {...arg, ...res};
-      return wrapFn ? wrapFn(res) : res
-    } else if (wrapFn && isMergeable(arg)) return wrapFn(arg);
-    return arg;
-  });
-  return {dataRequest, args, norm: true}
+/////////////////////////////////////////////
+//      state utilities
+/////////////////////////////////////////////
+
+const trueIfLength = (length: number) => (path: any) => getIn(path, 'length') === length;
+
+function isTopPath(path: Path) {
+  return path.length == 0 || path.length == 1 && path[0] == '#';
 }
 
-function processFn(map: any, value: any, nextData?: any) {
-  const processArg = (arg: any) => {
-    if (isNPath(arg)) return getIn(nextData, arg);
-    if (isMapFn(arg)) return !arg._map ? processFn.call(this, arg, value, nextData) : arg(value, nextData);
-    // if (arg == '${field}') return this;
-    if (arg == '${value}') return value;
-    //if (hasIn($value, arg)) return $value[arg];
-    return arg;
+const makeSynthField = memoize(function (stateApi: any, to: string, from?: string) {
+  const path = to.split('@')[0];
+  const pathData = from ? from.split('@')[0] : path;
+  const updates: any[] = [];
+  const field: any = {from, to, path, stateApi, updates};
+  field.api = stateApi.wrapper(field);
+  field.wrapOpts = (rest: any) => {
+    if (field.updates && isUndefined(rest.setExecution)) rest.setExecution = (addUpdates: any) => addUpdates && push2array(field.updates, addUpdates);
+    return rest
   };
-  if (map.dataRequest && !nextData) nextData = this.getData();
-  return deArray(toArray(map.$).reduce((args, fn) => isFunction(fn) ? toArray(fn.apply(this, args)) : args,
-    (map.args || []).map(processArg)), map.arrayResult);
-}
+  field.getData = () => field.api.get(pathData, SymData);
+  return field;
+});
+
 
 function getFromUPD(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
   return (...tPath: Array<string | Path>) => {
@@ -977,30 +1160,43 @@ function getFromUPD(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
   }
 }
 
-
-function object2PathValues(vals: { [key: string]: any }, options: object2PathValuesOptions = {}, track: Path = []): PathValueType[] {
-  const fn = options.symbol ? objKeysNSymb : objKeys;
-  const check = options.arrayAsValue ? isObject : isMergeable;
-  if (!check(vals)) return [[vals]];
-  let result: any[] = [];
-  fn(vals).forEach((key) => {
-    let path = track.concat(key);
-    if (check(vals[key])) object2PathValues(vals[key], options, path).forEach(item => result.push(item)); // result = result.concat(object2PathValues(vals[key], path));
-    else result.push(push2array(path, vals[key]))
-  });
-  if (!result.length) return [push2array(track.slice(), {})]; // empty object
-  return result
+function getUpdValue(states: StateType[], ...pathes: Path) {
+  for (let i = 0; i < states.length; i++) {
+    if (hasIn(states[i], ...pathes)) return getIn(states[i], ...pathes);
+  }
 }
 
-function isNPath(path: any) {
-  return isMergeable(path) && getIn(path, SymData) === 'nPath';
+
+function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
+  return getIn(state, ...pathes.map(path => normalizePath(path as any)));
 }
 
-function normalizePath(path: string | Path, base: string | Path = []): Path {
-  let result = resolvePath(flattenPath(path), base.length ? flattenPath(base) : []);
-  result[SymData] = 'nPath';
-  return result;
+const makeNUpdate = (path: Path, keyPath: Path, value?: any, replace?: any, rest: any = {}): NormalizedUpdateType => {return {path, [SymData]: keyPath, value, replace, ...rest}};
+
+
+function isNUpdate(updateItem: any): updateItem is NormalizedUpdateType {
+  return !isUndefined(getIn(updateItem, SymData)) && isArray(updateItem[SymData]);
 }
+
+
+function string2NUpdate(path: string | Path, base: string | Path = [], rest: any = {}): NormalizedUpdateType {
+  path = normalizePath(path, base);
+  let keyPath: any = [];
+  let a = path.indexOf(SymData);
+  if (~a) {
+    keyPath = path.slice(a + 1);
+    path = path.slice(0, a);
+  }
+  const {value, replace, ...r} = rest;
+  return makeNUpdate(path, keyPath, value, replace, r);
+}
+
+
+function NUpdate2string(item: PathItem): string {
+  let path = path2string(item.path);
+  return path + (item[SymData] && !~path.indexOf('@') ? '/@/' + path2string(item[SymData]) : '');
+}
+
 
 function normalizeUpdate(update: StateApiUpdateType, state: StateType): NormalizedUpdateType[] {
   const {path, value, replace, base, ...rest} = update;
@@ -1021,33 +1217,24 @@ function normalizeUpdate(update: StateApiUpdateType, state: StateType): Normaliz
   return result;
 }
 
-function string2NUpdate(path: string | Path, base: string | Path = [], rest: any = {}): NormalizedUpdateType {
-  path = normalizePath(path, base);
-  let keyPath: any = [];
-  let a = path.indexOf(SymData);
-  if (~a) {
-    keyPath = path.slice(a + 1);
-    path = path.slice(0, a);
-  }
-  const {value, replace, ...r} = rest;
-  return makeNUpdate(path, keyPath, value, replace, r);
-}
 
 /////////////////////////////////////////////
-//      Utilities
+//  Path functions
 /////////////////////////////////////////////
 
-function NUpdate2string(item: PathItem): string {
-  let path = path2string(item.path);
-  return path + (item[SymData] && !~path.indexOf('@') ? '/@/' + path2string(item[SymData]) : '');
-}
+const symConv: any = function (key: any, anotherKey?: any) {
+  if (!isUndefined(anotherKey)) {
+    symConv._data[key] = anotherKey;
+    symConv._data[anotherKey] = key;
+  } else return symConv._data[key]
+};
 
-const makeNUpdate = (path: Path, keyPath: Path, value?: any, replace?: any, rest: any = {}): NormalizedUpdateType => {return {path, [SymData]: keyPath, value, replace, ...rest}};
+symConv._data = {'#': ''};
+symConv.sym2str = (sym: any) => typeof sym == 'symbol' && !isUndefined(symConv(sym)) ? symConv(sym) : sym;
+symConv.str2sym = (str: any) => typeof str == 'string' && !isUndefined(symConv(str)) ? symConv(str) : str;
 
+symConv('@', SymData);
 
-function isNUpdate(updateItem: any): updateItem is NormalizedUpdateType {
-  return !isUndefined(getIn(updateItem, SymData)) && isArray(updateItem[SymData]);
-}
 
 function multiplyPath(path: Path, strReplace: { [key: string]: any } = {}) {
   let result: any = {'': []};
@@ -1118,6 +1305,16 @@ function flattenPath(path: any): Path {
   return [path];
 }
 
+function isNPath(path: any) {
+  return isMergeable(path) && getIn(path, SymData) === 'nPath';
+}
+
+function normalizePath(path: string | Path, base: string | Path = []): Path {
+  let result = resolvePath(flattenPath(path), base.length ? flattenPath(base) : []);
+  result[SymData] = 'nPath';
+  return result;
+}
+
 function path2string(path: any): string {
   return isArray(path) ? path.map(path2string).join('/') : symConv.sym2str(path);
 }
@@ -1130,12 +1327,67 @@ function string2path(path: string) {
   return result
 }
 
-function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
-  return getIn(state, ...pathes.map(path => normalizePath(path as any)));
+
+/////////////////////////////////////////////
+//      common utils
+/////////////////////////////////////////////
+
+function object2PathValues(vals: { [key: string]: any }, options: object2PathValuesOptions = {}, track: Path = []): PathValueType[] {
+  const fn = options.symbol ? objKeysNSymb : objKeys;
+  const check = options.arrayAsValue ? isObject : isMergeable;
+  if (!check(vals)) return [[vals]];
+  let result: any[] = [];
+  fn(vals).forEach((key) => {
+    let path = track.concat(key);
+    if (check(vals[key])) object2PathValues(vals[key], options, path).forEach(item => result.push(item)); // result = result.concat(object2PathValues(vals[key], path));
+    else result.push(push2array(path, vals[key]))
+  });
+  if (!result.length) return [push2array(track.slice(), {})]; // empty object
+  return result
 }
 
 const objMap = (object: any, fn: (item: any, track: string[]) => any, track: string[] = []) =>
   objKeys(object).reduce((result, key) => ((result[key] = fn(object[key], track.concat(key))) || true) && result, isArray(object) ? [] : {});
+
+const isMapFn = (arg: any) => isObject(arg) && arg.$ || isFunction(arg) && arg._map;
+
+function normalizeArgs(args: any, wrapFn?: any) {
+  let dataRequest = false;
+  args = toArray(isUndefined(args) ? [] : args).map((arg: any) => {
+    if (isString(arg) && arg[0] == '@') return (dataRequest = true) && normalizePath(arg.substr(1));
+    if (isMapFn(arg)) {
+      let res = normalizeArgs(arg.args, wrapFn);
+      if (res.dataRequest) dataRequest = true;
+      res = {...arg, ...res};
+      return wrapFn ? wrapFn(res) : res
+    } else if (wrapFn && isMergeable(arg)) return wrapFn(arg);
+    return arg;
+  });
+  return {dataRequest, args, norm: true}
+}
+
+function normalizeFn(fn: any, wrapFn?: Function, dontAddValue?: boolean): JsonFunctionGeneric<Function | Function[]> {
+  let nFn: any = !isObject(fn) ? {$: fn} : fn;
+  nFn = {...nFn, ...normalizeArgs(nFn.args, wrapFn)};
+  if (!nFn.args.length && !dontAddValue) nFn.args = ['${value}'];
+  return nFn
+}
+
+
+function processFn(map: any, value: any, nextData?: any) {
+  const processArg = (arg: any) => {
+    if (isNPath(arg)) return getIn(nextData, arg);
+    if (isMapFn(arg)) return !arg._map ? processFn.call(this, arg, value, nextData) : arg(value, nextData);
+    // if (arg == '${field}') return this;
+    if (arg == '${value}') return value;
+    //if (hasIn($value, arg)) return $value[arg];
+    return arg;
+  };
+  if (map.dataRequest && !nextData) nextData = this.getData();
+  return deArray(toArray(map.$).reduce((args, fn) => isFunction(fn) ? toArray(fn.apply(this, args)) : args,
+    (map.args || []).map(processArg)), map.arrayResult);
+}
+
 
 // function objKeysMap(obj: any, fn: Function, symbol = false) {
 //   if (!isMergeable(obj)) return obj;
@@ -1179,30 +1431,18 @@ const objMap = (object: any, fn: (item: any, track: string[]) => any, track: str
 
 
 export {
-  stateUpdates,
-  string2NUpdate,
-  //getValue,
   object2PathValues,
-  setDataMapInState,
-  makeStateBranch,
   string2path,
   relativePath,
   getSchemaPart,
   oneOfFromState,
-  oneOfStructure,
   path2string,
   normalizePath,
   branchKeys,
-  makeNUpdate,
   getFromState,
   arrayStart,
-  updateStatePROCEDURE,
-  mergeStatePROCEDURE,
+  mergeUPD_PROC,
   isSelfManaged,
-  isSchemaSelfManaged,
-  getUpdValue,
-  isTopPath,
-  symConv,
   normalizeUpdate,
   setIfNotDeeper,
   objMap,
@@ -1213,8 +1453,9 @@ export {
   normalizeFn,
   processFn,
   isMapFn,
-  makeSynthField,
   types,
-}
-
+  updateState,
+  initState,
+};
 export {SymData, SymReset, SymClear, SymDelete}
+export {makeNUpdate, updatePROC, string2NUpdate};

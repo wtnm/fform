@@ -571,7 +571,7 @@ function setDataMapInState(state, schema, dataMaps) {
 //     if (dataMap.fn === false) return; // disabled map
 //     const branch = getIn(state, dataMap.path);
 //     executeDataMapsPROCEDURE(state, schema, UPDATABLE_object, [getIn(branch, SymDataMapTree, dataMap[SymData], SymDataMap, dataMap.to)], makeNUpdate(dataMap.path, dataMap[SymData], getIn(branch, SymData, dataMap[SymData])));
-//     state = mergeStatePROCEDURE(state, UPDATABLE_object);
+//     state = mergeUPD_PROC(state, UPDATABLE_object);
 //   });
 //   return state
 // }
@@ -782,7 +782,7 @@ function updateStatePROCEDURE(state, schema, UPDATABLE_object, item) {
             start = Math.max(start, 0);
             var end = Math.max(value || 0);
             //setIn(update, end, SymData, 'current', path, 'length');
-            //state = mergeStatePROCEDURE(state, UPDATABLE_object);
+            //state = mergeUPD_PROC(state, UPDATABLE_object);
             var oneOfStateFn = oneOfStructure(state, path);
             var maps2enable = [];
             var maps2disable = [];

@@ -220,7 +220,7 @@ describe('FForm comommon functions tests', function () {
       "array_1": [],
       "array_2": [[{"v1": 1, "v2": 2}, {"t1": 4, "t2": 5}]]
     };
-    result = commonLib.mergeState(undefined, obj, {del: true, });
+    result = commonLib.mergeState(undefined, obj, {del: true,});
     expect(result.state).to.be.eql(obj);
 
     let arr2 = [];
@@ -292,15 +292,15 @@ describe('FForm state functions tests', function () {
     // expect(array_1_10.state.bazingaCinema.favCinema[Symbol.for('FFormData')].value === 'favCinema default').to.be.equal(true);
   });
 
-  it('test updateStatePROCEDURE', function () {
+  it('test updatePROC', function () {
     //let state = stateLib.makeStateFromSchema(arraySchema);
     let state = arrayCore.getState();
     let UPDATABLE_object = arrayCore.UPDATABLE;  //{update: {}, replace: {}};
     let arraySchema = arrayCore.schema;
     let updateItem = {path: [0, 0, 'strValue', SymData, 'value'], value: '33'};
     expect(state[SymData].current[0][0].strValue).to.be.equal('array level 1 objValue default 0');
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, updateItem);
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, updateItem);
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     // state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[0][0].strValue).to.be.equal(updateItem.value);
     expect(state[0][0].strValue[SymData].value).to.be.equal(updateItem.value);
@@ -310,8 +310,8 @@ describe('FForm state functions tests', function () {
     expect(state[0][0].mapArrValue[0][SymData].value).to.be.equal(state[0][0].mapValue[SymData].value);
 
     //UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'mapArrValue', SymData, 'length'], value: 3});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 0, 'mapArrValue', SymData, 'length'], value: 3});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[0][0].mapArrValue[1]).to.be.equal(state[SymData].current[0][0].mapValue);
     expect(state[0][0].mapArrValue[1][SymData].value).to.be.equal(state[0][0].mapValue[SymData].value);
@@ -319,9 +319,9 @@ describe('FForm state functions tests', function () {
     expect(state[0][0].mapArrValue[2][SymData].value).to.be.equal(state[0][0].mapValue[SymData].value);
 
     //UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'strValue', SymData, 'value'], value: '555'});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'mapArrValue', SymData, 'length'], value: 2});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 0, 'strValue', SymData, 'value'], value: '555'});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 0, 'mapArrValue', SymData, 'length'], value: 2});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[0][0].mapValue[SymDataMapTree].value[SymDataMap]['../mapArrValue/2/@/value']).not.to.be.ok;
     expect(state[SymData].current[0][0].mapArrValue[0]).to.be.equal('555');
@@ -332,9 +332,9 @@ describe('FForm state functions tests', function () {
     expect(state[0][0].mapArrValue[2]).to.be.equal(undefined);
 
     //UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'strValue', SymData, 'value'], value: '777'});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'mapArrValue@length'], value: 3});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 0, 'strValue', SymData, 'value'], value: '777'});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 0, 'mapArrValue@length'], value: 3});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[0][0].mapArrValue[0]).to.be.equal('777');
     expect(state[0][0].mapArrValue[0][SymData].value).to.be.equal('777');
@@ -345,23 +345,23 @@ describe('FForm state functions tests', function () {
 
 
     //UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: '@length', value: 4});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: '@length', value: 4});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[3][0].strValue).to.be.equal('array level 2 objValue default');
     expect(state[3][0].strValue[SymData].value).to.be.equal('array level 2 objValue default');
 
     //UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: '@length', value: 2});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: '@length', value: 2});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[2]).to.be.equal(undefined);
     expect(state[2]).to.be.equal(undefined);
     expect(state[3]).to.be.equal(undefined);
 
     //UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: '@current', value: {1: [{strValue: 'new test value'}]}});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: '@current', value: {1: [{strValue: 'new test value'}]}});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     //state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
     expect(state[SymData].current[1][0].strValue).to.be.equal('new test value');
     expect(state[SymData].current[1].length).to.be.equal(1);
@@ -369,42 +369,40 @@ describe('FForm state functions tests', function () {
 
   });
 
-  it('test macros in updateStatePROCEDURE', function () {
+  it('test macros in updatePROC', function () {
     //let state = stateLib.makeStateFromSchema(arraySchema);
     //let UPDATABLE_object = {update: {}, replace: {}};
     let state = arrayCore.getState();
     let UPDATABLE_object = arrayCore.UPDATABLE;
     let arraySchema = arrayCore.schema;
     expect(state[2][SymData].arrayItem.canDown).to.be.equal(false);
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [], value: 1, macros: 'array'});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [], value: 2, macros: 'array'});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [], value: 1, macros: 'array'});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [], value: 2, macros: 'array'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].current.length).to.be.equal(6);
     expect(state[2][SymData].arrayItem.canDown).to.be.equal(true);
     expect(state[5][SymData].arrayItem.canDown).to.be.equal(false);
     expect(state[SymData].fData.canAdd).to.be.equal(false);
 
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [], value: -1, macros: 'array'});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['2'], op: 'del', macros: 'arrayItem'});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [], value: -1, macros: 'array'});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: ['2'], op: 'del', macros: 'arrayItem'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].current.length).to.be.equal(4);
     expect(state[4]).to.be.equal(undefined);
     expect(state[5]).to.be.equal(undefined);
     expect(state[SymData].fData.canAdd).to.be.equal(true);
 
 
-    UPDATABLE_object = {update: {}, replace: {}};
     expect(state[SymData].current[2][0].strValue).to.be.equal('array level 2 objValue default');
     expect(state[SymData].current[1][0].strValue).to.be.equal('array level 1 objValue default 1');
     expect(state[SymData].current[0][0].strValue).to.be.equal('array level 1 objValue default 0');
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'arrValue', [1, '@value']], value: 'test arr 1 value'});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [1], op: 'last', macros: 'arrayItem'});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [1], op: 'del', macros: 'arrayItem'});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [1], op: 'up', macros: 'arrayItem'});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [1], op: 'last', macros: 'arrayItem'});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 0, 'arrValue', [1, '@value']], value: 'test arr 1 value'});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [1], op: 'last', macros: 'arrayItem'});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [1], op: 'del', macros: 'arrayItem'});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [1], op: 'up', macros: 'arrayItem'});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [1], op: 'last', macros: 'arrayItem'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].current.length).to.be.equal(3);
     expect(state[SymData].length).to.be.equal(3);
     expect(state[SymData].current[0][0].strValue).to.be.equal('array level 2 objValue default');
@@ -413,14 +411,13 @@ describe('FForm state functions tests', function () {
     expect(state[SymData].current[2][0].arrValue[0]).to.be.equal('array level 1 arrValue');
     expect(state[SymData].current[2][0].arrValue[1]).to.be.equal('test arr 1 value');
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 0, 'strValue@status/invalid'], value: 5});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 0, 'strValue@status/invalid'], value: 5});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].status.invalid).to.be.equal(0);
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 0, 'strValue'], ['status', 'invalid'], 5, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+    state = stateLib.updatePROC(state, UPDATABLE_object, stateLib.makeNUpdate([0, 0, 'strValue'], ['status', 'invalid'], 5, false, {macros: 'setStatus'}));
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].status.invalid).to.be.equal(1);
     expect(state[0][SymData].status.invalid).to.be.equal(1);
     expect(state[1][SymData].status.invalid).to.be.equal(0);
@@ -432,9 +429,8 @@ describe('FForm state functions tests', function () {
     expect(state[0][0][SymData].status.valid).to.be.equal(false);
     expect(state[0][0].strValue[SymData].status.valid).to.be.equal(false);
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'strValue'], ['status', 'pending'], 5, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+    state = stateLib.updatePROC(state, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'strValue'], ['status', 'pending'], 5, false, {macros: 'setStatus'}));
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].status.pending).to.be.equal(1);
     expect(state[0][SymData].status.pending).to.be.equal(1);
     expect(state[1][SymData].status.pending).to.be.equal(0);
@@ -451,9 +447,8 @@ describe('FForm state functions tests', function () {
     expect(state[0][1].strValue[SymData].status.valid).to.be.equal(null);
 
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'strValue'], ['status', 'pending'], -10, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+    state = stateLib.updatePROC(state, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'strValue'], ['status', 'pending'], -10, false, {macros: 'setStatus'}));
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].status.pending).to.be.equal(0);
     expect(state[0][SymData].status.pending).to.be.equal(0);
     expect(state[1][SymData].status.pending).to.be.equal(0);
@@ -467,9 +462,9 @@ describe('FForm state functions tests', function () {
     expect(state[0][1][SymData].status.valid).to.be.equal(true);
     expect(state[0][1].strValue[SymData].status.valid).to.be.equal(true);
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 0], ['status', 'validation', 'pending'], 3, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+
+    state = stateLib.updatePROC(state, UPDATABLE_object, stateLib.makeNUpdate([0, 0], ['status', 'validation', 'pending'], 3, false, {macros: 'setStatus'}));
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].status.pending).to.be.equal(1);
     expect(state[0][SymData].status.pending).to.be.equal(1);
     expect(state[1][SymData].status.pending).to.be.equal(0);
@@ -485,9 +480,8 @@ describe('FForm state functions tests', function () {
     expect(state[0][1].strValue[SymData].status.valid).to.be.equal(true);
 
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 0], ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+    state = stateLib.updatePROC(state, UPDATABLE_object, stateLib.makeNUpdate([0, 0], ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}));
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].status.pending).to.be.equal(0);
     expect(state[0][SymData].status.pending).to.be.equal(0);
     expect(state[1][SymData].status.pending).to.be.equal(0);
@@ -501,9 +495,8 @@ describe('FForm state functions tests', function () {
     expect(state[0][1][SymData].status.valid).to.be.equal(true);
     expect(state[0][1].strValue[SymData].status.valid).to.be.equal(true);
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([], ['status', 'invalid'], 0, false, {macros: 'switch'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+    state = stateLib.updatePROC(state, UPDATABLE_object, stateLib.makeNUpdate([], ['status', 'invalid'], 0, false, {macros: 'switch'}));
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].status.invalid).to.be.equal(0);
     expect(state[0][SymData].status.invalid).to.be.equal(0);
     expect(state[1][SymData].status.invalid).to.be.equal(0);
@@ -515,62 +508,61 @@ describe('FForm state functions tests', function () {
     expect(state[0][0][SymData].status.valid).to.be.equal(true);
     expect(state[0][0].strValue[SymData].status.valid).to.be.equal(true);
 
-    UPDATABLE_object = {update: {}, replace: {}};
+
     expect(state[0][1].arrValue[SymData].status.untouched).to.be.equal(2);
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'arrValue', 0], ['status', 'untouched'], -2, false, {macros: 'setStatus'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+    state = stateLib.updatePROC(state, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'arrValue', 0], ['status', 'untouched'], -2, false, {macros: 'setStatus'}));
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][1].arrValue[SymData].status.untouched).to.be.equal(1);
     expect(state[0][1].arrValue[0][SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[1][SymData].status.untouched).to.be.equal(1);
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 1, 'arrValue'], value: 1, macros: 'array'});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 1, 'arrValue'], value: 1, macros: 'array'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][1].arrValue[SymData].status.untouched).to.be.equal(2);
     expect(state[0][1].arrValue[0][SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[1][SymData].status.untouched).to.be.equal(1);
     expect(state[0][1].arrValue[2][SymData].status.untouched).to.be.equal(1);
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'arrValue'], ['status', 'untouched'], 0, false, {macros: 'switch'}));
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+
+    state = stateLib.updatePROC(state, UPDATABLE_object, stateLib.makeNUpdate([0, 1, 'arrValue'], ['status', 'untouched'], 0, false, {macros: 'switch'}));
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][1].arrValue[SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[0][SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[1][SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[2][SymData].status.untouched).to.be.equal(0);
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: [0, 1, 'arrValue'], value: 1, macros: 'array'});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 1, 'arrValue'], value: 1, macros: 'array'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][1].arrValue[SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[0][SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[1][SymData].status.untouched).to.be.equal(0);
     expect(state[0][1].arrValue[2][SymData].status.untouched).to.be.equal(0);
-    expect(state[0][1].arrValue[3][SymData].status.untouched).to.be.equal(1);
+    expect(state[0][1].arrValue[3][SymData].status.untouched).to.be.equal(0);
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/0,2/@/params/hidden'], value: true});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: ['0/1/arrValue/0,2/@/params/hidden'], value: true});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][1].arrValue[0][SymData].params.hidden).to.be.equal(true);
     expect(state[0][1].arrValue[1][SymData].params.hidden).to.be.equal(undefined);
     expect(state[0][1].arrValue[2][SymData].params.hidden).to.be.equal(true);
     expect(state[0][1].arrValue[3][SymData].params.hidden).to.be.equal(undefined);
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    //state = stateFuncs.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue@/params/hidden'], value: null, macros: 'setAll', skipFields: ['3']});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/*@/params/hidden'], value: null});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue/3@/params/hidden'], value: undefined});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+
+    //state = stateFuncs.updatePROC(state,  UPDATABLE_object, {path: ['0/1/arrValue@/params/hidden'], value: null, macros: 'setAll', skipFields: ['3']});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: ['0/1/arrValue/*@/params/hidden'], value: null});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: ['0/1/arrValue/3@/params/hidden'], value: undefined});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][1].arrValue[0][SymData].params.hidden).to.be.equal(null);
     expect(state[0][1].arrValue[1][SymData].params.hidden).to.be.equal(null);
     expect(state[0][1].arrValue[2][SymData].params.hidden).to.be.equal(null);
     expect(state[0][1].arrValue[3][SymData].params.hidden).to.be.equal(undefined);
 
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/*/@/params/hidden, disabled'], value: true});
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/mapValue, arrValue/@/params/hidden, disabled'], value: undefined});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: ['0/1/*/@/params/hidden, disabled'], value: true});
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: ['0/1/mapValue, arrValue/@/params/hidden, disabled'], value: undefined});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][1].arrValue[SymData].params.hidden).to.be.equal(undefined);
     expect(state[0][1].strValue[SymData].params.hidden).to.be.equal(true);
     expect(state[0][1].mapArrValue[SymData].params.hidden).to.be.equal(true);
@@ -582,9 +574,9 @@ describe('FForm state functions tests', function () {
     expect(state[0][1].mapValue[SymData].params.disabled).to.be.equal(undefined);
     expect(state[0][1].turpleValue[SymData].params.disabled).to.be.equal(true);
 
-    UPDATABLE_object = {update: {}, replace: {}};
-    state = stateLib.updateStatePROCEDURE(state, arraySchema, UPDATABLE_object, {path: ['0/1/arrValue, turpleValue@params/hidden,disabled'], value: null});
-    state = commonLib.merge(state, UPDATABLE_object.update, {replace: UPDATABLE_object.replace, });
+
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: ['0/1/arrValue, turpleValue@params/hidden,disabled'], value: null});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][1].arrValue[SymData].params.hidden).to.be.equal(null);
     expect(state[0][1].strValue[SymData].params.hidden).to.be.equal(true);
     expect(state[0][1].mapArrValue[SymData].params.hidden).to.be.equal(true);
@@ -692,20 +684,20 @@ describe('FForm state functions tests', function () {
     let state = oneOfCore.getState();
     expect(state[SymData].oneOf).to.be.equal(0);
     let UPDATABLE_object = oneOfCore.UPDATABLE;
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, stateLib.makeNUpdate([], ['oneOf'], 1));
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, stateLib.makeNUpdate([], ['oneOf'], 1));
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].oneOf).to.be.equal(1);
     expect(state[SymData].fData.type).to.be.equal('string');
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: '@current', value: 7});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: '@current', value: 7});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].oneOf).to.be.equal(3);
     expect(state[SymData].value).to.be.equal(7);
     expect(state[SymData].current).to.be.equal(7);
     expect(state[SymData].fData.type).to.be.equal('number');
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: '@current', value: {objectTypeOneOfType: false}});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: '@current', value: {objectTypeOneOfType: false}});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].oneOf).to.be.equal(4);
     expect(state[SymData].hasOwnProperty('value')).to.be.equal(false);
     expect(state[SymData].current.objectTypeString).to.be.equal('objectTypeString default');
@@ -715,7 +707,7 @@ describe('FForm state functions tests', function () {
     expect(state.objectTypeOneOfType[SymData].value).to.be.equal(false);
     expect(state[SymData].current.objectTypeOneOfType).to.be.equal(false);
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {
+    state = stateLib.updatePROC(state, UPDATABLE_object, {
       path: '@current', value: [{
         recusion: [
           {stringRecursiveValue: 'inner test string'},
@@ -727,7 +719,7 @@ describe('FForm state functions tests', function () {
         'top level string value'
       ]
     });
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymData].oneOf).to.be.equal(0);
     expect(state[0][SymDataMapTree][SymData].length).to.be.equal(1);
     expect(state[1][SymDataMapTree][SymData].length).to.be.equal(2);
@@ -735,8 +727,8 @@ describe('FForm state functions tests', function () {
     expect(state[SymDataMapTree].oneOf[SymDataMap]['./1/@/stringTypeMappedOneOf']).to.be.ok;
 
     let uniqKey = state[1][SymData].params.uniqKey;
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [1], op: 'up', value: 0, macros: 'arrayItem'});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [1], op: 'up', value: 0, macros: 'arrayItem'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[SymDataMapTree].length[SymDataMap]['./1/@/stringTypeMappedLength']).not.to.be.ok;
     expect(state[SymDataMapTree].oneOf[SymDataMap]['./1/@/stringTypeMappedOneOf']).not.to.be.ok;
     expect(state[SymDataMapTree].length[SymDataMap]['./0/@/stringTypeMappedLength']).to.be.ok;
@@ -744,7 +736,7 @@ describe('FForm state functions tests', function () {
 
 
     expect(state[0][SymData].oneOf).to.be.equal(2);
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {
+    state = stateLib.updatePROC(state, UPDATABLE_object, {
       path: '0@value',
       value: {
         propOne: 'one',
@@ -753,15 +745,15 @@ describe('FForm state functions tests', function () {
         propFour: {oneString: 'oneString value'},
       }
     });
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][SymData].oneOf).to.be.equal(0);
     expect(state[0].recusion[SymData].length).to.be.equal(0);
     expect(state[SymData].current[0].propTwo).to.be.equal(11);
     expect(state[0].propTwo).to.be.equal(undefined);
     expect(state[0][SymData].params.uniqKey).to.be.equal(uniqKey);
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0], value: 3, macros: 'setOneOf'});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0], value: 3, macros: 'setOneOf'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][SymData].oneOf).to.be.equal(3);
     expect(state[0].propOne[SymData].oneOf).to.be.equal(0);
     expect(state[0].recusion).to.be.equal(undefined);
@@ -775,8 +767,8 @@ describe('FForm state functions tests', function () {
     expect(state[0].propThree[SymData].fData.required).not.to.be.ok;
     expect(state[0].propFour[SymData].fData.required).to.be.equal(true);
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne'], value: 2, macros: 'setOneOf', setValue: 'not compatible type'});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 'propOne'], value: 2, macros: 'setOneOf', setValue: 'not compatible type'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0].propOne[SymData].oneOf).to.be.equal(2);
     expect(state[0].propOne[SymData].length).to.be.equal(2);
     expect(state[0].propOne[SymData].fData.type).to.be.equal('array');
@@ -785,16 +777,16 @@ describe('FForm state functions tests', function () {
     expect(state[0].propOne[1][SymData].value).to.be.equal('second value');
     expect(state[0][SymData].params.uniqKey).to.be.equal(uniqKey);
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propTwo'], value: 2, setValue: ['set propTwo value'], macros: 'setOneOf'});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 'propTwo'], value: 2, setValue: ['set propTwo value'], macros: 'setOneOf'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0].propTwo[SymData].oneOf).to.be.equal(2);
     expect(state[0].propTwo[SymData].length).to.be.equal(1);
     expect(state[0].propTwo[SymData].fData.type).to.be.equal('array');
     expect(state[0].propTwo[SymData].fData.required).to.be.equal(true);
     expect(state[0].propTwo[0][SymData].value).to.be.equal('set propTwo value');
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne', '@', 'value'], value: ['set propOne Value']});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 'propOne', '@', 'value'], value: ['set propOne Value']});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0].propOne[SymData].oneOf).to.be.equal(2);
     expect(state[0].propOne[SymData].length).to.be.equal(1);
     expect(state[0].propOne[SymData].fData.type).to.be.equal('array');
@@ -803,22 +795,22 @@ describe('FForm state functions tests', function () {
 
     expect(state[0].propThree[SymData].oneOf).to.be.equal(0);
     expect(state[0].propThree[SymData].fData.required).not.to.be.ok;
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propThree', '@', 'value'], value: 'set propThree Value', setOneOf: 1});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 'propThree', '@', 'value'], value: 'set propThree Value', setOneOf: 1});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0].propThree[SymData].oneOf).to.be.equal(1);
     expect(state[0].propThree[SymData].fData.type).to.be.equal('string');
     expect(state[0].propThree[SymData].fData.required).to.be.equal(true);
     expect(state[0].propThree[SymData].value).to.be.equal('set propThree Value');
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propThree'], value: 3, macros: 'setOneOf'});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 'propThree'], value: 3, macros: 'setOneOf'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0].propThree[SymData].oneOf).to.be.equal(3);
     expect(state[0].propThree[SymData].fData.type).to.be.equal('string');
     expect(state[0].propThree[SymData].fData.required).not.to.be.ok;
     expect(state[0].propThree[SymData].value).to.be.equal('set propThree Value');
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propThree', '@', 'value'], value: null});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 'propThree', '@', 'value'], value: null});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0].propThree[SymData].oneOf).to.be.equal(0);
     expect(state[0].propThree[SymData].fData.type).to.be.equal('null');
     expect(state[0].propThree[SymData].fData.required).not.to.be.ok;
@@ -826,26 +818,26 @@ describe('FForm state functions tests', function () {
 
     expect(state[0][SymData].status.untouched).to.be.equal(0);
     expect(state[0].propOne[SymData].status.untouched).to.be.equal(0);
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [], [SymData]: ['status', 'untouched'], value: SymReset, macros: 'switch'});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [], [SymData]: ['status', 'untouched'], value: SymReset, macros: 'switch'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0][SymData].status.untouched).to.be.equal(4);
     expect(state[0].propOne[SymData].status.untouched).to.be.equal(1);
     expect(state[SymData].status.untouched).to.be.equal(2);
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne'], [SymData]: ['status', 'untouched'], value: -1, macros: 'setStatus'});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 'propOne'], [SymData]: ['status', 'untouched'], value: -1, macros: 'setStatus'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0].propOne[SymData].status.untouched).to.be.equal(0);
     expect(state[0].propOne[SymData].fData.type).to.be.equal('array');
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne'], [SymData]: ['status', 'invalid'], value: 1, macros: 'setStatus'});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 'propOne'], [SymData]: ['status', 'invalid'], value: 1, macros: 'setStatus'});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0].propOne[SymData].status.invalid).to.be.equal(1);
     expect(state[0][SymData].status.invalid).to.be.equal(1);
     expect(state[SymData].status.invalid).to.be.equal(1);
     expect(state[0][SymData].status.untouched).to.be.equal(3);
 
-    state = stateLib.updateStatePROCEDURE(state, schemaOneOf, UPDATABLE_object, {path: [0, 'propOne'], value: 3, macros: 'setOneOf', setValue: ''});
-    state = stateLib.mergeStatePROCEDURE(state, UPDATABLE_object);
+    state = stateLib.updatePROC(state, UPDATABLE_object, {path: [0, 'propOne'], value: 3, macros: 'setOneOf', setValue: ''});
+    state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
     expect(state[0].propOne[SymData].fData.type).to.be.equal('string');
     expect(state[0].propOne[SymData].status.invalid).to.be.equal(0);
     expect(state[0][SymData].status.invalid).to.be.equal(0);
