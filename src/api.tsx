@@ -311,7 +311,7 @@ class FFormStateAPI extends FFormStateManager {
   get = (...pathes: Array<string | Path>): any => getFromState(this.getState(), ...pathes);
 
   set = (path: string | Path | null, value: any, opts: APIOptsType & { replace?: any, setOneOf?: number, macros?: string } = {}) => {
-    if (!path) return this._setExecution([null], opts);
+    if (path === null) return this._setExecution([null], opts);
     let {...update} = opts;
     (update as StateApiUpdateType).path = path;
     (update as StateApiUpdateType).value = value;
@@ -322,6 +322,7 @@ class FFormStateAPI extends FFormStateManager {
 
   setValue = (value: any, opts: APIOptsType & { path?: string | Path, replace?: any, setOneOf?: number, inital?: boolean } = {}) => {
     let {path, inital, replace, ...update} = opts;
+    if (path === null) return this._setExecution([null], opts);
     path = normalizePath(path || []).slice();
     if (~path.indexOf(SymData)) (update as StateApiUpdateType).path = path;
     else {
