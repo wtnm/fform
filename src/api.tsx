@@ -11,7 +11,7 @@ import {
   isArray,
   isUndefined,
   isString,
-  deArray, toArray, isFunction
+  deArray, toArray, isFunction, isObject
 } from "./commonLib";
 
 import {
@@ -27,6 +27,7 @@ import {
   setIfNotDeeper,
   initState,
   updateState,
+  object2PathValues,
   SymData, SymReset, SymClear
 } from "./stateLib";
 
@@ -344,6 +345,20 @@ class FFormStateAPI extends FFormStateManager {
 
   switch = (path: string | Path | null, value: any, opts: APIOptsType & { replace?: any, setOneOf?: number, macros?: string } = {}) =>
     this.set(path, value, {...opts, macros: 'switch'});
+
+  setMessages = (value: anyObject | null, opts: APIOptsType & { priority?: number, group?: number, path?: string | Path, props?: any }) => {
+    let {priority = 0, group = 3, path = [], props, ...rest} = opts;
+    const msgPath = '@/messages/' + priority + '/texts/' + group;
+    if (value === null) {
+      this.switch([path, msgPath], [], rest);
+      if (isObject(props)) this.switch([path, '@/messages/' + priority], props, rest);
+    } else {
+      object2PathValues(value, {arrayAsValue: true}).forEach(p => {
+        this.set([path, p, msgPath], p.pop(), rest);
+        if (isObject(props)) this.set([path, p, '@/messages/' + priority], props, rest);
+      })
+    }
+  };
 
   reset = (opts: APIOptsType & { path?: string | Path, status?: string, value?: any } = {}) =>
     opts.status ? this.set(normalizePath(opts.path || '/'), isUndefined(opts.value) ? SymReset : opts.value,
