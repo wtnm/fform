@@ -14,7 +14,7 @@ export default {
     "minItems": 2,
     "ff_validators": [
       (value, props) => {
-        return value && value [0] && value[0].strValue === 'test validation' ? 'simple text message' : undefined;
+        return value && value [0] && value[0].strValue === 'test validation' ? ['simple text message'] : undefined;
       },
       (value, props) => {
         return value && value [0] && value[0].strValue === 'test validation' ? 'more simple text message' : undefined;
@@ -50,7 +50,7 @@ export default {
           "ff_dataMap": [
             {"from": './@/value', to: '../mapValue/@/value'},
             {"from": './@/controls', to: '../mapArrValue/@/controls'},
-            {"from": './@/controls/hidden', to: '../mapValue/@/controls/hidden', $: (v) => !v},
+            {"from": './@/controls/hidden', to: '../mapValue/@/controls/hidden', $: (v) => [!v]},
             {"from": './@/controls/disabled', to: '../mapValue/@/controls/disabled'}
           ],
         },

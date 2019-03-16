@@ -211,7 +211,8 @@ class FFormStateAPI extends FFormStateManager {
     const wrapPath = (path: null | string | Path = './') => path && normalizePath(path, self.path);
     const wrapOpts = (opts: any = {}, forcePath?: boolean) => {
       const {path, ...rest} = opts;
-      if (!isUndefined(path) || forcePath) rest.path = wrapPath(path || './');
+      if (path === null) rest.path = null;
+      else if (!isUndefined(path) || forcePath) rest.path = wrapPath(path || './');
       return self.wrapOpts ? self.wrapOpts(rest) : rest;
       //rest.noValidation = isUndefined(noValidation) ? !self.liveValidate : noValidation;
     };
@@ -234,7 +235,7 @@ class FFormStateAPI extends FFormStateManager {
       .forEach(fn => wrapped[fn] = (opts: any, ...args: any[]) => wrapApi(fn)(wrapOpts(opts, true), ...args));
     ['showOnly', 'getSchemaPart']
       .forEach(fn => wrapped[fn] = (path: string | Path = [], opts: any = {}, ...args: any[]) => wrapApi(fn)(wrapPath(path), wrapOpts(opts), ...args));
-    ['set', 'arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly']
+    ['set', 'switch', 'arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly']
       .forEach(fn => wrapped[fn] = (path: string | Path = [], value: any, opts: any = {}, ...args: any[]) => wrapApi(fn)(wrapPath(path), value, wrapOpts(opts), ...args));
     return wrapped;
   }
@@ -340,6 +341,9 @@ class FFormStateAPI extends FFormStateManager {
   };
 
   getDefaultValue = () => this.get(SymData, 'default');
+
+  switch = (path: string | Path | null, value: any, opts: APIOptsType & { replace?: any, setOneOf?: number, macros?: string } = {}) =>
+    this.set(path, value, {...opts, macros: 'switch'});
 
   reset = (opts: APIOptsType & { path?: string | Path, status?: string, value?: any } = {}) =>
     opts.status ? this.set(normalizePath(opts.path || '/'), isUndefined(opts.value) ? SymReset : opts.value,
@@ -491,20 +495,25 @@ function objectDerefer(_objects: any, obj2deref: any, track: string[] = []) { //
 }
 
 function objectResolver(_objects: any, obj2resolve: any, track: string[] = []): any { // todo: test
-  const convRef = (refs: string) => deArray(refs.split('|').map((r, i) => {
-    let refRes = getIn(_objs, string2path(r.trim()));
-    testRef(refRes, r.trim(), track.concat('@' + i));
+  const convRef = (refs: string, prefix = '') => deArray(refs.split('|').map((ref, i) => {
+    ref = ref.trim();
+    if (isRef(ref)) prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
+    else ref = prefix + ref;
+    let refRes = getIn(_objs, string2path(ref));
+    testRef(refRes, ref, track.concat('@' + i));
     return refRes;
   }));
+  const isRef = (val: string) => val.substr(0, 2) == '^/';
   const _objs = {'^': _objects};
   const result = objectDerefer(_objects, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
     //const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '^/' ? convRef(result[key]) : result[key];
     let resolvedValue = result[key];
-    if (isString(resolvedValue) && resolvedValue.substr(0, 2) == '^/') {
+    if (isString(resolvedValue) && isRef(resolvedValue.trim())) {
       resolvedValue = convRef(resolvedValue);
-      if (key !== '$' && key[0] !== '_' && (isFunction(resolvedValue) || isArray(resolvedValue) && resolvedValue.every(isFunction))) resolvedValue = {$: resolvedValue}
+      if (key !== '$' && key[0] !== '_' && (isFunction(resolvedValue) || isArray(resolvedValue) && resolvedValue.every(isFunction)))
+        resolvedValue = {$: resolvedValue}
     }
     if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _ 
     else if (isMergeable(resolvedValue)) retResult[key] = objectResolver(_objects, resolvedValue, track.concat(key));

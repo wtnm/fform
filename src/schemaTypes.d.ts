@@ -125,12 +125,12 @@ interface jsFFCustomizeType {
 
 
 type FFParamsType = {
-  liveValidate?: boolean;
-  autofocus?: boolean;
   readonly?: boolean;
   disabled?: boolean;
+  viewer?: boolean;
+  liveValidate?: boolean;
+  autofocus?: boolean;
   hidden?: boolean;
   norender?: boolean;
-  viewer?: boolean;
   [key: string]: any;
 }

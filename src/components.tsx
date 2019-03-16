@@ -1,7 +1,27 @@
 import * as React from 'react';
 
 //const React = require('preact');
-import {asNumber, toArray, deArray, setIn, getIn, isArray, isEqual, isObject, isMergeable, isString, isUndefined, isFunction, makeSlice, merge, mergeState, objKeys, push2array, memoize} from "./commonLib";
+import {
+  asNumber,
+  toArray,
+  deArray,
+  setIn,
+  getIn,
+  isArray,
+  isEqual,
+  isObject,
+  isMergeable,
+  isString,
+  isUndefined,
+  isFunction,
+  makeSlice,
+  merge,
+  mergeState,
+  objKeys,
+  push2array,
+  memoize,
+  hasIn
+} from "./commonLib";
 import {
   arrayStart,
   isSelfManaged,
@@ -28,6 +48,7 @@ import Timeout = NodeJS.Timeout;
 //  Main class
 /////////////////////////////////////////////
 class FForm extends React.Component<any, any> {
+  static params = ['readonly', 'disabled', 'viewer', 'liveValidate'];
   private _unsubscribe: any;
   private _savedState: any;
   private _savedValue: any;
@@ -70,6 +91,8 @@ class FForm extends React.Component<any, any> {
     if (value && value !== prevProps.value) self.api.setValue(value, {replace: true, noValidation});
     if (extData && extData !== prevProps.extData) objKeys(extData).forEach(key => (self.api.set(key, (extData as any)[key], {replace: true})));
     if (touched !== prevProps.touched) self.api.reset({status: 'untouched', value: touched ? 0 : undefined});
+    FForm.params.forEach(k => (!isUndefined(nextProps[k]) && nextProps[k] !== prevProps[k] &&
+      self.api.switch('/@/params/' + k, nextProps[k])));
   }
 
   _handleStateUpdate(state: StateType) {
@@ -144,7 +167,7 @@ class FForm extends React.Component<any, any> {
   render() {
     const self = this;
     let {core, state, value, inital, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = 'form', ...rest} = self.props;
-
+    FForm.params.forEach(k => delete (rest as any)[k]);
     return (
       <UseTag {...rest} onSubmit={self._submit}>
         <FField ref={self._setRef} id={rest.id ? rest.id + '/#' : undefined} name={self.api.name} pFForm={self} getPath={self._getPath} FFormApi={self.api}/>
@@ -274,12 +297,13 @@ class FField extends FRefsGeneric {
     const self = this;
     self._cachedTimeout = undefined;
     if (self._cached) {
-      self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate, ...self._cached.opts, path: self.path});
+      self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate, path: self.path, ...self._cached.opts});
       self._cached = undefined;
     }
   }
 
   _cacheValue(path: any, value: any, fn: string = 'set', opts: any = {}): boolean | undefined {
+    //if (path === null) return;
     const self = this;
     let fieldCache = self.pFForm.props.fieldCache;
     if (isUndefined(fieldCache) || fieldCache === true) fieldCache = 40;
@@ -706,7 +730,10 @@ class GenericWidget extends FRefsGeneric {
     if (isFunction(refObject)) refObject = {ref: refObject};
     if (isFunction(passedReactRef)) refObject.ref = passedReactRef;
     else Object.assign(refObject, passedReactRef);
-    return <Widget key={key} className={isString(Widget) && this.props._$cx ? this.props._$cx(className) : className} _$cx={!isString(Widget) ? this.props._$cx : undefined} {...rest} {...refObject}/>
+    const cxPass = !isString(Widget) && (Widget as any) instanceof GenericWidget;
+    return <Widget key={key}
+                   className={(!cxPass && this.props._$cx) ? this.props._$cx(className) : className}
+                   _$cx={cxPass ? this.props._$cx : undefined} {...rest} {...refObject}/>
   }
 
   protected _mapChildren(children: any, $_reactRef: anyObject) {
@@ -847,7 +874,7 @@ function Wrapper(props: any) {
 
 
 function ItemMenu(props: any) {
-  const {_$useTag: UseTag = 'div', _$cx = classNames, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
+  const {_$useTag: UseTag = 'div', _$cx = classNames, disabled, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
   if (!arrayItem) return null;
   // console.log(arrayItem)
   buttons.forEach((key: string) => delete rest[key]);
@@ -856,7 +883,8 @@ function ItemMenu(props: any) {
       {buttons.map((key: string) => {
         const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key, ...restBut} = buttonsProps[key] || {};
         return (
-          <ButW key={key} type={type} title={title} className={_$cx ? _$cx(ButCN) : ButCN} children={children} disabled={disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
+          <ButW key={key} type={type} title={title} className={_$cx ? _$cx(ButCN) : ButCN} children={children}
+                disabled={disabled || disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
       })}
     </UseTag>);
 }
@@ -1244,7 +1272,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
               ],
             },
             {args: ['@/fData/enum', '@/value']},
-            {$: '^/fn/enumInputProps', args: ['@/fData/enum', 'readOnly', '@/params/readonly', 'disabled', '@/params/disabled'], replace: false}
+            {args: {0: '@/fData/enum'}},
           ]
         }
       }
@@ -1290,9 +1318,10 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       return objKeys(messages).map(priority => {
         const {norender, texts, className = {}, ...rest} = messages[priority];
         const children: any[] = [];
-        objKeys(texts).forEach((key: string) => push2array(children, ...toArray(texts[key]).map(v => [v, {_$widget: 'br'}])));
+        objKeys(texts).forEach((key: string) =>
+          toArray(texts[key]).forEach((v, i, arr) =>
+            (isString(v) && isString(children[children.length - 1])) ? children.push(v, {_$widget: 'br'}) : children.push(v)));
         if (norender || !children.length) return null;
-        children.pop();
         return {children, ...restSP, className: {['priority_' + priority]: true, ...cnSP, ...className}, ...rest}
       })
     },
@@ -1347,8 +1376,8 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
     blur: function (value: any) {
       this.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
       this.api.set('/@/active', undefined, {noValidation: true});
-      console.log('blur ', this.path);
-      return !this.liveValidate ? this.api.validate('./',) : null; // {execute: true}
+      // console.log('blur ', this.path);
+      return [!this.liveValidate ? this.api.validate('./',) : null]; // {execute: true}
 
     },
     eventCheckboxes: function (event: any) {
@@ -1391,6 +1420,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
             replace: false,
           },
           {$: '^/fn/enumInputValue', args: ['@/selector/enum', '@/selector/value'], replace: false},
+          {$: '^/fn/enumInputProps', args: ['@/selector/enum', 'readOnly', '@/params/readonly', 'disabled', '@/params/disabled'], replace: false}
         ]
       }
     },
@@ -1410,7 +1440,10 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       _$cx: '^/_$cx',
       _$useTag: 'button',
       type: 'button',
-      $_maps: {'className/button-viewer': '@/params/viewer'}
+      $_maps: {
+        'className/button-viewer': '@/params/viewer',
+        disabled: '@/params/disabled',
+      }
     },
     ArrayAddButton: {
       $_ref: '^/parts/Button',
@@ -1418,7 +1451,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       onClick: {$: '^/fn/arrayAdd', args: ['./']},
       $_maps: {
         'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
-        'disabled': {$: '^/fn/not', args: '@/fData/canAdd'}
+        'disabled': {$: '^/fn/equal', args: [true, {$: '^/fn/not', args: '@/fData/canAdd'}, '@params/disabled']}
       }
     },
     ArrayDelButton: {
@@ -1427,7 +1460,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       onClick: {$: '^/fn/arrayAdd', args: ['./', -1]},
       $_maps: {
         'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
-        'disabled': {$: '^/fn/not', args: '@/length'}
+        'disabled': {$: '^/fn/equal', args: [true, {$: '^/fn/not', args: '@/length'}, '@params/disabled']},
       },
     },
     ArrayEmpty: {
@@ -1446,7 +1479,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
         down: {disabledCheck: 'canDown'},
         del: {disabledCheck: 'canDel'},
       },
-      $_maps: {'arrayItem': '@/arrayItem', 'className/button-viewer': '@/params/viewer'},
+      $_maps: {arrayItem: '@/arrayItem', 'className/button-viewer': '@/params/viewer', disabled: '@params/disabled'},
     },
     expander: {_$widget: 'div', className: {expand: true}}
   },

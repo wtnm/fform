@@ -94,7 +94,7 @@ export default {
             },
             stringRecursiveValue: {
               type: 'string',
-              ff_dataMap: [{from: '../../@length', to: './@value', $: n => n.toString()}, {from: '../@oneOf', to: './@selfMappedOneOf'}]
+              ff_dataMap: [{from: '../../@length', to: './@value', $: n => [n.toString()]}, {from: '../@oneOf', to: './@selfMappedOneOf'}]
             }
           }
         }, {
