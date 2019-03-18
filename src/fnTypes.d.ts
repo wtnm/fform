@@ -174,3 +174,5 @@ interface PathValueResultType {
   result: StateType[]
   data?: StateType
 }
+
+type JSONMessage = [Path, string | string[]]

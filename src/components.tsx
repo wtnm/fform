@@ -69,7 +69,7 @@ class FForm extends React.Component<any, any> {
     self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
     self.parent = props.parent;
     // self.focus = self.focus.bind(self);
-    self._updateValues(props);
+    self._updateValues(isUndefined(props.touched) && props.touched !== null ? merge(props, {touched: false}) : props);
     // self.api.reset({status: 'untouched'});
     if (!props.noValidation) self.api.validate(true);
     self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
@@ -90,7 +90,7 @@ class FForm extends React.Component<any, any> {
     if (inital && inital !== prevProps.inital) self.api.setValue(inital, {replace: true, inital: true, noValidation});
     if (value && value !== prevProps.value) self.api.setValue(value, {replace: true, noValidation});
     if (extData && extData !== prevProps.extData) objKeys(extData).forEach(key => (self.api.set(key, (extData as any)[key], {replace: true})));
-    if (touched !== prevProps.touched) self.api.reset({status: 'untouched', value: touched ? 0 : undefined});
+    if (!isUndefined(touched) && touched !== null && touched !== prevProps.touched) self.api.reset({status: 'untouched', value: touched ? 0 : undefined});
     FForm.params.forEach(k => (!isUndefined(nextProps[k]) && nextProps[k] !== prevProps[k] &&
       self.api.switch('/@/params/' + k, nextProps[k])));
   }
@@ -462,8 +462,8 @@ class FSectionWidget extends React.Component<any, any> { // need to be class, as
   _cn(props: any) {
     if (!props) return props;
     if (this.props._$cx && props.className && !isString(props.className)) {
-      if (isString(this.props._$widget)) return {...props, className: this.props._$cx(props.className)};
-      else return {_$cx: this.props._$cx, ...props}
+      if (passCx(this.props._$widget)) return {_$cx: this.props._$cx, ...props};
+      else return {...props, className: this.props._$cx(props.className)};
     }
     return props;
   }
@@ -730,10 +730,9 @@ class GenericWidget extends FRefsGeneric {
     if (isFunction(refObject)) refObject = {ref: refObject};
     if (isFunction(passedReactRef)) refObject.ref = passedReactRef;
     else Object.assign(refObject, passedReactRef);
-    const cxPass = !isString(Widget) && (Widget as any) instanceof GenericWidget;
     return <Widget key={key}
-                   className={(!cxPass && this.props._$cx) ? this.props._$cx(className) : className}
-                   _$cx={cxPass ? this.props._$cx : undefined} {...rest} {...refObject}/>
+                   className={(!passCx(Widget) && this.props._$cx) ? this.props._$cx(className) : className}
+                   _$cx={passCx(Widget) ? this.props._$cx : undefined} {...rest} {...refObject}/>
   }
 
   protected _mapChildren(children: any, $_reactRef: anyObject) {
@@ -907,6 +906,10 @@ function CheckboxNull(props: any) {
 ///////////////////////////////
 //     Functions
 ///////////////////////////////
+
+function passCx(Widget: any) {
+  return Widget instanceof GenericWidget
+}
 
 const resolveComponents = memoize((fformObjects: formObjectsType, customizeFields: FFCustomizeType = {}, sets?: string): jsFFCustomizeType => {
   if (sets) {

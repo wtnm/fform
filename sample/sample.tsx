@@ -5,9 +5,11 @@ import * as sampleSchema from './sampleSchema.json'
 import * as style from '../addons/styles.json'
 
 const {render} = require('react-dom');
-//const {render} = require('preact');
 
-const JSONValidator: any = require('../addons/is-my-json-valid-lite');
+import imjvWrapper from '../addons/imjvWrapper';
+
+const imjvValidator: any = require('../addons/is-my-json-valid-lite');
+const JSONValidator = imjvWrapper(imjvValidator);
 
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');

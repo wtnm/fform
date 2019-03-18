@@ -89,6 +89,7 @@ class FFormStateManager {
   private _unsubscribe: any;
   private _listeners: Array<(state: StateType) => void> = [];
 
+  JSONValidator: any
   UPDATABLE: PROCEDURE_UPDATABLE_Type;
   props: FFormApiProps;
   schema: jsJsonSchema;
@@ -107,8 +108,9 @@ class FFormStateManager {
     self.name = props.name || '';
     self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
     self._reducer = formReducer();
-    self._validator = props.JSONValidator && props.JSONValidator(self.schema, {greedy: true});
-    self.JSONValidator = self._validator && self.JSONValidator.bind(self);
+    if (props.JSONValidator) self.JSONValidator = props.JSONValidator(self.schema);
+    //self._validator = props.JSONValidator && props.JSONValidator(self.schema, {greedy: true});
+    //self.JSONValidator = self._validator && self.JSONValidator.bind(self);
     self._getState = self._getState.bind(self);
     self._setState = self._setState.bind(self);
     if (props.setState && props.store) self._unsubscribe = self.props.store.subscribe(self._handleChange.bind(self));
@@ -148,13 +150,13 @@ class FFormStateManager {
     return this.props.name && this.props.store.getState()[getFRVal()][this.props.name];
   }
 
-  private JSONValidator(data: any) {
-    this._validator(data);
-    let result = this._validator.errors;
-    if (!result) return [];
-    if (!isArray(result)) result = [result];
-    return result.map((item: any) => [item.field.replace('["', '.').replace('"]', '').split('.').slice(1), item.message])
-  }
+  // private JSONValidator(data: any) {
+  //   this._validator(data);
+  //   let result = this._validator.errors;
+  //   if (!result) return [];
+  //   if (!isArray(result)) result = [result];
+  //   return result.map((item: any) => [item.field.replace('["', '.').replace('"]', '').split('.').slice(1), item.message])
+  // }
 
   private _handleChange() {
     const self = this;
