@@ -1,11 +1,11 @@
-import * as React from 'react';
+/** @jsx h */
 
+import {createElement as h, Component} from 'react';
 //const React = require('preact');
+
 import {
-  asNumber,
   toArray,
   deArray,
-  setIn,
   getIn,
   isArray,
   isEqual,
@@ -14,13 +14,9 @@ import {
   isString,
   isUndefined,
   isFunction,
-  makeSlice,
   merge,
-  mergeState,
   objKeys,
-  push2array,
   memoize,
-  hasIn
 } from "./commonLib";
 import {
   arrayStart,
@@ -35,20 +31,18 @@ import {
   branchKeys,
   isNPath,
   multiplyPath,
-  normalizeArgs,
   processFn,
   isMapFn,
   normalizeFn,
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
 import Timeout = NodeJS.Timeout;
-import {string} from "prop-types";
 
 
 /////////////////////////////////////////////
 //  Main class
 /////////////////////////////////////////////
-class FForm extends React.Component<any, any> {
+class FForm extends Component<any, any> {
   static params = ['readonly', 'disabled', 'viewer', 'liveValidate'];
   private _unsubscribe: any;
   private _savedState: any;
@@ -177,7 +171,7 @@ class FForm extends React.Component<any, any> {
   }
 }
 
-class FRefsGeneric extends React.Component<any, any> {
+class FRefsGeneric extends Component<any, any> {
   $refs: any = {};
 
   constructor(props: any, context: any) {
@@ -443,12 +437,10 @@ class FField extends FRefsGeneric {
       if (isUndefined(self.state.branch)) return null;
       if (getIn(self.getData(), 'params', 'norender')) return false;
       if (self._rebuild) this._build();
-      const BuilderWidget = self._widgets['Builder'];
-      return <BuilderWidget {...self._mappedData['Builder']} mapped={self._mappedData}/>
+      return self._widgets['Builder'] ? h(self._widgets['Builder'], self._mappedData['Builder'], self._mappedData) : null;
     } catch (e) {
       throw self._addErrPath(e)
     }
-
   }
 }
 
@@ -457,7 +449,7 @@ class FField extends FRefsGeneric {
 /////////////////////////////////////////////
 //  Section class
 /////////////////////////////////////////////
-class FSectionWidget extends React.Component<any, any> { // need to be class, as we use it's forceUpdate() method
+class FSectionWidget extends Component<any, any> { // need to be class, as we use it's forceUpdate() method
   refs: any;
 
   _cn(props: any) {
@@ -471,7 +463,7 @@ class FSectionWidget extends React.Component<any, any> { // need to be class, as
 
   render() {
     const props = this._cn(this.props.getMappedData());
-    return React.createElement(this.props._$widget, props, this.props.children || props.children);
+    return h(this.props._$widget, props, this.props.children || props.children);
   }
 }
 
@@ -698,7 +690,7 @@ class FSection extends FRefsGeneric {
         let {_$widget = UniversalViewer, ...rest} = props.viewerProps || {};
         rest.inputProps = props;
         rest.value = props.$FField.value;
-        return React.createElement(_$widget, rest)
+        return h(_$widget, rest)
       }
       if (isSelfManaged(props.$branch)) return null;
       if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
@@ -785,7 +777,7 @@ function UniversalViewer(props: any) {
   let {_$useTag: UseTag = 'div', value, inputProps, _$cx, enumExten = {}, emptyMock = '(none)', ...rest} = props;
   if (rest.className && _$cx) rest.className = _$cx(rest.className);
 
-  return React.createElement(UseTag, rest, toString(emptyMock, enumExten, value))
+  return h(UseTag, rest, toString(emptyMock, enumExten, value))
 }
 
 
@@ -797,7 +789,7 @@ class UniversalInput extends GenericWidget {
       let {_$widget = UniversalViewer, ...rest} = props.viewerProps || {};
       rest.inputProps = props;
       rest.value = props.value;
-      return React.createElement(_$widget, rest)
+      return h(_$widget, rest)
     }
 
     let {value, _$useTag: UseTag, type, $_reactRef, _$cx, viewer, viewerProps, children, ...rest} = props;
@@ -814,12 +806,12 @@ class UniversalInput extends GenericWidget {
     // if (rest.value === null) rest.value = '';
 
     if (rest.className && _$cx) rest.className = _$cx(rest.className);
-    return React.createElement(UseTag, rest, self._mapped)
+    return h(UseTag, rest, self._mapped)
   }
 }
 
 
-class Autowidth extends React.Component<any, any> {
+class Autowidth extends Component<any, any> {
   static readonly sizerStyle: any = {position: 'absolute', top: 0, left: 0, visibility: 'hidden', height: 0, overflow: 'scroll', whiteSpace: 'pre'};
   private _elem: any;
 
@@ -843,15 +835,16 @@ class Autowidth extends React.Component<any, any> {
 
 
 function FBuilder(props: any) {
-  const {mapped, widgets} = props;
+  let {children: mapped, widgets} = props;
   const {Title, Body, Main, Message, Wrapper, Autowidth} = widgets;
 
-  return Wrapper ? React.createElement(Wrapper, mapped['Wrapper'],
-    Title ? React.createElement(Title, mapped['Title']) : '',
-    Body ? React.createElement(Body, mapped['Body'],
-      Main ? React.createElement(Main, mapped['Main']) : '',
-      Message ? React.createElement(Message, mapped['Message']) : '',
-      Autowidth ? React.createElement(Autowidth, mapped['Autowidth']) : ''
+  mapped = deArray(mapped);
+  return Wrapper ? h(Wrapper, mapped['Wrapper'],
+    Title ? h(Title, mapped['Title']) : '',
+    Body ? h(Body, mapped['Body'],
+      Main ? h(Main, mapped['Main']) : '',
+      Message ? h(Message, mapped['Message']) : '',
+      Autowidth ? h(Autowidth, mapped['Autowidth']) : ''
     ) : ''
   ) : ''
 }

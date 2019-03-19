@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="fixes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/stateLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/stateLib.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -71,8 +69,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/components.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="383">
-              <caret line="976" column="34" selection-start-line="976" selection-start-column="34" selection-end-line="976" selection-end-column="34" />
+            <state relative-caret-position="447">
+              <caret line="980" column="4" selection-start-line="980" selection-start-column="4" selection-end-line="980" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -543,8 +541,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.compile:sample:dev" />
         <item itemvalue="npm.compile" />
+        <item itemvalue="npm.compile:sample:dev" />
         <item itemvalue="npm.compile:dev" />
       </list>
     </recent_temporary>
@@ -1188,14 +1186,7 @@
       <workItem from="1552917131475" duration="2803000" />
       <workItem from="1552922164875" duration="231000" />
       <workItem from="1552996349971" duration="3628000" />
-      <workItem from="1553011448533" duration="238000" />
-    </task>
-    <task id="LOCAL-00054" summary="documentation inital">
-      <created>1549462049636</created>
-      <option name="number" value="00054" />
-      <option name="presentableId" value="LOCAL-00054" />
-      <option name="project" value="LOCAL" />
-      <updated>1549462049636</updated>
+      <workItem from="1553011448533" duration="286000" />
     </task>
     <task id="LOCAL-00055" summary="documentation more">
       <created>1549530266897</created>
@@ -1533,7 +1524,14 @@
       <option name="project" value="LOCAL" />
       <updated>1553001910983</updated>
     </task>
-    <option name="localTasksCounter" value="103" />
+    <task id="LOCAL-00103" summary="fixes">
+      <created>1553011732363</created>
+      <option name="number" value="00103" />
+      <option name="presentableId" value="LOCAL-00103" />
+      <option name="project" value="LOCAL" />
+      <updated>1553011732364</updated>
+    </task>
+    <option name="localTasksCounter" value="104" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1569,7 +1567,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3472472000" />
+    <option name="totallyTimeSpent" value="3472520000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1594,7 +1592,7 @@
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="DB Execution Console" order="3" />
       <window_info anchor="bottom" id="Terminal" order="4" sideWeight="0.4919972" weight="0.32671082" />
-      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48746517" visible="true" weight="0.27924946" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48746517" weight="0.27924946" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.24675325" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" weight="0.38300222" />
@@ -2075,8 +2073,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/components.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="383">
-          <caret line="976" column="34" selection-start-line="976" selection-start-column="34" selection-end-line="976" selection-end-column="34" />
+        <state relative-caret-position="447">
+          <caret line="980" column="4" selection-start-line="980" selection-start-column="4" selection-end-line="980" selection-end-column="4" />
         </state>
       </provider>
     </entry>
