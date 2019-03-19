@@ -568,7 +568,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
       ff_validators.forEach((validator: any) => {
         const updates: any[] = [];
         field.updates = updates;
-        let result = processFn.call(field, validator, validatedValue, undefined, false);
+        let result = processFn.call(field, validator, validatedValue, false);
         if (result && result.then && typeof result.then === 'function') { //Promise
           result.validatedValue = validatedValue;
           result.path = track;
@@ -796,7 +796,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     if (oneOfSelector) {
       const field = makeSynthField(UPDATABLE.api, path2string(track));
       const ff_oneOfSelector = parts[currentOneOf].ff_oneOfSelector;
-      setOneOf = processFn.call(field, ff_oneOfSelector, value, undefined, false);
+      setOneOf = processFn.call(field, ff_oneOfSelector, value, false);
       if (isArray(setOneOf)) setOneOf = setOneOf[0];
     }
 
@@ -1380,16 +1380,16 @@ function testArray(value: any) {
   return value
 }
 
-function processFn(map: any, value: any, nextData?: any, strictArrayResult = true) {
+function processFn(map: any, value: any, strictArrayResult = true) {
   const processArg = (arg: any) => {
     if (isNPath(arg)) return getIn(nextData, arg);
-    if (isMapFn(arg)) return !arg._map ? processFn.call(this, arg, value, nextData) : arg(value, nextData);
+    if (isMapFn(arg)) return !arg._map ? processFn.call(this, arg, value, strictArrayResult) : arg(value, strictArrayResult);
     // if (arg == '${field}') return this;
     if (arg == '${value}') return value;
     //if (hasIn($value, arg)) return $value[arg];
     return arg;
   };
-  if (map.dataRequest && !nextData) nextData = this.getData();
+  const nextData = map.dataRequest ? this.getData() : null;
   const res = toArray(map.$).reduce((args, fn) => isFunction(fn) ? (strictArrayResult ? testArray : toArray)(fn.apply(this, args)) : args,
     (map.args || []).map(processArg));
   return strictArrayResult ? testArray(res)[0] : deArray(res);

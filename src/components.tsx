@@ -974,7 +974,7 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
   const dataUpdates = {update: {}, replace: {}, api: {}};
   iterMaps.forEach(maps => maps && maps.forEach(map => {
       if (map.update == 'data' && !needUpdate(map)) return;
-      const value = map.$ ? map.$(undefined, nextData) : getIn(nextData, map.args);
+      const value = map.$ ? map.$() : getIn(nextData, map.args);
       objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, map.replace, map.to[k]));
       if (!map.replace) mappedData = mergeUPD_PROC(mappedData, dataUpdates);
     })
@@ -1282,6 +1282,8 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       }
     },
     checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue'}}, '5': '[]'}}}}}},
+    radioNull: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: '^/fn/eventValue|radioClear'}}}}}}},
+    radioEmpty: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: {$: '^/fn/eventValue|radioClear', args: ['${value}', '']}}}}}}}},
     hidden: {
       Builder: {
         className: {hidden: true},
@@ -1391,6 +1393,9 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       updated.sort((a: any, b: any) => all.indexOf(a) > all.indexOf(b));
       return [updated]
     },
+    radioClear: function (value: any, nullValue = null) {
+      if (this.api.getValue() === value) this.api.setValue(nullValue);
+    }
   },
   parts: {
     RadioSelector: {
