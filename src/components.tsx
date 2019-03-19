@@ -42,6 +42,7 @@ import {
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
 import Timeout = NodeJS.Timeout;
+import {string} from "prop-types";
 
 
 /////////////////////////////////////////////
@@ -1066,7 +1067,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
         _$widget: '^/widgets/Builder',
         _$cx: '^/_$cx',
         $_maps: {
-          widgets: {$: '^/fn/getFFieldProperty', args: ['_widgets'], update: 'build'},
+          widgets: {$: '^/fn/getProp', args: ['_widgets'], update: 'build'},
         },
       },
       //Title: {},
@@ -1093,7 +1094,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
         _$cx: '^/_$cx',
         $_reactRef: {ref: true},
         viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {viewer: true}},
-        onChange: {$: '^/fn/eventValue|^/fn/setValue'},
+        onChange: {$: '^/fn/eventValue|setValue'},
         onBlur: {$: '^/fn/blur'},
         onFocus: {$: '^/fn/focus'},
         $_maps: {
@@ -1107,8 +1108,8 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
           required: '@/fData/required',
           label: '@/fData/title',
           'viewerProps/enumExten': '@/fData/enumExten',
-          id: {$: '^/fn/getFFieldProperty', args: 'props/id', update: 'build'},
-          name: {$: '^/fn/getFFieldProperty', args: 'props/name', update: 'build'},
+          id: {$: '^/fn/getProp', args: 'props/id', update: 'build'},
+          name: {$: '^/fn/getProp', args: 'props/name', update: 'build'},
         }
       },
       Title: {
@@ -1120,7 +1121,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
           'className/required': '@/fData/required',
           'children/0': '@/fData/title',
           'className/hidden': {$: '^/fn/not', args: '@/fData/title'},
-          htmlFor: {$: '^/fn/getFFieldProperty', args: ['id'], update: 'build'},
+          htmlFor: {$: '^/fn/getProp', args: ['id'], update: 'build'},
           'className/title-viewer': '@/params/viewer'
         }
       },
@@ -1142,7 +1143,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       $_ref: '^/sets/nBase',
       Main: {
         type: 'number',
-        onChange: {$: '^/fn/eventValue|^/fn/parseNumber|^/fn/setValue', args: ['${value}', true, 9]},
+        onChange: {$: '^/fn/eventValue|parseNumber|setValue', args: ['${value}', true, 9]},
       }
     },
     integerNull: {
@@ -1167,7 +1168,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       $_ref: '^/sets/nBase',
       Main: {
         type: 'checkbox',
-        onChange: {$: '^/fn/eventChecked|^/fn/setValue'}
+        onChange: {$: '^/fn/eventChecked|setValue'}
       },
     },
     booleanLeft: {
@@ -1213,13 +1214,13 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
           length: '@/length',
           oneOf: '@/oneOf',
           isArray: {$: '^/fn/equal', args: ['@/fData/type', 'array']},
-          $branch: {$: '^/fn/getFFieldProperty', args: '$branch', update: 'every'},
+          $branch: {$: '^/fn/getProp', args: '$branch', update: 'every'},
           arrayStart: {$: '^/fn/getArrayStart', args: [], update: 'build'},
-          $FField: {$: '^/fn/getFFieldProperty', args: [], update: 'build'},
-          FFormApi: {$: '^/fn/getFFieldProperty', args: 'props/pFForm/api', update: 'build'},
-          id: {$: '^/fn/getFFieldProperty', args: 'props/id', update: 'build'},
-          name: {$: '^/fn/getFFieldProperty', args: 'props/name', update: 'build'},
-          $layout: {$: '^/fn/getFFieldProperty', args: 'ff_layout', update: 'build'}
+          $FField: {$: '^/fn/getProp', args: [], update: 'build'},
+          FFormApi: {$: '^/fn/getProp', args: 'props/pFForm/api', update: 'build'},
+          id: {$: '^/fn/getProp', args: 'props/id', update: 'build'},
+          name: {$: '^/fn/getProp', args: 'props/name', update: 'build'},
+          $layout: {$: '^/fn/getProp', args: 'ff_layout', update: 'build'}
         }
       },
       Title: {
@@ -1250,7 +1251,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       $_ref: '^/sets/select',
       Main: {
         multiple: true,
-        onChange: {$: '^/fn/eventMultiple|^/fn/setValue'}
+        onChange: {$: '^/fn/eventMultiple|setValue'}
       }
     },
     radio: {
@@ -1280,7 +1281,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
         }
       }
     },
-    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|^/fn/setValue'}}, '5': '[]'}}}}}},
+    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue'}}, '5': '[]'}}}}}},
     hidden: {
       Builder: {
         className: {hidden: true},
@@ -1305,11 +1306,8 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
   },
   fn: {
     api: function (fn: string, ...args: any[]) {this.api[fn](...args)},
-    set: function (...args: any[]) {
-      for (let i = 0; i < args.length; i += 2) {
-        let {path, ...opts} = isString(args[i]) ? {path: args[i]} : args[i];
-        this.api.set(path, isFunction(args[i + 1]) ? args[i + 1]() : args[i + 1], opts)
-      }
+    format: function (str: string, ...args: any[]) {
+      return args.reduce((str, val, i) => str.replace('${' + i + '}', val), str)
     },
     iif: (iif: any, trueVal: any, falseVaL: any) => (iif ? [trueVal] : [falseVaL]),
     not: function (v: any) {
@@ -1329,7 +1327,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       })
     },
     getArrayStart: function () {return [arrayStart(this.schemaPart)]},
-    getFFieldProperty: function (key: string) {return [getIn(this, normalizePath(key))]},
+    getProp: function (key: string) {return [getIn(this, normalizePath(key))]},
     arrayOfEnum: function (enumVals: any[], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
       return [enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
@@ -1435,7 +1433,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
         value: 'value',
         placeholder: '@/params/placeholder',
         'className/hidden': '@/params/hidden',
-        $FField: {$: '^/fn/getFFieldProperty', args: [], update: 'build'},
+        $FField: {$: '^/fn/getProp', args: [], update: 'build'},
       }
     },
     Button: {

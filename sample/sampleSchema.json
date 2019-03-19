@@ -18,8 +18,9 @@
             "className/button-viewer": false
           },
           "onClick": {
-            "$": "^/user/set",
+            "$": "^/fn/api",
             "args": [
+              "set",
               "/@/params/viewer",
               true,
               {
@@ -42,11 +43,11 @@
             "className/button-viewer": false
           },
           "onClick": {
-            "$": "^/user/set",
+            "$": "^/fn/setValue",
             "args": [
-              "/@/params/viewer",
               false,
               {
+                "path": "/@/params/viewer",
                 "macros": "switch"
               }
             ]
@@ -56,7 +57,14 @@
           "_$widget": "input",
           "type": "text",
           "onChange": {
-            "$": "^/user/focusInputChange"
+            "$": "^/fn/eventValue|setValue",
+            "args": [
+              "${value}",
+              {
+                "path": "./@/focusValue",
+                "execute": true
+              }
+            ]
           },
           "$_reactRef": {
             "ref": "!focusInput"

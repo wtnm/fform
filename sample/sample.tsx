@@ -15,12 +15,6 @@ if (typeof window != 'undefined') {
   const container = document.querySelector('#root');
   let sampleObjects = fformObjects.extend([style, {
     'user': {
-      set: function (path: string, value: any, opts: any) {
-        this.api.set(path, value, opts)
-      },
-      focusInputChange: function (event: any) {
-        this.api.set('./@/focusValue', event.target.value, {execute: true})
-      },
       focusInput: function () {
         let focusInput = this.getRef('!focusInput');
         focusInput = focusInput.value;
