@@ -407,12 +407,20 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   const result = {};
   const dataMapObjects: normalizedDataMapType[] = [];
   let defaultValues: any;
-  const currentOneOf = (getNSetOneOf(path) || {}).oneOf;
-  const schemaPartsOneOf = getSchemaPart(schema, path, getNSetOneOf, true);
+  let currentOneOf = (getNSetOneOf(path) || {}).oneOf;
+  const schemaPartsOneOf = toArray(getSchemaPart(schema, path, getNSetOneOf, true));
+  const ff_oneOfSelector = schemaPartsOneOf[currentOneOf || 0].ff_oneOfSelector;
+  if (ff_oneOfSelector) {
+    let setOneOf = processFn.call(null, ff_oneOfSelector, value, false);
+    if (isArray(setOneOf)) setOneOf = setOneOf[0];
+    currentOneOf = setOneOf;
+    //schemaPart = schemaPartsOneOf[oneOf];
+  }
   let {schemaPart, oneOf, type} = findOneOf(schemaPartsOneOf, value, currentOneOf);
-  if (!isUndefined(currentOneOf) && currentOneOf != oneOf) { // value type is not that currentOneOf supports 
-    console.info('Passed value is not supported by schema.type in path "' + path.join('/') + '" and oneOfIndex "' + currentOneOf + '". Reset value to default.\n');
-    value = schemaPartsOneOf[currentOneOf].default; // so, reset value to default, cause keeping oneOf is in prior (if currentOneOf exists, otherwise oneOf is changed)
+
+  if (isUndefined(schemaPart) || !isUndefined(currentOneOf) && currentOneOf != oneOf) { // value type is not that currentOneOf supports 
+    console.info('Passed value: "' + value + '" is not supported by schema.type in path "' + path.join('/') + '" and oneOfIndex "' + currentOneOf + '". Reset value to default.\n');
+    value = (schemaPartsOneOf)[currentOneOf || 0].default; // so, reset value to default, cause keeping oneOf is in prior (if currentOneOf exists, otherwise oneOf is changed)
     const tmp = findOneOf(schemaPartsOneOf, value, currentOneOf);
     schemaPart = tmp.schemaPart;
     oneOf = tmp.oneOf;
@@ -496,7 +504,8 @@ function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
     if (defaultUsed && !isUndefined(oneOfShemas[oneOf].default))
       throw new Error('Type of schema.default is not supported by schema.type');
   }
-  return {};
+  return {}
+  //return {schemaPart: oneOfShemas[0], oneOf: 0, type: toArray(oneOfShemas[0].type || types)[0]}
 }
 
 /////////////////////////////////////////////
@@ -769,7 +778,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   if (value === SymClear) value = getIn(state, SymData, 'default', track);
   if (getIn(state, SymData, 'current', track) === value && !hasIn(UPDATABLE.update, SymData, 'current', track)) return state;
 
-  const branch = getIn(state, track);
+  let branch = getIn(state, track);
 
   // if no branch then no need to modify state for this value, just update current
   if (!branch) {
@@ -794,9 +803,9 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     const parts = getSchemaPart(UPDATABLE.api.schema, track, oneOfFromState(state), true);
     let currentOneOf = branch[SymData].oneOf;
     if (oneOfSelector) {
-      const field = makeSynthField(UPDATABLE.api, path2string(track));
+      //const field = makeSynthField(UPDATABLE.api, path2string(track));
       const ff_oneOfSelector = parts[currentOneOf].ff_oneOfSelector;
-      setOneOf = processFn.call(field, ff_oneOfSelector, value, false);
+      setOneOf = processFn.call(null, ff_oneOfSelector, value, false);
       if (isArray(setOneOf)) setOneOf = setOneOf[0];
     }
 
@@ -812,8 +821,10 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['value'], value, replace))
   } else {
     if (isMergeable(value)) {  // if we receive object or array then apply their values to state
-      if (type == 'array' && !isUndefined(value.length))
+      if (type == 'array' && !isUndefined(value.length)) {
         state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['length'], value.length));
+        branch = getIn(state, track);
+      }
       if (replace === true) { // restore value's props-structure that are exist in state
         let v = isArray(value) ? [] : {};
         branchKeys(branch).forEach(k => v[k] = undefined);
@@ -823,6 +834,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
         state = updateCurrentPROC(state, UPDATABLE, value[key], replace === true ? true : getIn(replace, key), track.concat(key)))
       if (replace === true) { // this code removes props from current that are not preset in value and not exists in state
         state = mergeUPD_PROC(state, UPDATABLE);
+        branch = getIn(state, track);
         let current = getIn(state, SymData, 'current', track);
         branchKeys(branch).forEach(k => value[k] = current[k]); // value was reassigned in block below, so change it directly
         state = updatePROC(state, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
