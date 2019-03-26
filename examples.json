@@ -1,0 +1,278 @@
+[
+    {
+        "json": {
+            "links": [],
+            "code": {
+                "type": "object",
+                "ff_layout": {
+                    "$_fields": [
+                        "login",
+                        "password",
+                        {
+                            "$_ref": "^/parts/Submit",
+                            "style": {
+                                "width": "100%"
+                            }
+                        },
+                        {
+                            "$_ref": "^/parts/Reset",
+                            "style": {
+                                "width": "100%"
+                            }
+                        }
+                    ]
+                },
+                "properties": {
+                    "login": {
+                        "type": "string",
+                        "title": "login",
+                        "ff_placeholder": "Enter login..."
+                    },
+                    "password": {
+                        "type": "string",
+                        "title": "password",
+                        "ff_placeholder": "Enter password...",
+                        "ff_custom": {
+                            "Main": {
+                                "type": "password"
+                            }
+                        }
+                    }
+                }
+            },
+            "error": ""
+        },
+        "js": {
+            "links": [],
+            "code": ""
+        },
+        "css": {
+            "links": [
+                "tacit.min.css",
+                "style.css"
+            ],
+            "cxBind": "",
+            "code": ""
+        },
+        "props": {
+            "jsonValidation": false,
+            "rest": []
+        },
+        "formProps": {
+            "jsonValidation": false,
+            "props": []
+        },
+        "data": {
+            "json": {
+                "links": [
+                    {
+                        "path": "#/definitions/imported",
+                        "link": "imported.json"
+                    }
+                ],
+                "code": {
+                    "type": "object",
+                    "ff_layout": {
+                        "$_fields": [
+                            "stringProp",
+                            "impObj"
+                        ]
+                    },
+                    "properties": {
+                        "stringProp": {
+                            "type": "string",
+                            "title": "string"
+                        },
+                        "impObj": {
+                            "$ref": "#/definitions/imported"
+                        }
+                    }
+                }
+            },
+            "js": {
+                "links": [
+                    {
+                        "import": [],
+                        "from": "styles.json"
+                    },
+                    {
+                        "import": [
+                            "obj"
+                        ],
+                        "from": "objs.js"
+                    }
+                ],
+                "code": "fn:{one:()=>alert('one')}"
+            },
+            "css": {
+                "links": [
+                    "tacit.min.css",
+                    "style.css"
+                ],
+                "code": ".main{\n\n}"
+            }
+        },
+        "name": "simple form"
+    },
+    {
+        "json": {
+            "links": [],
+            "code": {}
+        },
+        "js": {
+            "links": [],
+            "code": ""
+        },
+        "css": {
+            "links": [
+                "tacit.min.css",
+                "style.css"
+            ],
+            "cxBind": "",
+            "code": ""
+        },
+        "props": {
+            "jsonValidation": false,
+            "rest": []
+        },
+        "name": "layouts and viewer"
+    },
+    {
+        "json": {
+            "links": [],
+            "code": {}
+        },
+        "js": {
+            "links": [],
+            "code": ""
+        },
+        "css": {
+            "links": [
+                "tacit.min.css",
+                "style.css"
+            ],
+            "cxBind": "",
+            "code": ""
+        },
+        "props": {
+            "jsonValidation": false,
+            "rest": []
+        },
+        "name": "arrays and oneOf"
+    },
+    {
+        "json": {
+            "links": [],
+            "code": {}
+        },
+        "js": {
+            "links": [],
+            "code": ""
+        },
+        "css": {
+            "links": [
+                "tacit.min.css",
+                "style.css"
+            ],
+            "cxBind": "",
+            "code": ""
+        },
+        "props": {
+            "jsonValidation": false,
+            "rest": []
+        },
+        "name": "dataMaps"
+    },
+    {
+        "json": {
+            "links": [],
+            "code": {}
+        },
+        "js": {
+            "links": [],
+            "code": ""
+        },
+        "css": {
+            "links": [
+                "tacit.min.css",
+                "style.css"
+            ],
+            "cxBind": "",
+            "code": ""
+        },
+        "props": {
+            "jsonValidation": false,
+            "rest": []
+        },
+        "name": "validation"
+    },
+    {
+        "json": {
+            "links": [],
+            "code": {}
+        },
+        "js": {
+            "links": [],
+            "code": ""
+        },
+        "css": {
+            "links": [
+                "tacit.min.css",
+                "style.css"
+            ],
+            "cxBind": "",
+            "code": ""
+        },
+        "props": {
+            "jsonValidation": false,
+            "rest": []
+        },
+        "name": "format and parse"
+    },
+    {
+        "json": {
+            "links": [],
+            "code": {}
+        },
+        "js": {
+            "links": [],
+            "code": ""
+        },
+        "css": {
+            "links": [
+                "tacit.min.css",
+                "style.css"
+            ],
+            "cxBind": "",
+            "code": ""
+        },
+        "props": {
+            "jsonValidation": false,
+            "rest": []
+        },
+        "name": "custom input"
+    },
+    {
+        "json": {
+            "links": [],
+            "code": {}
+        },
+        "js": {
+            "links": [],
+            "code": ""
+        },
+        "css": {
+            "links": [
+                "tacit.min.css",
+                "style.css"
+            ],
+            "cxBind": "",
+            "code": ""
+        },
+        "props": {
+            "jsonValidation": false,
+            "rest": []
+        },
+        "name": "steps"
+    }
+]

@@ -409,12 +409,14 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   let defaultValues: any;
   let currentOneOf = (getNSetOneOf(path) || {}).oneOf;
   const schemaPartsOneOf = toArray(getSchemaPart(schema, path, getNSetOneOf, true));
-  const ff_oneOfSelector = schemaPartsOneOf[currentOneOf || 0].ff_oneOfSelector;
-  if (ff_oneOfSelector) {
-    let setOneOf = processFn.call(null, ff_oneOfSelector, value, false);
-    if (isArray(setOneOf)) setOneOf = setOneOf[0];
-    currentOneOf = setOneOf;
-    //schemaPart = schemaPartsOneOf[oneOf];
+  if (isUndefined(currentOneOf)) {
+    const ff_oneOfSelector = schemaPartsOneOf[currentOneOf || 0].ff_oneOfSelector;
+    if (ff_oneOfSelector) {
+      let setOneOf = processFn.call(null, ff_oneOfSelector, value, false);
+      if (isArray(setOneOf)) setOneOf = setOneOf[0];
+      currentOneOf = setOneOf;
+      //schemaPart = schemaPartsOneOf[oneOf];
+    }
   }
   let {schemaPart, oneOf, type} = findOneOf(schemaPartsOneOf, value, currentOneOf);
 
@@ -952,7 +954,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
       const maps2disable: any[] = [];
       for (let i = start; i < end; i++) {
         let elemPath = path.concat(i);
-        if (item.setOneOf) oneOfStateFn(elemPath, {oneOf: item.setOneOf});
+        if (!isUndefined(item.setOneOf)) oneOfStateFn(elemPath, {oneOf: item.setOneOf});
         let {state: branch, dataMap = [], defaultValues} = makeStateBranch(schema, oneOfStateFn, elemPath);
         const untouched = getUpdValue([state, UPDATABLE.update], path, SymData, 'status', 'untouched');
         const mergeBranch: any = {[SymData]: {params: {uniqKey: getUniqKey()}}};
@@ -1070,13 +1072,14 @@ function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], em
 }
 
 function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, dataMaps: normalizedDataMapType[], unset: boolean = false) {
-  //let update: StateType = {};
-  // const UPDATABLE = {update: {}, replace: {}};
   dataMaps.forEach((dataMap) => {
     const emitterPath = dataMap.emitter;
     let bindMap2emitter: boolean = false;
-    const toItem = {path: normalizePath(dataMap.to, emitterPath)};
     normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.from, value: null}, state).forEach(fromItem => {
+        let key = fromItem[SymData][0];
+        if (key == 'current' || key == 'inital' || key == 'default' && fromItem.path.length)
+          fromItem = {...fromItem, path: [], [SymData]: [key, ...fromItem.path, ...fromItem[SymData].slice(1)]};
+
         normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.to, value: null}, state).forEach(toItem => {
           let relTo = path2string(relativePath(fromItem.path, toItem.path.concat(SymData, ...toItem[SymData])));
           //console.log(relTo);
@@ -1094,16 +1097,13 @@ function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
       const emitterBranch = getIn(state, emitterPath);
       if (emitterBranch) {
         let bindedMaps = getIn(emitterBranch, SymDataMapTree, SymData) || [];
-        //if (unset) {
         let i;
         for (i = 0; i < bindedMaps.length; i++) {
           if (dataMap.from === bindedMaps[i].from && dataMap.to === bindedMaps[i].to) break;
         }
         bindedMaps = bindedMaps.slice();
         bindedMaps[i] = dataMap;
-        //} else bindedMaps = bindedMaps.concat(dataMap);
         setUPDATABLE(UPDATABLE, bindedMaps, true, emitterPath, SymDataMapTree, SymData);
-        // setIn(UPDATABLE.replace, true, emitterPath, SymDataMapTree, SymData);
       }
       state = mergeUPD_PROC(state, UPDATABLE);
     }
@@ -1367,7 +1367,20 @@ const isMapFn = (arg: any) => isObject(arg) && arg.$ || isFunction(arg) && arg._
 function normalizeArgs(args: any, wrapFn?: any) {
   let dataRequest = false;
   args = toArray(isUndefined(args) ? [] : args).map((arg: any) => {
-    if (isString(arg) && arg[0] == '@') return (dataRequest = true) && normalizePath(arg.substr(1));
+    if (isString(arg)) {
+      let fnReq = 0;
+      if (arg[0] == '@') fnReq = 1;
+      if (arg.substr(0, 2) == '!@') fnReq = 2;
+      if (arg.substr(0, 3) == '!!@') fnReq = 3;
+      if (fnReq) {
+        dataRequest = true;
+        let res = normalizePath(arg.substr(fnReq));
+        if (fnReq == 2)
+          res[SymDataMap] = 'not';
+        if (fnReq == 3) res[SymDataMap] = 'doubleNot';
+        return res
+      }
+    }
     if (isMapFn(arg)) {
       let res = normalizeArgs(arg.args, wrapFn);
       if (res.dataRequest) dataRequest = true;
@@ -1379,7 +1392,7 @@ function normalizeArgs(args: any, wrapFn?: any) {
   return {dataRequest, args, norm: true}
 }
 
-function normalizeFn(fn: any, wrapFn?: Function, dontAddValue?: boolean): JsonFunctionGeneric<Function | Function[]> {
+function normalizeFn(fn: any, wrapFn?: Function, dontAddValue?: boolean): { $: Function, args: any, [key: string]: any } {
   let nFn: any = !isObject(fn) ? {$: fn} : fn;
   nFn = {...nFn, ...normalizeArgs(nFn.args, wrapFn)};
   if (!nFn.args.length && !dontAddValue) nFn.args = ['${value}'];
@@ -1392,13 +1405,23 @@ function testArray(value: any) {
   return value
 }
 
+function processProp(nextData: any, arg: any) {
+  let res = getIn(nextData, arg);
+  switch (arg[SymDataMap]) {
+    case 'not':
+      return !res;
+    case 'doubleNot':
+      return !!res;
+    default:
+      return res
+  }
+}
+
 function processFn(map: any, value: any, strictArrayResult = true) {
   const processArg = (arg: any) => {
-    if (isNPath(arg)) return getIn(nextData, arg);
+    if (isNPath(arg)) return processProp(nextData, arg);
     if (isMapFn(arg)) return !arg._map ? processFn.call(this, arg, value, strictArrayResult) : arg(value, strictArrayResult);
-    // if (arg == '${field}') return this;
     if (arg == '${value}') return value;
-    //if (hasIn($value, arg)) return $value[arg];
     return arg;
   };
   const nextData = map.dataRequest ? this.getData() : null;
@@ -1475,6 +1498,7 @@ export {
   types,
   updateState,
   initState,
+  processProp,
 };
 export {SymData, SymReset, SymClear, SymDelete}
 export {makeNUpdate, updatePROC, string2NUpdate};

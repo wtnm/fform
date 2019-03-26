@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="fixes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/stateLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/stateLib.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -34,8 +33,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="224">
-              <caret line="413" column="133" selection-start-line="413" selection-start-column="133" selection-end-line="413" selection-end-column="133" />
+            <state relative-caret-position="6608">
+              <caret line="413" column="72" selection-start-line="413" selection-start-column="72" selection-end-line="413" selection-end-column="72" />
             </state>
           </provider>
         </entry>
@@ -70,7 +69,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/components.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="189">
+            <state relative-caret-position="15680">
               <caret line="980" column="4" selection-start-line="980" selection-start-column="4" selection-end-line="980" selection-end-column="4" />
             </state>
           </provider>
@@ -1190,13 +1189,9 @@
       <workItem from="1553011448533" duration="286000" />
       <workItem from="1553015085715" duration="69000" />
       <workItem from="1553112742236" duration="4069000" />
-    </task>
-    <task id="LOCAL-00056" summary="documentation more">
-      <created>1549547345212</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1549547345212</updated>
+      <workItem from="1553121215168" duration="29000" />
+      <workItem from="1553169489713" duration="884000" />
+      <workItem from="1553512369131" duration="599000" />
     </task>
     <task id="LOCAL-00057" summary="documentation more">
       <created>1549547369148</created>
@@ -1534,7 +1529,14 @@
       <option name="project" value="LOCAL" />
       <updated>1553015140108</updated>
     </task>
-    <option name="localTasksCounter" value="105" />
+    <task id="LOCAL-00105" summary="fixes">
+      <created>1553121232535</created>
+      <option name="number" value="00105" />
+      <option name="presentableId" value="LOCAL-00105" />
+      <option name="project" value="LOCAL" />
+      <updated>1553121232535</updated>
+    </task>
+    <option name="localTasksCounter" value="106" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1570,7 +1572,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3476658000" />
+    <option name="totallyTimeSpent" value="3478170000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1586,10 +1588,10 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info active="true" content_ui="combo" id="Project" order="1" sideWeight="0.5464135" visible="true" weight="0.13681987" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.537155" visible="true" weight="0.13365029" />
       <window_info id="Structure" order="2" sideWeight="0.45148516" side_tool="true" weight="0.11985216" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
-      <window_info id="npm" order="4" sideWeight="0.4535865" side_tool="true" visible="true" weight="0.11304807" />
+      <window_info id="npm" order="4" sideWeight="0.462845" side_tool="true" visible="true" weight="0.11463286" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
       <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.5125523" side_tool="true" weight="0.38300222" />
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
@@ -2004,6 +2006,27 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/output.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="16">
+          <caret line="13" column="14" lean-forward="true" selection-end-line="23426" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="256">
+          <caret line="16" selection-start-line="16" selection-end-line="25" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6608">
+          <caret line="413" column="72" selection-start-line="413" selection-start-column="72" selection-end-line="413" selection-end-column="72" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/addons/imjvWrapper.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
@@ -2015,6 +2038,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1520">
           <caret line="95" column="29" selection-start-line="95" selection-start-column="29" selection-end-line="95" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/components.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="15680">
+          <caret line="980" column="4" selection-start-line="980" selection-start-column="4" selection-end-line="980" selection-end-column="4" />
         </state>
       </provider>
     </entry>
@@ -2043,34 +2073,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1280">
           <caret line="80" column="5" selection-start-line="80" selection-start-column="5" selection-end-line="80" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/components.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="189">
-          <caret line="980" column="4" selection-start-line="980" selection-start-column="4" selection-end-line="980" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/output.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="16">
-          <caret line="13" column="14" lean-forward="true" selection-end-line="23426" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="224">
-          <caret line="413" column="133" selection-start-line="413" selection-start-column="133" selection-end-line="413" selection-end-column="133" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="256">
-          <caret line="16" selection-start-line="16" selection-end-line="25" selection-end-column="5" />
         </state>
       </provider>
     </entry>

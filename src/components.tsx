@@ -34,6 +34,8 @@ import {
   processFn,
   isMapFn,
   normalizeFn,
+  normalizeArgs,
+  processProp
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
 import Timeout = NodeJS.Timeout;
@@ -944,12 +946,12 @@ function normalizeMaps($_maps: any, prePath = '') {
         result[update].push({update, replace, ...rest, to, $: fn});
       })
     } else {
-      if (isString(value)) value = {args: value};
-      let {args: path, update = 'data', replace = true, ...rest} = value;
-      if (!isString(path)) throw new Error('$_maps value is not recognized');
-      if (path[0] === '@') path = path.substr(1);
+      if (isString(value)) value = normalizeArgs(value);
+      let {args, update = 'data', replace = true, ...rest} = value;
+      //if (!isString(path)) throw new Error('$_maps value is not recognized');
+      //if (path[0] === '@') path = path.substr(1);
       // lse console.warn('Expected "@" at the begining of string');
-      result.data.push({update, replace, to, dataRequest: true, args: normalizePath(path), ...rest})
+      result.data.push({args: args[0], update, replace, to, dataRequest: true, ...rest})
     }
   });
   return result
@@ -967,7 +969,7 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
   const dataUpdates = {update: {}, replace: {}, api: {}};
   iterMaps.forEach(maps => maps && maps.forEach(map => {
       if (map.update == 'data' && !needUpdate(map)) return;
-      const value = map.$ ? map.$() : getIn(nextData, map.args);
+      const value = map.$ ? map.$() : processProp(nextData, map.args);
       objKeys(map.to).forEach(k => setUPDATABLE(dataUpdates, value, map.replace, map.to[k]));
       if (!map.replace) mappedData = mergeUPD_PROC(mappedData, dataUpdates);
     })
@@ -1052,7 +1054,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
         },
         _$cx: '^/_$cx',
         $_maps: {
-          'className/hidden': 'params/hidden',
+          'className/hidden': '@/params/hidden',
           'arrayItem': '@/arrayItem'
         }
       },
@@ -1442,6 +1444,20 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       $_maps: {
         'className/button-viewer': '@/params/viewer',
         disabled: '@/params/disabled',
+      }
+    },
+    Submit: {
+      $_ref: '^/parts/Button',
+      type: 'submit',
+      children: ['Submit']
+      // $_maps: {disabled: {$: '^/fn/not', args: '@/params/valid'},}
+    },
+    Reset: {
+      $_ref: '^/parts/Button',
+      children: ['Reset'],
+      onclick: {$: '^/fn/api', args: ['reset']},
+      $_maps: {
+        disabled: '@/params/pristine',
       }
     },
     ArrayAddButton: {
