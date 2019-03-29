@@ -110,6 +110,9 @@
       }
     },
     "ArrayItemMenu": {
+      "className": {
+        "item-menu": true
+      },
       "buttonsProps": {
         "first": {
           "children": [

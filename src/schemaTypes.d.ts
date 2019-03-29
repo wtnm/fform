@@ -128,6 +128,7 @@ type FFParamsType = {
   readonly?: boolean;
   disabled?: boolean;
   viewer?: boolean;
+  liveUpdate?: boolean;
   liveValidate?: boolean;
   autofocus?: boolean;
   hidden?: boolean;

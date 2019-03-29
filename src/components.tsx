@@ -45,7 +45,7 @@ import Timeout = NodeJS.Timeout;
 //  Main class
 /////////////////////////////////////////////
 class FForm extends Component<any, any> {
-  static params = ['readonly', 'disabled', 'viewer', 'liveValidate'];
+  static params = ['readonly', 'disabled', 'viewer', 'liveValidate', 'liveUpdate'];
   private _unsubscribe: any;
   private _savedState: any;
   private _savedValue: any;
@@ -66,7 +66,12 @@ class FForm extends Component<any, any> {
     self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
     self.parent = props.parent;
     // self.focus = self.focus.bind(self);
-    self._updateValues(isUndefined(props.touched) && props.touched !== null ? merge(props, {touched: false}) : props);
+    const nextProps = {...props};
+    if (props.touched !== null) nextProps.touched = !!nextProps.touched;
+    FForm.params.forEach(k => {
+      if (!isUndefined(nextProps[k])) nextProps[k] = (v: any) => isUndefined(v) ? nextProps[k] : v
+    });
+    self._updateValues(nextProps);
     // self.api.reset({status: 'untouched'});
     if (!props.noValidation) self.api.validate(true);
     self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
@@ -229,6 +234,7 @@ class FField extends FRefsGeneric {
   schemaPart: jsJsonSchema;
 
   liveValidate: boolean;
+  liveUpdate: boolean;
   path: any;
   api: any;
   pFForm: any;
@@ -240,6 +246,7 @@ class FField extends FRefsGeneric {
     Object.defineProperty(self, "path", {get: () => self.props.getPath()});
     Object.defineProperty(self, "pFForm", {get: () => self.props.pFForm});
     Object.defineProperty(self, "liveValidate", {get: () => getIn(self.getData(), 'params', 'liveValidate')});
+    Object.defineProperty(self, "liveUpdate", {get: () => getIn(self.getData(), 'params', 'liveUpdate')});
     Object.defineProperty(self, "value", {get: () => self.props.pFForm.getValue(self.state.branch, self)});
     Object.defineProperty(self, "stateApi", {get: () => self.props.pFForm.api});
     self.state = {branch: self.pFForm.getBranch(self.path)};
@@ -290,10 +297,10 @@ class FField extends FRefsGeneric {
     }
   }
 
-  _updateCachedValue() {
+  _updateCachedValue(update = this.liveUpdate) {
     const self = this;
     self._cachedTimeout = undefined;
-    if (self._cached) {
+    if (update && self._cached) {
       self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate, path: self.path, ...self._cached.opts});
       self._cached = undefined;
     }
@@ -313,7 +320,8 @@ class FField extends FRefsGeneric {
     }
     // console.log(valueSet, 'setValue=', setValue,'path=',path)
     if (valueSet) {
-      const prevData = self.getData();
+      let prevData = self.getData();
+      if (self._cached) prevData = merge(prevData, {value: self._cached.value}, {replace: {value: opts.replace}});
       self._cached = {value, opts}; //{value: self._parseValue(value, prevData)};
       if (fieldCache) {
         if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
@@ -808,6 +816,7 @@ class UniversalInput extends GenericWidget {
     // if (rest.value === null) rest.value = '';
 
     if (rest.className && _$cx) rest.className = _$cx(rest.className);
+    //console.log(rest.value);
     return h(UseTag, rest, self._mapped)
   }
 }
@@ -869,7 +878,7 @@ function Wrapper(props: any) {
 
 
 function ItemMenu(props: any) {
-  const {_$useTag: UseTag = 'div', _$cx = classNames, disabled, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
+  const {_$useTag: UseTag = 'div', _$cx, disabled, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
   if (!arrayItem) return null;
   // console.log(arrayItem)
   buttons.forEach((key: string) => delete rest[key]);
@@ -946,7 +955,8 @@ function normalizeMaps($_maps: any, prePath = '') {
         result[update].push({update, replace, ...rest, to, $: fn});
       })
     } else {
-      if (isString(value)) value = normalizeArgs(value);
+      if (isString(value)) value = {args: value};
+      value = {...value, ...normalizeArgs(value.args)};
       let {args, update = 'data', replace = true, ...rest} = value;
       //if (!isString(path)) throw new Error('$_maps value is not recognized');
       //if (path[0] === '@') path = path.substr(1);
@@ -1138,16 +1148,16 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       $_ref: '^/sets/nBase',
       Main: {
         type: 'number',
-        onChange: {$: '^/fn/eventValue|parseNumber|setValue', args: ['${value}', true, 9]},
+        onChange: {$: '^/fn/eventValue|parseNumber|setValue', args: ['${value}', true, 0]},
+        $_maps: {
+          value: {$: '^/fn/iif', args: [{$: '^/fn/equal', args: ['@value', null]}, '', '@value']},
+        }
       }
     },
     integerNull: {
       $_ref: '^/sets/integer',
       Main: {
         onChange: {args: {2: null}},
-        $_maps: {
-          value: {$: '^/fn/iif', args: [{$: '^/fn/equal', args: ['@value', null]}, '', '@value']},
-        }
       }
     },
     number: {
@@ -1163,7 +1173,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       $_ref: '^/sets/nBase',
       Main: {
         type: 'checkbox',
-        onChange: {$: '^/fn/eventChecked|setValue'}
+        onChange: {$: '^/fn/eventChecked|setValue|updCached'}
       },
     },
     booleanLeft: {
@@ -1185,7 +1195,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       Main: {
         _$useTag: '^/widgets/CheckboxNull',
         $_reactRef: {tagRef: true},
-        onChange: {$: '^/fn/setValue'},
+        onChange: {$: '^/fn/setValue|updCached'},
       },
     },
     booleanNullLeft: {
@@ -1276,9 +1286,9 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
         }
       }
     },
-    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue'}}, '5': '[]'}}}}}},
-    radioNull: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: '^/fn/eventValue|radioClear'}}}}}}},
-    radioEmpty: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: {$: '^/fn/eventValue|radioClear', args: ['${value}', '']}}}}}}}},
+    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue|updCached'}}, '5': '[]'}}}}}},
+    radioNull: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: '^/fn/eventValue|radioClear|updCached'}}}}}}},
+    radioEmpty: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: {$: '^/fn/eventValue|radioClear|updCached', args: ['${value}', '']}}}}}}}},
     hidden: {
       Builder: {
         className: {hidden: true},
@@ -1359,8 +1369,8 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
     eventChecked: (event: any, ...args: any[]) => [event.target.checked, ...args],
     eventMultiple: (event: any, ...args: any[]) =>
       [Array.from(event.target.options).filter((o: any) => o.selected).map((v: any) => v.value), ...args],
-    parseNumber: (value: any, opts: any = {}, int: boolean = false, empty: number | null = null) =>
-      [value == '' ? empty : (int ? parseInt : parseFloat)(value), opts],
+    parseNumber: (value: any, int: boolean = false, empty: number | null = null, ...rest: any[]) =>
+      [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...rest],
 
     setValue: function (value: any, opts: any = {}) {this.api.setValue(value, opts)},
     arrayAdd: function (path: any, value: number = 1, opts: any = {}) {
@@ -1371,12 +1381,16 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       this.api.set('/@/active', this.path, {noValidation: true})
       //console.log('focus ', this.path);
     },
-    blur: function (value: any) {
+    blur: function () {
       this.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
       this.api.set('/@/active', undefined, {noValidation: true});
+      this._updateCachedValue(true);
       // console.log('blur ', this.path);
       return [!this.liveValidate ? this.api.validate('./',) : null]; // {execute: true}
 
+    },
+    updCached: function () {
+      this._updateCachedValue(true);
     },
     eventCheckboxes: function (event: any) {
       const selected = (this.getData().value || []).slice();
@@ -1411,7 +1425,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
               {
                 _$widget: 'input',
                 type: 'radio',
-                onChange: {$: '^/fn/eventValue|^/fn/setValue', args: ['${value}', {path: './@/selector/value'}]},
+                onChange: {$: '^/fn/eventValue|setValue|updCached', args: ['${value}', {path: './@/selector/value'}]},
                 onBlur: {$: '^/fn/blur'},
                 onFocus: {$: '^/fn/focus'},
               },
@@ -1455,7 +1469,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
     Reset: {
       $_ref: '^/parts/Button',
       children: ['Reset'],
-      onclick: {$: '^/fn/api', args: ['reset']},
+      onClick: {$: '^/fn/api', args: ['reset']},
       $_maps: {
         disabled: '@/params/pristine',
       }
@@ -1485,6 +1499,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
     },
     ArrayItemMenu: {
       _$widget: '^/widgets/ItemMenu',
+      _$cx: '^/_$cx',
       buttons: ['first', 'last', 'up', 'down', 'del'],
       onClick: {$: '^/fn/arrayItemOps', args: ['./', '${value}']},
       buttonsProps: {

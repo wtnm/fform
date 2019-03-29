@@ -723,7 +723,10 @@ function updateState(dispatch: any) {
   updates.forEach((update: StateApiUpdateType) => state = updatePROC(state, UPDATABLE, update));
   state = mergeUPD_PROC(state, UPDATABLE);
   let oldCurrent = getIn(prevState, SymData, 'current');
-  if (UPDATABLE.forceCheck) oldCurrent = merge(oldCurrent, UPDATABLE.forceCheck);
+  if (UPDATABLE.forceCheck) {
+    oldCurrent = merge(oldCurrent, UPDATABLE.forceCheck);
+    UPDATABLE.forceCheck = undefined;
+  }
   let currentChanges = mergeState(oldCurrent, getIn(state, SymData, 'current'), {diff: true}).changes;
   if (prevState[SymData].inital !== state[SymData].inital) {  // check dirty for all
     state = updatePROC(state, UPDATABLE, makeNUpdate([], ['status', 'dirty'], 0, false, {macros: 'switch'}));  //reset all dirty
@@ -921,7 +924,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
 
   let {value, path, replace} = item;
   const keyPath = item[SymData];
-  if (isFunction(value)) value = value(getUpdValue([UPDATABLE.update, state], path, SymData, keyPath));
+  if (isFunction(value)) value = value(getFromUPD(state, UPDATABLE)(path, SymData, keyPath));
 
   if (path.length == 0 && (keyPath[0] == 'inital' || keyPath[0] == 'default')) {
     state = merge(state, makeSlice(SymData, keyPath, value), {replace: makeSlice(SymData, keyPath, replace)})
@@ -1425,7 +1428,9 @@ function processFn(map: any, value: any, strictArrayResult = true) {
     return arg;
   };
   const nextData = map.dataRequest ? this.getData() : null;
-  const res = toArray(map.$).reduce((args, fn) => isFunction(fn) ? (strictArrayResult ? testArray : toArray)(fn.apply(this, args)) : args,
+  const res = toArray(map.$).reduce((args, fn) =>
+      isFunction(fn) ? (strictArrayResult ? testArray : toArray)(
+        fn.apply(this, args)) : args,
     (map.args || []).map(processArg));
   return strictArrayResult ? testArray(res)[0] : deArray(res);
 }
