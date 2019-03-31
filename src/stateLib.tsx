@@ -267,7 +267,7 @@ const additionalItemsSchema = memoize(function (items: jsJsonSchema[]): jsJsonSc
     ff_compiled: true,
     oneOf: items,
     ff_oneOfSelector: normalizeFn(function () {
-      return items.length % string2path(this.path).pop();
+      return string2path(this.path).pop() % items.length;
     })
   }
 });
@@ -412,7 +412,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   if (isUndefined(currentOneOf)) {
     const ff_oneOfSelector = schemaPartsOneOf[currentOneOf || 0].ff_oneOfSelector;
     if (ff_oneOfSelector) {
-      let setOneOf = processFn.call(null, ff_oneOfSelector, value, false);
+      let setOneOf = processFn.call({path: path2string(path)}, ff_oneOfSelector, value, false);
       if (isArray(setOneOf)) setOneOf = setOneOf[0];
       currentOneOf = setOneOf;
       //schemaPart = schemaPartsOneOf[oneOf];
@@ -810,7 +810,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     if (oneOfSelector) {
       //const field = makeSynthField(UPDATABLE.api, path2string(track));
       const ff_oneOfSelector = parts[currentOneOf].ff_oneOfSelector;
-      setOneOf = processFn.call(null, ff_oneOfSelector, value, false);
+      setOneOf = processFn.call({path: path2string(track)}, ff_oneOfSelector, value, false);
       if (isArray(setOneOf)) setOneOf = setOneOf[0];
     }
 
@@ -818,7 +818,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     if (currentOneOf !== oneOf) {
       if (schemaPart) {
         return updatePROC(state, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
-      } else console.warn('Type not found in path [' + track.join('/') + ']')
+      } else console.warn('Type "' + (typeof value) + '" not found in path [' + track.join('/') + ']')
     }
   }
 
@@ -1067,6 +1067,7 @@ function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], em
     let {from, to, ...action} = item;
     if (!action.$) action = true;
     else action = normalizeFn(action);
+    if (!from || !to) action = false;
     // {action = {...action, ...normalizeArgs(action.args)};
     //   if (!action.args.length) action.args = ['${value}'];}
     return {emitter, from, to, action} as normalizedDataMapType;
@@ -1075,6 +1076,7 @@ function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], em
 }
 
 function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, dataMaps: normalizedDataMapType[], unset: boolean = false) {
+  const dataMaps2execute: any = [];
   dataMaps.forEach((dataMap) => {
     const emitterPath = dataMap.emitter;
     let bindMap2emitter: boolean = false;
@@ -1088,11 +1090,16 @@ function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
           //console.log(relTo);
           if (getIn(state, fromItem.path)) setIn(UPDATABLE.update, unset ? undefined : dataMap.action, fromItem.path, SymDataMapTree, fromItem[SymData], SymDataMap, relTo);
           if (!unset) {
-            state = executeDataMapsPROC(state, UPDATABLE, makeSlice(relTo, dataMap.action),
-              makeNUpdate(fromItem.path, fromItem[SymData], getIn(state, fromItem.path, SymData, fromItem[SymData])));
+            // state = executeDataMapsPROC(state, UPDATABLE, makeSlice(relTo, dataMap.action),
+            //   makeNUpdate(fromItem.path, fromItem[SymData], getIn(state, fromItem.path, SymData, fromItem[SymData])));
+            dataMaps2execute.push({
+              map: makeSlice(relTo, dataMap.action),
+              fromPath: fromItem.path,
+              keyPath: fromItem[SymData]
+            });
             if (!bindMap2emitter && relativePath(emitterPath, fromItem.path)[0] != '.') bindMap2emitter = true;
           }
-          state = mergeUPD_PROC(state, UPDATABLE);
+          //state = mergeUPD_PROC(state, UPDATABLE);
         })
       }
     );
@@ -1108,8 +1115,12 @@ function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
         bindedMaps[i] = dataMap;
         setUPDATABLE(UPDATABLE, bindedMaps, true, emitterPath, SymDataMapTree, SymData);
       }
-      state = mergeUPD_PROC(state, UPDATABLE);
     }
+    state = mergeUPD_PROC(state, UPDATABLE);
+  });
+  dataMaps2execute.forEach((v: any) => {
+    state = executeDataMapsPROC(state, UPDATABLE, v.map, makeNUpdate(v.fromPath, v.keyPath, getIn(state, v.fromPath, SymData, v.keyPath)));
+    state = mergeUPD_PROC(state, UPDATABLE);
   });
   return state
 }

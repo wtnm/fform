@@ -240,6 +240,7 @@ Data object has the following props:
     - `pristine: boolean` - !dirty
     - `touched: boolean` - !untouched
 - `params`:
+	- `liveUpdate?: boolean`
 	- `liveValidate?: boolean`
 	- `autofocus?: boolean`
 	- `readonly?: boolean`
@@ -316,12 +317,14 @@ As JSON format doesn't support js-code all function moved to [fformObjects](#ffo
 - `ff_enumExten?: { [key: string]: undefined | string | object }`- enum extension. Keys taken from enum. String converts to object with property `{label}`
 - `ff_dataMap?: [string, string, string][]`- maps data in state. Array of turples of 2 or 3 elems where: 0 - path from value taken, 1 - path to value placed, and 2 - [refs to fformObjects](#object-refs) that process value on mapping.
 - `ff_validators?: string[]`- [sync/async validators](#validation) as array of [refs to fformObjects](#object-refs). Each function receive field value as first parameter on field value change.
+- `ff_oneOfSelector: string` - function that receive value to determine which oneOf schema select.
 - `ff_custom?: FFCustomizeType`- component [customization](#customization)
 - `ff_layout?: FFLayoutCustomizeType` - fields, objects, groups in [object/turple layout](#object-layout)
 
 ###Validation
 #####JSON validation
 For JSON validation used [is-my-json-valid](#https://github.com/mafintosh/is-my-json-valid) with modifications for smaller (3 times) bundle size. It is placed in `addons/is-my-json-valid-lite`. Pass it as `JSONValidator` property for [FFStateApi](#ffstateapi). Default group for JSON validation is 0.
+
 #####Sync validation
 Custom function that receive value as first parameter and should return string or object in the following format (or array of strings or objects):
 -  `group?: number` - group that replaces on each validation call. By default 0 - used for JSON validation, 1 - for sync validation, 2 - for async validation.
@@ -335,7 +338,7 @@ Custom function that receive value as first parameter and should return string o
 If function return promise then on resolve its result will be processed as for sync function (with default group equal 2)
 
 
-####Customization
+###Customization
 Each field build from following blocks: 
 - `Wrapper` - wrapps all and add array item controls when field is array element
 - `Title` - shows title property fromschema, and provide array add/del buttons when field is array
@@ -345,22 +348,21 @@ Each field build from following blocks:
 
 In `ff_custom` schema property you can add/overwrite any proprerty of any block. It supports [fformObjects "magic" props](#magic-props). It merges with `ff_presets` refs on field build. More details in examples.
 
-####Object layout
+###Object layout
 Schema property `ff_layout` can be object or array of strings | objects. String is the name of field and it determines the order in which fields will be placed. Object supports [fformObjects "magic" props](#magic-props) with `$_fields` (that is array of strings | objects) property and can be customized. More details in examples.
 
 
 ##fformObjects
 Each field in form receive a set of objects that is parts of fformObjects (due to 'ff_presets' and 'ff_custom') that merges into one object. Then all functions that field finds in merged object binds to it during render. Exception is the props that starts with underscore.
 
-####magic props
-- `^/`<a name="object-refs"></a> - string value that begins with "^/" determines that the value is the reference and it will be resolved respectively
+####props processing
+- `^/`<a name="object-refs"></a> - string value that begins with "^/" determines that value is the reference and resolved respectively
 - `_` - property name that starts with underscore prevent it value from deep processing (makes only resolving if string value starts with "^/")
 - `_%widget: string | Function` - HTML tag or function that will we used as react.element
 - `_$cx: Function` - classnames processor, reference to '^/_$cx'
 - `$_ref: string` - reference starts with '^' path separated by '/', multi-refs separated by ':', <details><summary>example</summary> `{$_ref:'^/sets/base:^/sets/boolean'}`</details>
 - `$_reactRef: boolean | string` - creates reference to element with default name if true, if value is string then it is used as name 
-- `$_maps` - mapping data from state to element
-- `$_parse` - process value when passing it from element to state
+- `$_maps` - maps data from state to element. [Functions](#functions) can be used to proccess data.
 - `$_fields` - layout that determines field's order and add additional elements and sub-layouts
 - `anyName.bind: any[]` - binds value to function with name 'anyName'
 
@@ -369,10 +371,20 @@ Each field in form receive a set of objects that is parts of fformObjects (due t
 - `widgets` - contains react.elements that is used in form components
 - `sets` - component presets for commonly used schemas
 - `fn` - function tha is used in $_maps/$_parse processing 
-- `on` - methotds tha used in event processing
 - `parts` - commonly used parts of components
 - `_$cx` - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
 
+####functions
+Object with properties:
+- `$: string` - link (starts with `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/equal|^/fn/not`.
+- `replace?: boolean` - if `true` the result will be replaced, otherwise merged.
+- `args?: any[]` - arguments passed to function. Has several replacements:
+	- `${value}` - replaced with value that function receive. 
+	- Args that starts with `@` replaced with [data object](data-object) value in [path](#path). 
+	- Args starts with `!` (`!!`) negated (negated twice).
+- `update?: 'build' | 'data' | 'every'` - actual only for `$_maps` functions. Determines how often function executed. `build` - only on component build/rebuild, `data` - on [data object](data-object) update, `every` - on each update.
+As functions executed in pipe it results should be returned as array.
+Functions (except for that ones that defined in `ff_oneOfSelector`) has access to [api](#api) thougth `this.api`.
 
 ##Styling
 FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)) and it can be binded for class name's replacement.
@@ -385,7 +397,7 @@ Classes that are used in [fformObjects](#fformobjects):
 `shrink` - to shrink an element
 `expand` - to expand an element
 
-All classNames that can be apllied to [fformObjects](#fformobjects) can be found in `addons/styles.json` 
+ClassNames that can be apllied to [fformObjects](#fformobjects) can be found in `addons/styles.json` 
 
 ##SSR
 

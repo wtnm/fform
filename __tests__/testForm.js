@@ -16,7 +16,13 @@ const stateLib = require('../src/stateLib.tsx');
 const apiLib = require('../src/api.tsx');
 const {createStore, combineReducers, applyMiddleware} = require('redux');
 const thunk = require('redux-thunk').default;
-const JSONValidator = require('../addons/is-my-json-valid-lite');
+//const JSONValidator = require('../addons/is-my-json-valid-lite');
+
+const imjvWrapper = require('../addons/imjvWrapper').default;
+const imjvValidator = require('../addons/is-my-json-valid-lite');
+const JSONValidator = imjvWrapper(imjvValidator);
+
+
 const components = require('../src/components.tsx');
 
 // const mock = require('mock-require');

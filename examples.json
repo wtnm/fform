@@ -56,7 +56,9 @@
         },
         "props": {
             "jsonValidation": false,
-            "rest": []
+            "rest": {
+                "value": ""
+            }
         },
         "formProps": {
             "jsonValidation": false,
@@ -117,10 +119,196 @@
     {
         "json": {
             "links": [],
-            "code": {}
+            "code": {
+                "type": "object",
+                "ff_data": {
+                    "focusValue": "/array/2/1"
+                },
+                "textarea": {
+                    "title": "Textarea",
+                    "type": "string",
+                    "ff_presets": "textarea"
+                },
+                "ff_layout": {
+                    "$_fields": [
+                        {
+                            "className": {
+                                "inline": true
+                            },
+                            "$_fields": [
+                                {
+                                    "$_ref": "^/parts/Button",
+                                    "children": "switch to viewer",
+                                    "className": {
+                                        "shrink": true
+                                    },
+                                    "$_maps": {
+                                        "disabled": "@/params/viewer",
+                                        "className/button-viewer": false
+                                    },
+                                    "onClick": {
+                                        "$": "^/fn/api",
+                                        "args": [
+                                            "set",
+                                            "/@/params/viewer",
+                                            true,
+                                            {
+                                                "macros": "switch"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "$_ref": "^/parts/Button",
+                                    "children": "switch to editor",
+                                    "className": {
+                                        "shrink": true
+                                    },
+                                    "$_maps": {
+                                        "disabled": {
+                                            "$": "^/fn/not",
+                                            "args": "@/params/viewer"
+                                        },
+                                        "className/button-viewer": false
+                                    },
+                                    "onClick": {
+                                        "$": "^/fn/setValue",
+                                        "args": [
+                                            false,
+                                            {
+                                                "path": "/@/params/viewer",
+                                                "macros": "switch"
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "$_ref": "^/parts/expander"
+                                }
+                            ]
+                        },
+                        {
+                            "className": {
+                                "inline": true
+                            },
+                            "$_fields": [
+                                "string",
+                                "number"
+                            ]
+                        },
+                        "radio",
+                        "checkboxes",
+                        "multiselect",
+                        "textarea"
+                    ]
+                },
+                "properties": {
+                    "string": {
+                        "type": "string",
+                        "title": "string",
+                        "ff_presets": "string:inlineTitle"
+                    },
+                    "number": {
+                        "type": "number",
+                        "title": "number",
+                        "ff_presets": "number:inlineTitle"
+                    },
+                    "radio": {
+                        "type": "string",
+                        "title": "radio",
+                        "ff_presets": "radio:inlineItems:inlineTitle",
+                        "enum": [
+                            "option 1",
+                            "option 2",
+                            "option 3"
+                        ]
+                    },
+                    "checkboxes": {
+                        "type": "array",
+                        "title": "checkboxes",
+                        "ff_presets": "checkboxes:inlineItems:inlineTitle",
+                        "ff_managed": true,
+                        "ff_data": {
+                            "fData": {
+                                "enum": [
+                                    "1",
+                                    "2",
+                                    "3"
+                                ],
+                                "type": "array",
+                                "title": "checkboxes",
+                                "enumExten": {
+                                    "1": {
+                                        "label": "val 1"
+                                    },
+                                    "2": {
+                                        "label": "val 2"
+                                    },
+                                    "3": {
+                                        "label": "val 3"
+                                    }
+                                },
+                                "canAdd": true
+                            }
+                        },
+                        "ff_enumExten": {
+                            "1": {
+                                "label": "val 1"
+                            },
+                            "2": {
+                                "label": "val 2"
+                            },
+                            "3": {
+                                "label": "val 3"
+                            }
+                        }
+                    },
+                    "multiselect": {
+                        "type": "array",
+                        "title": "Multiselect",
+                        "ff_presets": "multiselect:inlineTitle",
+                        "ff_managed": true,
+                        "ff_data": {
+                            "fData": {
+                                "enum": [
+                                    "option 1",
+                                    "option 2",
+                                    "option 3"
+                                ],
+                                "type": "array",
+                                "title": "Multiselect",
+                                "canAdd": true
+                            }
+                        },
+                        "ff_layout": {
+                            "$_fields": [
+                                "0"
+                            ]
+                        },
+                        "items": {
+                            "type": "string",
+                            "enum": [
+                                "option 1",
+                                "option 2",
+                                "option 3"
+                            ]
+                        }
+                    },
+                    "textarea": {
+                        "type": "string",
+                        "title": "Textarea",
+                        "ff_presets": "textarea"
+                    }
+                }
+            }
         },
         "js": {
-            "links": [],
+            "links": [
+                {
+                    "import": [],
+                    "from": "styles.json"
+                }
+            ],
             "code": ""
         },
         "css": {
@@ -133,17 +321,194 @@
         },
         "props": {
             "jsonValidation": false,
-            "rest": []
+            "rest": {
+                "value": ""
+            }
         },
         "name": "layouts and viewer"
     },
     {
         "json": {
             "links": [],
-            "code": {}
+            "code": {
+                "type": "array",
+                "title": "Array of mix",
+                "default": [
+                    "vd 1",
+                    "vd 2",
+                    [
+                        "string value",
+                        0,
+                        false,
+                        null,
+                        "more text"
+                    ]
+                ],
+                "ff_layout": {
+                    "$_fields": [
+                        {
+                            "className": {
+                                "layout": true,
+                                "inline": true
+                            },
+                            "$_fields": [
+                                "0",
+                                "1"
+                            ]
+                        },
+                        "2"
+                    ]
+                },
+                "items": [
+                    {
+                        "type": "string",
+                        "ff_presets": "string:noArrayControls"
+                    },
+                    {
+                        "type": "string",
+                        "default": "some default",
+                        "ff_presets": "string:noArrayControls"
+                    },
+                    {
+                        "type": "array",
+                        "maxItems": 4,
+                        "title": "Array of values",
+                        "ff_presets": "array:noArrayControls",
+                        "ff_custom": {
+                            "Title": {
+                                "style": {
+                                    "width": "100%"
+                                },
+                                "children": [
+                                    {},
+                                    {
+                                        "$_ref": "^/parts/ArrayAddButton",
+                                        "children": [
+                                            "+string"
+                                        ],
+                                        "onClick": {
+                                            "args": [
+                                                "./",
+                                                1,
+                                                {
+                                                    "setOneOf": 0
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "$_ref": "^/parts/ArrayAddButton",
+                                        "children": [
+                                            "+number"
+                                        ],
+                                        "onClick": {
+                                            "args": [
+                                                "./",
+                                                1,
+                                                {
+                                                    "setOneOf": 1
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "$_ref": "^/parts/ArrayAddButton",
+                                        "children": [
+                                            "+boolean"
+                                        ],
+                                        "onClick": {
+                                            "args": [
+                                                "./",
+                                                1,
+                                                {
+                                                    "setOneOf": 2
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "$_ref": "^/parts/ArrayDelButton"
+                                    },
+                                    {
+                                        "$_ref": "^/parts/ArrayEmpty"
+                                    },
+                                    {
+                                        "$_ref": "^/parts/ArrayItemMenu",
+                                        "_$useTag": "span",
+                                        "buttons": [
+                                            "up",
+                                            "down",
+                                            "del"
+                                        ],
+                                        "buttonsProps": {
+                                            "up": {
+                                                "children": [
+                                                    "?"
+                                                ]
+                                            },
+                                            "down": {
+                                                "children": [
+                                                    "?"
+                                                ]
+                                            },
+                                            "del": {
+                                                "children": [
+                                                    "x"
+                                                ]
+                                            }
+                                        },
+                                        "style": {
+                                            "float": "right",
+                                            "marginRight": "1em",
+                                            "marginLeft": "1em"
+                                        }
+                                    }
+                                ]
+                            },
+                            "Main": {
+                                "$_maps": {
+                                    "viewer": "@/params/viewer"
+                                }
+                            }
+                        },
+                        "ff_layout": {
+                            "$_fields": [
+                                "0"
+                            ]
+                        },
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "default": "default",
+                                    "ff_presets": "string:inlineTitle:inlineArrayControls"
+                                },
+                                {
+                                    "type": [
+                                        "number",
+                                        "null"
+                                    ],
+                                    "default": null,
+                                    "ff_presets": "numberNull:inlineTitle:inlineArrayControls"
+                                },
+                                {
+                                    "type": "boolean",
+                                    "default": false,
+                                    "ff_presets": "boolean:inlineTitle:inlineArrayControls"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
         },
         "js": {
-            "links": [],
+            "links": [
+                {
+                    "import": [],
+                    "from": "styles.json"
+                }
+            ],
             "code": ""
         },
         "css": {
@@ -155,18 +520,72 @@
             "code": ""
         },
         "props": {
-            "jsonValidation": false,
-            "rest": []
+            "jsonValidation": true,
+            "rest": {
+                "value": "{\"touched\": true}"
+            }
         },
         "name": "arrays and oneOf"
     },
     {
         "json": {
             "links": [],
-            "code": {}
+            "code": {
+                "type": "object",
+                "ff_layout": {
+                    "$_fields": [
+                        "string",
+                        "mapped",
+                        "hide"
+                    ]
+                },
+                "properties": {
+                    "string": {
+                        "type": "string",
+                        "title": "string",
+                        "default": "hide",
+                        "ff_presets": "string:inlineTitle",
+                        "ff_dataMap": [
+                            {
+                                "from": "./@value",
+                                "to": "../mapped/@value"
+                            }
+                        ],
+                        "ff_params": {
+                            "liveUpdate": true
+                        }
+                    },
+                    "mapped": {
+                        "type": "string",
+                        "title": "mapped",
+                        "default": "hide",
+                        "ff_presets": "string:inlineTitle",
+                        "ff_dataMap": [
+                            {
+                                "from": "./@value",
+                                "to": "../hide/@params/hidden",
+                                "$": "^/fn/equal",
+                                "args": [
+                                    "${value}",
+                                    "hide"
+                                ]
+                            }
+                        ]
+                    },
+                    "hide": {
+                        "type": "string",
+                        "title": "hide"
+                    }
+                }
+            }
         },
         "js": {
-            "links": [],
+            "links": [
+                {
+                    "import": [],
+                    "from": "styles.json"
+                }
+            ],
             "code": ""
         },
         "css": {
@@ -179,7 +598,9 @@
         },
         "props": {
             "jsonValidation": false,
-            "rest": []
+            "rest": {
+                "value": ""
+            }
         },
         "name": "dataMaps"
     },
@@ -189,7 +610,12 @@
             "code": {}
         },
         "js": {
-            "links": [],
+            "links": [
+                {
+                    "import": [],
+                    "from": "styles.json"
+                }
+            ],
             "code": ""
         },
         "css": {
@@ -202,7 +628,7 @@
         },
         "props": {
             "jsonValidation": false,
-            "rest": []
+            "rest": {}
         },
         "name": "validation"
     },
@@ -212,7 +638,12 @@
             "code": {}
         },
         "js": {
-            "links": [],
+            "links": [
+                {
+                    "import": [],
+                    "from": "styles.json"
+                }
+            ],
             "code": ""
         },
         "css": {
@@ -225,7 +656,7 @@
         },
         "props": {
             "jsonValidation": false,
-            "rest": []
+            "rest": {}
         },
         "name": "format and parse"
     },
@@ -235,7 +666,12 @@
             "code": {}
         },
         "js": {
-            "links": [],
+            "links": [
+                {
+                    "import": [],
+                    "from": "styles.json"
+                }
+            ],
             "code": ""
         },
         "css": {
@@ -248,7 +684,7 @@
         },
         "props": {
             "jsonValidation": false,
-            "rest": []
+            "rest": {}
         },
         "name": "custom input"
     },
@@ -258,7 +694,12 @@
             "code": {}
         },
         "js": {
-            "links": [],
+            "links": [
+                {
+                    "import": [],
+                    "from": "styles.json"
+                }
+            ],
             "code": ""
         },
         "css": {
@@ -271,8 +712,8 @@
         },
         "props": {
             "jsonValidation": false,
-            "rest": []
+            "rest": {}
         },
-        "name": "steps"
+        "name": "tabs and steps"
     }
 ]

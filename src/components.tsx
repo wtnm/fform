@@ -227,6 +227,7 @@ class FField extends FRefsGeneric {
   private _ff_components: object;
   private _maps: NPM4WidgetsType = {};
   private _$_parse: any;
+  _forceCacheUpdate: boolean = false;
 
   get: Function | null = null;
   ff_layout: FFLayoutGeneric<jsFFCustomizeType>;
@@ -297,10 +298,11 @@ class FField extends FRefsGeneric {
     }
   }
 
-  _updateCachedValue(update = this.liveUpdate) {
+  _updateCachedValue(update = this.liveUpdate || this._forceCacheUpdate) {
     const self = this;
     self._cachedTimeout = undefined;
     if (update && self._cached) {
+      self._forceCacheUpdate = false;
       self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate, path: self.path, ...self._cached.opts});
       self._cached = undefined;
     }
@@ -1390,7 +1392,8 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
 
     },
     updCached: function () {
-      this._updateCachedValue(true);
+      this._forceCacheUpdate = true;
+      //this._updateCachedValue(true);
     },
     eventCheckboxes: function (event: any) {
       const selected = (this.getData().value || []).slice();
