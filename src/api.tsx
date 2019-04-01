@@ -349,7 +349,7 @@ class FFormStateAPI extends FFormStateManager {
     this.set(path, value, {...opts, macros: 'switch'});
 
   setMessages = (value: anyObject | null, opts: APIOptsType & { priority?: number, group?: number, path?: string | Path, props?: any }) => {
-    let {priority = 0, group = 3, path = [], props, ...rest} = opts;
+    let {priority = 0, group = 3, path = [], props = undefined, ...rest} = opts || {};
     const msgPath = '@/messages/' + priority + '/texts/' + group;
     if (value === null) {
       this.switch([path, msgPath], [], rest);

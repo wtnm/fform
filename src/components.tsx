@@ -79,6 +79,8 @@ class FForm extends Component<any, any> {
     self._submit = self._submit.bind(self);
     self._getPath = self._getPath.bind(self);
     Object.defineProperty(self, "objects", {get: () => self.api.props.objects});
+    Object.defineProperty(self, "valid", {get: () => self.api.get('/@/status/valid')});
+
   }
 
   private _setRef(FField: any) {
@@ -109,10 +111,27 @@ class FForm extends Component<any, any> {
     if (self._root) self._root.setState({branch: state});
   }
 
-  _submit() {
+
+  _submit(event: any) {
     const self = this;
-    self.api.set('/@/status/untoched', 0, {execute: true, macros: 'switch'});
-    if (self.props.onSubmit) return self.props.onSubmit(self._savedValue, self)
+    const setPending = (val: any) => self.api.set([], val, {[SymData]: ['status', 'pending']});
+
+    self.api.set([], 0, {[SymData]: ['status', 'untoched'], execute: true, macros: 'switch'});
+
+    if (self.props.onSubmit) {
+      self.api.setMessages(null);
+      let result = self.props.onSubmit(event, self._savedValue, self);
+      if (result && result.then && typeof result.then === 'function') { //Promise
+        setPending(1);
+        result.then((val: any) => {
+          setPending(0);
+          self.api.setMessages(val)
+        }, (reason: any) => {
+          setPending(0);
+          self.api.setMessages(reason)
+        })
+      } else self.api.setMessages(result)
+    }
   }
 
   _getCoreFromParams(coreParams: any, context: any) {
@@ -1325,7 +1344,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
     equal: function (a: any, ...args: any[]) {return [args.some(b => a === b)]},
     messages: function (messages: any[], staticProps: anyObject = {}) {
       const {className: cnSP = {}, ...restSP} = staticProps;
-      return objKeys(messages).map(priority => {
+      return [objKeys(messages).map(priority => {
         const {norender, texts, className = {}, ...rest} = messages[priority];
         const children: any[] = [];
         objKeys(texts).forEach((key: string) =>
@@ -1333,7 +1352,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
             (isString(v) && isString(children[children.length - 1])) ? children.push(v, {_$widget: 'br'}) : children.push(v)));
         if (norender || !children.length) return null;
         return {children, ...restSP, className: {['priority_' + priority]: true, ...cnSP, ...className}, ...rest}
-      })
+      })]
     },
     getArrayStart: function () {return [arrayStart(this.schemaPart)]},
     getProp: function (key: string) {return [getIn(this, normalizePath(key))]},
@@ -1467,14 +1486,14 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
       $_ref: '^/parts/Button',
       type: 'submit',
       children: ['Submit']
-      // $_maps: {disabled: {$: '^/fn/not', args: '@/params/valid'},}
+      // $_maps: {disabled: {$: '^/fn/not', args: '@/status/valid'},}
     },
     Reset: {
       $_ref: '^/parts/Button',
       children: ['Reset'],
       onClick: {$: '^/fn/api', args: ['reset']},
       $_maps: {
-        disabled: '@/params/pristine',
+        disabled: '@/status/pristine',
       }
     },
     ArrayAddButton: {

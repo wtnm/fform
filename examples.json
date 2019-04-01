@@ -574,7 +574,8 @@
                     },
                     "hide": {
                         "type": "string",
-                        "title": "hide"
+                        "title": "hide",
+                        "ff_presets": "string:inlineTitle"
                     }
                 }
             }
@@ -607,7 +608,62 @@
     {
         "json": {
             "links": [],
-            "code": {}
+            "code": {
+                "type": "object",
+                "ff_layout": {
+                    "$_fields": [
+                        "json",
+                        "sync",
+                        "async",
+                        "submission",
+                        {
+                            "$_ref": "^/parts/Submit",
+                            "style": {
+                                "width": "100%"
+                            }
+                        }
+                    ]
+                },
+                "properties": {
+                    "json": {
+                        "type": "string",
+                        "pattern": "json",
+                        "title": "json",
+                        "ff_presets": "string:inlineTitle",
+                        "ff_placeholder": "Enter \"json\" to pass validation..."
+                    },
+                    "sync": {
+                        "type": "string",
+                        "title": "sync",
+                        "ff_presets": "string:inlineTitle",
+                        "ff_validators": [
+                            {
+                                "$": "^/validators/sync",
+                                "args": []
+                            }
+                        ],
+                        "ff_placeholder": "Enter \"sync\" to pass validation..."
+                    },
+                    "async": {
+                        "type": "string",
+                        "title": "async",
+                        "ff_presets": "string:inlineTitle",
+                        "ff_validators": [
+                            {
+                                "$": "^/validators/async",
+                                "args": []
+                            }
+                        ],
+                        "ff_placeholder": "Enter \"async\" to pass validation..."
+                    },
+                    "submission": {
+                        "type": "string",
+                        "title": "submit",
+                        "ff_presets": "string:inlineTitle",
+                        "ff_placeholder": "Enter \"submit\" to pass validation..."
+                    }
+                }
+            }
         },
         "js": {
             "links": [
@@ -616,7 +672,7 @@
                     "from": "styles.json"
                 }
             ],
-            "code": ""
+            "code": "  validators: {\n    sync: function (v) {\n      return v === 'sync' ? '' : 'sync validation not passed'\n    },\n    async: function (v) {\n      return new Promise((resolve, reject) => {\n        setTimeout(() => resolve(v === 'async' ? '' : 'async validation not passed'), 1000)\n      })\n    }\n  }"
         },
         "css": {
             "links": [
@@ -627,8 +683,10 @@
             "code": ""
         },
         "props": {
-            "jsonValidation": false,
-            "rest": {}
+            "jsonValidation": true,
+            "rest": {
+                "value": ""
+            }
         },
         "name": "validation"
     },
@@ -663,7 +721,14 @@
     {
         "json": {
             "links": [],
-            "code": {}
+            "code": {
+                "type": "string",
+                "ff_custom": {
+                    "Main": {
+                        "type": "password"
+                    }
+                }
+            }
         },
         "js": {
             "links": [
@@ -684,7 +749,9 @@
         },
         "props": {
             "jsonValidation": false,
-            "rest": {}
+            "rest": {
+                "value": ""
+            }
         },
         "name": "custom input"
     },

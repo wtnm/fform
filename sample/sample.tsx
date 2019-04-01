@@ -7,9 +7,25 @@ import * as style from '../addons/styles.json'
 const {render} = require('react-dom');
 
 import imjvWrapper from '../addons/imjvWrapper';
+import {rejects} from "assert";
 
 const imjvValidator: any = require('../addons/is-my-json-valid-lite');
 const JSONValidator = imjvWrapper(imjvValidator);
+
+function submit(event: any, value: any, fform: any) {
+  event.preventDefault();
+  return new Promise((resolve, rejects) => {
+    setTimeout(() => {
+      const res: any = {};
+      const warn: any = {};
+      if (value.radioSelect !== 'option 1') res['radioSelect'] = 'value should be "option 2"';
+      if (value.textarea !== 'textarea') warn['textarea'] = 'value should be "textarea"';
+      fform.api.setMessages(null, {priority: 1});
+      fform.api.setMessages(warn, {priority: 1});
+      resolve(res);
+    }, 10)
+  })
+}
 
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');
@@ -30,7 +46,7 @@ if (typeof window != 'undefined') {
     <h3>FForm sample</h3>
     <div>
       <div>
-        <FForm id="sampleForm" touched core={{schema: sampleSchema, name: "sampleForm", objects: sampleObjects, JSONValidator}}/>
+        <FForm id="sampleForm" onSubmit={submit} touched core={{schema: sampleSchema, name: "sampleForm", objects: sampleObjects, JSONValidator}}/>
       </div>
     </div>
   </div>, container);
