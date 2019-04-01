@@ -18,7 +18,7 @@ function submit(event: any, value: any, fform: any) {
     setTimeout(() => {
       const res: any = {};
       const warn: any = {};
-      if (value.radioSelect !== 'option 1') res['radioSelect'] = 'value should be "option 2"';
+      if (value.radioSelect !== 'option 1') res['radioSelect'] = 'value should be option 2';
       if (value.textarea !== 'textarea') warn['textarea'] = 'value should be "textarea"';
       fform.api.setMessages(null, {priority: 1});
       fform.api.setMessages(warn, {priority: 1});
@@ -26,6 +26,23 @@ function submit(event: any, value: any, fform: any) {
     }, 10)
   })
 }
+
+// function (event, value, fform) {
+//   event.preventDefault();
+//   var valid = fform.valid;
+//   return new Promise((resolve, rejects) => {
+//     setTimeout(() => {
+//       var res = {};
+//       var warn = {};
+//       if (value.submitError !== 'submit') res['submitError'] = 'submit validation not passed';
+//       if (value.submitWarn !== 'warn') warn['submitWarn'] = 'submit warning';
+//       fform.api.setMessages(null, {priority: 1});
+//       fform.api.setMessages(warn, {priority: 1});
+//       if (valid && !Object.keys(res).length) alert('Validation passed');
+//       resolve(res);
+//     }, 10)
+//   })
+// }
 
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');

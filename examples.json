@@ -12,7 +12,10 @@
                             "$_ref": "^/parts/Submit",
                             "style": {
                                 "width": "100%"
-                            }
+                            },
+                            "children": [
+                                "Send"
+                            ]
                         },
                         {
                             "$_ref": "^/parts/Reset",
@@ -615,7 +618,8 @@
                         "json",
                         "sync",
                         "async",
-                        "submission",
+                        "submitError",
+                        "submitWarn",
                         {
                             "$_ref": "^/parts/Submit",
                             "style": {
@@ -656,11 +660,17 @@
                         ],
                         "ff_placeholder": "Enter \"async\" to pass validation..."
                     },
-                    "submission": {
+                    "submitError": {
                         "type": "string",
-                        "title": "submit",
+                        "title": "submit error",
                         "ff_presets": "string:inlineTitle",
                         "ff_placeholder": "Enter \"submit\" to pass validation..."
+                    },
+                    "submitWarn": {
+                        "type": "string",
+                        "title": "submit warn",
+                        "ff_presets": "string:inlineTitle",
+                        "ff_placeholder": "Enter \"warn\" to remove warning..."
                     }
                 }
             }
@@ -685,7 +695,7 @@
         "props": {
             "jsonValidation": true,
             "rest": {
-                "value": ""
+                "value": "{\"touched\":true,\"onSubmit\":{\"$\":\"function (event, value, fform) {   event.preventDefault();   var valid = fform.valid;   return new Promise((resolve, rejects) => {     setTimeout(() => {       var res = {};       var warn = {};       if (value.submitError !== 'submit') res['submitError'] = 'submit validation not passed';       if (value.submitWarn !== 'warn') warn['submitWarn'] = 'submit warning';       fform.api.setMessages(null, {priority: 1});       fform.api.setMessages(warn, {priority: 1});       if (valid && !Object.keys(res).length) alert('Validation passed');       resolve(res);     }, 10)   }) }\"}}"
             }
         },
         "name": "validation"
@@ -693,7 +703,32 @@
     {
         "json": {
             "links": [],
-            "code": {}
+            "code": {
+                "type": "object",
+                "ff_layout": {
+                    "$_fields": [
+                        "formatNum"
+                    ]
+                },
+                "properties": {
+                    "formatNum": {
+                        "type": "string",
+                        "ff_custom": {
+                            "Main": {
+                                "onChange": "^/fn/eventValue|parseNum|setValue",
+                                "$_maps": {
+                                    "value": {
+                                        "$": "^/fn/formatNum",
+                                        "args": [
+                                            "@value"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
         "js": {
             "links": [
@@ -702,7 +737,7 @@
                     "from": "styles.json"
                 }
             ],
-            "code": ""
+            "code": "fn: {\n      formatNum: function (val, ...args) {\n        var a = val.substr(3, 4);\n        var b = val.substr(7, 3);\n        return [val.substr(0, 3) + (a ? '-' + a : '') + (b ? '-' + b : ''), ...args]\n      },\n      parseNum: function (val, ...args) {\n        return [val.replace(/\\D+/g, ''), ...args]\n      }\n}"
         },
         "css": {
             "links": [
@@ -714,7 +749,9 @@
         },
         "props": {
             "jsonValidation": false,
-            "rest": {}
+            "rest": {
+                "value": ""
+            }
         },
         "name": "format and parse"
     },
