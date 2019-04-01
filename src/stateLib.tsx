@@ -544,9 +544,11 @@ function setValidStatusPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Typ
   let priorities = objKeys(Object.assign({}, getIn(state, track, SymData, 'messages') || {}, getIn(UPDATABLE.update, track, SymData, 'messages') || {}));
   let currentPriority;
   for (let i = 0; i < priorities.length; i++) {
-    let groups = objKeys(Object.assign({}, getIn(state, track, SymData, 'messages', priorities[i]) || {}, getIn(UPDATABLE.update, track, SymData, 'messages', priorities[i]) || {}));
-    for (let j = 0; j < groups.length; j++) {
-      if (getIn(groups, groups[j], 'length')) {
+    let groups = Object.assign({}, getIn(state, track, SymData, 'messages', priorities[i], 'texts') || {},
+      getIn(UPDATABLE.update, track, SymData, 'messages', priorities[i], 'texts') || {});
+    let grKeys = objKeys(groups);
+    for (let j = 0; j < grKeys.length; j++) {
+      if (getIn(groups, grKeys[j], 'length')) {
         currentPriority = parseInt(priorities[i]);
         break;
       }
