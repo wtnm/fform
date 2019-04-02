@@ -116,10 +116,10 @@ class FForm extends Component<any, any> {
     const self = this;
     const setPending = (val: any) => self.api.set([], val, {[SymData]: ['status', 'pending']});
 
-    self.api.set([], 0, {[SymData]: ['status', 'untoched'], execute: true, macros: 'switch'});
+    self.api.set([], 0, {[SymData]: ['status', 'untouched'], execute: true, macros: 'switch'});
 
     if (self.props.onSubmit) {
-      self.api.setMessages(null);
+      self.api.setMessages(null, {execute: true});
       let result = self.props.onSubmit(event, self._savedValue, self);
       if (result && result.then && typeof result.then === 'function') { //Promise
         setPending(1);
@@ -1442,7 +1442,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
             $: '^/fn/enumInputs',
             args: [
               '@/selector/enum',
-              '@/selector/exten',
+              '@/selector/enumExten',
               {_$useTag: 'label', _$cx: '^/_$cx'},
               {
                 _$widget: 'input',

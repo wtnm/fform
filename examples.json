@@ -695,7 +695,7 @@
         "props": {
             "jsonValidation": true,
             "rest": {
-                "value": "{\"touched\":true,\"onSubmit\":{\"$\":\"function (event, value, fform) {   event.preventDefault();   var valid = fform.valid;   return new Promise((resolve, rejects) => {     setTimeout(() => {       var res = {};       var warn = {};       if (value.submitError !== 'submit') res['submitError'] = 'submit validation not passed';       if (value.submitWarn !== 'warn') warn['submitWarn'] = 'submit warning';       fform.api.setMessages(null, {priority: 1});       fform.api.setMessages(warn, {priority: 1});       if (valid && !Object.keys(res).length) alert('Validation passed');       resolve(res);     }, 10)   }) }\"}}"
+                "value": "{\"onSubmit\":{\"$\":\"function (event, value, fform) {   event.preventDefault();   var valid = fform.valid;   return new Promise((resolve, rejects) => {     setTimeout(() => {       var res = {};       var warn = {};       if (value.submitError !== 'submit') res['submitError'] = 'submit validation not passed';       if (value.submitWarn !== 'warn') warn['submitWarn'] = 'submit warning';       fform.api.setMessages(null, {priority: 1});       fform.api.setMessages(warn, {priority: 1});       if (valid && !Object.keys(res).length) alert('Validation passed');       resolve(res);     }, 10)   }) }\"}}"
             }
         },
         "name": "validation"
@@ -759,10 +759,41 @@
         "json": {
             "links": [],
             "code": {
-                "type": "string",
-                "ff_custom": {
-                    "Main": {
-                        "type": "password"
+                "type": "object",
+                "ff_layout": {
+                    "$_fields": [
+                        "reactSelect",
+                        "reactSelectMulti"
+                    ]
+                },
+                "properties": {
+                    "reactSelect": {
+                        "type": "string",
+                        "title": "react-select",
+                        "ff_presets": "reactSelect:inlineTitle",
+                        "ff_placeholder": "select option...",
+                        "enum": [
+                            "option 1",
+                            "option 2",
+                            "option 3"
+                        ]
+                    },
+                    "reactSelectMulti": {
+                        "type": "array",
+                        "title": "react-select multi",
+                        "ff_presets": "reactSelect:inlineTitle",
+                        "ff_managed": true,
+                        "ff_placeholder": "select multi options...",
+                        "ff_custom": {
+                            "Main": {
+                                "isMulti": true
+                            }
+                        },
+                        "enum": [
+                            "option 1",
+                            "option 2",
+                            "option 3"
+                        ]
                     }
                 }
             }
@@ -774,7 +805,7 @@
                     "from": "styles.json"
                 }
             ],
-            "code": ""
+            "code": "{\n  widgets: {\n    reactSelect: Select\n  },\n  fn: {\n    reactSelectParse: function (values) {\n      if (!Array.isArray(values)) return [values.value];\n      return [values.map(function (item) {return item.value})]\n    },\n    reactSelectValue: function (values = []) {\n      if (!Array.isArray(values)) return values? [{value: values, label: values}]:[];\n      return [values.map(function (value) {return {value, label: value}})]\n    },\n  },\n  sets: {\n    reactSelect: {\n      $_ref: '^/sets/nBase',\n      Main: {\n        _$useTag: '^/widgets/reactSelect',\n        $_reactRef: {tagRef: true},\n        onChange: {$: '^/fn/reactSelectParse|setValue|updCached'},\n        $_maps: {\n          value: {$: '^/fn/reactSelectValue', args: ['@/value']},\n          options: {$: '^/fn/reactSelectValue', args: ['@/fData/enum']},\n          isDisabled: '@/params/disabled'\n        },\n      },\n    },\n  }\n}"
         },
         "css": {
             "links": [
@@ -795,7 +826,226 @@
     {
         "json": {
             "links": [],
-            "code": {}
+            "code": {
+                "type": "object",
+                "ff_dataMap": [
+                    {
+                        "from": "./@/selector/value",
+                        "to": "./@/selector/none",
+                        "$": "^/fn/api",
+                        "args": [
+                            "showOnly",
+                            "${value}"
+                        ]
+                    }
+                ],
+                "ff_data": {
+                    "selector": {
+                        "value": "step 1",
+                        "enum": [
+                            "step 1",
+                            "step 2",
+                            "step 3"
+                        ]
+                    }
+                },
+                "ff_layout": {
+                    "$_fields": [
+                        {
+                            "$_ref": "^/parts/RadioSelector",
+                            "className": {
+                                "shrink": true,
+                                "inline": true
+                            }
+                        },
+                        "step 1",
+                        "step 2",
+                        "step 3",
+                        {
+                            "className": {
+                                "inline": true
+                            },
+                            "$_fields": [
+                                {
+                                    "$_ref": "^/parts/Button",
+                                    "children": "<< Back",
+                                    "onClick": {
+                                        "$": "^/fn/nextStep",
+                                        "args": [
+                                            -1,
+                                            false
+                                        ]
+                                    },
+                                    "$_maps": {
+                                        "className/hidden": {
+                                            "$": "^/fn/equal",
+                                            "args": [
+                                                "@selector/value",
+                                                "step 1"
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "$_ref": "^/parts/expander"
+                                },
+                                {
+                                    "$_ref": "^/parts/Button",
+                                    "children": "Next >>",
+                                    "onClick": {
+                                        "$": "^/fn/nextStep",
+                                        "args": [
+                                            1,
+                                            true
+                                        ]
+                                    },
+                                    "$_maps": {
+                                        "className/hidden": {
+                                            "$": "^/fn/equal",
+                                            "args": [
+                                                "@selector/value",
+                                                "step 3"
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "$_ref": "^/parts/Submit",
+                                    "$_maps": {
+                                        "className/hidden": {
+                                            "$": "^/fn/equal|not",
+                                            "args": [
+                                                "@selector/value",
+                                                "step 3"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "properties": {
+                    "step 1": {
+                        "type": "object",
+                        "ff_dataMap": [
+                            {
+                                "from": "./@/status/valid,untouched",
+                                "to": "../@/selector",
+                                "$": "^/fn/mapValid",
+                                "args": [
+                                    "@status/valid",
+                                    "@status/untouched"
+                                ]
+                            }
+                        ],
+                        "ff_layout": {
+                            "$_fields": [
+                                "json",
+                                "sync"
+                            ]
+                        },
+                        "properties": {
+                            "json": {
+                                "type": "string",
+                                "pattern": "json",
+                                "title": "json",
+                                "default": "json",
+                                "ff_presets": "string:inlineTitle",
+                                "ff_placeholder": "Enter \"json\" to pass validation..."
+                            },
+                            "sync": {
+                                "type": "string",
+                                "title": "sync",
+                                "default": "sync",
+                                "ff_presets": "string:inlineTitle",
+                                "ff_validators": [
+                                    {
+                                        "$": "^/validators/sync",
+                                        "args": []
+                                    }
+                                ],
+                                "ff_placeholder": "Enter \"sync\" to pass validation..."
+                            }
+                        }
+                    },
+                    "step 2": {
+                        "type": "object",
+                        "ff_dataMap": [
+                            {
+                                "from": "./@/status/valid,untouched",
+                                "to": "../@/selector",
+                                "$": "^/fn/mapValid",
+                                "args": [
+                                    "@status/valid",
+                                    "@status/untouched"
+                                ]
+                            }
+                        ],
+                        "ff_layout": {
+                            "$_fields": [
+                                "async",
+                                "submitError"
+                            ]
+                        },
+                        "properties": {
+                            "async": {
+                                "type": "string",
+                                "title": "async",
+                                "default": "async",
+                                "ff_presets": "string:inlineTitle",
+                                "ff_validators": [
+                                    {
+                                        "$": "^/validators/async",
+                                        "args": []
+                                    }
+                                ],
+                                "ff_placeholder": "Enter \"async\" to pass validation..."
+                            },
+                            "submitError": {
+                                "type": "string",
+                                "title": "submit error",
+                                "ff_presets": "string:inlineTitle",
+                                "ff_placeholder": "Enter \"submit\" to pass validation..."
+                            }
+                        }
+                    },
+                    "step 3": {
+                        "type": "object",
+                        "ff_dataMap": [
+                            {
+                                "from": "./@/status/valid,untouched",
+                                "to": "../@/selector",
+                                "$": "^/fn/mapValid",
+                                "args": [
+                                    "@status/valid",
+                                    "@status/untouched"
+                                ]
+                            }
+                        ],
+                        "ff_layout": {
+                            "$_fields": [
+                                "submitError2",
+                                "submitWarn"
+                            ]
+                        },
+                        "properties": {
+                            "submitError2": {
+                                "type": "string",
+                                "title": "submit error 2",
+                                "ff_presets": "string:inlineTitle",
+                                "ff_placeholder": "Enter \"submit\" to pass validation..."
+                            },
+                            "submitWarn": {
+                                "type": "string",
+                                "title": "submit warn",
+                                "ff_presets": "string:inlineTitle",
+                                "ff_placeholder": "Enter \"warn\" to remove warning..."
+                            }
+                        }
+                    }
+                }
+            }
         },
         "js": {
             "links": [
@@ -804,19 +1054,22 @@
                     "from": "styles.json"
                 }
             ],
-            "code": ""
+            "code": "fn:{\n    mapValid: function (valid, untouched) {\n      var idx = this.from.split('@')[0].split('/').splice(-2)[0];\n      this.api.set('./@/selector/enumExten/' + idx + '/className/error', !untouched && valid === false)\n    },\n    nextStep: function (step = 1, onlyIfValid = false) {\n      var enumSteps = this.api.get('./@selector/enum');\n      var stepValue = this.api.get('./@selector/value');\n      var idx = enumSteps.indexOf(stepValue) + step;\n      if (idx < 0) idx = 9;\n      if (idx >= enumSteps.length) idx = enumSteps.length - 1;\n      if (onlyIfValid) {\n        if (!this.api.get('./' + stepValue + '@status/valid')) {\n          this.api.reset({path: './' + stepValue, status: 'untouched', value: 0});\n          return\n        }\n      }\n      this.api.set('./@selector/value', enumSteps[idx]);\n    },\n    submit: function (event, value, fform) {\n      event.preventDefault();\n      var valid = fform.valid;\n      return new Promise((resolve, rejects) => {\n        setTimeout(() => {\n          var res = {};\n          var warn = {};\n          if (value[\"step 2\"].submitError !== 'submit') res[\"step 2\"] = {'submitError': 'submit validation not passed'};\n          if (value[\"step 3\"].submitError2 !== 'submit') res[\"step 3\"] = {'submitError2': 'submit validation not passed'};\n          if (value[\"step 3\"].submitWarn !== 'warn') warn[\"step 3\"] = {'submitWarn': 'submit warning'};\n          fform.api.setMessages(null, {priority: 1});\n          fform.api.setMessages(warn, {priority: 1});\n          if (valid && !Object.keys(res).length) alert('Validation passed');\n          resolve(res);\n        }, 10)\n      })\n    },\n},\n  validators: {\n    sync: function (v) {\n      return v === 'sync' ? '' : 'sync validation not passed'\n    },\n    async: function (v) {\n      return new Promise((resolve, reject) => {\n        setTimeout(() => resolve(v === 'async' ? '' : 'async validation not passed'), 1000)\n      })\n    }\n  }"
         },
         "css": {
             "links": [
                 "tacit.min.css",
-                "style.css"
+                "style.css",
+                "radio.css"
             ],
             "cxBind": "",
             "code": ""
         },
         "props": {
-            "jsonValidation": false,
-            "rest": {}
+            "jsonValidation": true,
+            "rest": {
+                "value": "{\"onSubmit\":\"^/fn/submit\"}"
+            }
         },
         "name": "tabs and steps"
     }

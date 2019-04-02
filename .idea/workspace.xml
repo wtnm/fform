@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="fixes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/examples.json" beforeDir="false" afterPath="$PROJECT_DIR$/examples.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample/sample.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sample.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -1193,14 +1191,7 @@
       <workItem from="1553815765454" duration="2532000" />
       <workItem from="1554002750564" duration="1291000" />
       <workItem from="1554086058710" duration="4690000" />
-      <workItem from="1554091194548" duration="4541000" />
-    </task>
-    <task id="LOCAL-00062" summary="fixes">
-      <created>1550079845279</created>
-      <option name="number" value="00062" />
-      <option name="presentableId" value="LOCAL-00062" />
-      <option name="project" value="LOCAL" />
-      <updated>1550079845282</updated>
+      <workItem from="1554091194548" duration="4553000" />
     </task>
     <task id="LOCAL-00063" summary="fixes">
       <created>1550159880968</created>
@@ -1538,7 +1529,14 @@
       <option name="project" value="LOCAL" />
       <updated>1554092219199</updated>
     </task>
-    <option name="localTasksCounter" value="111" />
+    <task id="LOCAL-00111" summary="fixes">
+      <created>1554102494089</created>
+      <option name="number" value="00111" />
+      <option name="presentableId" value="LOCAL-00111" />
+      <option name="project" value="LOCAL" />
+      <updated>1554102494089</updated>
+    </task>
+    <option name="localTasksCounter" value="112" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1574,7 +1572,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3491261000" />
+    <option name="totallyTimeSpent" value="3491273000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1602,7 +1600,7 @@
       <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48746517" weight="0.27924946" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.24675325" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info active="true" anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" visible="true" weight="0.38300222" />
+      <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" weight="0.38300222" />
       <window_info anchor="bottom" id="Find" order="9" weight="0.14348786" />
       <window_info anchor="right" x="0" y="0" width="434" height="856" id="Documentation" order="0" side_tool="true" weight="0.32922912" />
     </layout>

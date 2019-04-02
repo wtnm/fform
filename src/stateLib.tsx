@@ -537,30 +537,33 @@ function updateMessagesPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Typ
   return state
 }
 
-function setValidStatusPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, track: Path = []) {
-  let schemaPart: jsJsonSchema;
-  try {schemaPart = getSchemaPart(UPDATABLE.api.schema, track, oneOfFromState(state))} catch (e) {return state}
-  const selfManaged = isSelfManaged(state, track);
-  let priorities = objKeys(Object.assign({}, getIn(state, track, SymData, 'messages') || {}, getIn(UPDATABLE.update, track, SymData, 'messages') || {}));
+function getCurrentPriority(messages: any) {
+  let priorities = objKeys(messages);
   let currentPriority;
   for (let i = 0; i < priorities.length; i++) {
-    let groups = Object.assign({}, getIn(state, track, SymData, 'messages', priorities[i], 'texts') || {},
-      getIn(UPDATABLE.update, track, SymData, 'messages', priorities[i], 'texts') || {});
+    let groups = getIn(messages, priorities[i], 'texts') || {};
     let grKeys = objKeys(groups);
     for (let j = 0; j < grKeys.length; j++) {
-      if (getIn(groups, grKeys[j], 'length')) {
+      if (groups[grKeys[j]] && groups[grKeys[j]].length) {
         currentPriority = parseInt(priorities[i]);
         break;
       }
     }
     if (!isUndefined(currentPriority)) break;
   }
+  return currentPriority
+}
 
+function setPriorityPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, track: Path, currentPriority?: number) {
   state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['status', 'validation', 'invalid'], currentPriority === 0 ? 1 : 0, true, {macros: 'setStatus'}));
   state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['status', 'priority'], currentPriority));
+  return state;
+}
 
-  if (!selfManaged) objKeys(getIn(UPDATABLE.update, track)).forEach(key => state = setValidStatusPROC(state, UPDATABLE, track.concat(key)));
-
+function setValidStatusPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, update: any, track: Path = []) {
+  let currentPriority = getCurrentPriority(getIn(state, track, SymData, 'messages'));
+  state = setPriorityPROC(state, UPDATABLE, track, currentPriority);
+  if (!isSelfManaged(state, track)) objKeys(update).forEach(key => state = setValidStatusPROC(state, UPDATABLE, update[key], track.concat(key)));
   return state
 }
 
@@ -601,14 +604,14 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
     if (!type) return state;
     if (type == 'object' || type == 'array')
       modifiedValues && objKeys(modifiedValues).forEach(key => clearDefaultMessagesInnerPROCEDURE(state, modifiedValues[key], track.concat(key)));
-    return updateMessagesPROC(state, UPDATABLE, track); // sets empty array for 0-level messages
+    setUPDATABLE(UPDATABLE, {}, true, track, SymData, 'messages', '0', 'texts')
+    return state;
+    //return updateMessagesPROC(state, UPDATABLE, track); // sets empty array for 0-level messages
   }
 
   let {api, force, opts, promises} = action;
-  const schemaDataObj = api.schema[SymData];
   const {JSONValidator, schema, getState, UPDATABLE} = api;
   const currentValues = state[SymData].current;
-  const pendingStatus = {};
   const vPromises: vPromisesType[] = [];
   const modifiedValues = force === true ? currentValues : force;
   //console.log('modifiedValues ', modifiedValues);
@@ -624,7 +627,9 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
     errs.forEach((item: any) => updateMessagesPROC(state, UPDATABLE, item[0], item[1]));
   }
   state = recurseValidationInnerPROCEDURE(state, currentValues, modifiedValues);
-  state = setValidStatusPROC(state, UPDATABLE);
+  let update = UPDATABLE.update;
+  state = mergeUPD_PROC(state, UPDATABLE);
+  state = setValidStatusPROC(state, UPDATABLE, update);
   state = mergeUPD_PROC(state, UPDATABLE);
   promises.resolve();
   if (vPromises.length) {
@@ -641,7 +646,9 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
           // pendingStatus[path2string(path)] = false;
         }
       }
-      state = setValidStatusPROC(state, UPDATABLE);
+      let update = UPDATABLE.update;
+      state = mergeUPD_PROC(state, UPDATABLE);
+      state = setValidStatusPROC(state, UPDATABLE, update);
       state = mergeUPD_PROC(state, UPDATABLE);// merge(state, UPDATABLE.update, {replace: UPDATABLE.replace});
       dispatch({type: anSetState, state, api});
       promises.vAsync.resolve();
@@ -655,7 +662,9 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
           state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['status', 'validation', 'pending'], 0, false, {macros: 'setStatus'}))
         }
       }
-      state = setValidStatusPROC(state, UPDATABLE);
+      let update = UPDATABLE.update;
+      state = mergeUPD_PROC(state, UPDATABLE);
+      state = setValidStatusPROC(state, UPDATABLE, update);
       state = mergeUPD_PROC(state, UPDATABLE);
       dispatch({type: anSetState, state, api});
       promises.vAsync.reject(reason);
@@ -949,6 +958,10 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
     // additional state modifying if required
     if (keyPath[0] == 'value') { // modify current
       state = updatePROC(state, UPDATABLE, makeNUpdate([], push2array(['current'], path, keyPath.slice(1)), value, replace))
+    } else if (keyPath[0] == 'messages') { // modify valid status
+      const messages = getFromUPD(state, UPDATABLE)(path, SymData, 'messages');
+      let currentPriority = getCurrentPriority(messages);
+      state = setPriorityPROC(state, UPDATABLE, path, currentPriority);
     } else if (keyPath[0] == 'length') { // modify state with new length
       state = updatePROC(state, UPDATABLE, makeNUpdate([], push2array(['current'], path, keyPath), value, replace));
       let start = branch[SymData].length;
@@ -1003,7 +1016,9 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
         value = !getUpdValue([update, state], path, SymData, 'status', keyStatus);
         newKey = keyStatus == 'untouched' ? 'touched' : 'pristine';
       }
-      if (!isUndefined(newKey)) setIn(update, value, path, SymData, 'status', newKey);
+      if (!isUndefined(newKey))
+        state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['status', newKey], value));
+      //setIn(update, value, path, SymData, 'status', newKey);
 
     } else if (keyPath[0] == 'oneOf') {
       const oldBranch = getIn(state, path);
