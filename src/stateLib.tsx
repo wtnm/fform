@@ -429,6 +429,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
     type = tmp.type;
   }
   push2array(dataMapObjects, normalizeDataMap(schemaPart.ff_dataMap || [], path));
+  result[SymDataMap] = {};
   result[SymData] = makeDataStorage(schemaPart, oneOf, type, value);
   getNSetOneOf(path, {oneOf, type});
 
@@ -508,6 +509,11 @@ function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
   }
   return {}
   //return {schemaPart: oneOfShemas[0], oneOf: 0, type: toArray(oneOfShemas[0].type || types)[0]}
+}
+
+function rehydrateState(state: any, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
+  let {dataMap = []} = makeStateBranch(UPDATABLE.api.schema, oneOfFromState(state));
+  return setDataMapInState(state, UPDATABLE, dataMap, null);
 }
 
 /////////////////////////////////////////////
@@ -1092,7 +1098,7 @@ function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], em
   })
 }
 
-function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, dataMaps: normalizedDataMapType[], unset: boolean = false) {
+function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, dataMaps: normalizedDataMapType[], unset: boolean | null = false) {
   const dataMaps2execute: any = [];
   dataMaps.forEach((dataMap) => {
     const emitterPath = dataMap.emitter;
@@ -1135,7 +1141,7 @@ function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     }
     state = mergeUPD_PROC(state, UPDATABLE);
   });
-  dataMaps2execute.forEach((v: any) => {
+  if (unset !== null) dataMaps2execute.forEach((v: any) => {
     state = executeDataMapsPROC(state, UPDATABLE, v.map, makeNUpdate(v.fromPath, v.keyPath, getIn(state, v.fromPath, SymData, v.keyPath)));
     state = mergeUPD_PROC(state, UPDATABLE);
   });
@@ -1531,7 +1537,8 @@ export {
   types,
   updateState,
   initState,
+  rehydrateState,
   processProp,
 };
-export {SymData, SymReset, SymClear, SymDelete}
+export {SymData, SymReset, SymClear, SymDelete, SymDataMap}
 export {makeNUpdate, updatePROC, string2NUpdate};

@@ -28,7 +28,7 @@ import {
   initState,
   updateState,
   object2PathValues,
-  SymData, SymReset, SymClear
+  SymData, SymReset, SymClear, SymDataMap, rehydrateState
 } from "./stateLib";
 
 
@@ -206,6 +206,9 @@ class FFormStateAPI extends FFormStateManager {
     super(props);
     const self = this;
     if (!self._getState()) self._setState(initState(self.UPDATABLE));
+    const state = self._getState();
+    if (!state[SymDataMap])  // no data maps, it means that state from server-side render
+      self._setState(rehydrateState(state, self.UPDATABLE));
   }
 
   wrapper(self: any = {}) {
