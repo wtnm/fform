@@ -544,7 +544,7 @@ function updateMessagesPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Typ
 }
 
 function getCurrentPriority(messages: any) {
-  let priorities = objKeys(messages);
+  let priorities = objKeys(messages || {});
   let currentPriority;
   for (let i = 0; i < priorities.length; i++) {
     let groups = getIn(messages, priorities[i], 'texts') || {};

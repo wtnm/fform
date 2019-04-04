@@ -116,7 +116,6 @@ class FFormStateManager {
     if (props.setState && props.store) self._unsubscribe = self.props.store.subscribe(self._handleChange.bind(self));
     if (props.name) _CORES[props.name] = self;
     self.UPDATABLE = {update: {}, replace: {}, api: self};
-
   }
 
   private _dispatch(action: any) {
@@ -205,7 +204,8 @@ class FFormStateAPI extends FFormStateManager {
   constructor(props: FFormApiProps) {
     super(props);
     const self = this;
-    if (!self._getState()) self._setState(initState(self.UPDATABLE));
+    if (props.state) self._setState(props.state);
+    else if (!self._getState()) self._setState(initState(self.UPDATABLE));
     const state = self._getState();
     if (!state[SymDataMap])  // no data maps, it means that state from server-side render
       self._setState(rehydrateState(state, self.UPDATABLE));

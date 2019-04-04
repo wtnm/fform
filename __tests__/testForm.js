@@ -22,6 +22,7 @@ const imjvWrapper = require('../addons/imjvWrapper').default;
 const imjvValidator = require('../addons/is-my-json-valid-lite');
 const JSONValidator = imjvWrapper(imjvValidator);
 
+const dehydrate = require('../addons/dehydrator').default;
 
 const components = require('../src/components.tsx');
 
@@ -915,6 +916,18 @@ describe('FForm api tests', function () {
     expect(obj.part.first.three).to.be.equal('three value');
   });
 
+  it('test SRR dehydrate stateRehydrate', async function () {
+
+    const core = new components.FFormStateAPI({name: 'core', schema: require('./schemaArray').default, JSONValidator});
+    const state = core.getState();
+    let reState = dehydrate(state);
+    eval('reState=' + reState);
+    const reCore = new components.FFormStateAPI({state: reState, name: 'reCore', schema: require('./schemaArray').default, JSONValidator});
+    const reCoreState = reCore.getState();
+    expect(state).to.be.eql(reCoreState);
+  })
+
+
   // it('test api.objectResolver', function () {
   //
   //   let obj = apiLib.objectResolver(objects, exampleObj);
@@ -1270,8 +1283,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/0/strValue@value')).to.be.equal('deff');
         await promise;
         expect(core.get('0/0/strValue@value')).to.be.equal('more deff');
-      })
-
+      });
 
     }
 

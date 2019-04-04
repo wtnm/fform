@@ -60,7 +60,7 @@ interface FFormApiProps {
   store?: any,   // redux
   getState?: () => any  // external
   setState?: (state: any) => void // external
-
+  state?: any;
 }
 
 
