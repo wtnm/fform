@@ -20,7 +20,6 @@ type MessageGroupType = {
 
 interface anyObject {
   [key: string]: any;
-
   [key: number]: any;
 }
 
@@ -97,3 +96,87 @@ type vPromisesType = Promise<any> & {
 }
 
 type oneOfStructureType = { oneOf: number, type?: string };
+
+/** Parameters to creates a FFormCore */
+interface FFormApiProps {
+  schema: jsJsonSchema | JsonSchema;
+  /** schema that will be used to create state */
+  JSONValidator?: any;
+  objects?: { [key: string]: any };
+  name?: string;
+  /** name that will be used to access data in redux storage */
+  store?: any,   // redux
+  getState?: () => any  // external
+  setState?: (state: any) => void // external
+  state?: any;
+}
+
+
+interface FFormProps {
+  useTag?: any;
+
+  core: any;
+  state?: any;
+  value?: any;
+  inital?: any;
+  extData?: { [key: string]: any };
+  fieldCache?: boolean | number;
+  touched?: boolean;
+  noValidation?: boolean;
+
+  parent?: any;
+
+  onSubmit?: (value: any, fform?: any) => boolean;
+  onChange?: (value: any, fform?: any) => void;
+  onStateChange?: (state: any, fform?: any) => void;
+}
+
+
+interface MergeStateOptionsArgument {
+  noSymbol?: boolean;
+  del?: boolean;  // remove props with SymDelete
+  diff?: boolean;
+  arrays?: Function; // 'mergeWithoutLength'
+  replace?: replaceType; // force replace for mergeable object instead of merge, should be and object with true value for the keys that must be replaced, can be recursive for deep objects
+  SymbolDelete?: any;
+}
+
+type replaceType = { [key: string]: boolean | replaceType } | boolean | ((path: Path) => boolean);
+
+interface IsEqualOptions {
+  deep?: boolean;
+  symbol?: boolean;
+  skipKeys?: string[];
+  deepKeys?: string[];
+  onlyKeysB?: boolean;
+}
+
+interface ActionType {
+  type: string;
+  core: any,
+  mergeOptions?: any;
+}
+
+
+type APIOptsType = {
+  execute?: boolean | number;
+  force?: boolean;
+  noValidation?: boolean;
+  setExecution?: Function;
+}
+
+interface apiPromises extends Promise<any> {
+  vAsync: Promise<any>;
+}
+
+interface MergeStateResult {
+  state: any,
+  changes?: any,
+}
+
+type PathValueType = Array<any>;
+
+interface object2PathValuesOptions {
+  symbol?: boolean;
+  arrayAsValue?: boolean;
+}
