@@ -1,13 +1,12 @@
 import * as React from 'react';
 
-import {FForm, fformObjects} from '../src/components';
+import {FForm, fformObjects} from '../src/fform';
 import * as sampleSchema from './sampleSchema.json'
 import * as style from '../addons/styles.json'
 
 const {render} = require('react-dom');
 
 import imjvWrapper from '../addons/imjvWrapper';
-import {rejects} from "assert";
 
 const imjvValidator: any = require('../addons/is-my-json-valid-lite');
 const JSONValidator = imjvWrapper(imjvValidator);
@@ -27,22 +26,6 @@ function submit(event: any, value: any, fform: any) {
   })
 }
 
-// function (event, value, fform) {
-//   event.preventDefault();
-//   var valid = fform.valid;
-//   return new Promise((resolve, rejects) => {
-//     setTimeout(() => {
-//       var res = {};
-//       var warn = {};
-//       if (value.submitError !== 'submit') res['submitError'] = 'submit validation not passed';
-//       if (value.submitWarn !== 'warn') warn['submitWarn'] = 'submit warning';
-//       fform.api.setMessages(null, {priority: 1});
-//       fform.api.setMessages(warn, {priority: 1});
-//       if (valid && !Object.keys(res).length) alert('Validation passed');
-//       resolve(res);
-//     }, 10)
-//   })
-// }
 
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');

@@ -1,16 +1,16 @@
 {
   "name": "flexibile-form",
-  "version": "0.10.5",
+  "version": "1.0.0-beta.1",
   "description": "Flexibile Form",
-  "main": "dist/FForm.js",
+  "main": "dist/fform.js",
   "scripts": {
     "clean": "rimraf dist",
-    "compile": "cross-env NODE_ENV=production webpack --mode=production",
-    "compile:sample:dev": "cross-env NODE_ENV=development webpack --mode=development --config ./webpack.sample.config.js",
-    "compile:profile": "cross-env NODE_ENV=production webpack --profile --json > stats.json"
+    "compile": "webpack --mode=production",
+    "compile:dev": "webpack --mode=development",
+    "compile:sample:dev": "webpack --mode=development --entryFile=sample"
   },
   "author": "Antonov Andrew <wtnm@rambler.ru> (https://github.com/wtnm)",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.1.7",
@@ -59,6 +59,7 @@
     "strip-comments": "^1.0.2",
     "style-loader": "^0.23.1",
     "tape": "^4.9.1",
+    "terser-webpack-plugin": "^1.2.3",
     "ts-loader": "^5.3.0",
     "ts-mocha": "^2.0.0",
     "ts-node": "^7.0.1",
@@ -74,6 +75,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wtnm/JUForm.git"
+    "url": "https://github.com/wtnm/fform"
   }
 }

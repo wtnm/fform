@@ -456,15 +456,8 @@ function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema):
   //if (isFunction(result.ff_oneOfSelector)) result.ff_oneOfSelector = {$: result.ff_oneOfSelector};
 
   objKeys(rest).forEach(key => {
+    if (key.substr(0, 3) == 'ff_') return result[key] = rest[key];
     switch (key) {
-      case 'ff_custom':
-      case 'ff_preset':
-      case 'ff_layout':
-      case 'ff_data':
-      case 'ff_params':
-      case 'ff_placeholder':
-      case 'ff_props':
-      case 'ff_enumExten':
       case 'default':
       case 'enum':
         result[key] = rest[key];

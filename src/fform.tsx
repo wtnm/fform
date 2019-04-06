@@ -69,7 +69,7 @@ class FForm extends Component<any, any> {
     const nextProps = {...props};
     if (props.touched !== null) nextProps.touched = !!nextProps.touched;
     FForm.params.forEach(k => {
-      if (!isUndefined(nextProps[k])) nextProps[k] = (v: any) => isUndefined(v) ? nextProps[k] : v
+      if (!isUndefined(nextProps[k])) nextProps[k] = (v: any) => isUndefined(v) ? props[k] : v
     });
     self._updateValues(nextProps);
     // self.api.reset({status: 'untouched'});
@@ -246,7 +246,7 @@ class FField extends FRefsGeneric {
   private _ff_components: object;
   private _maps: NPM4WidgetsType = {};
   private _$_parse: any;
-  _forceCacheUpdate: boolean = false;
+  _forceUpd: boolean = false;
 
   get: Function | null = null;
   ff_layout: FFLayoutGeneric<jsFFCustomizeType>;
@@ -317,11 +317,11 @@ class FField extends FRefsGeneric {
     }
   }
 
-  _updateCachedValue(update = this.liveUpdate || this._forceCacheUpdate) {
+  _updateCachedValue(update = this.liveUpdate || this._forceUpd) {
     const self = this;
     self._cachedTimeout = undefined;
     if (update && self._cached) {
-      self._forceCacheUpdate = false;
+      self._forceUpd = false;
       self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate, path: self.path, ...self._cached.opts});
       self._cached = undefined;
     }
@@ -1411,8 +1411,7 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
 
     },
     updCached: function () {
-      this._forceCacheUpdate = true;
-      //this._updateCachedValue(true);
+      this._forceUpd = true;
     },
     eventCheckboxes: function (event: any) {
       const selected = (this.getData().value || []).slice();
@@ -1535,13 +1534,6 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
     },
     expander: {_$widget: 'div', className: {expand: true}}
   },
-  // presetMap: {
-  //   boolean: ['select', 'radio'],
-  //   string: ['select', 'password', 'email', 'hostname', 'ipv4', 'ipv6', 'uri', 'data-url', 'radio', 'textarea', 'hidden', 'date', 'datetime', 'date-time', 'color', 'file'],
-  //   number: ['select', 'updown', 'range', 'radio'],
-  //   integer: ['select', 'updown', 'range', 'radio'],
-  //   array: ['select', 'checkboxes', 'files'],
-  // },
   _$cx: classNames
 };
 
@@ -1549,11 +1541,3 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
 export {fformObjects, formReducer, FForm, FFormStateAPI, fformCores, classNames};
 
 export {extractMaps, normalizeMaps, updateProps}
-//module.exports = process.env.NODE_ENV === 'test' ? merge(module.exports, {}) : module.exports;
-
-
-//     "checkboxSelect": {
-//       "type": "array",
-//       "ff_managed": true,
-//       "ff_presets": "checkboxes"
-//     },
