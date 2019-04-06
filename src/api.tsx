@@ -32,9 +32,6 @@ import {
 } from "./stateLib";
 
 
-// const JSONValidator: any = require('./is-my-json-valid');
-
-
 class exoPromise {
   done: boolean = false;
   vals: any[] = [{}, {}];

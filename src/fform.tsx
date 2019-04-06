@@ -38,7 +38,6 @@ import {
   processProp
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
-import Timeout = NodeJS.Timeout;
 
 
 /////////////////////////////////////////////
@@ -238,7 +237,7 @@ class FField extends FRefsGeneric {
   private _builderData: any = {};
   private _rebuild = true;
   private _cached?: { value: any, opts: any };
-  private _cachedTimeout?: Timeout;
+  private _cachedTimeout?: any;
   // private _enumOptions: any;
   private _isNotSelfManaged: boolean | undefined;
   private _blocks: string[] = [];
