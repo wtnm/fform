@@ -24,7 +24,7 @@ const JSONValidator = imjvWrapper(imjvValidator);
 
 const dehydrate = require('../addons/dehydrator').default;
 
-const components = require('../src/components.tsx');
+const components = require('../src/fform.tsx');
 
 // const mock = require('mock-require');
 // mock('react', 'preact');
@@ -855,7 +855,7 @@ describe('FForm state functions tests', function () {
 });
 
 describe('FForm api tests', function () {
-  const components = require('../src/components.tsx');
+  const components = require('../src/fform.tsx');
 
   const objects = {
     preset: {first: {one: 'one value'}, second: {two: 'two value'}},

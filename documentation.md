@@ -1,50 +1,57 @@
 
-
 # Documentation
 
+<!-- toc -->
 
-[TOC]
+- [FForm](#fform)
+    + [Passing [FFStateApi props](#ffstateapi)](#passing-ffstateapi-props%23ffstateapi)
+    + [Using with redux Provider](#using-with-redux-provider)
+- [FFStateApi](#ffstateapi)
+    + [Redux storage](#redux-storage)
+    + [External storage](#external-storage)
+    + [Internal storage](#internal-storage)
+- [API](#api)
+    + [`get(...pathes: string | string[]`)](#getpathes-string--string)
+    + [`set(path: string | string[], value: any, opts?: setOpts )`](#setpath-string--string-value-any-opts-setopts-)
+    + [`getValue(opts?: getValueOpts)`](#getvalueopts-getvalueopts)
+    + [`setValue(value: any, opts?: setValueOpts)`](#setvaluevalue-any-opts-setvalueopts)
+    + [`getDefaultValue()`](#getdefaultvalue)
+    + [`reset(opts?: resetOpts)`](#resetopts-resetopts)
+    + [`clear(opts?: clearOpts)`](#clearopts-clearopts)
+    + [`validate(path: boolean | string | string[], opts?: APIOptsType)`](#validatepath-boolean--string--string-opts-apioptstype)
+    + [`arrayAdd(path: string | string[], value: number | any[], opts?: APIOptsType)`](#arrayaddpath-string--string-value-number--any-opts-apioptstype)
+    + [`arrayItemOps(path: string | string[], op: string, opts: arrayItemOpts)`](#arrayitemopspath-string--string-op-string-opts-arrayitemopts)
+    + [`setHidden(path: string | string[], value?: boolean, opts?: APIOptsType)`](#sethiddenpath-string--string-value-boolean-opts-apioptstype)
+    + [`showOnly(path: string | string[], opts?: APIOptsType)`](#showonlypath-string--string-opts-apioptstype)
+    + [`getActive()`](#getactive)
+    + [`execute()`](#execute)
+- [Path](#path-)
+- [Data object](#data-object-)
+- [Basic schema properties](#basic-schema-properties)
+    + [Meta data](#meta-data)
+    + [Number Validation](#number-validation)
+    + [String Validation](#string-validation)
+    + [Array Validation](#array-validation)
+    + [Object Validation](#object-validation)
+    + [Combining Schemas](#combining-schemas)
+- [Extended schema properties](#extended-schema-properties)
+  * [Validation](#validation)
+    + [JSON validation](#json-validation)
+    + [Sync validation](#sync-validation)
+    + [Async validation](#async-validation)
+  * [Customization](#customization)
+  * [Object layout](#object-layout)
+- [fformObjects](#fformobjects)
+    + [props processing](#props-processing)
+    + [structure](#structure)
+    + [functions](#functions)
+- [Styling](#styling)
+- [SSR](#ssr)
+
+<!-- tocstop -->
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##FForm
+## FForm
 - `core` - instance of [FFStateApi](#ffstateapi)  or object with [FFStateApi props](#ffstateapi) 
 - `state?: any` - state of FFStateApi
 - `value?: any` - form's current value
@@ -59,13 +66,13 @@
 
 After creation [FFStateApi](#ffstateapi) can accessed throught `api` property
 
-#####Passing [FFStateApi props](#ffstateapi)
+#### Passing [FFStateApi props](#ffstateapi)
 Property `core` with [FFStateApi props](#ffstateapi) processed only on creation (creating new instance of [FFStateApi](#ffstateapi)). On property update, if `core` is object with [FFStateApi props](#ffstateapi) then `core` is ignored (new instance of [FFStateApi](#ffstateapi) is not created). Otherwise, if (on property update) `core` is instance of [FFStateApi](#ffstateapi)  `FForm` component will make full rebuild.
 
-#####Using with redux Provider
+#### Using with redux Provider
 `FFrom` can take store from context on creation if property `core` is object with [FFStateApi props](#ffstateapi). Just put `FForm` inside redux `Provider` with properly created store and leave `store` property undefined. To prevent from taking store from context (and not using store at all) set `store` property to false or null.
 
-##FFStateApi
+## FFStateApi
 On creation pass to constructor object as first argument with following props:
 -   `schema` - schema that will be used to create state
 -   `name?: string` - name that will be used to access data in redux storage and for fields naming
@@ -77,7 +84,7 @@ On creation pass to constructor object as first argument with following props:
 
 After creation FFStateApi can be manipulated throught [API methods](#api)
 
-#####Redux storage
+#### Redux storage
 Create redux store with [thunk](#https://github.com/reduxjs/redux-thunk) and with `formReducer` with "fforms" in root reducer: 
 ```
 const {formReducer} = require('fform');
@@ -91,19 +98,19 @@ const {FFormStateAPI} = require('fform');
 stateApi = new FFormStateAPI({store, schema})
 ```
 
-#####External storage
+#### External storage
 Pass `setState/getState` function  from any storage on [FFStateApi](#ffstateapi) creation and it will use them for setting and getting fform state.
 
-#####Internal storage
+#### Internal storage
 if no `setState/getState` or `store` are passed on creation then [FFStateApi](#ffstateapi) will use own internal storage for fform state.
 
 
 
-##API
-- #####`get(...pathes: string | string[]`)
+## API
+- #### `get(...pathes: string | string[]`)
 *Returns* data in [path(es)](#path)
 
-- #####`set(path: string | string[], value: any, opts?: setOpts )`
+- #### `set(path: string | string[], value: any, opts?: setOpts )`
 Set value in path. *Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - [path](#path) to data
 	- `value: any` - value to set
@@ -114,14 +121,14 @@ Set value in path. *Returns* [ApiPromise](#apipromise)
 		- `macros?: string` - excute macros
 
 
-- #####`getValue(opts?: getValueOpts)`
+- #### `getValue(opts?: getValueOpts)`
 *Returns* form's value
 	- `opts: getValueOpts` - object with props:
 		- `path?: string | string[]` - path to field. If not passed value of all form will be returned.
 		- `inital?: boolean` - if true returns inital value else current value will be returned
 
 
-- #####`setValue(value: any, opts?: setValueOpts)`
+- #### `setValue(value: any, opts?: setValueOpts)`
 Set form's value *Returns* [ApiPromise](#apipromise)
 	- `value: any` - value to set
 	- `opts?: setValueOpts` - object with props:
@@ -132,11 +139,11 @@ Set form's value *Returns* [ApiPromise](#apipromise)
 		- `setOneOf?: number` - will try to switch to [oneOf index](#combining-schemas)
 
 
-- #####`getDefaultValue()`
+- #### `getDefaultValue()`
 *Returns* form's default value
 
 
-- #####`reset(opts?: resetOpts)`
+- #### `reset(opts?: resetOpts)`
 Set form's value to inital. *Returns* [ApiPromise](#apipromise)
 	- `opts?: resetOpts` - object with props:
 		- [APIOptsType](#apioptstype)
@@ -144,27 +151,27 @@ Set form's value to inital. *Returns* [ApiPromise](#apipromise)
 		- `status?: 'untouched' | 'invalid' | 'dirty' | 'pending'` = resets passed status instead of reseting form's value
 
 
-- #####`clear(opts?: clearOpts)`
+- #### `clear(opts?: clearOpts)`
 Set form's value to default. *Returns* [ApiPromise](#apipromise)
 	- `opts?: clearOpts` - object with props:
 		- [APIOptsType](#apioptstype)
 		- `path?: string | string[]` - path to field. If not passed all form will be cleared.
 
 
-- #####`validate(path: boolean | string | string[], opts?: APIOptsType)`
+- #### `validate(path: boolean | string | string[], opts?: APIOptsType)`
 Validates form in path.  *Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - If path is `true` then validates full form. If path is `false` then cancel any validation that was set before.
 	- `opts?: `[APIOptsType](#apioptstype)
 
 
-- #####`arrayAdd(path: string | string[], value: number | any[], opts?: APIOptsType)`
+- #### `arrayAdd(path: string | string[], value: number | any[], opts?: APIOptsType)`
 *Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - path to array field
 	- `value` - number determines how many items will added (or removed if negtive). If value is any[] then it will be concated to existing array's value
 	- `opts?: `[APIOptsType](#apioptstype)
 
 
-- #####`arrayItemOps(path: string | string[], op: string, opts: arrayItemOpts)`
+- #### `arrayItemOps(path: string | string[], op: string, opts: arrayItemOpts)`
 *Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - path to array's item field
 	- `op: 'up' | 'down' | 'first' | 'last' | 'del' | 'move' | 'shift'` - operation that should be done to item
@@ -173,24 +180,24 @@ Validates form in path.  *Returns* [ApiPromise](#apipromise)
 		- `value?: number` - for 'move' and 'shift'`operations. If 'move' then item will be moved to that position. If 'shift' then item will be shifted to that value
 
 
-- #####`setHidden(path: string | string[], value?: boolean, opts?: APIOptsType)`
+- #### `setHidden(path: string | string[], value?: boolean, opts?: APIOptsType)`
 Set hidden param in [path](#path). *Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - path to field
 	- `value?: boolean` - value that shold be set to param hidden. Default is true.
 	- `opts?: `[APIOptsType](#apioptstype)
 
 
-- #####`showOnly(path: string | string[], opts?: APIOptsType)`
+- #### `showOnly(path: string | string[], opts?: APIOptsType)`
 Shows properties of object in  [path](#path) and hides others. *Returns* [ApiPromise](#apipromise)
 	- `path: string | string[]` - path to field
 	- `opts?: `[APIOptsType](#apioptstype)
 
 
-- #####`getActive()`
+- #### `getActive()`
 *Returns* path of currently active field.
 
 
-- #####`execute()`
+- #### `execute()`
 Executes all bathed updates.  *Returns* [ApiPromise](#apipromise)
 
 
@@ -205,7 +212,7 @@ Multiply asynchronous commands are stacking in batch and executes together.
 - `noValidation?: boolean` - No validation is made if true.
 
 
-##Path <a name="path"></a>
+## Path <a name="path"></a>
 String (or array or strings) value delimited with '/' that describes path to field. Following pathes are equal:` '#/obects/array/field_1',  ['#', 'object/array', 'field_1'], ['object', '/array/', '/field_1/']`
 
 Each field has [data object](#data-object) that can be accessed in path by using `'@'` symbol: `'/field_1@value', ['object/array', '@', 'length']`
@@ -218,7 +225,7 @@ API set functions support path-muliplying:
 - Comma-separated fields. Path 'array/1,2/field,prop' turns to 4 pathes 'array/1/field', 'array/1/prop', 'array/2/field', 'array/2/prop'. Works for both field-part(part before '@') and data-part(part after '@') of path.
 - Symbol `'*'` turns into all props of object/array. Path 'array/*' (for arrat with length 3) turns to 'array/0', 'array/1', 'array/2'. Works only for field-part(part before '@') of path.
 
-##Data object <a name="data-object"></a>
+## Data object <a name="data-object"></a>
 Each field has data object that is created according to [JSON schema](#basic-schema-properties) and can be changed throught [API](#api)
 Data object has the following props:
 - `value?: any`
@@ -258,34 +265,34 @@ Data object has the following props:
 `} )`
 
 
-##Basic schema properties
+## Basic schema properties
 - `$ref?: string`
 -  `type?: JsonSchemaTypes | JsonSchemaTypes[]` - The basic type of this schema, can be one of * [string, number, object, array, boolean, null] * or an array of the acceptable types
 -  `enum?: any[]` - Enumerates the values that this schema can be  e.g. {"type": "string",   "enum": ["red", "green", "blue"]}
 -  `definitions?: { [key: string]: JSONschema }` - Holds simple JSON Schema definitions for  referencing from elsewhere.
-#####Meta data
+#### Meta data
 - `id?: string` - This is important because it tells refs where the root of the document is located
 - `$schema?: JSONschema;` - It is recommended that the meta-schema is included in the root of any JSON Schema
 - `title?: string` - Title of the schema
 - `description?: string` - Schema description
 - `default?: any` - Default json for the object represented by this schema
-#####Number Validation
+#### Number Validation
 -  `multipleOf?: number` - The value must be a multiple of the number (e.g. 10 is a multiple of 5)
 -  `maximum?: number` - maximum value
 -  `exclusiveMaximum?: boolean` - If true maximum must be > value, >= otherwise
 -  `minimum?: number `- minimum value
 -  `exclusiveMinimum?: boolean` - If true minimum must be < value, <= otherwise
-#####String Validation
+#### String Validation
 -  `maxLength?: number`
 -  `minLength?: number`
 -  `pattern?: string `- This is a regex string that the value must conform to
-#####Array Validation
+#### Array Validation
 -  `additionalItems?: boolean | JSONschema`
 -  `items?: JSONschema | JSONschema[]`
 -  `maxItems?: number`
 -  `minItems?: number`
 -  `uniqueItems?: boolean`
-#####Object Validation
+#### Object Validation
 -  `maxProperties?: number`
 -  `minProperties?: number`
 -  `required?: string[] | boolean`
@@ -293,13 +300,13 @@ Data object has the following props:
 -  `properties?: { [property: string]: JSONschema }` - The keys that can exist on the object with the  json schema that should validate their value
 -  `patternProperties?: { [pattern: string]: T }` - The key of this object is a regex for which properties the schema applies to
 -  `dependencies?: { [key: string]: T | string[] }` - If the key is present as a property then the string of properties must also be present. If the value is a JSON Schema then it must. Also be valid for the object if the key is  present.
-#####Combining Schemas
+#### Combining Schemas
 -  `allOf?: JSONschema[]` - used for merging schemas
 -  `anyOf?: JSONschema[]` - only for validation
 -  `oneOf?: JSONschema[]` - used for switching schemas
 -  `not?: JSONschema` - The entity being validated must not match this schema
 
-##Extended schema properties
+## Extended schema properties
 As JSON format doesn't support js-code all function moved to [fformObjects](#fformobjects). So in schema you should specify [reference to fformObjects](#object-refs) as string value that starts with "^/". It will be resolved at [FFStateApi](#ffstateapi) creating.
 
 - `ff_placeholder?: string`- field's placeholder
@@ -321,11 +328,11 @@ As JSON format doesn't support js-code all function moved to [fformObjects](#ffo
 - `ff_custom?: FFCustomizeType`- component [customization](#customization)
 - `ff_layout?: FFLayoutCustomizeType` - fields, objects, groups in [object/turple layout](#object-layout)
 
-###Validation
-#####JSON validation
+### Validation
+#### JSON validation
 For JSON validation used [is-my-json-valid](#https://github.com/mafintosh/is-my-json-valid) with modifications for smaller (3 times) bundle size. It is placed in `addons/is-my-json-valid-lite`. Pass it as `JSONValidator` property for [FFStateApi](#ffstateapi). Default group for JSON validation is 0.
 
-#####Sync validation
+#### Sync validation
 Custom function that receive value as first parameter and should return string or object in the following format (or array of strings or objects):
 -  `group?: number` - group that replaces on each validation call. By default 0 - used for JSON validation, 1 - for sync validation, 2 - for async validation.
 -  `text: string | string[]` - message(s) that should be displayed
@@ -334,11 +341,11 @@ Custom function that receive value as first parameter and should return string o
 -  `{[key: string]: any}` - result may have any other props (such as className or style). It will be added to div layer for that priority on render.
 
 
-#####Async validation
+#### Async validation
 If function return promise then on resolve its result will be processed as for sync function (with default group equal 2)
 
 
-###Customization
+### Customization
 Each field build from following blocks: 
 - `Wrapper` - wrapps all and add array item controls when field is array element
 - `Title` - shows title property fromschema, and provide array add/del buttons when field is array
@@ -348,14 +355,14 @@ Each field build from following blocks:
 
 In `ff_custom` schema property you can add/overwrite any proprerty of any block. It supports [fformObjects "magic" props](#magic-props). It merges with `ff_presets` refs on field build. More details in examples.
 
-###Object layout
+### Object layout
 Schema property `ff_layout` can be object or array of strings | objects. String is the name of field and it determines the order in which fields will be placed. Object supports [fformObjects "magic" props](#magic-props) with `$_fields` (that is array of strings | objects) property and can be customized. More details in examples.
 
 
-##fformObjects
+## fformObjects
 Each field in form receive a set of objects that is parts of fformObjects (due to 'ff_presets' and 'ff_custom') that merges into one object. Then all functions that field finds in merged object binds to it during render. Exception is the props that starts with underscore.
 
-####props processing
+#### props processing
 - `^/`<a name="object-refs"></a> - string value that begins with "^/" determines that value is the reference and resolved respectively
 - `_` - property name that starts with underscore prevent it value from deep processing (makes only resolving if string value starts with "^/")
 - `_%widget: string | Function` - HTML tag or function that will we used as react.element
@@ -366,7 +373,7 @@ Each field in form receive a set of objects that is parts of fformObjects (due t
 - `$_fields` - layout that determines field's order and add additional elements and sub-layouts
 - `anyName.bind: any[]` - binds value to function with name 'anyName'
 
-####structure
+#### structure
 - `extend` - extends fformObjects with passed object
 - `widgets` - contains react.elements that is used in form components
 - `sets` - component presets for commonly used schemas
@@ -374,7 +381,7 @@ Each field in form receive a set of objects that is parts of fformObjects (due t
 - `parts` - commonly used parts of components
 - `_$cx` - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
 
-####functions
+#### functions
 Object with properties:
 - `$: string` - link (starts with `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/equal|^/fn/not`.
 - `replace?: boolean` - if `true` the result will be replaced, otherwise merged.
@@ -386,7 +393,7 @@ Object with properties:
 As functions executed in pipe it results should be returned as array.
 Functions (except for that ones that defined in `ff_oneOfSelector`) has access to [api](#api) thougth `this.api`.
 
-##Styling
+## Styling
 FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)) and it can be binded for class name's replacement.
 Classes that are used in [fformObjects](#fformobjects):
 `hidden` - to hide elements
@@ -399,6 +406,6 @@ Classes that are used in [fformObjects](#fformobjects):
 
 ClassNames that can be apllied to [fformObjects](#fformobjects) can be found in `addons/styles.json` 
 
-##SSR
+## SSR
 
 In progress. Will be in `addon/ssr.ts`

@@ -956,6 +956,9 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
     if (keyPath[0] == 'value' && !hasIn(branch, SymData, 'value')) // value is not self managed, so modify only current
       return Macros.setCurrent(state, schema, UPDATABLE, {value, replace, path: path.concat(keyPath.slice(1))});
 
+    // check if value is differ
+    if (value === getUpdValue([UPDATABLE.update, state], path, SymData, keyPath)) return state;
+
     // set data
     setUPDATABLE(UPDATABLE, value, replace, path, SymData, keyPath);
     // setIn(update, value, path, SymData, keyPath);

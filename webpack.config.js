@@ -30,6 +30,9 @@ module.exports = (env, argv) => {
       libraryTarget: 'umd',
       library: entryFile,
     },
+    externals: {
+      react: 'React',
+    },
     module: {
       rules: [
         {
@@ -42,7 +45,6 @@ module.exports = (env, argv) => {
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
-
     plugins: removeEmpty([
       ifProduction(new webpack.optimize.OccurrenceOrderPlugin(true)),
       ifProduction(new UglifyJsPlugin(
