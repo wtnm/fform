@@ -54,7 +54,7 @@ class FForm extends Component<any, any> {
   formName: any;
   schema: any;
   utils: any;
-  objects: any;
+  elements: any;
   parent: any;
 
   constructor(props: FFormProps, context: any) {
@@ -77,7 +77,7 @@ class FForm extends Component<any, any> {
     self._setRef = self._setRef.bind(self);
     self._submit = self._submit.bind(self);
     self._getPath = self._getPath.bind(self);
-    Object.defineProperty(self, "objects", {get: () => self.api.props.objects});
+    Object.defineProperty(self, "elements", {get: () => self.api.props.elements});
     Object.defineProperty(self, "valid", {get: () => self.api.get('/@/status/valid')});
 
   }
@@ -285,7 +285,7 @@ class FField extends FRefsGeneric {
   _resolver(obj: any) {
     const self = this;
     try {
-      return objectResolver(self.pFForm.objects, obj);
+      return objectResolver(self.pFForm.elements, obj);
     } catch (e) {
       throw self._addErrPath(e)
     }
@@ -391,9 +391,9 @@ class FField extends FRefsGeneric {
     if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart.ff_presets)
       throw new Error('schema.ff_presets should be defined explicitly for multi type');
 
-    self.ff_layout = self.wrapFns(resolveComponents(self.pFForm.objects, schemaPart.ff_layout));
+    self.ff_layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart.ff_layout));
 
-    let ff_components = resolveComponents(self.pFForm.objects, schemaPart.ff_custom, schemaPart.ff_presets || schemaPart.type);
+    let ff_components = resolveComponents(self.pFForm.elements, schemaPart.ff_custom, schemaPart.ff_presets || schemaPart.type);
     ff_components = self.wrapFns(ff_components);
     let {$_maps, rest: components} = extractMaps(ff_components);
     self._maps = normalizeMaps($_maps);
@@ -936,14 +936,14 @@ function passCx(Widget: any) {
   return Widget instanceof GenericWidget
 }
 
-const resolveComponents = memoize((fformObjects: formObjectsType, customizeFields: FFCustomizeType = {}, sets?: string): jsFFCustomizeType => {
+const resolveComponents = memoize((elements: elementsType, customizeFields: FFCustomizeType = {}, sets?: string): jsFFCustomizeType => {
   if (sets) {
     let $_ref = sets.split(':')
       .map(v => (v = v.trim()) && (v[0] != '^' ? '^/sets/' + v : v))
       .join(':') + ':' + (customizeFields.$_ref || '');
     customizeFields = merge(customizeFields, {$_ref});
   }
-  return objectResolver(fformObjects, customizeFields);
+  return objectResolver(elements, customizeFields);
 });
 
 function extractMaps(obj: any, skip: string[] = []) {
@@ -1056,13 +1056,13 @@ function classNames(...styles: any[]) {
 
 
 /////////////////////////////////////////////
-//  fformObjects
+//  elements
 /////////////////////////////////////////////
 
 
-let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeStateOptionsArgument) => any } = {
-  extend: function (objects: any[], opts?: MergeStateOptionsArgument) {
-    return merge.all(this, objects, opts)
+let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOptionsArgument) => any } = {
+  extend: function (elements: any[], opts?: MergeStateOptionsArgument) {
+    return merge.all(this, elements, opts)
   },
   types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
   widgets: {
@@ -1537,6 +1537,6 @@ let fformObjects: formObjectsType & { extend: (objects: any[], opts?: MergeState
 };
 
 
-export {fformObjects, formReducer, FForm, FFormStateAPI, fformCores, classNames};
+export {elementsBase as elements, formReducer, FForm, FFormStateAPI, fformCores};
 
 export {extractMaps, normalizeMaps, updateProps}

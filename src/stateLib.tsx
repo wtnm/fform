@@ -168,7 +168,7 @@ Macros.setStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
   let prevVal = getUpdValue([UPDATABLE.update, state], item.path, SymData, keyPath);
   const selfManaged = isSelfManaged(state, item.path);
 
-  if (op == 'untouched' && prevVal == 0 && !selfManaged) return state;  // stick "untouched" to zero for objects and arrays
+  if (op == 'untouched' && prevVal == 0 && !selfManaged) return state;  // stick "untouched" to zero for elements and arrays
   let value = prevVal + item.value;
   if (selfManaged && value > 1) value = 1;
   if (value < 0) value = 0;

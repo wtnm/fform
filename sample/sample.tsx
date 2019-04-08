@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import {FForm, fformObjects} from '../src/fform';
+import {FForm, elements} from '../src/fform';
 import * as sampleSchema from './sampleSchema.json'
 import * as style from '../addons/styles.json'
 
@@ -8,7 +8,9 @@ const {render} = require('react-dom');
 
 import imjvWrapper from '../addons/imjvWrapper';
 
-const imjvValidator: any = require('../addons/is-my-json-valid-lite');
+// const imjvValidator: any = require('../addons/is-my-json-valid-lite');
+import * as imjvValidator from '../addons/is-my-json-valid-lite';
+
 const JSONValidator = imjvWrapper(imjvValidator);
 
 function submit(event: any, value: any, fform: any) {
@@ -29,7 +31,7 @@ function submit(event: any, value: any, fform: any) {
 
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');
-  let sampleObjects = fformObjects.extend([style, {
+  let sampleElements = elements.extend([style, {
     'user': {
       focusInput: function () {
         let focusInput = this.getRef('!focusInput');
@@ -46,7 +48,7 @@ if (typeof window != 'undefined') {
     <h3>FForm sample</h3>
     <div>
       <div>
-        <FForm id="sampleForm" onSubmit={submit} touched core={{schema: sampleSchema, name: "sampleForm", objects: sampleObjects, JSONValidator}}/>
+        <FForm id="sampleForm" onSubmit={submit} touched core={{schema: sampleSchema, name: "sampleForm", elements: sampleElements, JSONValidator}}/>
       </div>
     </div>
   </div>, container);

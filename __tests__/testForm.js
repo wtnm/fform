@@ -78,7 +78,7 @@ function sleep(time) {return new Promise((resolve) => setTimeout(() => resolve()
 
   let components = require('../src/components.tsx');
 
-  //let Generic = components.fformObjects.widgets.Generic;
+  //let Generic = components.elements.widgets.Generic;
   let Generic = components.Test;
   const wrapper = Enzyme.mount(React.createElement(Generic, null, null));
 
@@ -930,24 +930,24 @@ describe('FForm api tests', function () {
 
   // it('test api.objectResolver', function () {
   //
-  //   let obj = apiLib.objectResolver(objects, exampleObj);
-  //   expect(obj.func).to.be.equal(objects.funcs.two);
-  //   expect(obj.part.f1).to.be.equal(objects.funcs.one);
+  //   let obj = apiLib.objectResolver(elements, exampleObj);
+  //   expect(obj.func).to.be.equal(elements.funcs.two);
+  //   expect(obj.part.f1).to.be.equal(elements.funcs.one);
   //   expect(obj.part['f1.bind']).to.be.eql([1]);
-  //   expect(obj.part.f2).to.be.equal(objects.funcs.two);
+  //   expect(obj.part.f2).to.be.equal(elements.funcs.two);
   //   expect(obj.part['f2.bind']).to.be.eql([6, 10]);
-  //   expect(obj.part._some).to.be.equal(objects.funcs.two);
+  //   expect(obj.part._some).to.be.equal(elements.funcs.two);
   //   expect(obj.part._more.f3).to.be.equal('^/funcs/three');
   //
-  //   obj2SymData = apiLib.objectResolver(objects, exampleObj);
-  //   expect(obj2SymData.func).to.be.equal(objects.funcs.two);
-  //   expect(obj2SymData.part.f1).to.be.equal(objects.funcs.one);
+  //   obj2SymData = apiLib.objectResolver(elements, exampleObj);
+  //   expect(obj2SymData.func).to.be.equal(elements.funcs.two);
+  //   expect(obj2SymData.part.f1).to.be.equal(elements.funcs.one);
   //   expect(obj2SymData.part['f1.bind']).to.be.eql([1]);
-  //   expect(obj2SymData.part.f2).to.be.equal(objects.funcs.two);
+  //   expect(obj2SymData.part.f2).to.be.equal(elements.funcs.two);
   //   expect(obj2SymData.part['f2.bind']).to.be.eql([6, 10]);
   //   expect(obj2SymData.part.first.one).to.be.equal('one value');
   //   expect(obj2SymData.part.first.three).to.be.equal('three value');
-  //   expect(obj2SymData.part._some).to.be.equal(objects.funcs.two);
+  //   expect(obj2SymData.part._some).to.be.equal(elements.funcs.two);
   //   expect(obj2SymData.part._more.f3).to.be.equal('^/funcs/three');
   // });
   //
@@ -960,9 +960,9 @@ describe('FForm api tests', function () {
   //   expect(res.rest.part.first.$_maps).to.be.equal(undefined);
   //   expect(res.rest.part._more.$_maps).to.be.equal(undefined);
   //   expect($_maps['part/value']).to.be.equal('@/value');
-  //   expect($_maps['part/first/$branch'].$).to.be.equal(objects.funcs.one);
+  //   expect($_maps['part/first/$branch'].$).to.be.equal(elements.funcs.one);
   //   expect($_maps['part/first/$branch'].args).to.be.equal('state/branch');
-  //   expect($_maps['part/first/$layout'].$).to.be.equal(objects.funcs.one);
+  //   expect($_maps['part/first/$layout'].$).to.be.equal(elements.funcs.one);
   // });
 
   // it('test components.normalizeMaps', function () {

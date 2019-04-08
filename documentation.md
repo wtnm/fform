@@ -25,8 +25,8 @@
     + [`showOnly(path: string | string[], opts?: APIOptsType)`](#showonlypath-string--string-opts-apioptstype)
     + [`getActive()`](#getactive)
     + [`execute()`](#execute)
-- [Path](#path-)
-- [Data object](#data-object-)
+- [Path](#path)
+- [Data object](#data-object)
 - [Basic schema properties](#basic-schema-properties)
     + [Meta data](#meta-data)
     + [Number Validation](#number-validation)
@@ -41,7 +41,7 @@
     + [Async validation](#async-validation)
   * [Customization](#customization)
   * [Object layout](#object-layout)
-- [fformObjects](#fformobjects)
+- [Elements](#elements)
     + [props processing](#props-processing)
     + [structure](#structure)
     + [functions](#functions)
@@ -76,7 +76,7 @@ Property `core` with [FFStateApi props](#ffstateapi) processed only on creation 
 On creation pass to constructor object as first argument with following props:
 -   `schema` - schema that will be used to create state
 -   `name?: string` - name that will be used to access data in redux storage and for fields naming
--   `objects?` - [fformObjects](#fformobjects), that contains all nessary for  components creation
+-   `objects?` - [elements](#elements), that contains all nessary for  components creation
 -   `JSONValidator?` - JSON schema validator for [JSON validation](#json-validation)
 -   `store?:any` - redux store. [FForm](#fform) can take store from context
 -   `getState?: () => any` - external state setter
@@ -212,7 +212,7 @@ Multiply asynchronous commands are stacking in batch and executes together.
 - `noValidation?: boolean` - No validation is made if true.
 
 
-## Path <a name="path"></a>
+## Path<a name="path"></a>
 String (or array or strings) value delimited with '/' that describes path to field. Following pathes are equal:` '#/obects/array/field_1',  ['#', 'object/array', 'field_1'], ['object', '/array/', '/field_1/']`
 
 Each field has [data object](#data-object) that can be accessed in path by using `'@'` symbol: `'/field_1@value', ['object/array', '@', 'length']`
@@ -225,7 +225,7 @@ API set functions support path-muliplying:
 - Comma-separated fields. Path 'array/1,2/field,prop' turns to 4 pathes 'array/1/field', 'array/1/prop', 'array/2/field', 'array/2/prop'. Works for both field-part(part before '@') and data-part(part after '@') of path.
 - Symbol `'*'` turns into all props of object/array. Path 'array/*' (for arrat with length 3) turns to 'array/0', 'array/1', 'array/2'. Works only for field-part(part before '@') of path.
 
-## Data object <a name="data-object"></a>
+## Data object<a name="data-object"></a>
 Each field has data object that is created according to [JSON schema](#basic-schema-properties) and can be changed throught [API](#api)
 Data object has the following props:
 - `value?: any`
@@ -307,7 +307,7 @@ Data object has the following props:
 -  `not?: JSONschema` - The entity being validated must not match this schema
 
 ## Extended schema properties
-As JSON format doesn't support js-code all function moved to [fformObjects](#fformobjects). So in schema you should specify [reference to fformObjects](#object-refs) as string value that starts with "^/". It will be resolved at [FFStateApi](#ffstateapi) creating.
+As JSON format doesn't support js-code all function moved to [elements](#elements). So in schema you should specify [reference to elements](#object-refs) as string value that starts with "^/". It will be resolved at [FFStateApi](#ffstateapi) creating.
 
 - `ff_placeholder?: string`- field's placeholder
 - `ff_params?: FFParamsType` - params that can be edited in state
@@ -322,8 +322,8 @@ As JSON format doesn't support js-code all function moved to [fformObjects](#ffo
 - `ff_presets?: string`- presets for rendering components
 - `ff_managed?: boolean`- determine that value managed by component itself (for objects and arrays)
 - `ff_enumExten?: { [key: string]: undefined | string | object }`- enum extension. Keys taken from enum. String converts to object with property `{label}`
-- `ff_dataMap?: [string, string, string][]`- maps data in state. Array of turples of 2 or 3 elems where: 0 - path from value taken, 1 - path to value placed, and 2 - [refs to fformObjects](#object-refs) that process value on mapping.
-- `ff_validators?: string[]`- [sync/async validators](#validation) as array of [refs to fformObjects](#object-refs). Each function receive field value as first parameter on field value change.
+- `ff_dataMap?: [string, string, string][]`- maps data in state. Array of turples of 2 or 3 elems where: 0 - path from value taken, 1 - path to value placed, and 2 - [refs to elements](#object-refs) that process value on mapping.
+- `ff_validators?: string[]`- [sync/async validators](#validation) as array of [refs to elements](#object-refs). Each function receive field value as first parameter on field value change.
 - `ff_oneOfSelector: string` - function that receive value to determine which oneOf schema select.
 - `ff_custom?: FFCustomizeType`- component [customization](#customization)
 - `ff_layout?: FFLayoutCustomizeType` - fields, objects, groups in [object/turple layout](#object-layout)
@@ -353,14 +353,14 @@ Each field build from following blocks:
 - `Main` - in this block input element is placed
 - `Messages` - element that shows messages (error, warnigns, info etc)
 
-In `ff_custom` schema property you can add/overwrite any proprerty of any block. It supports [fformObjects "magic" props](#magic-props). It merges with `ff_presets` refs on field build. More details in examples.
+In `ff_custom` schema property you can add/overwrite any proprerty of any block. It supports [elements "magic" props](#magic-props). It merges with `ff_presets` refs on field build. More details in examples.
 
 ### Object layout
-Schema property `ff_layout` can be object or array of strings | objects. String is the name of field and it determines the order in which fields will be placed. Object supports [fformObjects "magic" props](#magic-props) with `$_fields` (that is array of strings | objects) property and can be customized. More details in examples.
+Schema property `ff_layout` can be object or array of strings | objects. String is the name of field and it determines the order in which fields will be placed. Object supports [elements "magic" props](#magic-props) with `$_fields` (that is array of strings | objects) property and can be customized. More details in examples.
 
 
-## fformObjects
-Each field in form receive a set of objects that is parts of fformObjects (due to 'ff_presets' and 'ff_custom') that merges into one object. Then all functions that field finds in merged object binds to it during render. Exception is the props that starts with underscore.
+## Elements
+Each field in form receive a set of objects that is parts of elements (due to 'ff_presets' and 'ff_custom') that merges into one object. Then all functions that field finds in merged object binds to it during render. Exception is the props that starts with underscore.
 
 #### props processing
 - `^/`<a name="object-refs"></a> - string value that begins with "^/" determines that value is the reference and resolved respectively
@@ -374,7 +374,7 @@ Each field in form receive a set of objects that is parts of fformObjects (due t
 - `anyName.bind: any[]` - binds value to function with name 'anyName'
 
 #### structure
-- `extend` - extends fformObjects with passed object
+- `extend` - extends elements with passed object
 - `widgets` - contains react.elements that is used in form components
 - `sets` - component presets for commonly used schemas
 - `fn` - function tha is used in $_maps/$_parse processing 
@@ -395,7 +395,7 @@ Functions (except for that ones that defined in `ff_oneOfSelector`) has access t
 
 ## Styling
 FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)) and it can be binded for class name's replacement.
-Classes that are used in [fformObjects](#fformobjects):
+Classes that are used in [elements](#elements):
 `hidden` - to hide elements
 `priority_0` - for errors styling
 `inline` - to place elements in line
@@ -404,8 +404,8 @@ Classes that are used in [fformObjects](#fformobjects):
 `shrink` - to shrink an element
 `expand` - to expand an element
 
-ClassNames that can be apllied to [fformObjects](#fformobjects) can be found in `addons/styles.json` 
+ClassNames that can be apllied to [elements](#elements) can be found in `addons/styles.json` 
 
 ## SSR
 
-In progress. Will be in `addon/ssr.ts`
+Use `addon/dehydrator.js` to dehydrate state and pass it to client. On client side use passed state for itital value.

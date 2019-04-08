@@ -234,11 +234,11 @@ function mergeState(state: any, source: any, options: MergeStateOptionsArgument 
     const changes: any = {};
     const isSourceArray = isArray(source);
     if (!isMergeable(state)) {
-      state = isSourceArray ? [] : {};  // return only objects
+      state = isSourceArray ? [] : {};  // return only elements
       if (isArray(state)) changes.length = 0;
     }
     const isStateArray = isArray(state);
-    if (!isMergeable(source)) return {state};  // merge only mergeable objects, may be throw here
+    if (!isMergeable(source)) return {state};  // merge only mergeable elements, may be throw here
 
     if (isStateArray && isSourceArray) {
       if (arrays) source = arrays(state, source, track);

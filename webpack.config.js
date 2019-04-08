@@ -9,11 +9,12 @@ const path = require('path');
 module.exports = (env, argv) => {
   const {ifProduction} = getIfUtils(argv.mode || 'development');
   //console.log(JSON.stringify(argv));
-
+  let externals = {react: 'React'};
   let {entryFile = 'fform', dstDir = './dist', srcDir = './src'} = argv;
   if (entryFile === 'sample') {
     srcDir = './sample';
     dstDir = './sample/build';
+    externals = {};
   }
   return {
     stats: {
@@ -30,9 +31,7 @@ module.exports = (env, argv) => {
       libraryTarget: 'umd',
       library: entryFile,
     },
-    externals: {
-      react: 'React',
-    },
+    externals: externals,
     module: {
       rules: [
         {

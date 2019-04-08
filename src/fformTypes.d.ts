@@ -20,6 +20,7 @@ type MessageGroupType = {
 
 interface anyObject {
   [key: string]: any;
+
   [key: number]: any;
 }
 
@@ -66,7 +67,7 @@ interface MessagesDataType {
 
 type MessageType = 'danger' | 'warning' | 'success' | 'info' | 'notice' | '';
 
-interface formObjectsType {
+interface elementsType {
   "presets"?: { [key: string]: jsFFCustomizeType | string };
   "widgets"?: { [key: string]: any };
   "types"?: string[];
@@ -102,7 +103,7 @@ interface FFormApiProps {
   schema: jsJsonSchema | JsonSchema;
   /** schema that will be used to create state */
   JSONValidator?: any;
-  objects?: { [key: string]: any };
+  elements?: { [key: string]: any };
   name?: string;
   /** name that will be used to access data in redux storage */
   store?: any,   // redux
@@ -137,7 +138,7 @@ interface MergeStateOptionsArgument {
   del?: boolean;  // remove props with SymDelete
   diff?: boolean;
   arrays?: Function; // 'mergeWithoutLength'
-  replace?: replaceType; // force replace for mergeable object instead of merge, should be and object with true value for the keys that must be replaced, can be recursive for deep objects
+  replace?: replaceType; // force replace for mergeable object instead of merge, should be and object with true value for the keys that must be replaced, can be recursive for deep elements
   SymbolDelete?: any;
 }
 

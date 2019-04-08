@@ -86,7 +86,7 @@ class FFormStateManager {
   private _unsubscribe: any;
   private _listeners: Array<(state: StateType) => void> = [];
 
-  JSONValidator: any
+  JSONValidator: any;
   UPDATABLE: PROCEDURE_UPDATABLE_Type;
   props: FFormApiProps;
   schema: jsJsonSchema;
@@ -101,7 +101,7 @@ class FFormStateManager {
 
     const self = this;
     self.props = props;
-    self.schema = isCompiled(props.schema) ? props.schema : compileSchema(props.objects, props.schema);
+    self.schema = isCompiled(props.schema) ? props.schema : compileSchema(props.elements, props.schema);
     self.name = props.name || '';
     self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
     self._reducer = formReducer();
@@ -439,17 +439,17 @@ function formReducer(name?: string): any {
 //  Schema compile functions
 /////////////////////////////////////////////
 
-const compileSchema = memoize((fformObjects: formObjectsType, schema: JsonSchema): jsJsonSchema => schemaCompiler(fformObjects, schema));
+const compileSchema = memoize((elements: elementsType, schema: JsonSchema): jsJsonSchema => schemaCompiler(elements, schema));
 
-function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema): jsJsonSchema {
+function schemaCompiler(elements: elementsType = {}, schema: JsonSchema): jsJsonSchema {
   if (isCompiled(schema)) return schema;
 
   let {ff_validators, ff_dataMap, ff_oneOfSelector, ...rest} = schema;
   const result: any = isArray(schema) ? [] : {ff_compiled: true};
 
-  ff_validators && (result.ff_validators = toArray(objectResolver(fformObjects, ff_validators)).map(f => normalizeFn(f)));
-  ff_dataMap && (result.ff_dataMap = objectResolver(fformObjects, ff_dataMap));
-  ff_oneOfSelector && (result.ff_oneOfSelector = objectResolver(fformObjects, normalizeFn(ff_oneOfSelector)));
+  ff_validators && (result.ff_validators = toArray(objectResolver(elements, ff_validators)).map(f => normalizeFn(f)));
+  ff_dataMap && (result.ff_dataMap = objectResolver(elements, ff_dataMap));
+  ff_oneOfSelector && (result.ff_oneOfSelector = objectResolver(elements, normalizeFn(ff_oneOfSelector)));
   //if (isFunction(result.ff_oneOfSelector)) result.ff_oneOfSelector = {$: result.ff_oneOfSelector};
 
   objKeys(rest).forEach(key => {
@@ -463,10 +463,10 @@ function schemaCompiler(fformObjects: formObjectsType = {}, schema: JsonSchema):
       case 'properties':
       case 'patternProperties':
       case 'dependencies':
-        result[key] = objMap(rest[key], schemaCompiler.bind(null, fformObjects));
+        result[key] = objMap(rest[key], schemaCompiler.bind(null, elements));
         break;
       default:
-        if (isMergeable(rest[key])) result[key] = schemaCompiler(fformObjects, rest[key]);
+        if (isMergeable(rest[key])) result[key] = schemaCompiler(elements, rest[key]);
         else result[key] = rest[key];
         break;
     }

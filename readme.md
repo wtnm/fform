@@ -2,19 +2,34 @@
 
 <!-- toc -->
 
-- [Features](#features)
-- [Constructor](#constructor)
+- [Overview](#overview)
+    + [Features](#features)
 - [Installation](#installation)
-- [Quick start](#quick--start)
+- [Usage](#usage)
+    + [Without JSON validaton](#without-json-validaton)
+    + [With JSON validaton](#with-json-validaton)
 - [Examples](#examples)
 - [Documentation](#documentation)
 
 <!-- tocstop -->
 
+## Overview
+Flexibile Form (`fform`) - is a try to make form builder with minimum redundancy and with maximum flexibility ans extebdebility. It uses JSONSchema (draft v4) to describe forms, React (v16) for render and has native redux support for state storage but can be used with any other external storage or can use only internal storage (storage agnostic).
 
-## Features
 
-## Constructor
+== See [fform-constructor](http://wtnm.github.io/fform-constuctor/) for live demo.==
+
+#### Features
+- **90kb** minified, **26kb** gziped
+- form-constuctor for quick start
+- form extention, combination and reuse with JSONSchema's `allOf`, `oneOf`, `$ref` properties 
+- sync/async/JSON/submit validation
+- storage agnostic, native redux support, can be used with any external storage or can use own internal storage
+- built-in arrays (add/del/move operations)
+- built-in viewer
+- fully customizable
+- SSR support
+
 
 ## Installation
 
@@ -26,18 +41,29 @@ npm install --save fform
 
 This assumes that you are using [npm](https://www.npmjs.com/) with a module bundler like [webpack](https://webpack.js.org/)
 
-## Quick  start
+## Usage
 
-**TypeScript, ES2015+:**
+#### Without JSON validaton
 
 ```js
-import {FForm, fformObjects} from 'fform';
+import {FForm, elements} from 'fform';
+import {render} from 'react-dom';
+
+render(<FForm core={{schema: {type:"string"}, elements}}/>, document.querySelector('#root'));
 ```
 
-**CommonJS:**
+#### With JSON validaton
 
 ```js
-const {FForm, fformObjects} = require("fform");
+import {FForm, elements} from 'fform';
+import {render} from 'react-dom';
+
+import imjvWrapper from 'fform/addons/imjvWrapper';
+import * as imjvValidator from 'fform/addons/is-my-json-valid-lite';
+const JSONValidator = imjvWrapper(imjvValidator);
+
+render(<FForm core={{schema: {type:"string"}, elements, JSONValidator}}/>,
+		document.querySelector('#root'));
 ```
 
 ## Examples
@@ -80,8 +106,8 @@ const {FForm, fformObjects} = require("fform");
     + [`showOnly(path: string | string[], opts?: APIOptsType)`](documentation.md#showonlypath-string--string-opts-apioptstype)
     + [`getActive()`](documentation.md#getactive)
     + [`execute()`](documentation.md#execute)
-- [Path](documentation.md#path-)
-- [Data object](documentation.md#data-object-)
+- [Path](documentation.md#path)
+- [Data object](documentation.md#data-object)
 - [Basic schema properties](documentation.md#basic-schema-properties)
     + [Meta data](documentation.md#meta-data)
     + [Number Validation](documentation.md#number-validation)
@@ -96,7 +122,7 @@ const {FForm, fformObjects} = require("fform");
     + [Async validation](documentation.md#async-validation)
   * [Customization](documentation.md#customization)
   * [Object layout](documentation.md#object-layout)
-- [fformObjects](documentation.md#fformobjects)
+- [Elements](documentation.md#elements)
     + [props processing](documentation.md#props-processing)
     + [structure](documentation.md#structure)
     + [functions](documentation.md#functions)
