@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="docs fixes and elements">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="docs fixes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/documentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -1223,21 +1222,7 @@
       <workItem from="1554585536432" duration="9763000" />
       <workItem from="1554690000198" duration="4460000" />
       <workItem from="1554704439364" duration="885000" />
-      <workItem from="1554766674917" duration="4031000" />
-    </task>
-    <task id="LOCAL-00072" summary="fixes">
-      <created>1550602404850</created>
-      <option name="number" value="00072" />
-      <option name="presentableId" value="LOCAL-00072" />
-      <option name="project" value="LOCAL" />
-      <updated>1550602404850</updated>
-    </task>
-    <task id="LOCAL-00073" summary="fixes">
-      <created>1550602739838</created>
-      <option name="number" value="00073" />
-      <option name="presentableId" value="LOCAL-00073" />
-      <option name="project" value="LOCAL" />
-      <updated>1550602739838</updated>
+      <workItem from="1554766674917" duration="4577000" />
     </task>
     <task id="LOCAL-00074" summary="fixes">
       <created>1550677630980</created>
@@ -1568,7 +1553,21 @@
       <option name="project" value="LOCAL" />
       <updated>1554702148986</updated>
     </task>
-    <option name="localTasksCounter" value="121" />
+    <task id="LOCAL-00121" summary="docs fixes">
+      <created>1554777043454</created>
+      <option name="number" value="00121" />
+      <option name="presentableId" value="LOCAL-00121" />
+      <option name="project" value="LOCAL" />
+      <updated>1554777043456</updated>
+    </task>
+    <task id="LOCAL-00122" summary="docs fixes">
+      <created>1554777293048</created>
+      <option name="number" value="00122" />
+      <option name="presentableId" value="LOCAL-00122" />
+      <option name="project" value="LOCAL" />
+      <updated>1554777293048</updated>
+    </task>
+    <option name="localTasksCounter" value="123" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1604,7 +1603,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3527405000" />
+    <option name="totallyTimeSpent" value="3527951000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1653,6 +1652,7 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <MESSAGE value="multitype support (not fully tested)" />
     <MESSAGE value="more fixes, objectResolver" />
     <MESSAGE value="types reworked" />
@@ -1676,9 +1676,9 @@
     <MESSAGE value="SSR implement" />
     <MESSAGE value="clean" />
     <MESSAGE value="minor fixes" />
-    <MESSAGE value="docs fixes" />
     <MESSAGE value="docs fixes and elements" />
-    <option name="LAST_COMMIT_MESSAGE" value="docs fixes and elements" />
+    <MESSAGE value="docs fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="docs fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
