@@ -4,7 +4,7 @@
 <!-- toc -->
 
 - [FForm](#fform)
-    + [Passing [FFStateApi props](#ffstateapi)](#passing-ffstateapi-props%23ffstateapi)
+    + [Passing FFStateApi props](#passing-ffstateapi-props)
     + [Using with redux Provider](#using-with-redux-provider)
 - [FFStateApi](#ffstateapi)
   * [Storages](#storages)
@@ -67,7 +67,7 @@
 
 After creation [FFStateApi](#ffstateapi) can accessed throught `api` property
 
-#### Passing [FFStateApi props](#ffstateapi)
+#### Passing FFStateApi props
 Property `core` with [FFStateApi props](#ffstateapi) processed only on creation (creating new instance of [FFStateApi](#ffstateapi)). On property update, if `core` is object with [FFStateApi props](#ffstateapi) then `core` is ignored (new instance of [FFStateApi](#ffstateapi) is not created). Otherwise, if (on property update) `core` is instance of [FFStateApi](#ffstateapi)  `FForm` component will make full rebuild.
 
 #### Using with redux Provider
