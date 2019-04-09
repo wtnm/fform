@@ -85,7 +85,7 @@ How to use with different storages see in [documentation](documentation.md#redux
 <!-- toc-docs -->
 
 - [FForm](documentation.md#fform)
-    + [Passing [FFStateApi props](documentation.md#ffstateapi)](documentation.md#passing-ffstateapi-props%23ffstateapi)
+    + [Passing FFStateApi props](documentation.md#passing-ffstateapi-props)
     + [Using with redux Provider](documentation.md#using-with-redux-provider)
 - [FFStateApi](documentation.md#ffstateapi)
   * [Storages](documentation.md#storages)
