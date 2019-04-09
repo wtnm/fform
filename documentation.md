@@ -7,9 +7,12 @@
     + [Passing [FFStateApi props](#ffstateapi)](#passing-ffstateapi-props%23ffstateapi)
     + [Using with redux Provider](#using-with-redux-provider)
 - [FFStateApi](#ffstateapi)
+  * [Storages](#storages)
     + [Redux storage](#redux-storage)
     + [External storage](#external-storage)
     + [Internal storage](#internal-storage)
+  * [Path](#path)
+  * [Data object](#data-object)
 - [API](#api)
     + [`get(...pathes: string | string[]`)](#getpathes-string--string)
     + [`set(path: string | string[], value: any, opts?: setOpts )`](#setpath-string--string-value-any-opts-setopts-)
@@ -25,8 +28,6 @@
     + [`showOnly(path: string | string[], opts?: APIOptsType)`](#showonlypath-string--string-opts-apioptstype)
     + [`getActive()`](#getactive)
     + [`execute()`](#execute)
-- [Path](#path)
-- [Data object](#data-object)
 - [Basic schema properties](#basic-schema-properties)
     + [Meta data](#meta-data)
     + [Number Validation](#number-validation)
@@ -84,6 +85,7 @@ On creation pass to constructor object as first argument with following props:
 
 After creation FFStateApi can be manipulated throught [API methods](#api)
 
+### Storages
 #### Redux storage
 Create redux store with [thunk](#https://github.com/reduxjs/redux-thunk) and with `formReducer` with "fforms" in root reducer: 
 ```
@@ -103,6 +105,59 @@ Pass `setState/getState` function  from any storage on [FFStateApi](#ffstateapi)
 
 #### Internal storage
 if no `setState/getState` or `store` are passed on creation then [FFStateApi](#ffstateapi) will use own internal storage for fform state.
+
+
+### Path<a name="path"></a>
+String (or array or strings) value delimited with '/' that describes path to field. Following pathes are equal:` '#/obects/array/field_1',  ['#', 'object/array', 'field_1'], ['object', '/array/', '/field_1/']`
+
+Each field has [data object](#data-object) that can be accessed in path by using `'@'` symbol: `'/field_1@value', ['object/array', '@', 'length']`
+
+`'#'` - is the root element of schema state. Can be ommited.
+
+Path can be relative. Relative path starts with `'.'` or `'..'` and resolved relatively fields it eas used.
+
+API set functions support path-muliplying:
+- Comma-separated fields. Path 'array/1,2/field,prop' turns to 4 pathes 'array/1/field', 'array/1/prop', 'array/2/field', 'array/2/prop'. Works for both field-part(part before '@') and data-part(part after '@') of path.
+- Symbol `'*'` turns into all props of object/array. Path 'array/*' (for arrat with length 3) turns to 'array/0', 'array/1', 'array/2'. Works only for field-part(part before '@') of path.
+
+### Data object<a name="data-object"></a>
+Each field has data object that is created according to [JSON schema](#basic-schema-properties) and can be changed throught [API](#api)
+Data object has the following props:
+- `value?: any`
+- `length?: number`
+- `oneOf: number`
+- `fData`:
+    - `title: string`
+    - `type: string`
+    - `required: boolean`
+    - `canAdd?: boolean`
+    - `placeholder?: string`
+- `status`:
+    - `priority?: number`
+    - `invalid: number` - 0 if all children is 0
+    - `dirty: number` - 0 if all children is 0
+    - `untouched: number` - 0 if all children is 0
+    - `pending: number` - 0 if all children is 0
+    - `valid: boolean` - null if pending else !invalid
+    - `pristine: boolean` - !dirty
+    - `touched: boolean` - !untouched
+- `params`:
+	- `liveUpdate?: boolean`
+	- `liveValidate?: boolean`
+	- `autofocus?: boolean`
+	- `readonly?: boolean`
+	- `disabled?: boolean`
+	- `hidden?: boolean`
+	- `norender?: boolean`
+	- `viewer?: boolean`
+-  `arrayItem?`:
+    `canUp?: boolean`
+    `canDown?: boolean`
+    `canDel?: boolean`
+-  `messages?: { [priority: number]: {`
+	- `textGroups: string[][]`
+	- `norender?: boolean`
+`} )`
 
 
 
@@ -212,58 +267,6 @@ Multiply asynchronous commands are stacking in batch and executes together.
 - `noValidation?: boolean` - No validation is made if true.
 
 
-## Path<a name="path"></a>
-String (or array or strings) value delimited with '/' that describes path to field. Following pathes are equal:` '#/obects/array/field_1',  ['#', 'object/array', 'field_1'], ['object', '/array/', '/field_1/']`
-
-Each field has [data object](#data-object) that can be accessed in path by using `'@'` symbol: `'/field_1@value', ['object/array', '@', 'length']`
-
-`'#'` - is the root element of schema state. Can be ommited.
-
-Path can be relative. Relative path starts with `'.'` or `'..'` and resolved relatively fields it eas used.
-
-API set functions support path-muliplying:
-- Comma-separated fields. Path 'array/1,2/field,prop' turns to 4 pathes 'array/1/field', 'array/1/prop', 'array/2/field', 'array/2/prop'. Works for both field-part(part before '@') and data-part(part after '@') of path.
-- Symbol `'*'` turns into all props of object/array. Path 'array/*' (for arrat with length 3) turns to 'array/0', 'array/1', 'array/2'. Works only for field-part(part before '@') of path.
-
-## Data object<a name="data-object"></a>
-Each field has data object that is created according to [JSON schema](#basic-schema-properties) and can be changed throught [API](#api)
-Data object has the following props:
-- `value?: any`
-- `length?: number`
-- `oneOf: number`
-- `fData`:
-    - `title: string`
-    - `type: string`
-    - `required: boolean`
-    - `canAdd?: boolean`
-    - `placeholder?: string`
-- `status`:
-    - `priority?: number`
-    - `invalid: number` - 0 if all children is 0
-    - `dirty: number` - 0 if all children is 0
-    - `untouched: number` - 0 if all children is 0
-    - `pending: number` - 0 if all children is 0
-    - `valid: boolean` - null if pending else !invalid
-    - `pristine: boolean` - !dirty
-    - `touched: boolean` - !untouched
-- `params`:
-	- `liveUpdate?: boolean`
-	- `liveValidate?: boolean`
-	- `autofocus?: boolean`
-	- `readonly?: boolean`
-	- `disabled?: boolean`
-	- `hidden?: boolean`
-	- `norender?: boolean`
-	- `viewer?: boolean`
--  `arrayItem?`:
-    `canUp?: boolean`
-    `canDown?: boolean`
-    `canDel?: boolean`
--  `messages?: { [priority: number]: {`
-	- `textGroups: string[][]`
-	- `norender?: boolean`
-`} )`
-
 
 ## Basic schema properties
 - `$ref?: string`
@@ -353,10 +356,10 @@ Each field build from following blocks:
 - `Main` - in this block input element is placed
 - `Messages` - element that shows messages (error, warnigns, info etc)
 
-In `ff_custom` schema property you can add/overwrite any proprerty of any block. It supports [elements "magic" props](#magic-props). It merges with `ff_presets` refs on field build. More details in examples.
+In `ff_custom` schema property you can add/overwrite any proprerty of any block. It supports [elements props processing](#props-processing). It merges with `ff_presets` refs on field build. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=5).
 
 ### Object layout
-Schema property `ff_layout` can be object or array of strings | objects. String is the name of field and it determines the order in which fields will be placed. Object supports [elements "magic" props](#magic-props) with `$_fields` (that is array of strings | objects) property and can be customized. More details in examples.
+Schema property `ff_layout` can be object or array of strings | objects. String is the name of field and it determines the order in which fields will be placed. Object supports [elements props processing](#props-processing) with `$_fields` (that is array of strings | objects) property and can be customized. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=1).
 
 
 ## Elements

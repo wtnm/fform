@@ -4,8 +4,7 @@
 
 - [Overview](#overview)
     + [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
+- [Installation & Usage](#installation--usage)
     + [Without JSON validaton](#without-json-validaton)
     + [With JSON validaton](#with-json-validaton)
 - [Examples](#examples)
@@ -17,7 +16,7 @@
 Flexibile Form (`fform`) - is a try to make form builder with minimum redundancy and with maximum flexibility ans extebdebility. It uses JSONSchema (draft v4) to describe forms, React (v16) for render and has native redux support for state storage but can be used with any other external storage or can use only internal storage (storage agnostic).
 
 
-== See [fform-constructor](http://wtnm.github.io/fform-constuctor/) for live demo.==
+== See [fform-constructor](https://wtnm.github.io/fform-constructor/index.html) for live demo.==
 
 #### Features
 - **90kb** minified, **26kb** gziped
@@ -31,7 +30,7 @@ Flexibile Form (`fform`) - is a try to make form builder with minimum redundancy
 - SSR support
 
 
-## Installation
+## Installation & Usage
 
 To install the stable version:
 
@@ -41,7 +40,6 @@ npm install --save fform
 
 This assumes that you are using [npm](https://www.npmjs.com/) with a module bundler like [webpack](https://webpack.js.org/)
 
-## Usage
 
 #### Without JSON validaton
 
@@ -66,17 +64,19 @@ render(<FForm core={{schema: {type:"string"}, elements, JSONValidator}}/>,
 		document.querySelector('#root'));
 ```
 
+How to use with different storages see in [documentation](documentation.md#redux-storage)
+
 ## Examples
 <!-- toc-examples -->
 
-- [simple form](http://wtnm.github.io/fform-constuctor/#src=examples.json&selector=0)
-- [layouts and viewer](http://wtnm.github.io/fform-constuctor/#src=examples.json&selector=1)
-- [arrays and oneOf](http://wtnm.github.io/fform-constuctor/#src=examples.json&selector=2)
-- [dataMaps](http://wtnm.github.io/fform-constuctor/#src=examples.json&selector=3)
-- [validation](http://wtnm.github.io/fform-constuctor/#src=examples.json&selector=4)
-- [format and parse](http://wtnm.github.io/fform-constuctor/#src=examples.json&selector=5)
-- [custom input](http://wtnm.github.io/fform-constuctor/#src=examples.json&selector=6)
-- [tabs and steps](http://wtnm.github.io/fform-constuctor/#src=examples.json&selector=7)
+- [simple form](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=0)
+- [layouts and viewer](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=1)
+- [arrays and oneOf](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=2)
+- [dataMaps](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=3)
+- [validation](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=4)
+- [format and parse](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=5)
+- [custom input](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=6)
+- [tabs and steps](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=7)
 
 <!-- tocstop -->
 
@@ -88,9 +88,12 @@ render(<FForm core={{schema: {type:"string"}, elements, JSONValidator}}/>,
     + [Passing [FFStateApi props](documentation.md#ffstateapi)](documentation.md#passing-ffstateapi-props%23ffstateapi)
     + [Using with redux Provider](documentation.md#using-with-redux-provider)
 - [FFStateApi](documentation.md#ffstateapi)
+  * [Storages](documentation.md#storages)
     + [Redux storage](documentation.md#redux-storage)
     + [External storage](documentation.md#external-storage)
     + [Internal storage](documentation.md#internal-storage)
+  * [Path](documentation.md#path)
+  * [Data object](documentation.md#data-object)
 - [API](documentation.md#api)
     + [`get(...pathes: string | string[]`)](documentation.md#getpathes-string--string)
     + [`set(path: string | string[], value: any, opts?: setOpts )`](documentation.md#setpath-string--string-value-any-opts-setopts-)
@@ -106,8 +109,6 @@ render(<FForm core={{schema: {type:"string"}, elements, JSONValidator}}/>,
     + [`showOnly(path: string | string[], opts?: APIOptsType)`](documentation.md#showonlypath-string--string-opts-apioptstype)
     + [`getActive()`](documentation.md#getactive)
     + [`execute()`](documentation.md#execute)
-- [Path](documentation.md#path)
-- [Data object](documentation.md#data-object)
 - [Basic schema properties](documentation.md#basic-schema-properties)
     + [Meta data](documentation.md#meta-data)
     + [Number Validation](documentation.md#number-validation)
