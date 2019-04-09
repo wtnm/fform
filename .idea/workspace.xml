@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="docs fixes">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -31,7 +31,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor" />
         </entry>
@@ -84,11 +84,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/package.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="15" column="28" selection-start-line="15" selection-start-column="28" selection-end-line="15" selection-end-column="28" />
+            <state relative-caret-position="32">
+              <caret line="2" column="12" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="12" />
             </state>
           </provider>
         </entry>
@@ -236,7 +236,6 @@
         <option value="$PROJECT_DIR$/src/fnTypes.d.ts" />
         <option value="$PROJECT_DIR$/src/dataTypes.d.ts" />
         <option value="$PROJECT_DIR$/webpack.sample.config.js" />
-        <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/addons/dehydrator.js" />
         <option value="$PROJECT_DIR$/src/stateLib.tsx" />
         <option value="$PROJECT_DIR$/__tests__/testForm.js" />
@@ -249,6 +248,7 @@
         <option value="$PROJECT_DIR$/sample/sample.tsx" />
         <option value="$PROJECT_DIR$/tools/examplesLinks.js" />
         <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/package.json" />
       </list>
     </option>
   </component>
@@ -355,6 +355,17 @@
               <item name="FForm" type="b2602c69:ProjectViewProjectNode" />
               <item name="fform" type="462c0819:PsiDirectoryNode" />
               <item name="__tests__" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="FForm" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fform" type="462c0819:PsiDirectoryNode" />
+              <item name="dist" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="FForm" type="b2602c69:ProjectViewProjectNode" />
+              <item name="fform" type="462c0819:PsiDirectoryNode" />
+              <item name="dist" type="462c0819:PsiDirectoryNode" />
+              <item name="fform.js" type="620a8d5e:NestingTreeNode" />
             </path>
             <path>
               <item name="FForm" type="b2602c69:ProjectViewProjectNode" />
@@ -530,15 +541,15 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="JavaScript Debug.Unnamed" />
       <item itemvalue="JavaScript Debug.Form" />
-      <item itemvalue="Mocha.testCore" />
-      <item itemvalue="Mocha.testConstructor" />
+      <item itemvalue="JavaScript Debug.Unnamed" />
       <item itemvalue="Node.js.examplesLinks.js" />
       <item itemvalue="Node.js.minifyProps" />
-      <item itemvalue="npm.compile:sample:dev" />
-      <item itemvalue="npm.compile:dev" />
       <item itemvalue="npm.compile" />
+      <item itemvalue="npm.compile:dev" />
+      <item itemvalue="npm.compile:sample:dev" />
+      <item itemvalue="Mocha.testConstructor" />
+      <item itemvalue="Mocha.testCore" />
     </list>
     <recent_temporary>
       <list>
@@ -1213,14 +1224,7 @@
       <workItem from="1554585536432" duration="9763000" />
       <workItem from="1554690000198" duration="4460000" />
       <workItem from="1554704439364" duration="885000" />
-      <workItem from="1554766674917" duration="4702000" />
-    </task>
-    <task id="LOCAL-00075" summary="fixes">
-      <created>1550686659887</created>
-      <option name="number" value="00075" />
-      <option name="presentableId" value="LOCAL-00075" />
-      <option name="project" value="LOCAL" />
-      <updated>1550686659887</updated>
+      <workItem from="1554766674917" duration="5273000" />
     </task>
     <task id="LOCAL-00076" summary="fixes">
       <created>1550687815050</created>
@@ -1558,7 +1562,14 @@
       <option name="project" value="LOCAL" />
       <updated>1554777565383</updated>
     </task>
-    <option name="localTasksCounter" value="124" />
+    <task id="LOCAL-00124" summary="docs fixes">
+      <created>1554777748735</created>
+      <option name="number" value="00124" />
+      <option name="presentableId" value="LOCAL-00124" />
+      <option name="project" value="LOCAL" />
+      <updated>1554777748735</updated>
+    </task>
+    <option name="localTasksCounter" value="125" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1594,7 +1605,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3528076000" />
+    <option name="totallyTimeSpent" value="3528647000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -2060,13 +2071,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="15" column="28" selection-start-line="15" selection-start-column="28" selection-end-line="15" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/fform.tsx">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="24640">
@@ -2090,6 +2094,13 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="32">
+          <caret line="2" column="12" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="12" />
+        </state>
+      </provider>
     </entry>
   </component>
   <component name="masterDetails">
