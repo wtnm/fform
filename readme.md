@@ -28,6 +28,7 @@ Flexibile Form (`fform`) - is a try to make form builder with minimum redundancy
 - built-in viewer
 - fully customizable
 - SSR support
+- Zero dependencies (React as external)
 
 
 ## Installation & Usage

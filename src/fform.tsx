@@ -341,12 +341,11 @@ class FField extends FRefsGeneric {
     // console.log(valueSet, 'setValue=', setValue,'path=',path)
     if (valueSet) {
       let prevData = self.getData();
-      if (self._cached) prevData = merge(prevData, {value: self._cached.value}, {replace: {value: opts.replace}});
-      self._cached = {value, opts}; //{value: self._parseValue(value, prevData)};
+      self._cached = {value, opts};
       if (fieldCache) {
         if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
-        const data = merge(prevData, {value: self._cached.value}, {replace: {value: opts.replace}});
+        const data = self.getData();
         const mappedData = self._mappedData;
 
         self.get = (...pathes: any[]) => {
@@ -415,8 +414,6 @@ class FField extends FRefsGeneric {
     self._rebuild = false;
   }
 
-  // todo: SSR support
-
   _setMappedData(prevData: any, nextData: any, updateStage: boolean | 'build') {
     const self = this;
     let _gData = self.getData;
@@ -430,8 +427,10 @@ class FField extends FRefsGeneric {
     return false
   }
 
-  getData(branch: any = getIn(this, 'state', 'branch')) {
-    return this.pFForm.getDataObject(branch, this)
+  getData(branch?: any) {
+    const self = this;
+    const data = self.pFForm.getDataObject(branch || getIn(self, 'state', 'branch'), self);
+    return self._cached ? merge(data, {value: self._cached.value}, {replace: {value: self._cached.opts.replace}}) : data;
   }
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
@@ -446,8 +445,8 @@ class FField extends FRefsGeneric {
     self.$branch = nextState.branch;
     let updateComponent = false;
 
-    const nextData = self.getData(getIn(nextState, 'branch'));
     const prevData = self.getData();
+    const nextData = self.getData(getIn(nextState, 'branch'));
     if (getIn(nextData, 'oneOf') !== getIn(prevData, 'oneOf')) return (self._rebuild = true);
 
     try {
