@@ -377,9 +377,33 @@ Each field in form receive a set of objects that is parts of elements (due to 'f
 - `anyName.bind: any[]` - binds value to function with name 'anyName'
 
 #### Structure
-- `extend` - extends elements with passed object
-- `widgets` - contains react components that is used in form building
-- `sets` - presets for frequently used field's schemas
+- `widgets` - contains react components that is used in form building, some of them:
+	- `Section`
+    - `Generic`
+    - `Input`
+    - `Builder`
+    - `Wrapper`
+    - `ItemMenu`
+    - `CheckboxNull`
+- `sets` - presets for frequently used field's schemas, some of them:
+	- `base`
+	- `nBase`
+	- `string`
+	- `textarea`
+	- `integer`
+	- `integerNull`
+	- `number`
+	- `numberNull`
+	- `boolean`
+	- `booleanLeft`
+	- `booleanNull`
+	- `booleanNullLeft`
+	- `object`
+	- `array`
+	- `select`
+	- `multiselect`
+	- `radio`
+	- `checkboxes`
 - `fn` - functions that is used in [data, event processing](#data-event-processors), some of them:
 	- `api(fn: string, ...args: any[])`
     - `format(str: string, ...args: any[])` 
@@ -391,21 +415,39 @@ Each field in form receive a set of objects that is parts of elements (due to 'f
     - `eventMultiple: (event: any, ...args: any[])` 
     - `parseNumber: (value: any, int: boolean, empty: number | null, ...args: any[])` 
     - `setValue(value: any, opts: any = {}, ...args: any[])`
-- `parts` - commonly used parts of JSON, js-code
+- `parts` - commonly used parts of JSON, js-code, some of them:
+	- `Submit`
+	- `Reset`
+	- `Button`
+	- `ArrayAddButton`
+	- `ArrayDelButton`
+	- `ArrayEmpty`
+	- `ArrayItemMenu`
+	- `Expander`
+	- `RadioSelector` 
+- `extend(objects: any[])` - merges elements with passed objects
 - `_$cx` - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
 
 #### Data, event processors
-Defined by object with the following properties:
+Object that has `$` propery threaten as data processor. It has following properties:
 - `$: string` - link (with leading `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/equal|^/fn/not`.
 - `replace?: boolean` - if `true` the result will be replaced, otherwise merged.
 - `args?: any[]` - arguments passed to function. Has several replacements:
 	- `${value}` - replaced with value that function receive. 
-	- Args that starts with `@` replaced with [data object](data-object) value in [path](#path). 
-	- Args starts with `!` (`!!`) negated (negated twice).
-- `update?: 'build' | 'data' | 'every'` - for `$_maps` functions. Determines when it executes. `build` - on component build/rebuild, `data` - on [data object](data-object) update, `every` - on each update.
+	 	- `ff_dataMaps` value according to `from` path
+	 	- `ff_validators` and `ff_oneOfSelector` form current value according to schema path 
+	 	- `Elements.$_map` undefined
+	 	- `Elements.onEvent`  event on call
+	- Args that starts with `@` replaced with [data object](data-object) value according to [path](#path). Example: `@/value`
+		- Args starts with `!` negated (`!!` negated twice). Example: `!@/value`
+- `update?: 'build' | 'data' | 'every'` - for `$_maps` functions. Determines when it executes. 
+	- `build` - on component build/rebuild
+	- `data` - on [data object](data-object)
+	- `update, `every` - on each update
 
 **As functions executed in pipe each function that used in processors should return result as _array_** (except `ff_oneOfSelector`).
 Each function (except for those ones that are used in `ff_oneOfSelector`) has access to [api](#api) during runtime thougth `this.api`.
+Any argument of `args` can be data processor (object with `$` property), it will be executed (_recursively as it args can be data processor too_) and it result passed as value.
 
 ## Styling
 FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)) and it can be binded for class name's replacement.

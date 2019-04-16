@@ -1061,12 +1061,12 @@ function classNames(...styles: any[]) {
 
 
 let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOptionsArgument) => any } = {
-  extend: function (elements: any[], opts?: MergeStateOptionsArgument) {
+  extend(elements: any[], opts?: MergeStateOptionsArgument) {
     return merge.all(this, elements, opts)
   },
   types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
   widgets: {
-    FSection: FSection,
+    Section: FSection,
     Generic: GenericWidget,
     Input: UniversalInput,
     Autowidth: Autowidth,
@@ -1228,7 +1228,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     object: {
       $_ref: '^/sets/base',
       Main: {
-        _$widget: '^/widgets/FSection',
+        _$widget: '^/widgets/Section',
         _$cx: '^/_$cx',
         $_reactRef: true,
         uniqKey: 'params/uniqKey',
@@ -1538,7 +1538,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       },
       $_maps: {arrayItem: '@/arrayItem', 'className/button-viewer': '@/params/viewer', disabled: '@params/disabled'},
     },
-    expander: {_$widget: 'div', className: {expand: true}}
+    Expander: {_$widget: 'div', className: {expand: true}}
   },
   _$cx: classNames
 };

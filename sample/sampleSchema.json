@@ -83,7 +83,7 @@
           "onClick": "^/user/focusInput"
         },
         {
-          "$_ref": "^/parts/expander"
+          "$_ref": "^/parts/Expander"
         }
       ]
     },
