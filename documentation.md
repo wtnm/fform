@@ -43,9 +43,9 @@
   * [Customization](#customization)
   * [Object layout](#object-layout)
 - [Elements](#elements)
-    + [props processing](#props-processing)
-    + [structure](#structure)
-    + [functions](#functions)
+    + [Props processing](#props-processing)
+    + [Structure](#structure)
+    + [Data, event processors](#data-event-processors)
 - [Styling](#styling)
 - [SSR](#ssr)
 
@@ -365,7 +365,7 @@ Schema property `ff_layout` can be object or array of strings | objects. String 
 ## Elements
 Each field in form receive a set of objects that is parts of elements (due to 'ff_presets' and 'ff_custom') that merges into one object. Then all functions that field finds in merged object binds to it during render. Exception is the props that starts with underscore.
 
-#### props processing
+#### Props processing
 - `^/`<a name="object-refs"></a> - string value that begins with "^/" determines that value is the reference and resolved respectively
 - `_` - property name that starts with underscore prevent it value from deep processing (makes only resolving if string value starts with "^/")
 - `_%widget: string | Function` - HTML tag or function that will we used as react.element
@@ -376,25 +376,36 @@ Each field in form receive a set of objects that is parts of elements (due to 'f
 - `$_fields` - layout that determines field's order and add additional elements and sub-layouts
 - `anyName.bind: any[]` - binds value to function with name 'anyName'
 
-#### structure
+#### Structure
 - `extend` - extends elements with passed object
-- `widgets` - contains react.elements that is used in form components
-- `sets` - component presets for commonly used schemas
-- `fn` - function tha is used in $_maps/$_parse processing 
-- `parts` - commonly used parts of components
+- `widgets` - contains react components that is used in form building
+- `sets` - presets for frequently used field's schemas
+- `fn` - functions that is used in [data, event processing](#data-event-processors), some of them:
+	- `api(fn: string, ...args: any[])`
+    - `format(str: string, ...args: any[])` 
+    - `iif(iif: any, trueVal: any, falseVaL: any, ...args: any[])`
+    - `not(v: any, ...args: any[])` 
+    - `equal(a: any, ...args: any[])`
+    - `eventValue: (event: any, ...args: any[])`
+    - `eventChecked: (event: any, ...args: any[])`
+    - `eventMultiple: (event: any, ...args: any[])` 
+    - `parseNumber: (value: any, int: boolean, empty: number | null, ...args: any[])` 
+    - `setValue(value: any, opts: any = {}, ...args: any[])`
+- `parts` - commonly used parts of JSON, js-code
 - `_$cx` - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
 
-#### functions
-Object with properties:
-- `$: string` - link (starts with `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/equal|^/fn/not`.
+#### Data, event processors
+Defined by object with the following properties:
+- `$: string` - link (with leading `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/equal|^/fn/not`.
 - `replace?: boolean` - if `true` the result will be replaced, otherwise merged.
 - `args?: any[]` - arguments passed to function. Has several replacements:
 	- `${value}` - replaced with value that function receive. 
 	- Args that starts with `@` replaced with [data object](data-object) value in [path](#path). 
 	- Args starts with `!` (`!!`) negated (negated twice).
-- `update?: 'build' | 'data' | 'every'` - actual only for `$_maps` functions. Determines how often function executed. `build` - only on component build/rebuild, `data` - on [data object](data-object) update, `every` - on each update.
-As functions executed in pipe it results should be returned as array.
-Functions (except for that ones that defined in `ff_oneOfSelector`) has access to [api](#api) thougth `this.api`.
+- `update?: 'build' | 'data' | 'every'` - for `$_maps` functions. Determines when it executes. `build` - on component build/rebuild, `data` - on [data object](data-object) update, `every` - on each update.
+
+**As functions executed in pipe each function that used in processors should return result as _array_** (except `ff_oneOfSelector`).
+Each function (except for those ones that are used in `ff_oneOfSelector`) has access to [api](#api) during runtime thougth `this.api`.
 
 ## Styling
 FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)) and it can be binded for class name's replacement.

@@ -13,14 +13,13 @@
 <!-- tocstop -->
 
 ## Overview
-Flexibile Form (`fform`) - is a try to make form builder with minimum redundancy and with maximum flexibility ans extebdebility. It uses JSONSchema (draft v4) to describe forms, React (v16) for render and has native redux support for state storage but can be used with any other external storage or can use only internal storage (storage agnostic).
+Flexibile Form (`fform`) - form builder with minimum redundancy, maximum flexibility and extendability. It uses **JSONSchema** (draft v4) to describe forms, **React** (v16) for rendering and has native **Redux** support for state storage but can be used with any other external storage or can use only internal storage (storage agnostic).
 
-
-== See [fform-constructor](https://wtnm.github.io/fform-constructor/index.html) for live demo.==
+See [fform-constructor](https://wtnm.github.io/fform-constructor/index.html) for live demo.
 
 #### Features
 - **90kb** minified, **26kb** gziped
-- form-constuctor for quick start
+- [form-constuctor](https://wtnm.github.io/fform-constructor/index.html) for quick start
 - form extention, combination and reuse with JSONSchema's `allOf`, `oneOf`, `$ref` properties 
 - sync/async/JSON/submit validation
 - storage agnostic, native redux support, can be used with any external storage or can use own internal storage
@@ -76,8 +75,9 @@ How to use with different storages see in [documentation](documentation.md#redux
 - [dataMaps](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=3)
 - [validation](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=4)
 - [format and parse](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=5)
-- [custom input](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=6)
-- [tabs and steps](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=7)
+- [schema exten](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=6)
+- [custom input](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=7)
+- [tabs and steps](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=8)
 
 <!-- tocstop -->
 
@@ -125,9 +125,9 @@ How to use with different storages see in [documentation](documentation.md#redux
   * [Customization](documentation.md#customization)
   * [Object layout](documentation.md#object-layout)
 - [Elements](documentation.md#elements)
-    + [props processing](documentation.md#props-processing)
-    + [structure](documentation.md#structure)
-    + [functions](documentation.md#functions)
+    + [Props processing](documentation.md#props-processing)
+    + [Structure](documentation.md#structure)
+    + [Data, event processors](documentation.md#data-event-processors)
 - [Styling](documentation.md#styling)
 - [SSR](documentation.md#ssr)
 

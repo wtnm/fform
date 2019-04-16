@@ -278,6 +278,7 @@ class FField extends FRefsGeneric {
     path = normalizePath(path);
     const self = this;
     if (!path.length) return self.$refs['@Main'];
+    if (path.length == 1 && path[0] == SymData) return self;
     if (path[0][0] == '@') return path.length == 1 ? self.$refs[path[0]] : self.$refs[path[0]].getRef(path.slice(1));
     return self.$refs['@Main'] && self.$refs['@Main'].getRef && self.$refs['@Main'].getRef(path)
   }
@@ -1331,16 +1332,66 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     bnnDual: {Main: {children: {0: {dual: true}}}}
   },
   fn: {
-    api: function (fn: string, ...args: any[]) {this.api[fn](...args)},
-    format: function (str: string, ...args: any[]) {
+    api(fn: string, ...args: any[]) {this.api[fn](...args)},
+    format(str: string, ...args: any[]) {
       return args.reduce((str, val, i) => str.replace('${' + i + '}', val), str)
     },
-    iif: (iif: any, trueVal: any, falseVaL: any) => (iif ? [trueVal] : [falseVaL]),
-    not: function (v: any) {
-      return [!v]
+    iif(iif: any, trueVal: any, falseVaL: any, ...args: any[]) { return [iif ? trueVal : falseVaL, ...args]},
+    not(v: any, ...args: any[]) {return [!v, ...args]},
+    equal(a: any, ...args: any[]) {return [args.some(b => a === b)]},
+    getArrayStart(...args: any[]) {return [arrayStart(this.schemaPart), ...args]},
+    getProp(key: string, ...args: any[]) {return [getIn(this, normalizePath(key)), ...args]},
+
+    eventValue: (event: any, ...args: any[]) => [event.target.value, ...args],
+    eventChecked: (event: any, ...args: any[]) => [event.target.checked, ...args],
+    eventMultiple: (event: any, ...args: any[]) =>
+      [Array.from(event.target.options).filter((o: any) => o.selected).map((v: any) => v.value), ...args],
+    parseNumber: (value: any, int: boolean = false, empty: number | null = null, ...args: any[]) =>
+      [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...args],
+
+    setValue(value: any, opts: any = {}, ...args: any[]) {
+      this.api.setValue(value, opts);
+      return args;
     },
-    equal: function (a: any, ...args: any[]) {return [args.some(b => a === b)]},
-    messages: function (messages: any[], staticProps: anyObject = {}) {
+    // arrayAdd(path: any, value: number = 1, opts: any = {}, ...args: any[]) {
+    //   this.api.arrayAdd(path, value, opts);
+    //   return args;
+    // },
+    // arrayItemOps(path: any, key: any, opts: any = {}, ...args: any[]) {
+    //   this.api.arrayItemOps(path, key, opts);
+    //   return args;
+    // },
+    focus(value: any, ...args: any[]) {
+      this.api.set('/@/active', this.path, {noValidation: true});
+      return args;
+    },
+    blur(...args: any[]) {
+      this.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
+      this.api.set('/@/active', undefined, {noValidation: true});
+      this._updateCachedValue(true);
+      !this.liveValidate && this.api.validate('./',);
+      return args;
+    },
+    updCached(...args: any[]) {
+      this._forceUpd = true;
+      return args;
+    },
+    eventCheckboxes(event: any, ...args: any[]) {
+      const selected = (this.getData().value || []).slice();
+      const value = event.target.value;
+      const at = selected.indexOf(value);
+      const updated = selected.slice();
+      if (at == -1) updated.push(value); else updated.splice(at, 1);
+      const all = this.getData().fData.enum;
+      updated.sort((a: any, b: any) => all.indexOf(a) > all.indexOf(b));
+      return [updated, ...args]
+    },
+    radioClear(value: any, nullValue = null, ...args: any[]) {
+      if (this.api.getValue() === value) this.api.setValue(nullValue);
+      return args;
+    },
+
+    messages(messages: any[], staticProps: anyObject = {}) {
       const {className: cnSP = {}, ...restSP} = staticProps;
       return [objKeys(messages).map(priority => {
         const {norender, texts, className = {}, ...rest} = messages[priority];
@@ -1352,15 +1403,13 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         return {children, ...restSP, className: {['priority_' + priority]: true, ...cnSP, ...className}, ...rest}
       })]
     },
-    getArrayStart: function () {return [arrayStart(this.schemaPart)]},
-    getProp: function (key: string) {return [getIn(this, normalizePath(key))]},
-    arrayOfEnum: function (enumVals: any[], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
+    arrayOfEnum(enumVals: any[], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
       return [enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
         return {value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)), ...extenProps, ...staticProps}
       })]
     },
-    enumInputs: function (enumVals: any[] = [], enumExten: any = {}, containerProps: any = {}, inputProps: any = {}, labelProps: any = {}, name?: true | string) {
+    enumInputs(enumVals: any[] = [], enumExten: any = {}, containerProps: any = {}, inputProps: any = {}, labelProps: any = {}, name?: true | string) {
       // inputProps = this.wrapFns(inputProps);
       return [enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
@@ -1374,56 +1423,15 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         }
       })]
     },
-    enumInputProps: function (enumVals: any[] = [], ...rest: any[]) {
+    enumInputProps(enumVals: any[] = [], ...rest: any[]) {
       let props: any = {};
       for (let i = 0; i < rest.length; i += 2) props[rest[i]] = rest[i + 1];
       return [enumVals.map(val => {return {'children': {'0': props}}})]
     },
-    enumInputValue: function (enumVals: any[] = [], value: any, property = 'checked') {
+    enumInputValue(enumVals: any[] = [], value: any, property = 'checked') {
       value = toArray(value);
       return [enumVals.map(val => {return {'children': {'0': {[property]: !!~value.indexOf(val)}}}})]
     },
-
-    eventValue: (event: any, ...args: any[]) => [event.target.value, ...args],
-    eventChecked: (event: any, ...args: any[]) => [event.target.checked, ...args],
-    eventMultiple: (event: any, ...args: any[]) =>
-      [Array.from(event.target.options).filter((o: any) => o.selected).map((v: any) => v.value), ...args],
-    parseNumber: (value: any, int: boolean = false, empty: number | null = null, ...rest: any[]) =>
-      [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...rest],
-
-    setValue: function (value: any, opts: any = {}) {this.api.setValue(value, opts)},
-    arrayAdd: function (path: any, value: number = 1, opts: any = {}) {
-      this.api.arrayAdd(path, value, opts)
-    },
-    arrayItemOps: function (path: any, key: any, opts: any = {}) {this.api.arrayItemOps(path, key, opts)},
-    focus: function (value: any) {
-      this.api.set('/@/active', this.path, {noValidation: true})
-      //console.log('focus ', this.path);
-    },
-    blur: function () {
-      this.api.set('./', -1, {[SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus'});
-      this.api.set('/@/active', undefined, {noValidation: true});
-      this._updateCachedValue(true);
-      // console.log('blur ', this.path);
-      return [!this.liveValidate ? this.api.validate('./',) : null]; // {execute: true}
-
-    },
-    updCached: function () {
-      this._forceUpd = true;
-    },
-    eventCheckboxes: function (event: any) {
-      const selected = (this.getData().value || []).slice();
-      const value = event.target.value;
-      const at = selected.indexOf(value);
-      const updated = selected.slice();
-      if (at == -1) updated.push(value); else updated.splice(at, 1);
-      const all = this.getData().fData.enum;
-      updated.sort((a: any, b: any) => all.indexOf(a) > all.indexOf(b));
-      return [updated]
-    },
-    radioClear: function (value: any, nullValue = null) {
-      if (this.api.getValue() === value) this.api.setValue(nullValue);
-    }
   },
   parts: {
     RadioSelector: {
@@ -1445,8 +1453,8 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
                 _$widget: 'input',
                 type: 'radio',
                 onChange: {$: '^/fn/eventValue|setValue|updCached', args: ['${value}', {path: './@/selector/value'}]},
-                onBlur: {$: '^/fn/blur'},
-                onFocus: {$: '^/fn/focus'},
+                onBlur: '^/sets/nBase/Main/onBlur',
+                onFocus: '^/sets/nBase/Main/onFocus',
               },
               {_$useTag: 'span', _$cx: '^/_$cx',},
               true
@@ -1496,7 +1504,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     ArrayAddButton: {
       $_ref: '^/parts/Button',
       children: ['+'],
-      onClick: {$: '^/fn/arrayAdd', args: ['./']},
+      onClick: {$: '^/fn/api', args: ['arrayAdd', './', 1]},
       $_maps: {
         'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
         'disabled': {$: '^/fn/equal', args: [true, {$: '^/fn/not', args: '@/fData/canAdd'}, '@params/disabled']}
@@ -1505,7 +1513,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     ArrayDelButton: {
       $_ref: '^/parts/Button',
       children: ['-'],
-      onClick: {$: '^/fn/arrayAdd', args: ['./', -1]},
+      onClick: {$: '^/fn/api', args: ['arrayAdd', './', -1]},
       $_maps: {
         'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
         'disabled': {$: '^/fn/equal', args: [true, {$: '^/fn/not', args: '@/length'}, '@params/disabled']},
@@ -1520,7 +1528,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       _$widget: '^/widgets/ItemMenu',
       _$cx: '^/_$cx',
       buttons: ['first', 'last', 'up', 'down', 'del'],
-      onClick: {$: '^/fn/arrayItemOps', args: ['./', '${value}']},
+      onClick: {$: '^/fn/api', args: ['arrayItemOps', './', '${value}']},
       buttonsProps: {
         first: {disabledCheck: 'canUp'},
         last: {disabledCheck: 'canDown'},

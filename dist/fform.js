@@ -1184,6 +1184,8 @@ class FField extends FRefsGeneric {
         const self = this;
         if (!path.length)
             return self.$refs['@Main'];
+        if (path.length == 1 && path[0] == stateLib_1.SymData)
+            return self;
         if (path[0][0] == '@')
             return path.length == 1 ? self.$refs[path[0]] : self.$refs[path[0]].getRef(path.slice(1));
         return self.$refs['@Main'] && self.$refs['@Main'].getRef && self.$refs['@Main'].getRef(path);
@@ -2165,78 +2167,47 @@ let elementsBase = {
         bnnDual: { Main: { children: { 0: { dual: true } } } }
     },
     fn: {
-        api: function (fn, ...args) { this.api[fn](...args); },
-        format: function (str, ...args) {
+        api(fn, ...args) { this.api[fn](...args); },
+        format(str, ...args) {
             return args.reduce((str, val, i) => str.replace('${' + i + '}', val), str);
         },
-        iif: (iif, trueVal, falseVaL) => (iif ? [trueVal] : [falseVaL]),
-        not: function (v) {
-            return [!v];
-        },
-        equal: function (a, ...args) { return [args.some(b => a === b)]; },
-        messages: function (messages, staticProps = {}) {
-            const { className: cnSP = {} } = staticProps, restSP = __rest(staticProps, ["className"]);
-            return [commonLib_1.objKeys(messages).map(priority => {
-                    const _a = messages[priority], { norender, texts, className = {} } = _a, rest = __rest(_a, ["norender", "texts", "className"]);
-                    const children = [];
-                    commonLib_1.objKeys(texts).forEach((key) => commonLib_1.toArray(texts[key]).forEach((v, i, arr) => (commonLib_1.isString(v) && commonLib_1.isString(children[children.length - 1])) ? children.push(v, { _$widget: 'br' }) : children.push(v)));
-                    if (norender || !children.length)
-                        return null;
-                    return Object.assign({ children }, restSP, { className: Object.assign({ ['priority_' + priority]: true }, cnSP, className) }, rest);
-                })];
-        },
-        getArrayStart: function () { return [stateLib_1.arrayStart(this.schemaPart)]; },
-        getProp: function (key) { return [commonLib_1.getIn(this, stateLib_1.normalizePath(key))]; },
-        arrayOfEnum: function (enumVals, enumExten = {}, staticProps = {}, name) {
-            return [enumVals.map(val => {
-                    let extenProps = getExten(enumExten, val);
-                    return Object.assign({ value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)) }, extenProps, staticProps);
-                })];
-        },
-        enumInputs: function (enumVals = [], enumExten = {}, containerProps = {}, inputProps = {}, labelProps = {}, name) {
-            // inputProps = this.wrapFns(inputProps);
-            return [enumVals.map(val => {
-                    let extenProps = getExten(enumExten, val);
-                    return Object.assign({ key: val }, containerProps, { children: [
-                            Object.assign({ value: val, name: name && (this.props.name + (name === true ? '' : name)) }, commonLib_1.merge(inputProps, extenProps)),
-                            Object.assign({}, labelProps, { children: [extenProps.label || val] })
-                        ] });
-                })];
-        },
-        enumInputProps: function (enumVals = [], ...rest) {
-            let props = {};
-            for (let i = 0; i < rest.length; i += 2)
-                props[rest[i]] = rest[i + 1];
-            return [enumVals.map(val => { return { 'children': { '0': props } }; })];
-        },
-        enumInputValue: function (enumVals = [], value, property = 'checked') {
-            value = commonLib_1.toArray(value);
-            return [enumVals.map(val => { return { 'children': { '0': { [property]: !!~value.indexOf(val) } } }; })];
-        },
+        iif(iif, trueVal, falseVaL, ...args) { return [iif ? trueVal : falseVaL, ...args]; },
+        not(v, ...args) { return [!v, ...args]; },
+        equal(a, ...args) { return [args.some(b => a === b)]; },
+        getArrayStart(...args) { return [stateLib_1.arrayStart(this.schemaPart), ...args]; },
+        getProp(key, ...args) { return [commonLib_1.getIn(this, stateLib_1.normalizePath(key)), ...args]; },
         eventValue: (event, ...args) => [event.target.value, ...args],
         eventChecked: (event, ...args) => [event.target.checked, ...args],
         eventMultiple: (event, ...args) => [Array.from(event.target.options).filter((o) => o.selected).map((v) => v.value), ...args],
-        parseNumber: (value, int = false, empty = null, ...rest) => [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...rest],
-        setValue: function (value, opts = {}) { this.api.setValue(value, opts); },
-        arrayAdd: function (path, value = 1, opts = {}) {
-            this.api.arrayAdd(path, value, opts);
+        parseNumber: (value, int = false, empty = null, ...args) => [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...args],
+        setValue(value, opts = {}, ...args) {
+            this.api.setValue(value, opts);
+            return args;
         },
-        arrayItemOps: function (path, key, opts = {}) { this.api.arrayItemOps(path, key, opts); },
-        focus: function (value) {
+        // arrayAdd(path: any, value: number = 1, opts: any = {}, ...args: any[]) {
+        //   this.api.arrayAdd(path, value, opts);
+        //   return args;
+        // },
+        // arrayItemOps(path: any, key: any, opts: any = {}, ...args: any[]) {
+        //   this.api.arrayItemOps(path, key, opts);
+        //   return args;
+        // },
+        focus(value, ...args) {
             this.api.set('/@/active', this.path, { noValidation: true });
-            //console.log('focus ', this.path);
+            return args;
         },
-        blur: function () {
+        blur(...args) {
             this.api.set('./', -1, { [stateLib_1.SymData]: ['status', 'untouched'], noValidation: true, macros: 'setStatus' });
             this.api.set('/@/active', undefined, { noValidation: true });
             this._updateCachedValue(true);
-            // console.log('blur ', this.path);
-            return [!this.liveValidate ? this.api.validate('./') : null]; // {execute: true}
+            !this.liveValidate && this.api.validate('./');
+            return args;
         },
-        updCached: function () {
+        updCached(...args) {
             this._forceUpd = true;
+            return args;
         },
-        eventCheckboxes: function (event) {
+        eventCheckboxes(event, ...args) {
             const selected = (this.getData().value || []).slice();
             const value = event.target.value;
             const at = selected.indexOf(value);
@@ -2247,12 +2218,50 @@ let elementsBase = {
                 updated.splice(at, 1);
             const all = this.getData().fData.enum;
             updated.sort((a, b) => all.indexOf(a) > all.indexOf(b));
-            return [updated];
+            return [updated, ...args];
         },
-        radioClear: function (value, nullValue = null) {
+        radioClear(value, nullValue = null, ...args) {
             if (this.api.getValue() === value)
                 this.api.setValue(nullValue);
-        }
+            return args;
+        },
+        messages(messages, staticProps = {}) {
+            const { className: cnSP = {} } = staticProps, restSP = __rest(staticProps, ["className"]);
+            return [commonLib_1.objKeys(messages).map(priority => {
+                    const _a = messages[priority], { norender, texts, className = {} } = _a, rest = __rest(_a, ["norender", "texts", "className"]);
+                    const children = [];
+                    commonLib_1.objKeys(texts).forEach((key) => commonLib_1.toArray(texts[key]).forEach((v, i, arr) => (commonLib_1.isString(v) && commonLib_1.isString(children[children.length - 1])) ? children.push(v, { _$widget: 'br' }) : children.push(v)));
+                    if (norender || !children.length)
+                        return null;
+                    return Object.assign({ children }, restSP, { className: Object.assign({ ['priority_' + priority]: true }, cnSP, className) }, rest);
+                })];
+        },
+        arrayOfEnum(enumVals, enumExten = {}, staticProps = {}, name) {
+            return [enumVals.map(val => {
+                    let extenProps = getExten(enumExten, val);
+                    return Object.assign({ value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)) }, extenProps, staticProps);
+                })];
+        },
+        enumInputs(enumVals = [], enumExten = {}, containerProps = {}, inputProps = {}, labelProps = {}, name) {
+            // inputProps = this.wrapFns(inputProps);
+            return [enumVals.map(val => {
+                    let extenProps = getExten(enumExten, val);
+                    return Object.assign({ key: val }, containerProps, { children: [
+                            Object.assign({ value: val, name: name && (this.props.name + (name === true ? '' : name)) }, commonLib_1.merge(inputProps, extenProps)),
+                            Object.assign({}, labelProps, { children: [extenProps.label || val] })
+                        ] });
+                })];
+        },
+        enumInputProps(enumVals = [], ...rest) {
+            let props = {};
+            for (let i = 0; i < rest.length; i += 2)
+                props[rest[i]] = rest[i + 1];
+            return [enumVals.map(val => { return { 'children': { '0': props } }; })];
+        },
+        enumInputValue(enumVals = [], value, property = 'checked') {
+            value = commonLib_1.toArray(value);
+            return [enumVals.map(val => { return { 'children': { '0': { [property]: !!~value.indexOf(val) } } }; })];
+        },
     },
     parts: {
         RadioSelector: {
@@ -2274,8 +2283,8 @@ let elementsBase = {
                                 _$widget: 'input',
                                 type: 'radio',
                                 onChange: { $: '^/fn/eventValue|setValue|updCached', args: ['${value}', { path: './@/selector/value' }] },
-                                onBlur: { $: '^/fn/blur' },
-                                onFocus: { $: '^/fn/focus' },
+                                onBlur: '^/sets/nBase/Main/onBlur',
+                                onFocus: '^/sets/nBase/Main/onFocus',
                             },
                             { _$useTag: 'span', _$cx: '^/_$cx', },
                             true
@@ -2325,7 +2334,7 @@ let elementsBase = {
         ArrayAddButton: {
             $_ref: '^/parts/Button',
             children: ['+'],
-            onClick: { $: '^/fn/arrayAdd', args: ['./'] },
+            onClick: { $: '^/fn/api', args: ['arrayAdd', './', 1] },
             $_maps: {
                 'className/hidden': { $: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array'] },
                 'disabled': { $: '^/fn/equal', args: [true, { $: '^/fn/not', args: '@/fData/canAdd' }, '@params/disabled'] }
@@ -2334,7 +2343,7 @@ let elementsBase = {
         ArrayDelButton: {
             $_ref: '^/parts/Button',
             children: ['-'],
-            onClick: { $: '^/fn/arrayAdd', args: ['./', -1] },
+            onClick: { $: '^/fn/api', args: ['arrayAdd', './', -1] },
             $_maps: {
                 'className/hidden': { $: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array'] },
                 'disabled': { $: '^/fn/equal', args: [true, { $: '^/fn/not', args: '@/length' }, '@params/disabled'] },
@@ -2349,7 +2358,7 @@ let elementsBase = {
             _$widget: '^/widgets/ItemMenu',
             _$cx: '^/_$cx',
             buttons: ['first', 'last', 'up', 'down', 'del'],
-            onClick: { $: '^/fn/arrayItemOps', args: ['./', '${value}'] },
+            onClick: { $: '^/fn/api', args: ['arrayItemOps', './', '${value}'] },
             buttonsProps: {
                 first: { disabledCheck: 'canUp' },
                 last: { disabledCheck: 'canDown' },
@@ -3119,12 +3128,19 @@ function updateDirtyPROC(state, UPDATABLE, inital, currentChanges, track = [], f
     if (!schemaPart || isSelfManaged(state, track)) { //direct compare
         let current = commonLib_1.getIn(state, SymData, 'current', track);
         let value = forceDirty || current !== inital ? 1 : -1;
-        let path = schemaPart ? track : track.slice(0, -1);
-        state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['status', 'dirty'], value, false, { macros: 'setStatus', }));
+        let path = track;
+        let keyPath = ['status', 'dirty'];
+        if (!schemaPart) {
+            path = path.slice();
+            keyPath.push(path.pop(), keyPath.pop());
+        }
+        state = updatePROC(state, UPDATABLE, makeNUpdate(path, keyPath, value, false, { macros: 'setStatus', }));
     }
     else {
         let keys = commonLib_1.objKeys(currentChanges || {});
         if (schemaPart.type == 'array') {
+            if (!~keys.indexOf('length'))
+                keys.push('length');
             let existKeys = branchKeys(commonLib_1.getIn(state, track));
             keys = keys.filter(k => isNaN(parseInt(k)) || ~existKeys.indexOf(k));
         }

@@ -148,13 +148,11 @@
                     "+string"
                   ],
                   "onClick": {
-                    "args": [
-                      "./",
-                      1,
-                      {
+                    "args": {
+                      "3": {
                         "setOneOf": 0
                       }
-                    ]
+                    }
                   }
                 },
                 {
@@ -163,13 +161,11 @@
                     "+number"
                   ],
                   "onClick": {
-                    "args": [
-                      "./",
-                      1,
-                      {
+                    "args": {
+                      "3": {
                         "setOneOf": 1
                       }
-                    ]
+                    }
                   }
                 },
                 {
@@ -178,13 +174,11 @@
                     "+boolean"
                   ],
                   "onClick": {
-                    "args": [
-                      "./",
-                      1,
-                      {
+                    "args": {
+                      "3": {
                         "setOneOf": 2
                       }
-                    ]
+                    }
                   }
                 },
                 {

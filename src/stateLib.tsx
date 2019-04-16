@@ -702,11 +702,17 @@ function updateDirtyPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, 
   if (!schemaPart || isSelfManaged(state, track)) { //direct compare
     let current = getIn(state, SymData, 'current', track);
     let value = forceDirty || current !== inital ? 1 : -1;
-    let path: Path = schemaPart ? track : track.slice(0, -1);
-    state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['status', 'dirty'], value, false, {macros: 'setStatus',}))
+    let path: Path = track;
+    let keyPath = ['status', 'dirty'];
+    if (!schemaPart) {
+      path = path.slice();
+      keyPath.push(path.pop(), keyPath.pop() as any);
+    }
+    state = updatePROC(state, UPDATABLE, makeNUpdate(path, keyPath, value, false, {macros: 'setStatus',}))
   } else {
     let keys = objKeys(currentChanges || {});
     if (schemaPart.type == 'array') {
+      if (!~keys.indexOf('length')) keys.push('length');
       let existKeys = branchKeys(getIn(state, track));
       keys = keys.filter(k => isNaN(parseInt(k)) || ~existKeys.indexOf(k))
     }
