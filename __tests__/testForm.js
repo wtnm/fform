@@ -1226,7 +1226,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.getValue().notExist).to.be.equal(notExist);
       });
 
-      it('test reset.clear ' + core.name, async function () {
+      it('test api.reset ' + core.name, async function () {
         core.reset({execute: true});
         expect(core.get('@/status/pristine')).to.be.equal(true);
         expect(core.get('0/@/status/pristine')).to.be.equal(true);

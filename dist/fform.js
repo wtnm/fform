@@ -3176,12 +3176,12 @@ function updateState(dispatch) {
         oldCurrent = commonLib_1.merge(oldCurrent, UPDATABLE.forceCheck);
         UPDATABLE.forceCheck = undefined;
     }
-    let currentChanges = commonLib_1.mergeState(oldCurrent, commonLib_1.getIn(state, SymData, 'current'), { diff: true }).changes;
-    if (prevState[SymData].inital !== state[SymData].inital) { // check dirty for all
-        state = updatePROC(state, UPDATABLE, makeNUpdate([], ['status', 'dirty'], 0, false, { macros: 'switch' })); //reset all dirty
-        state = setDirtyPROC(state, UPDATABLE, state[SymData].inital, state[SymData].current);
+    if (prevState[SymData].inital !== state[SymData].inital) { // check dirty for inital changes
+        let initalChanges = commonLib_1.mergeState(prevState[SymData].inital, state[SymData].inital, { diff: true }).changes;
+        state = updateDirtyPROC(state, UPDATABLE, state[SymData].inital, initalChanges);
     }
-    else if (currentChanges)
+    let currentChanges = commonLib_1.mergeState(oldCurrent, commonLib_1.getIn(state, SymData, 'current'), { diff: true }).changes;
+    if (currentChanges)
         state = updateDirtyPROC(state, UPDATABLE, state[SymData].inital, currentChanges); // check dirty only for changes
     state = setPristinePROC(state, UPDATABLE, state[SymData].inital);
     state = mergeUPD_PROC(state, UPDATABLE);
