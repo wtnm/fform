@@ -124,17 +124,17 @@
       "items": [
         {
           "type": "string",
-          "ff_presets": "string:noArrayControls"
+          "ff_presets": "string:$noArrayControls"
         },
         {
           "type": "string",
           "default": "some default",
-          "ff_presets": "string:noArrayControls"
+          "ff_presets": "string:$noArrayControls"
         },
         {
           "type": "array",
           "title": "Array of values",
-          "ff_presets": "array:noArrayControls",
+          "ff_presets": "array:$noArrayControls",
           "ff_custom": {
             "Title": {
               "style": {
@@ -231,7 +231,7 @@
             "oneOf": [
               {
                 "type": "string",
-                "ff_presets": "string:inlineTitle:inlineArrayControls",
+                "ff_presets": "string:$inlineTitle:$inlineArrayControls",
                 "default": "default"
               },
               {
@@ -239,12 +239,12 @@
                   "number",
                   "null"
                 ],
-                "ff_presets": "numberNull:inlineTitle:inlineArrayControls",
+                "ff_presets": "numberNull:$inlineTitle:$inlineArrayControls",
                 "default": null
               },
               {
                 "type": "boolean",
-                "ff_presets": "boolean:inlineTitle:inlineArrayControls",
+                "ff_presets": "boolean:$inlineTitle:$inlineArrayControls",
                 "default": false
               }
             ]
@@ -255,7 +255,7 @@
     "booleanLeft": {
       "type": "boolean",
       "title": "boolean left",
-      "ff_presets": "booleanLeft:inlineTitle",
+      "ff_presets": "booleanLeft:$inlineTitle",
       "default": false,
       "ff_enumExten": {
         "true": {
@@ -272,7 +272,7 @@
         "null"
       ],
       "title": "booleanNull left",
-      "ff_presets": "booleanNullLeft:inlineTitle",
+      "ff_presets": "booleanNullLeft:$inlineTitle",
       "default": false,
       "ff_dataMap": [
         {
@@ -291,12 +291,12 @@
         "option 3"
       ],
       "default": "option 2",
-      "ff_presets": "select:inlineTitle"
+      "ff_presets": "select:$inlineTitle"
     },
     "radioSelect": {
       "title": "Radio select",
       "type": "string",
-      "ff_presets": "radio:inlineItems:inlineTitle",
+      "ff_presets": "radio:$inlineItems:$inlineTitle",
       "enum": [
         "option 1",
         "option 2",
@@ -306,7 +306,7 @@
     },
     "checkboxSelect": {
       "title": "Checkbox select",
-      "ff_presets": "checkboxes:inlineItems:inlineTitle",
+      "ff_presets": "checkboxes:$inlineItems:$inlineTitle",
       "type": "array",
       "required": true,
       "ff_data": {
@@ -334,7 +334,7 @@
     },
     "autowidth": {
       "type": "number",
-      "ff_presets": "number:autowidth"
+      "ff_presets": "number:$autowidth"
     },
     "multiselect": {
       "title": "Multiselect",

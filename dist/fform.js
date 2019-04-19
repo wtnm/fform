@@ -2140,29 +2140,23 @@ let elementsBase = {
             }
         },
         checkboxes: { $_ref: '^/sets/radio', Main: { $_maps: { children: { '0': { args: { '3': { type: 'checkbox', onChange: { $: '^/fn/eventCheckboxes|setValue|updCached' } }, '5': '[]' } } } } } },
-        radioNull: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: '^/fn/eventValue|radioClear|updCached' } } } } } } },
-        radioEmpty: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: { $: '^/fn/eventValue|radioClear|updCached', args: ['${0}', ''] } } } } } } } },
-        hidden: {
-            Builder: {
-                className: { hidden: true },
-                $_maps: { 'className/hidden': false }
-            }
-        },
-        autowidth: {
+        $radioNull: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: '^/fn/eventValue|radioClear|updCached' } } } } } } },
+        $radioEmpty: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: { $: '^/fn/eventValue|radioClear|updCached', args: ['${0}', ''] } } } } } } } },
+        $autowidth: {
             Autowidth: { $_ref: '^/parts/Autowidth' },
             Wrapper: { className: { shrink: true } },
         },
-        noArrayControls: { Wrapper: { $_maps: { 'arrayItem': false } } },
-        noArrayButtons: { Title: { $_ref: '^/sets/nBase/Title' } },
-        inlineItems: { Main: { className: { 'inline': true } } },
-        inlineTitle: { Wrapper: { className: { 'inline': true } } },
-        inlineLayout: { Main: { LayoutDefaultClass: { 'inline': true } } },
-        inlineArrayControls: { Wrapper: { ArrayItemBody: { className: { 'inline': true } } } },
-        arrayControls3but: { Wrapper: { ArrayItemMenu: { buttons: ['up', 'down', 'del'], } } },
-        noTitle: { Title: false },
-        shrink: { Wrapper: { className: { 'shrink': true } } },
-        expand: { Wrapper: { className: { 'expand': true } } },
-        bnnDual: { Main: { children: { 0: { dual: true } } } }
+        $noArrayControls: { Wrapper: { $_maps: { 'arrayItem': false } } },
+        $noArrayButtons: { Title: { $_ref: '^/sets/nBase/Title' } },
+        $inlineItems: { Main: { className: { 'inline': true } } },
+        $inlineTitle: { Wrapper: { className: { 'inline': true } } },
+        $inlineLayout: { Main: { LayoutDefaultClass: { 'inline': true } } },
+        $inlineArrayControls: { Wrapper: { ArrayItemBody: { className: { 'inline': true } } } },
+        $arrayControls3but: { Wrapper: { ArrayItemMenu: { buttons: ['up', 'down', 'del'], } } },
+        $noTitle: { Title: false },
+        $shrink: { Wrapper: { className: { 'shrink': true } } },
+        $expand: { Wrapper: { className: { 'expand': true } } },
+        $password: { Main: { type: 'password' } }
     },
     fn: {
         api(fn, ...args) { this.api[fn](...args); },
