@@ -1441,7 +1441,8 @@ function normalizeArgs(args: any, wrapFn?: any) {
 }
 
 function normalizeFn(fn: any, opts: any = {}): { $: Function, args: any, [key: string]: any } {
-  let nFn: any = !isObject(fn) ? {$: fn} : {...fn};
+  const {wrapFn, ...restOpts} = opts;
+  let nFn: any = !isObject(fn) ? {$: fn, ...restOpts} : {...fn, ...restOpts};
   if (nFn.args) Object.assign(nFn, normalizeArgs(nFn.args, opts.wrapFn));
   else nFn.args = ['${0}'];
   return nFn

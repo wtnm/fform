@@ -532,7 +532,7 @@ function testRef(refRes, $_ref, track) {
         throw new Error('Reference "' + $_ref + '" leads to undefined object\'s property in path: ' + stateLib_1.path2string(track));
     return true;
 }
-function objectDerefer(_objects, obj2deref, track = []) {
+function objectDerefer(_elements, obj2deref, track = []) {
     if (!commonLib_1.isMergeable(obj2deref))
         return obj2deref;
     let { $_ref = '' } = obj2deref, restObj = __rest(obj2deref, ["$_ref"]);
@@ -544,20 +544,20 @@ function objectDerefer(_objects, obj2deref, track = []) {
         let path = stateLib_1.string2path($_ref[i]);
         if (path[0] !== '^')
             throw new Error('Can reffer only to ^');
-        let refRes = commonLib_1.getIn({ '^': _objects }, path);
+        let refRes = commonLib_1.getIn({ '^': _elements }, path);
         testRef(refRes, $_ref[i], track.concat('@' + i));
         if (commonLib_1.isMergeable(refRes))
-            refRes = objectDerefer(_objects, refRes, track.concat('@' + i));
+            refRes = objectDerefer(_elements, refRes, track.concat('@' + i));
         objs2merge.push(refRes);
     }
     let result = commonLib_1.isArray(obj2deref) ? [] : {};
     for (let i = 0; i < objs2merge.length; i++)
         result = commonLib_1.merge(result, objs2merge[i]);
-    return commonLib_1.merge(result, stateLib_1.objMap(restObj, objectDerefer.bind(null, _objects), track));
+    return commonLib_1.merge(result, stateLib_1.objMap(restObj, objectDerefer.bind(null, _elements), track));
     //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
 }
 exports.objectDerefer = objectDerefer;
-function objectResolver(_objects, obj2resolve, track = []) {
+function objectResolver(_elements, obj2resolve, track = []) {
     const convRef = (refs, prefix = '') => commonLib_1.deArray(refs.split('|').map((ref, i) => {
         ref = ref.trim();
         if (isRef(ref))
@@ -569,8 +569,8 @@ function objectResolver(_objects, obj2resolve, track = []) {
         return refRes;
     }));
     const isRef = (val) => val.substr(0, 2) == '^/';
-    const _objs = { '^': _objects };
-    const result = objectDerefer(_objects, obj2resolve);
+    const _objs = { '^': _elements };
+    const result = objectDerefer(_elements, obj2resolve);
     const retResult = commonLib_1.isArray(result) ? [] : {};
     commonLib_1.objKeys(result).forEach((key) => {
         let value = result[key];
@@ -580,7 +580,7 @@ function objectResolver(_objects, obj2resolve, track = []) {
                 value = { $: value };
         }
         if (key[0] !== '_' && commonLib_1.isMergeable(value))
-            retResult[key] = objectResolver(_objects, value, track.concat(key));
+            retResult[key] = objectResolver(_elements, value, track.concat(key));
         else
             retResult[key] = value;
     });
@@ -3869,7 +3869,8 @@ function normalizeArgs(args, wrapFn) {
 }
 exports.normalizeArgs = normalizeArgs;
 function normalizeFn(fn, opts = {}) {
-    let nFn = !commonLib_2.isObject(fn) ? { $: fn } : Object.assign({}, fn);
+    const { wrapFn } = opts, restOpts = __rest(opts, ["wrapFn"]);
+    let nFn = !commonLib_2.isObject(fn) ? Object.assign({ $: fn }, restOpts) : Object.assign({}, fn, restOpts);
     if (nFn.args)
         Object.assign(nFn, normalizeArgs(nFn.args, opts.wrapFn));
     else

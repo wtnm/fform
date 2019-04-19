@@ -483,7 +483,7 @@ function testRef(refRes: any, $_ref: string, track: string[]) {
   return true;
 }
 
-function objectDerefer(_objects: any, obj2deref: any, track: string[] = []) { // todo: test
+function objectDerefer(_elements: any, obj2deref: any, track: string[] = []) { // todo: test
   if (!isMergeable(obj2deref)) return obj2deref;
   let {$_ref = '', ...restObj} = obj2deref;
   $_ref = $_ref.split(':');
@@ -492,19 +492,19 @@ function objectDerefer(_objects: any, obj2deref: any, track: string[] = []) { //
     if (!$_ref[i]) continue;
     let path = string2path($_ref[i]);
     if (path[0] !== '^') throw new Error('Can reffer only to ^');
-    let refRes = getIn({'^': _objects}, path);
+    let refRes = getIn({'^': _elements}, path);
     testRef(refRes, $_ref[i], track.concat('@' + i));
-    if (isMergeable(refRes)) refRes = objectDerefer(_objects, refRes, track.concat('@' + i));
+    if (isMergeable(refRes)) refRes = objectDerefer(_elements, refRes, track.concat('@' + i));
     objs2merge.push(refRes);
   }
   let result = isArray(obj2deref) ? [] : {};
 
   for (let i = 0; i < objs2merge.length; i++) result = merge(result, objs2merge[i]);
-  return merge(result, objMap(restObj, objectDerefer.bind(null, _objects), track));
+  return merge(result, objMap(restObj, objectDerefer.bind(null, _elements), track));
   //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
 }
 
-function objectResolver(_objects: any, obj2resolve: any, track: string[] = []): any {
+function objectResolver(_elements: any, obj2resolve: any, track: string[] = []): any {
   const convRef = (refs: string, prefix = '') => deArray(refs.split('|').map((ref, i) => {
     ref = ref.trim();
     if (isRef(ref)) prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
@@ -514,8 +514,8 @@ function objectResolver(_objects: any, obj2resolve: any, track: string[] = []): 
     return refRes;
   }));
   const isRef = (val: string) => val.substr(0, 2) == '^/';
-  const _objs = {'^': _objects};
-  const result = objectDerefer(_objects, obj2resolve);
+  const _objs = {'^': _elements};
+  const result = objectDerefer(_elements, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
     let value = result[key];
@@ -524,7 +524,7 @@ function objectResolver(_objects: any, obj2resolve: any, track: string[] = []): 
       if (key !== '$' && key[0] !== '_' && (isFunction(value) || isArray(value) && value.every(isFunction)))
         value = {$: value}
     }
-    if (key[0] !== '_' && isMergeable(value)) retResult[key] = objectResolver(_objects, value, track.concat(key));
+    if (key[0] !== '_' && isMergeable(value)) retResult[key] = objectResolver(_elements, value, track.concat(key));
     else retResult[key] = value;
   });
 
