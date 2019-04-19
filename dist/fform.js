@@ -495,9 +495,10 @@ function schemaCompiler(elements = {}, schema) {
         return schema;
     let { ff_validators, ff_dataMap, ff_oneOfSelector } = schema, rest = __rest(schema, ["ff_validators", "ff_dataMap", "ff_oneOfSelector"]);
     const result = commonLib_1.isArray(schema) ? [] : { ff_compiled: true };
-    ff_validators && (result.ff_validators = commonLib_1.toArray(objectResolver(elements, ff_validators)).map(f => stateLib_1.normalizeFn(f)));
+    const nFnOpts = { noStrictArrayResult: true };
+    ff_validators && (result.ff_validators = commonLib_1.toArray(objectResolver(elements, ff_validators)).map(f => stateLib_1.normalizeFn(f, nFnOpts)));
     ff_dataMap && (result.ff_dataMap = objectResolver(elements, ff_dataMap));
-    ff_oneOfSelector && (result.ff_oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(ff_oneOfSelector)));
+    ff_oneOfSelector && (result.ff_oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(ff_oneOfSelector, nFnOpts)));
     //if (isFunction(result.ff_oneOfSelector)) result.ff_oneOfSelector = {$: result.ff_oneOfSelector};
     commonLib_1.objKeys(rest).forEach(key => {
         if (key.substr(0, 3) == 'ff_')
@@ -572,19 +573,16 @@ function objectResolver(_objects, obj2resolve, track = []) {
     const result = objectDerefer(_objects, obj2resolve);
     const retResult = commonLib_1.isArray(result) ? [] : {};
     commonLib_1.objKeys(result).forEach((key) => {
-        //const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '^/' ? convRef(result[key]) : result[key];
-        let resolvedValue = result[key];
-        if (commonLib_1.isString(resolvedValue) && isRef(resolvedValue.trim())) {
-            resolvedValue = convRef(resolvedValue);
-            if (key !== '$' && key[0] !== '_' && (commonLib_1.isFunction(resolvedValue) || commonLib_1.isArray(resolvedValue) && resolvedValue.every(commonLib_1.isFunction)))
-                resolvedValue = { $: resolvedValue };
+        let value = result[key];
+        if (commonLib_1.isString(value) && isRef(value.trim())) {
+            value = convRef(value);
+            if (key !== '$' && key[0] !== '_' && (commonLib_1.isFunction(value) || commonLib_1.isArray(value) && value.every(commonLib_1.isFunction)))
+                value = { $: value };
         }
-        if (key[0] == '_')
-            retResult[key] = resolvedValue; //do only resolve for keys that begins with _ 
-        else if (commonLib_1.isMergeable(resolvedValue))
-            retResult[key] = objectResolver(_objects, resolvedValue, track.concat(key));
+        if (key[0] !== '_' && commonLib_1.isMergeable(value))
+            retResult[key] = objectResolver(_objects, value, track.concat(key));
         else
-            retResult[key] = resolvedValue;
+            retResult[key] = value;
     });
     return retResult;
 }
@@ -1270,7 +1268,7 @@ class FField extends FRefsGeneric {
         if (commonLib_1.isFunction(val))
             val = { $: val };
         if (stateLib_1.isMapFn(val)) {
-            const map = val.norm ? val : stateLib_1.normalizeFn(val, self.wrapFns);
+            const map = val.norm ? val : stateLib_1.normalizeFn(val, { wrapFn: self.wrapFns });
             const fn = stateLib_1.processFn.bind(self, map);
             fn._map = map;
             return fn;
@@ -1898,7 +1896,7 @@ let elementsBase = {
     extend(elements, opts) {
         return commonLib_1.merge.all(this, elements, opts);
     },
-    types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
+    // types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
     widgets: {
         Section: FSection,
         Generic: GenericWidget,
@@ -2002,7 +2000,7 @@ let elementsBase = {
             $_ref: '^/sets/nBase',
             Main: {
                 type: 'number',
-                onChange: { $: '^/fn/eventValue|parseNumber|setValue', args: ['${value}', true, 0] },
+                onChange: { $: '^/fn/eventValue|parseNumber|setValue', args: ['${0}', true, 0] },
                 $_maps: {
                     value: { $: '^/fn/iif', args: [{ $: '^/fn/equal', args: ['@value', null] }, '', '@value'] },
                 }
@@ -2130,7 +2128,7 @@ let elementsBase = {
                                 '@/fData/enum',
                                 '@/fData/enumExten',
                                 { $_reactRef: { '$_reactRef': { '0': { 'ref': true } } } },
-                                { onChange: { args: [] } },
+                                { onChange: { args: ['${0}'] } },
                                 {},
                                 true
                             ],
@@ -2143,7 +2141,7 @@ let elementsBase = {
         },
         checkboxes: { $_ref: '^/sets/radio', Main: { $_maps: { children: { '0': { args: { '3': { type: 'checkbox', onChange: { $: '^/fn/eventCheckboxes|setValue|updCached' } }, '5': '[]' } } } } } },
         radioNull: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: '^/fn/eventValue|radioClear|updCached' } } } } } } },
-        radioEmpty: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: { $: '^/fn/eventValue|radioClear|updCached', args: ['${value}', ''] } } } } } } } },
+        radioEmpty: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: { $: '^/fn/eventValue|radioClear|updCached', args: ['${0}', ''] } } } } } } } },
         hidden: {
             Builder: {
                 className: { hidden: true },
@@ -2282,7 +2280,7 @@ let elementsBase = {
                             {
                                 _$widget: 'input',
                                 type: 'radio',
-                                onChange: { $: '^/fn/eventValue|setValue|updCached', args: ['${value}', { path: './@/selector/value' }] },
+                                onChange: { $: '^/fn/eventValue|setValue|updCached', args: ['${0}', { path: './@/selector/value' }] },
                                 onBlur: '^/sets/nBase/Main/onBlur',
                                 onFocus: '^/sets/nBase/Main/onFocus',
                             },
@@ -2358,7 +2356,7 @@ let elementsBase = {
             _$widget: '^/widgets/ItemMenu',
             _$cx: '^/_$cx',
             buttons: ['first', 'last', 'up', 'down', 'del'],
-            onClick: { $: '^/fn/api', args: ['arrayItemOps', './', '${value}'] },
+            onClick: { $: '^/fn/api', args: ['arrayItemOps', './', '${0}'] },
             buttonsProps: {
                 first: { disabledCheck: 'canUp' },
                 last: { disabledCheck: 'canDown' },
@@ -2828,7 +2826,7 @@ function makeStateBranch(schema, getNSetOneOf, path = [], value) {
     if (commonLib_2.isUndefined(currentOneOf)) {
         const ff_oneOfSelector = schemaPartsOneOf[currentOneOf || 0].ff_oneOfSelector;
         if (ff_oneOfSelector) {
-            let setOneOf = processFn.call({ path: path2string(path) }, ff_oneOfSelector, value, false);
+            let setOneOf = processFn.call({ path: path2string(path) }, ff_oneOfSelector, value);
             if (commonLib_2.isArray(setOneOf))
                 setOneOf = setOneOf[0];
             currentOneOf = setOneOf;
@@ -3008,7 +3006,7 @@ function makeValidation(state, dispatch, action) {
             ff_validators.forEach((validator) => {
                 const updates = [];
                 field.updates = updates;
-                let result = processFn.call(field, validator, validatedValue, false);
+                let result = processFn.call(field, validator, validatedValue);
                 if (result && result.then && typeof result.then === 'function') { //Promise
                     result.validatedValue = validatedValue;
                     result.path = track;
@@ -3254,7 +3252,7 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
         if (oneOfSelector) {
             //const field = makeSynthField(UPDATABLE.api, path2string(track));
             const ff_oneOfSelector = parts[currentOneOf].ff_oneOfSelector;
-            setOneOf = processFn.call({ path: path2string(track) }, ff_oneOfSelector, value, false);
+            setOneOf = processFn.call({ path: path2string(track) }, ff_oneOfSelector, value);
             if (commonLib_2.isArray(setOneOf))
                 setOneOf = setOneOf[0];
         }
@@ -3870,11 +3868,12 @@ function normalizeArgs(args, wrapFn) {
     return { dataRequest, args, norm: true };
 }
 exports.normalizeArgs = normalizeArgs;
-function normalizeFn(fn, wrapFn, dontAddValue) {
-    let nFn = !commonLib_2.isObject(fn) ? { $: fn } : fn;
-    nFn = Object.assign({}, nFn, normalizeArgs(nFn.args, wrapFn));
-    if (!nFn.args.length && !dontAddValue)
-        nFn.args = ['${value}'];
+function normalizeFn(fn, opts = {}) {
+    let nFn = !commonLib_2.isObject(fn) ? { $: fn } : Object.assign({}, fn);
+    if (nFn.args)
+        Object.assign(nFn, normalizeArgs(nFn.args, opts.wrapFn));
+    else
+        nFn.args = ['${0}'];
     return nFn;
 }
 exports.normalizeFn = normalizeFn;
@@ -3897,19 +3896,28 @@ function processProp(nextData, arg) {
     }
 }
 exports.processProp = processProp;
-function processFn(map, value, strictArrayResult = true) {
-    const processArg = (arg) => {
-        if (isNPath(arg))
-            return processProp(nextData, arg);
-        if (isMapFn(arg))
-            return !arg._map ? processFn.call(this, arg, value, strictArrayResult) : arg(value, strictArrayResult);
-        if (arg == '${value}')
-            return value;
-        return arg;
+function processFn(map, ...rest) {
+    const processArg = (args) => {
+        const resArgs = [];
+        for (let i = 0; i < args.length; i++) {
+            const arg = args[i];
+            if (isNPath(arg))
+                resArgs.push(processProp(nextData, arg));
+            else if (isMapFn(arg))
+                resArgs.push(!arg._map ? processFn.call(this, arg, ...rest) : arg(...rest));
+            else if (arg == '${...}')
+                resArgs.push(...rest);
+            else if (arg == '${0}')
+                resArgs.push(rest[0]);
+            else
+                resArgs.push(arg);
+        }
+        return resArgs;
     };
     const nextData = map.dataRequest ? this.getData() : null;
-    const res = commonLib_1.toArray(map.$).reduce((args, fn) => commonLib_2.isFunction(fn) ? (strictArrayResult ? testArray : commonLib_1.toArray)(fn.apply(this, args)) : args, (map.args || []).map(processArg));
-    return strictArrayResult ? testArray(res)[0] : commonLib_1.deArray(res);
+    const prArgs = processArg(map.args);
+    const res = commonLib_1.toArray(map.$).reduce((args, fn) => commonLib_2.isFunction(fn) ? (map.noStrictArrayResult ? commonLib_1.toArray : testArray)(fn.apply(this, args)) : args, prArgs);
+    return map.noStrictArrayResult ? commonLib_1.deArray(res) : testArray(res)[0];
 }
 exports.processFn = processFn;
 

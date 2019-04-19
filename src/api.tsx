@@ -446,10 +446,10 @@ function schemaCompiler(elements: elementsType = {}, schema: JsonSchema): jsJson
 
   let {ff_validators, ff_dataMap, ff_oneOfSelector, ...rest} = schema;
   const result: any = isArray(schema) ? [] : {ff_compiled: true};
-
-  ff_validators && (result.ff_validators = toArray(objectResolver(elements, ff_validators)).map(f => normalizeFn(f)));
+  const nFnOpts = {noStrictArrayResult: true};
+  ff_validators && (result.ff_validators = toArray(objectResolver(elements, ff_validators)).map(f => normalizeFn(f, nFnOpts)));
   ff_dataMap && (result.ff_dataMap = objectResolver(elements, ff_dataMap));
-  ff_oneOfSelector && (result.ff_oneOfSelector = objectResolver(elements, normalizeFn(ff_oneOfSelector)));
+  ff_oneOfSelector && (result.ff_oneOfSelector = objectResolver(elements, normalizeFn(ff_oneOfSelector, nFnOpts)));
   //if (isFunction(result.ff_oneOfSelector)) result.ff_oneOfSelector = {$: result.ff_oneOfSelector};
 
   objKeys(rest).forEach(key => {
@@ -504,7 +504,7 @@ function objectDerefer(_objects: any, obj2deref: any, track: string[] = []) { //
   //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
 }
 
-function objectResolver(_objects: any, obj2resolve: any, track: string[] = []): any { // todo: test
+function objectResolver(_objects: any, obj2resolve: any, track: string[] = []): any {
   const convRef = (refs: string, prefix = '') => deArray(refs.split('|').map((ref, i) => {
     ref = ref.trim();
     if (isRef(ref)) prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
@@ -518,16 +518,14 @@ function objectResolver(_objects: any, obj2resolve: any, track: string[] = []): 
   const result = objectDerefer(_objects, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
-    //const resolvedValue = isString(result[key]) && result[key].substr(0, 2) == '^/' ? convRef(result[key]) : result[key];
-    let resolvedValue = result[key];
-    if (isString(resolvedValue) && isRef(resolvedValue.trim())) {
-      resolvedValue = convRef(resolvedValue);
-      if (key !== '$' && key[0] !== '_' && (isFunction(resolvedValue) || isArray(resolvedValue) && resolvedValue.every(isFunction)))
-        resolvedValue = {$: resolvedValue}
+    let value = result[key];
+    if (isString(value) && isRef(value.trim())) {
+      value = convRef(value);
+      if (key !== '$' && key[0] !== '_' && (isFunction(value) || isArray(value) && value.every(isFunction)))
+        value = {$: value}
     }
-    if (key[0] == '_') retResult[key] = resolvedValue;  //do only resolve for keys that begins with _ 
-    else if (isMergeable(resolvedValue)) retResult[key] = objectResolver(_objects, resolvedValue, track.concat(key));
-    else retResult[key] = resolvedValue;
+    if (key[0] !== '_' && isMergeable(value)) retResult[key] = objectResolver(_objects, value, track.concat(key));
+    else retResult[key] = value;
   });
 
   return retResult

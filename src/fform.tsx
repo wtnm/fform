@@ -367,7 +367,7 @@ class FField extends FRefsGeneric {
     const self = this;
     if (isFunction(val)) val = {$: val};
     if (isMapFn(val)) {
-      const map = val.norm ? val : normalizeFn(val, self.wrapFns);
+      const map = val.norm ? val : normalizeFn(val, {wrapFn: self.wrapFns});
       const fn = processFn.bind(self, map);
       fn._map = map;
       return fn
@@ -1064,7 +1064,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
   extend(elements: any[], opts?: MergeStateOptionsArgument) {
     return merge.all(this, elements, opts)
   },
-  types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
+  // types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
   widgets: {
     Section: FSection,
     Generic: GenericWidget,
@@ -1168,7 +1168,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_ref: '^/sets/nBase',
       Main: {
         type: 'number',
-        onChange: {$: '^/fn/eventValue|parseNumber|setValue', args: ['${value}', true, 0]},
+        onChange: {$: '^/fn/eventValue|parseNumber|setValue', args: ['${0}', true, 0]},
         $_maps: {
           value: {$: '^/fn/iif', args: [{$: '^/fn/equal', args: ['@value', null]}, '', '@value']},
         }
@@ -1295,7 +1295,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
                 '@/fData/enum',
                 '@/fData/enumExten',
                 {$_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
-                {onChange: {args: []}},
+                {onChange: {args: ['${0}']}},
                 {},
                 true
               ],
@@ -1308,7 +1308,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     },
     checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue|updCached'}}, '5': '[]'}}}}}},
     radioNull: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: '^/fn/eventValue|radioClear|updCached'}}}}}}},
-    radioEmpty: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: {$: '^/fn/eventValue|radioClear|updCached', args: ['${value}', '']}}}}}}}},
+    radioEmpty: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: {$: '^/fn/eventValue|radioClear|updCached', args: ['${0}', '']}}}}}}}},
     hidden: {
       Builder: {
         className: {hidden: true},
@@ -1452,7 +1452,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
               {
                 _$widget: 'input',
                 type: 'radio',
-                onChange: {$: '^/fn/eventValue|setValue|updCached', args: ['${value}', {path: './@/selector/value'}]},
+                onChange: {$: '^/fn/eventValue|setValue|updCached', args: ['${0}', {path: './@/selector/value'}]},
                 onBlur: '^/sets/nBase/Main/onBlur',
                 onFocus: '^/sets/nBase/Main/onFocus',
               },
@@ -1528,7 +1528,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       _$widget: '^/widgets/ItemMenu',
       _$cx: '^/_$cx',
       buttons: ['first', 'last', 'up', 'down', 'del'],
-      onClick: {$: '^/fn/api', args: ['arrayItemOps', './', '${value}']},
+      onClick: {$: '^/fn/api', args: ['arrayItemOps', './', '${0}']},
       buttonsProps: {
         first: {disabledCheck: 'canUp'},
         last: {disabledCheck: 'canDown'},

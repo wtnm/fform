@@ -59,7 +59,7 @@
           "onChange": {
             "$": "^/fn/eventValue|setValue",
             "args": [
-              "${value}",
+              "${0}",
               {
                 "path": "./@/focusValue",
                 "execute": true

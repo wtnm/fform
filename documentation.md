@@ -325,9 +325,9 @@ As JSON format doesn't support js-code all function moved to [elements](#element
 - `ff_presets?: string`- presets for rendering components
 - `ff_managed?: boolean`- determine that value managed by component itself (for objects and arrays)
 - `ff_enumExten?: { [key: string]: undefined | string | object }`- enum extension. Keys taken from enum. String converts to object with property `{label}`
-- `ff_dataMap?: [string, string, string][]`- maps data in state. Array of turples of 2 or 3 elems where: 0 - path from value taken, 1 - path to value placed, and 2 - [refs to elements](#object-refs) that process value on mapping.
-- `ff_validators?: string[]`- [sync/async validators](#validation) as array of [refs to elements](#object-refs). Each function receive field value as first parameter on field value change.
-- `ff_oneOfSelector: string` - function that receive value to determine which oneOf schema select.
+- `ff_dataMap?: Array<{from: string, to:string, $?:string, args?:'string'}>`- maps data in state. Array of objects with 2-4 properties where: `from` - path from where value is taken, `to` - path to where value is placed, `$` and `args` - [data processor](#data-event-processors) that process value when mapping.
+- `ff_validators?: Array<string | DataProcessor>`- [sync/async validators](#validation) as array of  [data processor](#data-event-processors). Each data processor receive field value as first parameter on value change. Only last function in [data processor](#data-event-processors) can be async.
+- `ff_oneOfSelector: string | DataProcessor` -  [data processor](#data-event-processors) that receive value to determine which oneOf schema should be choosen.
 - `ff_custom?: FFCustomizeType`- component [customization](#customization)
 - `ff_layout?: FFLayoutCustomizeType` - fields, objects, groups in [object/turple layout](#object-layout)
 
@@ -433,11 +433,11 @@ Object that has `$` propery threaten as data processor. It has following propert
 - `$: string` - link (with leading `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/equal|^/fn/not`.
 - `replace?: boolean` - if `true` the result will be replaced, otherwise merged.
 - `args?: any[]` - arguments passed to function. Has several replacements:
-	- `${value}` - replaced with value that function receive. 
-	 	- `ff_dataMaps` value according to `from` path
-	 	- `ff_validators` and `ff_oneOfSelector` form current value according to schema path 
-	 	- `Elements.$_map` undefined
-	 	- `Elements.onEvent`  event on call
+	- `${<number>}` - replaced with value that data processor receive according to number. If `${...}` passed then all values send to function input. Depending on the place where data proceeor is used it receive different values:
+	 	- at `ff_dataMaps` - value is taken according to `from` property
+	 	- at `ff_validators` and `ff_oneOfSelector` receive form current value according to schema path 
+	 	- at `Elements.$_map` receive no values
+	 	- at `Elements.onEvent` receive event
 	- Args that starts with `@` replaced with [data object](data-object) value according to [path](#path). Example: `@/value`
 		- Args starts with `!` negated (`!!` negated twice). Example: `!@/value`
 - `update?: 'build' | 'data' | 'every'` - for `$_maps` functions. Determines when it executes. 
@@ -460,7 +460,7 @@ Classes that are used in [elements](#elements):
 `shrink` - to shrink an element
 `expand` - to expand an element
 
-ClassNames that can be apllied to [elements](#elements) can be found in `addons/styles.json` 
+More classNames that can be apllied to [elements](#elements) can be found in `addons/styles.json` 
 
 ## SSR
 

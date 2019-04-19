@@ -1,6 +1,7 @@
 import {getCreateIn, setIn, hasIn, getIn, objKeys, moveArrayElems, makeSlice, memoize, merge, objKeysNSymb, push2array, toArray, deArray, mergeState} from "./commonLib";
 import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction} from "./commonLib";
 import {anSetState} from './api';
+import {object} from "prop-types";
 
 /////////////////////////////////////////////
 //  Symbols
@@ -412,7 +413,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   if (isUndefined(currentOneOf)) {
     const ff_oneOfSelector = schemaPartsOneOf[currentOneOf || 0].ff_oneOfSelector;
     if (ff_oneOfSelector) {
-      let setOneOf = processFn.call({path: path2string(path)}, ff_oneOfSelector, value, false);
+      let setOneOf = processFn.call({path: path2string(path)}, ff_oneOfSelector, value);
       if (isArray(setOneOf)) setOneOf = setOneOf[0];
       currentOneOf = setOneOf;
       //schemaPart = schemaPartsOneOf[oneOf];
@@ -590,7 +591,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
       ff_validators.forEach((validator: any) => {
         const updates: any[] = [];
         field.updates = updates;
-        let result = processFn.call(field, validator, validatedValue, false);
+        let result = processFn.call(field, validator, validatedValue);
         if (result && result.then && typeof result.then === 'function') { //Promise
           result.validatedValue = validatedValue;
           result.path = track;
@@ -834,7 +835,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     if (oneOfSelector) {
       //const field = makeSynthField(UPDATABLE.api, path2string(track));
       const ff_oneOfSelector = parts[currentOneOf].ff_oneOfSelector;
-      setOneOf = processFn.call({path: path2string(track)}, ff_oneOfSelector, value, false);
+      setOneOf = processFn.call({path: path2string(track)}, ff_oneOfSelector, value);
       if (isArray(setOneOf)) setOneOf = setOneOf[0];
     }
 
@@ -1439,10 +1440,10 @@ function normalizeArgs(args: any, wrapFn?: any) {
   return {dataRequest, args, norm: true}
 }
 
-function normalizeFn(fn: any, wrapFn?: Function, dontAddValue?: boolean): { $: Function, args: any, [key: string]: any } {
-  let nFn: any = !isObject(fn) ? {$: fn} : fn;
-  nFn = {...nFn, ...normalizeArgs(nFn.args, wrapFn)};
-  if (!nFn.args.length && !dontAddValue) nFn.args = ['${value}'];
+function normalizeFn(fn: any, opts: any = {}): { $: Function, args: any, [key: string]: any } {
+  let nFn: any = !isObject(fn) ? {$: fn} : {...fn};
+  if (nFn.args) Object.assign(nFn, normalizeArgs(nFn.args, opts.wrapFn));
+  else nFn.args = ['${0}'];
   return nFn
 }
 
@@ -1464,19 +1465,26 @@ function processProp(nextData: any, arg: any) {
   }
 }
 
-function processFn(map: any, value: any, strictArrayResult = true) {
-  const processArg = (arg: any) => {
-    if (isNPath(arg)) return processProp(nextData, arg);
-    if (isMapFn(arg)) return !arg._map ? processFn.call(this, arg, value, strictArrayResult) : arg(value, strictArrayResult);
-    if (arg == '${value}') return value;
-    return arg;
+function processFn(map: any, ...rest: any[]) {
+  const processArg = (args: any[]) => {
+    const resArgs: any[] = [];
+    for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
+      if (isNPath(arg)) resArgs.push(processProp(nextData, arg));
+      else if (isMapFn(arg)) resArgs.push(!arg._map ? processFn.call(this, arg, ...rest) : arg(...rest));
+      else if (arg == '${...}') resArgs.push(...rest);
+      else if (arg == '${0}') resArgs.push(rest[0]);
+      else resArgs.push(arg);
+    }
+    return resArgs;
   };
   const nextData = map.dataRequest ? this.getData() : null;
-  const res = toArray(map.$).reduce((args, fn) =>
-      isFunction(fn) ? (strictArrayResult ? testArray : toArray)(
-        fn.apply(this, args)) : args,
-    (map.args || []).map(processArg));
-  return strictArrayResult ? testArray(res)[0] : deArray(res);
+  const prArgs = processArg(map.args);
+  const res = toArray(map.$).reduce(
+    (args, fn) => isFunction(fn) ? (map.noStrictArrayResult ? toArray : testArray)(fn.apply(this, args)) : args,
+    prArgs
+  );
+  return map.noStrictArrayResult ? deArray(res) : testArray(res)[0];
 }
 
 
