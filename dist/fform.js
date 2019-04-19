@@ -2666,7 +2666,7 @@ const additionalItemsSchema = commonLib_1.memoize(function (items) {
         oneOf: items,
         ff_oneOfSelector: normalizeFn(function () {
             return string2path(this.path).pop() % items.length;
-        })
+        }, { noStrictArrayResult: true })
     };
 });
 function getSchemaPart(schema, path, getOneOf, fullOneOf) {

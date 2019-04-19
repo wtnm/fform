@@ -269,7 +269,7 @@ const additionalItemsSchema = memoize(function (items: jsJsonSchema[]): jsJsonSc
     oneOf: items,
     ff_oneOfSelector: normalizeFn(function () {
       return string2path(this.path).pop() % items.length;
-    })
+    }, {noStrictArrayResult: true})
   }
 });
 
