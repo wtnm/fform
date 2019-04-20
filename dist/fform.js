@@ -988,6 +988,8 @@ exports.formReducer = api_1.formReducer;
 class FForm extends react_1.Component {
     constructor(props, context) {
         super(props, context);
+        this._methods = { onSubmit: null, onChange: null, onStateChange: null };
+        this.wrapFns = bindProcessorToThis;
         const self = this;
         let { core: coreParams } = props;
         self.api = coreParams instanceof api_1.FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
@@ -1000,8 +1002,8 @@ class FForm extends react_1.Component {
             if (!commonLib_1.isUndefined(nextProps[k]))
                 nextProps[k] = (v) => commonLib_1.isUndefined(v) ? props[k] : v;
         });
+        self._updateMethods(props);
         self._updateValues(nextProps);
-        // self.api.reset({status: 'untouched'});
         if (!props.noValidation)
             self.api.validate(true);
         self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
@@ -1010,6 +1012,15 @@ class FForm extends react_1.Component {
         self._getPath = self._getPath.bind(self);
         Object.defineProperty(self, "elements", { get: () => self.api.props.elements });
         Object.defineProperty(self, "valid", { get: () => self.api.get('/@/status/valid') });
+    }
+    _updateMethods(nextProps, prevProps = {}) {
+        const self = this;
+        const newMethods = {};
+        commonLib_1.objKeys(self._methods).forEach(key => {
+            if (prevProps[key] !== nextProps[key])
+                newMethods[key] = nextProps[key];
+        });
+        Object.assign(self._methods, self.wrapFns(newMethods));
     }
     _setRef(FField) {
         this._root = FField;
@@ -1035,12 +1046,12 @@ class FForm extends react_1.Component {
         if (self._savedState == state)
             return;
         self._savedState = state;
-        if (self.props.onStateChange)
-            self.props.onStateChange(state, self);
+        if (self._methods.onStateChange)
+            self._methods.onStateChange(state, self);
         if (state[stateLib_1.SymData].current !== self._savedValue) {
             self._savedValue = state[stateLib_1.SymData].current;
-            if (self.props.onChange)
-                self.props.onChange(self._savedValue, self);
+            if (self._methods.onChange)
+                self._methods.onChange(self._savedValue, self);
         }
         if (self._root)
             self._root.setState({ branch: state });
@@ -1049,9 +1060,9 @@ class FForm extends react_1.Component {
         const self = this;
         const setPending = (val) => self.api.set([], val, { [stateLib_1.SymData]: ['status', 'pending'] });
         self.api.set([], 0, { [stateLib_1.SymData]: ['status', 'untouched'], execute: true, macros: 'switch' });
-        if (self.props.onSubmit) {
+        if (self._methods.onSubmit) {
             self.api.setMessages(null, { execute: true });
-            let result = self.props.onSubmit(event, self._savedValue, self);
+            let result = self._methods.onSubmit(event, self._savedValue, self);
             if (result && result.then && typeof result.then === 'function') { //Promise
                 setPending(1);
                 result.then((val) => {
@@ -1083,6 +1094,7 @@ class FForm extends react_1.Component {
             self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
             FFrormApiUpdate = true;
         }
+        self._updateMethods(nextProps, self.props);
         self._updateValues(nextProps, self.props);
         return FFrormApiUpdate || !commonLib_1.isEqual(self.props, nextProps, { skipKeys: ['core', 'state', 'value', 'inital', 'extData', 'fieldCache', 'flatten', 'noValidate', 'parent', 'onSubmit', 'onChange', 'onStateChange'] });
     }
@@ -1165,6 +1177,7 @@ class FField extends FRefsGeneric {
         this._maps = {};
         this._forceUpd = false;
         this.get = null;
+        this.wrapFns = bindProcessorToThis;
         const self = this;
         Object.defineProperty(self, "path", { get: () => self.props.getPath() });
         Object.defineProperty(self, "pFForm", { get: () => self.props.pFForm });
@@ -1175,7 +1188,6 @@ class FField extends FRefsGeneric {
         self.state = { branch: self.pFForm.getBranch(self.path) };
         self.$branch = self.state.branch;
         self._updateStateApi(props.pFForm.api);
-        self.wrapFns = self.wrapFns.bind(self);
     }
     getRef(path) {
         path = stateLib_1.normalizePath(path);
@@ -1262,23 +1274,6 @@ class FField extends FRefsGeneric {
             return true;
         }
         return;
-    }
-    wrapFns(val) {
-        const self = this;
-        if (commonLib_1.isFunction(val))
-            val = { $: val };
-        if (stateLib_1.isMapFn(val)) {
-            const map = val.norm ? val : stateLib_1.normalizeFn(val, { wrapFn: self.wrapFns });
-            const fn = stateLib_1.processFn.bind(self, map);
-            fn._map = map;
-            return fn;
-        }
-        else if (commonLib_1.isMergeable(val)) {
-            const result = commonLib_1.isArray(val) ? [] : {};
-            commonLib_1.objKeys(val).forEach(key => result[key] = key[0] != '_' ? self.wrapFns(val[key]) : val[key]); //!~ignore.indexOf(key) &&
-            return result;
-        }
-        return val;
     }
     _build() {
         const self = this;
@@ -1766,6 +1761,24 @@ function CheckboxNull(props) {
 ///////////////////////////////
 //     Functions
 ///////////////////////////////
+function bindProcessorToThis(val) {
+    const self = this;
+    const bindedFn = bindProcessorToThis.bind(self);
+    if (commonLib_1.isFunction(val))
+        val = { $: val };
+    if (stateLib_1.isMapFn(val)) {
+        const map = val.norm ? val : stateLib_1.normalizeFn(val, { wrapFn: bindedFn });
+        const fn = stateLib_1.processFn.bind(self, map);
+        fn._map = map;
+        return fn;
+    }
+    else if (commonLib_1.isMergeable(val)) {
+        const result = commonLib_1.isArray(val) ? [] : {};
+        commonLib_1.objKeys(val).forEach(key => result[key] = key[0] != '_' ? bindedFn(val[key]) : val[key]); //!~ignore.indexOf(key) &&
+        return result;
+    }
+    return val;
+}
 function passCx(Widget) {
     return Widget instanceof GenericWidget;
 }
