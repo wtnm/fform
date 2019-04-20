@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="elements.sets changes">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="added data processors to fform methods">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js.map" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/fform.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/fform.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
@@ -39,7 +37,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sample/sampleSchema.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
+            <state relative-caret-position="6280">
               <caret line="314" column="23" selection-start-line="314" selection-start-column="23" selection-end-line="314" selection-end-column="23" />
             </state>
           </provider>
@@ -102,8 +100,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/fform.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="214">
-              <caret line="123" selection-start-line="123" selection-end-line="123" />
+            <state relative-caret-position="369">
+              <caret line="94" column="3" lean-forward="true" selection-start-line="94" selection-start-column="3" selection-end-line="94" selection-end-column="3" />
             </state>
           </provider>
         </entry>
@@ -1275,14 +1273,8 @@
       <workItem from="1555392640540" duration="9345000" />
       <workItem from="1555485452914" duration="340000" />
       <workItem from="1555643008042" duration="13079000" />
-      <workItem from="1555745564419" duration="2229000" />
-    </task>
-    <task id="LOCAL-00089" summary="fixes">
-      <created>1552079249647</created>
-      <option name="number" value="00089" />
-      <option name="presentableId" value="LOCAL-00089" />
-      <option name="project" value="LOCAL" />
-      <updated>1552079249648</updated>
+      <workItem from="1555745564419" duration="2316000" />
+      <workItem from="1555769824704" duration="71000" />
     </task>
     <task id="LOCAL-00090" summary="fixes">
       <created>1552145982315</created>
@@ -1620,13 +1612,17 @@
       <option name="project" value="LOCAL" />
       <updated>1555679495738</updated>
     </task>
-    <option name="localTasksCounter" value="138" />
+    <task id="LOCAL-00138" summary="added data processors to fform methods">
+      <created>1555769611972</created>
+      <option name="number" value="00138" />
+      <option name="presentableId" value="LOCAL-00138" />
+      <option name="project" value="LOCAL" />
+      <updated>1555769611973</updated>
+    </task>
+    <option name="localTasksCounter" value="139" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="testCore - 2019.04.19 at 08h 02m 30s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
     <history-entry file="testCore - 2019.04.19 at 12h 17m 40s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
@@ -1654,9 +1650,12 @@
     <history-entry file="testCore - 2019.04.19 at 12h 25m 11s.xml">
       <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
     </history-entry>
+    <history-entry file="testCore - 2019.04.20 at 17h 13m 00s.xml">
+      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3568292000" />
+    <option name="totallyTimeSpent" value="3568450000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1672,16 +1671,16 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.5964215" visible="true" weight="0.15898252" />
-      <window_info active="true" id="Structure" order="2" sideWeight="0.40357852" side_tool="true" visible="true" weight="0.10704823" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.5936255" visible="true" weight="0.15792263" />
+      <window_info active="true" id="Structure" order="2" sideWeight="0.4063745" side_tool="true" visible="true" weight="0.107578166" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.40354767" side_tool="true" weight="0.095919445" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
-      <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.51074153" side_tool="true" weight="0.32601157" />
+      <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.51228327" side_tool="true" weight="0.27745664" />
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="DB Execution Console" order="3" />
       <window_info anchor="bottom" id="Terminal" order="4" sideWeight="0.4892585" weight="0.32485548" />
-      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48746517" visible="true" weight="0.27745664" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48771676" visible="true" weight="0.22543353" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.24624278" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" weight="0.38265896" />
@@ -1707,7 +1706,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="tests for oneOf" />
     <MESSAGE value="more tests" />
     <MESSAGE value="dataMaps &amp; validators rework" />
     <MESSAGE value="preparation for testing with react and preact" />
@@ -1732,7 +1730,8 @@
     <MESSAGE value="docs edit" />
     <MESSAGE value="processFn reworked" />
     <MESSAGE value="elements.sets changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="elements.sets changes" />
+    <MESSAGE value="added data processors to fform methods" />
+    <option name="LAST_COMMIT_MESSAGE" value="added data processors to fform methods" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2077,6 +2076,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/sample/sampleSchema.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6280">
+          <caret line="314" column="23" selection-start-line="314" selection-start-column="23" selection-end-line="314" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/addons/styles.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1360">
@@ -2126,17 +2132,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sample/sampleSchema.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="314" column="23" selection-start-line="314" selection-start-column="23" selection-end-line="314" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/fform.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="214">
-          <caret line="123" selection-start-line="123" selection-end-line="123" />
+        <state relative-caret-position="369">
+          <caret line="94" column="3" lean-forward="true" selection-start-line="94" selection-start-column="3" selection-end-line="94" selection-end-column="3" />
         </state>
       </provider>
     </entry>

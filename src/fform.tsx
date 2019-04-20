@@ -91,7 +91,7 @@ class FForm extends Component<any, any> {
     objKeys(self._methods).forEach(key => {
       if (prevProps[key] !== nextProps[key]) newMethods[key] = nextProps[key]
     });
-    Object.assign(self._methods, self.wrapFns(newMethods))
+    Object.assign(self._methods, self.wrapFns(objectResolver(self.elements, newMethods)))
   }
 
   private _setRef(FField: any) {
