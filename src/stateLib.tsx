@@ -1004,7 +1004,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
         let elemPath = path.concat(i);
         push2array(maps2disable, getIn(state, elemPath, SymDataMapTree, SymData) || []);
         ['invalid', 'dirty', 'untouched', 'pending'].forEach(key => {
-          let statusValue = getUpdValue([update, state], path, SymData, 'status', key);
+          let statusValue = getUpdValue([update, state], elemPath, SymData, 'status', key);
           if (statusValue) state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', key], -1));
         });
         setUPDATABLE(UPDATABLE, SymDelete, true, elemPath);
@@ -1444,7 +1444,7 @@ function normalizeFn(fn: any, opts: any = {}): { $: Function, args: any, [key: s
   const {wrapFn, ...restOpts} = opts;
   let nFn: any = !isObject(fn) ? {$: fn, ...restOpts} : {...fn, ...restOpts};
   if (nFn.args) Object.assign(nFn, normalizeArgs(nFn.args, opts.wrapFn));
-  else nFn.args = ['${0}'];
+  else nFn.args = ['${...}'];
   return nFn
 }
 

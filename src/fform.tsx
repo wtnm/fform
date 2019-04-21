@@ -66,6 +66,10 @@ class FForm extends Component<any, any> {
     let {core: coreParams} = props;
 
     self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
+
+    Object.defineProperty(self, "elements", {get: () => self.api.props.elements});
+    Object.defineProperty(self, "valid", {get: () => self.api.get('/@/status/valid')});
+
     self.parent = props.parent;
     // self.focus = self.focus.bind(self);
     const nextProps = {...props};
@@ -80,8 +84,7 @@ class FForm extends Component<any, any> {
     self._setRef = self._setRef.bind(self);
     self._submit = self._submit.bind(self);
     self._getPath = self._getPath.bind(self);
-    Object.defineProperty(self, "elements", {get: () => self.api.props.elements});
-    Object.defineProperty(self, "valid", {get: () => self.api.get('/@/status/valid')});
+
 
   }
 
@@ -91,7 +94,7 @@ class FForm extends Component<any, any> {
     objKeys(self._methods).forEach(key => {
       if (prevProps[key] !== nextProps[key]) newMethods[key] = nextProps[key]
     });
-    Object.assign(self._methods, self.wrapFns(objectResolver(self.elements, newMethods)))
+    Object.assign(self._methods, self.wrapFns(objectResolver(self.elements, newMethods), {noStrictArrayResult: true}))
   }
 
   private _setRef(FField: any) {
@@ -929,18 +932,18 @@ function CheckboxNull(props: any) {
 //     Functions
 ///////////////////////////////
 
-function bindProcessorToThis(val: any) {
+function bindProcessorToThis(val: any, opts: anyObject = {}) {
   const self = this;
   const bindedFn = bindProcessorToThis.bind(self);
   if (isFunction(val)) val = {$: val};
   if (isMapFn(val)) {
-    const map = val.norm ? val : normalizeFn(val, {wrapFn: bindedFn});
+    const map = val.norm ? val : normalizeFn(val, {...opts, wrapFn: bindedFn});
     const fn = processFn.bind(self, map);
     fn._map = map;
     return fn
   } else if (isMergeable(val)) {
     const result = isArray(val) ? [] : {};
-    objKeys(val).forEach(key => result[key] = key[0] != '_' ? bindedFn(val[key]) : val[key]); //!~ignore.indexOf(key) &&
+    objKeys(val).forEach(key => result[key] = key[0] != '_' ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
     return result
   }
   return val
@@ -1229,7 +1232,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         _$useTag: '^/widgets/CheckboxNull',
         $_reactRef: {tagRef: true},
-        onChange: {$: '^/fn/setValue|updCached'},
+        onChange: {$: '^/fn/setValue|updCached', args: ['${0}']},
       },
     },
     booleanNullLeft: {
@@ -1362,14 +1365,6 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       this.api.setValue(value, opts);
       return args;
     },
-    // arrayAdd(path: any, value: number = 1, opts: any = {}, ...args: any[]) {
-    //   this.api.arrayAdd(path, value, opts);
-    //   return args;
-    // },
-    // arrayItemOps(path: any, key: any, opts: any = {}, ...args: any[]) {
-    //   this.api.arrayItemOps(path, key, opts);
-    //   return args;
-    // },
     focus(value: any, ...args: any[]) {
       this.api.set('/@/active', this.path, {noValidation: true});
       return args;

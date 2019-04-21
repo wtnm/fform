@@ -430,17 +430,17 @@ Each field in form receive a set of objects that is parts of elements (due to 'f
 
 #### Data, event processors
 Object that has `$` propery threaten as data processor. It has following properties:
-- `$: string` - link (with leading `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/equal|^/fn/not`.
+- `$: string` - link (with leading `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/first | ^/fn/second`. Output from first function send to second.
 - `replace?: boolean` - if `true` the result will be replaced, otherwise merged.
-- `args?: any[]` - arguments passed to function. Has several replacements:
-	- `${<number>}` - replaced with value that data processor receive according to number. If `${...}` passed then all values send to function input. Depending on the place where data proceeor is used it receive different values:
+- `args?: any[]` - arguments passed to very first function in `$`. Default `${...}`. Has several replacements:
+	- `${<number>}` - replaced with value that data processor receive according to number. If `${...}` passed then all values send to input. Depending on the place where data proceeor is used it receive different values:
 	 	- at `ff_dataMaps` - value is taken according to `from` property
 	 	- at `ff_validators` and `ff_oneOfSelector` receive form current value according to schema path 
 	 	- at `Elements.$_map` receive no values
 	 	- at `Elements.onEvent` receive event
 	- Args that starts with `@` replaced with [data object](data-object) value according to [path](#path). Example: `@/value`
 		- Args starts with `!` negated (`!!` negated twice). Example: `!@/value`
-- `update?: 'build' | 'data' | 'every'` - for `$_maps` functions. Determines when it executes. 
+- `update?: 'build' | 'data' | 'every'` - for `$_maps` processors. Determines when it executes. 
 	- `build` - on component build/rebuild
 	- `data` - on [data object](data-object)
 	- `update, `every` - on each update

@@ -993,6 +993,8 @@ class FForm extends react_1.Component {
         const self = this;
         let { core: coreParams } = props;
         self.api = coreParams instanceof api_1.FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
+        Object.defineProperty(self, "elements", { get: () => self.api.props.elements });
+        Object.defineProperty(self, "valid", { get: () => self.api.get('/@/status/valid') });
         self.parent = props.parent;
         // self.focus = self.focus.bind(self);
         const nextProps = Object.assign({}, props);
@@ -1010,8 +1012,6 @@ class FForm extends react_1.Component {
         self._setRef = self._setRef.bind(self);
         self._submit = self._submit.bind(self);
         self._getPath = self._getPath.bind(self);
-        Object.defineProperty(self, "elements", { get: () => self.api.props.elements });
-        Object.defineProperty(self, "valid", { get: () => self.api.get('/@/status/valid') });
     }
     _updateMethods(nextProps, prevProps = {}) {
         const self = this;
@@ -1020,7 +1020,7 @@ class FForm extends react_1.Component {
             if (prevProps[key] !== nextProps[key])
                 newMethods[key] = nextProps[key];
         });
-        Object.assign(self._methods, self.wrapFns(newMethods));
+        Object.assign(self._methods, self.wrapFns(api_1.objectResolver(self.elements, newMethods), { noStrictArrayResult: true }));
     }
     _setRef(FField) {
         this._root = FField;
@@ -1761,20 +1761,20 @@ function CheckboxNull(props) {
 ///////////////////////////////
 //     Functions
 ///////////////////////////////
-function bindProcessorToThis(val) {
+function bindProcessorToThis(val, opts = {}) {
     const self = this;
     const bindedFn = bindProcessorToThis.bind(self);
     if (commonLib_1.isFunction(val))
         val = { $: val };
     if (stateLib_1.isMapFn(val)) {
-        const map = val.norm ? val : stateLib_1.normalizeFn(val, { wrapFn: bindedFn });
+        const map = val.norm ? val : stateLib_1.normalizeFn(val, Object.assign({}, opts, { wrapFn: bindedFn }));
         const fn = stateLib_1.processFn.bind(self, map);
         fn._map = map;
         return fn;
     }
     else if (commonLib_1.isMergeable(val)) {
         const result = commonLib_1.isArray(val) ? [] : {};
-        commonLib_1.objKeys(val).forEach(key => result[key] = key[0] != '_' ? bindedFn(val[key]) : val[key]); //!~ignore.indexOf(key) &&
+        commonLib_1.objKeys(val).forEach(key => result[key] = key[0] != '_' ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
         return result;
     }
     return val;
@@ -2060,7 +2060,7 @@ let elementsBase = {
             Main: {
                 _$useTag: '^/widgets/CheckboxNull',
                 $_reactRef: { tagRef: true },
-                onChange: { $: '^/fn/setValue|updCached' },
+                onChange: { $: '^/fn/setValue|updCached', args: ['${0}'] },
             },
         },
         booleanNullLeft: {
@@ -2189,14 +2189,6 @@ let elementsBase = {
             this.api.setValue(value, opts);
             return args;
         },
-        // arrayAdd(path: any, value: number = 1, opts: any = {}, ...args: any[]) {
-        //   this.api.arrayAdd(path, value, opts);
-        //   return args;
-        // },
-        // arrayItemOps(path: any, key: any, opts: any = {}, ...args: any[]) {
-        //   this.api.arrayItemOps(path, key, opts);
-        //   return args;
-        // },
         focus(value, ...args) {
             this.api.set('/@/active', this.path, { noValidation: true });
             return args;
@@ -3434,7 +3426,7 @@ function updatePROC(state, UPDATABLE, item) {
                 let elemPath = path.concat(i);
                 commonLib_1.push2array(maps2disable, commonLib_1.getIn(state, elemPath, SymDataMapTree, SymData) || []);
                 ['invalid', 'dirty', 'untouched', 'pending'].forEach(key => {
-                    let statusValue = getUpdValue([update, state], path, SymData, 'status', key);
+                    let statusValue = getUpdValue([update, state], elemPath, SymData, 'status', key);
                     if (statusValue)
                         state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', key], -1));
                 });
@@ -3881,7 +3873,7 @@ function normalizeFn(fn, opts = {}) {
     if (nFn.args)
         Object.assign(nFn, normalizeArgs(nFn.args, opts.wrapFn));
     else
-        nFn.args = ['${0}'];
+        nFn.args = ['${...}'];
     return nFn;
 }
 exports.normalizeFn = normalizeFn;
