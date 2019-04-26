@@ -15,6 +15,7 @@ const JSONValidator = imjvWrapper(imjvValidator);
 
 function submit(event: any, value: any, fform: any) {
   event.preventDefault();
+  alert(JSON.stringify(value, null, 2));
   return new Promise((resolve, rejects) => {
     setTimeout(() => {
       const res: any = {};
@@ -48,8 +49,10 @@ if (typeof window != 'undefined') {
     <h3>FForm sample</h3>
     <div>
       <div>
-        <FForm id="sampleForm" onSubmit={submit} touched core={{schema: sampleSchema, name: "sampleForm", elements: sampleElements, JSONValidator}}/>
+        <FForm id="sampleForm" ref={(r) => window['main'] = r} onSubmit={submit} touched core={{schema: sampleSchema, name: "sampleForm", elements: sampleElements, JSONValidator}}/>
       </div>
+      <button onClick={() => window['main'].submit()}>submit</button>
+       <button onClick={() => window['main'].reset()}>reset</button>
     </div>
   </div>, container);
 }

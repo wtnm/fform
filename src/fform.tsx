@@ -50,6 +50,7 @@ class FForm extends Component<any, any> {
   private _savedValue: any;
 
   protected _root: any;
+  protected _form: any;
   protected _methods: anyObject = {onSubmit: null, onChange: null, onStateChange: null};
 
   api: any;
@@ -81,11 +82,11 @@ class FForm extends Component<any, any> {
     self._updateValues(nextProps);
     if (!props.noValidation) self.api.validate(true);
     self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
-    self._setRef = self._setRef.bind(self);
+    self._setRootRef = self._setRootRef.bind(self);
+    self._setFormRef = self._setFormRef.bind(self);
     self._submit = self._submit.bind(self);
     self._getPath = self._getPath.bind(self);
-
-
+    self.reset = self.reset.bind(self);
   }
 
   private _updateMethods(nextProps: any, prevProps: any = {}) {
@@ -97,8 +98,12 @@ class FForm extends Component<any, any> {
     Object.assign(self._methods, self.wrapFns(objectResolver(self.elements, newMethods), {noStrictArrayResult: true}))
   }
 
-  private _setRef(FField: any) {
+  private _setRootRef(FField: any) {
     this._root = FField;
+  }
+
+  private _setFormRef(form: any) {
+    this._form = form;
   }
 
   private _updateValues(nextProps: FFormProps, prevProps: any = {}) {
@@ -199,13 +204,22 @@ class FForm extends Component<any, any> {
     return this.api.get(path)
   }
 
+  reset(event?: any) {
+    if (event) event.preventDefault();
+    this.api.reset();
+  }
+
+  submit() {
+    this._form.dispatchEvent(new Event('submit'));
+  }
+
   render() {
     const self = this;
     let {core, state, value, inital, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = 'form', ...rest} = self.props;
     FForm.params.forEach(k => delete (rest as any)[k]);
     return (
-      <UseTag {...rest} onSubmit={self._submit}>
-        <FField ref={self._setRef} id={rest.id ? rest.id + '/#' : undefined} name={self.api.name} pFForm={self} getPath={self._getPath} FFormApi={self.api}/>
+      <UseTag ref={self._setFormRef} {...rest} onSubmit={self._submit} onReset={self.reset}>
+        <FField ref={self._setRootRef} id={rest.id ? rest.id + '/#' : undefined} name={self.api.name} pFForm={self} getPath={self._getPath} FFormApi={self.api}/>
       </UseTag>
     )
   }
@@ -257,13 +271,13 @@ class FField extends FRefsGeneric {
   private _isNotSelfManaged: boolean | undefined;
   private _blocks: string[] = [];
   private _widgets: object;
-  private _ff_components: object;
+  private _components: object;
   private _maps: NPM4WidgetsType = {};
   private _$_parse: any;
   _forceUpd: boolean = false;
 
   get: Function | null = null;
-  ff_layout: FFLayoutGeneric<jsFFCustomizeType>;
+  _layout: FFLayoutGeneric<jsFFCustomizeType>;
   $branch: any;
   schemaPart: jsJsonSchema;
 
@@ -364,8 +378,8 @@ class FField extends FRefsGeneric {
         const data = self.getData();
         const mappedData = self._mappedData;
 
-        self.get = (...pathes: any[]) => {
-          let path = normalizePath(pathes, self.path);
+        self.get = (...paths: any[]) => {
+          let path = normalizePath(paths, self.path);
           if (isEqual(path, normalizePath('./@value', self.path))) return data.value;
           return self.stateApi.get(path)
         };
@@ -388,17 +402,17 @@ class FField extends FRefsGeneric {
     self.schemaPart = schemaPart;
 
     self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
-    if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart.ff_presets)
-      throw new Error('schema.ff_presets should be defined explicitly for multi type');
+    if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart._presets)
+      throw new Error('schema._presets should be defined explicitly for multi type');
 
-    self.ff_layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart.ff_layout));
+    self._layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart._layout));
 
-    let ff_components = resolveComponents(self.pFForm.elements, schemaPart.ff_custom, schemaPart.ff_presets || schemaPart.type);
-    ff_components = self.wrapFns(ff_components);
-    let {$_maps, rest: components} = extractMaps(ff_components);
+    let resolvedComponents = resolveComponents(self.pFForm.elements, schemaPart._custom, schemaPart._presets || schemaPart.type);
+    resolvedComponents = self.wrapFns(resolvedComponents);
+    let {$_maps, rest: components} = extractMaps(resolvedComponents);
     self._maps = normalizeMaps($_maps);
     self._widgets = {};
-    self._ff_components = components;
+    self._components = components;
     self._blocks = objKeys(components).filter(key => components[key]);
     self._blocks.forEach((block: string) => {
       const {_$widget, $_reactRef, ...staticProps} = components[block];
@@ -943,7 +957,7 @@ function bindProcessorToThis(val: any, opts: anyObject = {}) {
     return fn
   } else if (isMergeable(val)) {
     const result = isArray(val) ? [] : {};
-    objKeys(val).forEach(key => result[key] = key[0] != '_' ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
+    objKeys(val).forEach(key => result[key] = key.substr(0,2) != '_$' ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
     return result
   }
   return val
@@ -1262,7 +1276,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
           FFormApi: {$: '^/fn/getProp', args: 'props/pFForm/api', update: 'build'},
           id: {$: '^/fn/getProp', args: 'props/id', update: 'build'},
           name: {$: '^/fn/getProp', args: 'props/name', update: 'build'},
-          $layout: {$: '^/fn/getProp', args: 'ff_layout', update: 'build'}
+          $layout: {$: '^/fn/getProp', args: '_layout', update: 'build'}
         }
       },
       Title: {
@@ -1499,8 +1513,9 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     },
     Reset: {
       $_ref: '^/parts/Button',
+      type: 'reset',
       children: ['Reset'],
-      onClick: {$: '^/fn/api', args: ['reset']},
+      //onClick: {$: '^/fn/api', args: ['reset']},
       $_maps: {
         disabled: '@/status/pristine',
       }

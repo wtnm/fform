@@ -1,6 +1,6 @@
 {
   "type": "object",
-  "ff_layout": [
+  "_layout": [
     {
       "className": {
         "layout": true,
@@ -86,19 +86,16 @@
           "$_ref": "^/parts/Expander"
         }
       ]
-    },
-    {
-      "$_ref": "^/parts/Submit"
     }
   ],
-  "ff_data": {
+  "_data": {
     "focusValue": "/array/2/1"
   },
   "properties": {
     "array": {
       "type": "array",
       "title": "Array of mix",
-      "ff_layout": [
+      "_layout": [
         {
           "className": {
             "layout": true,
@@ -124,18 +121,18 @@
       "items": [
         {
           "type": "string",
-          "ff_presets": "string:$noArrayControls"
+          "_presets": "string:$noArrayControls"
         },
         {
           "type": "string",
           "default": "some default",
-          "ff_presets": "string:$noArrayControls"
+          "_presets": "string:$noArrayControls"
         },
         {
           "type": "array",
           "title": "Array of values",
-          "ff_presets": "array:$noArrayControls",
-          "ff_custom": {
+          "_presets": "array:$noArrayControls",
+          "_custom": {
             "Title": {
               "style": {
                 "width": "100%"
@@ -231,7 +228,7 @@
             "oneOf": [
               {
                 "type": "string",
-                "ff_presets": "string:$inlineTitle:$inlineArrayControls",
+                "_presets": "string:$inlineTitle:$inlineArrayControls",
                 "default": "default"
               },
               {
@@ -239,12 +236,12 @@
                   "number",
                   "null"
                 ],
-                "ff_presets": "numberNull:$inlineTitle:$inlineArrayControls",
+                "_presets": "numberNull:$inlineTitle:$inlineArrayControls",
                 "default": null
               },
               {
                 "type": "boolean",
-                "ff_presets": "boolean:$inlineTitle:$inlineArrayControls",
+                "_presets": "boolean:$inlineTitle:$inlineArrayControls",
                 "default": false
               }
             ]
@@ -255,9 +252,9 @@
     "booleanLeft": {
       "type": "boolean",
       "title": "boolean left",
-      "ff_presets": "booleanLeft:$inlineTitle",
+      "_presets": "booleanLeft:$inlineTitle",
       "default": false,
-      "ff_enumExten": {
+      "_enumExten": {
         "true": {
           "label": "yes"
         },
@@ -272,9 +269,9 @@
         "null"
       ],
       "title": "booleanNull left",
-      "ff_presets": "booleanNullLeft:$inlineTitle",
+      "_presets": "booleanNullLeft:$inlineTitle",
       "default": false,
-      "ff_dataMap": [
+      "_stateMaps": [
         {
           "from": "./@/value",
           "to": "../booleanLeft/@/value",
@@ -291,12 +288,12 @@
         "option 3"
       ],
       "default": "option 2",
-      "ff_presets": "select:$inlineTitle"
+      "_presets": "select:$inlineTitle"
     },
     "radioSelect": {
       "title": "Radio select",
       "type": "string",
-      "ff_presets": "radio:$inlineItems:$inlineTitle",
+      "_presets": "radio:$inlineItems:$inlineTitle",
       "enum": [
         "option 1",
         "option 2",
@@ -306,10 +303,10 @@
     },
     "checkboxSelect": {
       "title": "Checkbox select",
-      "ff_presets": "checkboxes:$inlineItems:$inlineTitle",
+      "_presets": "checkboxes:$inlineItems:$inlineTitle",
       "type": "array",
       "required": true,
-      "ff_data": {
+      "_data": {
         "fData": {
           "enum": [
             "option 1",
@@ -318,7 +315,7 @@
           ]
         }
       },
-      "ff_managed": true,
+      "_managed": true,
       "items": {
         "type": "string",
         "enum": [
@@ -334,13 +331,13 @@
     },
     "autowidth": {
       "type": "number",
-      "ff_presets": "number:$autowidth"
+      "_presets": "number:$autowidth"
     },
     "multiselect": {
       "title": "Multiselect",
-      "ff_presets": "multiselect",
+      "_presets": "multiselect",
       "type": "array",
-      "ff_data": {
+      "_data": {
         "fData": {
           "enum": [
             "option 1",
@@ -349,7 +346,7 @@
           ]
         }
       },
-      "ff_managed": true,
+      "_managed": true,
       "items": {
         "type": "string",
         "enum": [
@@ -362,7 +359,7 @@
     "textarea": {
       "title": "Textarea",
       "type": "string",
-      "ff_presets": "textarea"
+      "_presets": "textarea"
     }
   }
 }

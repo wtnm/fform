@@ -123,10 +123,10 @@ function makeSlice(...pathValues: any[]): StateType {
   return setIn({}, value, path);
 }
 
-function hasIn(state: any, ...pathes: any[]) {
-  if (pathes.length > 0) {
-    for (let i = 0; i < pathes.length; i++) {
-      let path = isArray(pathes[i]) ? pathes[i] : [pathes[i]];
+function hasIn(state: any, ...paths: any[]) {
+  if (paths.length > 0) {
+    for (let i = 0; i < paths.length; i++) {
+      let path = isArray(paths[i]) ? paths[i] : [paths[i]];
       for (let j = 0; j < path.length; j++) {
         if (isUndefined(path[j])) continue;
         try {
@@ -139,12 +139,12 @@ function hasIn(state: any, ...pathes: any[]) {
   return true
 }
 
-function setIn(state: any, value: any, ...pathes: any[]) {
+function setIn(state: any, value: any, ...paths: any[]) {
   let result = state;
   let key;
-  if (pathes.length > 0) {
-    for (let i = 0; i < pathes.length; i++) {
-      let path = isArray(pathes[i]) ? pathes[i] : [pathes[i]];
+  if (paths.length > 0) {
+    for (let i = 0; i < paths.length; i++) {
+      let path = isArray(paths[i]) ? paths[i] : [paths[i]];
       for (let j = 0; j < path.length; j++) {
         if (isUndefined(path[j])) continue;
         if (!isUndefined(key)) {
@@ -204,9 +204,9 @@ function getIn(state: any, ...paths: any[]): any {
 };
 
 
-function getCreateIn(state: any, value: any, ...pathes: any[]) {
-  if (!hasIn(state, ...pathes)) setIn(state, value, ...pathes);
-  return getIn(state, ...pathes)
+function getCreateIn(state: any, value: any, ...paths: any[]) {
+  if (!hasIn(state, ...paths)) setIn(state, value, ...paths);
+  return getIn(state, ...paths)
 }
 
 

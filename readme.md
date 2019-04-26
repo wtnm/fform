@@ -13,14 +13,14 @@
 <!-- tocstop -->
 
 ## Overview
-Flexibile Form (`fform`) - form builder with minimum redundancy, maximum flexibility and extendability. It uses **JSONSchema** (draft v4) to describe forms, **React** (v16) for rendering and has native **Redux** support for state storage but can be used with any other external storage or can use only internal storage (storage agnostic).
+Flexible Form (`fform`) - form builder with minimum redundancy, maximum flexibility, and extendability. It uses **JSONSchema** (draft v4) to describe forms, **React** (v16) for rendering and has native **Redux** support for state storage but can be used with any other external storage or can use only internal storage (storage agnostic).
 
 See [fform-constructor](https://wtnm.github.io/fform-constructor/index.html) for live demo.
 
 #### Features
 - **90kb** minified, **26kb** gziped
 - [form-constuctor](https://wtnm.github.io/fform-constructor/index.html) for quick start
-- form extention, combination and reuse with JSONSchema's `allOf`, `oneOf`, `$ref` properties 
+- form extension, combination and reuse with JSONSchema's `allOf`, `oneOf`, `$ref` properties
 - sync/async/JSON/submit validation
 - storage agnostic, native redux support, can be used with any external storage or can use own internal storage
 - built-in arrays (add/del/move operations)
@@ -96,7 +96,7 @@ How to use with different storages see in [documentation](documentation.md#redux
   * [Path](documentation.md#path)
   * [Data object](documentation.md#data-object)
 - [API](documentation.md#api)
-    + [`get(...pathes: string | string[]`)](documentation.md#getpathes-string--string)
+    + [`get(...paths: string | string[]`)](documentation.md#getpaths-string--string)
     + [`set(path: string | string[], value: any, opts?: setOpts )`](documentation.md#setpath-string--string-value-any-opts-setopts-)
     + [`getValue(opts?: getValueOpts)`](documentation.md#getvalueopts-getvalueopts)
     + [`setValue(value: any, opts?: setValueOpts)`](documentation.md#setvaluevalue-any-opts-setvalueopts)
@@ -111,7 +111,7 @@ How to use with different storages see in [documentation](documentation.md#redux
     + [`getActive()`](documentation.md#getactive)
     + [`execute()`](documentation.md#execute)
 - [Basic schema properties](documentation.md#basic-schema-properties)
-    + [Meta data](documentation.md#meta-data)
+    + [Metadata](documentation.md#metadata)
     + [Number Validation](documentation.md#number-validation)
     + [String Validation](documentation.md#string-validation)
     + [Array Validation](documentation.md#array-validation)
@@ -126,10 +126,10 @@ How to use with different storages see in [documentation](documentation.md#redux
   * [Object layout](documentation.md#object-layout)
 - [Elements](documentation.md#elements)
     + [Props processing](documentation.md#props-processing)
+    + [Data processors](documentation.md#data-processors)
+    + [$_maps](documentation.md#_maps-)
     + [Structure](documentation.md#structure)
-    + [Data, event processors](documentation.md#data-event-processors)
 - [Styling](documentation.md#styling)
 - [SSR](documentation.md#ssr)
 
 <!-- tocstop -->
-

@@ -71,27 +71,27 @@ type JsonAny = anyObject | string | object | undefined | boolean | number | null
 
 
 interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaType {
-  ff_compiled: boolean;
-  ff_validators?: JsonFunctionGeneric<Function>[]; // sync/async validators
-  ff_dataMap?: FFDataMapGeneric<Function | Function[]>[]; // mapping values in state
-  ff_oneOfSelector?: number | JsonFunctionGeneric<Function | Function[]> // oneOf selector for field
+  _compiled: boolean;
+  _validators?: JsonFunctionGeneric<Function>[]; // sync/async validators
+  _stateMaps?: FFDataMapGeneric<Function | Function[]>[]; // mapping values in state
+  _oneOfSelector?: number | JsonFunctionGeneric<Function | Function[]> // oneOf selector for field
 }
 
 interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
-  ff_validators?: JsonFunctionGeneric<string>[]; // sync/async validators
-  ff_dataMap?: FFDataMapGeneric<string>[] | anyObject; // mapping values in state
-  ff_oneOfSelector?: number | JsonFunctionGeneric<string> // oneOf selector for field
+  _validators?: JsonFunctionGeneric<string>[]; // sync/async validators
+  _stateMaps?: FFDataMapGeneric<string>[] | anyObject; // mapping values in state
+  _oneOfSelector?: number | JsonFunctionGeneric<string> // oneOf selector for field
 }
 
 interface FFCommonSchemaType {
-  ff_placeholder?: string;
-  ff_params?: FFParamsType; // editable in state params
-  ff_data?: { [key: string]: any } | { [key: number]: any };
-  ff_presets?: string; // presets for rendering components
-  ff_managed?: boolean; // determine that value managed by component itself (for elements and arrays)
-  ff_custom?: FFCustomizeType; // components customization
-  ff_layout?: FFLayoutGeneric<FFCustomizeType> | Array<string | FFLayoutGeneric<FFCustomizeType>>; // fields order and object/group extenion
-  ff_enumExten?: { [key: string]: undefined | string | object }; // enum extension value taken from enum, string turn to label
+  _placeholder?: string;
+  _params?: FFParamsType; // editable in state params
+  _data?: { [key: string]: any } | { [key: number]: any };
+  _presets?: string; // presets for rendering components
+  _managed?: boolean; // determine that value managed by component itself (for elements and arrays)
+  _custom?: FFCustomizeType; // components customization
+  _layout?: FFLayoutGeneric<FFCustomizeType> | Array<string | FFLayoutGeneric<FFCustomizeType>>; // fields order and object/group extenion
+  _enumExten?: { [key: string]: undefined | string | object }; // enum extension value taken from enum, string turn to label
 
 }
 

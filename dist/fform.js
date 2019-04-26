@@ -292,7 +292,7 @@ class FFormStateAPI extends FFormStateManager {
                 stateLib_1.normalizeUpdate({ path: path, value: true }, self.getState()).forEach(i => self._validation = stateLib_1.setIfNotDeeper(self._validation || {}, true, i.path));
             return self._setExecution(null, opts);
         };
-        this.get = (...pathes) => stateLib_1.getFromState(this.getState(), ...pathes);
+        this.get = (...paths) => stateLib_1.getFromState(this.getState(), ...paths);
         this.set = (path, value, opts = {}) => {
             if (path === null)
                 return this._setExecution([null], opts);
@@ -493,15 +493,15 @@ const compileSchema = commonLib_1.memoize((elements, schema) => schemaCompiler(e
 function schemaCompiler(elements = {}, schema) {
     if (isCompiled(schema))
         return schema;
-    let { ff_validators, ff_dataMap, ff_oneOfSelector } = schema, rest = __rest(schema, ["ff_validators", "ff_dataMap", "ff_oneOfSelector"]);
-    const result = commonLib_1.isArray(schema) ? [] : { ff_compiled: true };
+    let { _validators, _stateMaps, _oneOfSelector } = schema, rest = __rest(schema, ["_validators", "_stateMaps", "_oneOfSelector"]);
+    const result = commonLib_1.isArray(schema) ? [] : { _compiled: true };
     const nFnOpts = { noStrictArrayResult: true };
-    ff_validators && (result.ff_validators = commonLib_1.toArray(objectResolver(elements, ff_validators)).map(f => stateLib_1.normalizeFn(f, nFnOpts)));
-    ff_dataMap && (result.ff_dataMap = objectResolver(elements, ff_dataMap));
-    ff_oneOfSelector && (result.ff_oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(ff_oneOfSelector, nFnOpts)));
-    //if (isFunction(result.ff_oneOfSelector)) result.ff_oneOfSelector = {$: result.ff_oneOfSelector};
+    _validators && (result._validators = commonLib_1.toArray(objectResolver(elements, _validators)).map(f => stateLib_1.normalizeFn(f, nFnOpts)));
+    _stateMaps && (result._stateMaps = objectResolver(elements, _stateMaps));
+    _oneOfSelector && (result._oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(_oneOfSelector, nFnOpts)));
+    //if (isFunction(result._oneOfSelector)) result._oneOfSelector = {$: result._oneOfSelector};
     commonLib_1.objKeys(rest).forEach(key => {
-        if (key.substr(0, 3) == 'ff_')
+        if (key.substr(0, 1) == '_')
             return result[key] = rest[key];
         switch (key) {
             case 'default':
@@ -525,7 +525,7 @@ function schemaCompiler(elements = {}, schema) {
     return result;
 }
 function isCompiled(schema) {
-    return commonLib_1.getIn(schema, 'ff_objects');
+    return commonLib_1.getIn(schema, '_compiled');
 }
 function testRef(refRes, $_ref, track) {
     if (commonLib_1.isUndefined(refRes))
@@ -576,10 +576,10 @@ function objectResolver(_elements, obj2resolve, track = []) {
         let value = result[key];
         if (commonLib_1.isString(value) && isRef(value.trim())) {
             value = convRef(value);
-            if (key !== '$' && key[0] !== '_' && (commonLib_1.isFunction(value) || commonLib_1.isArray(value) && value.every(commonLib_1.isFunction)))
+            if (key !== '$' && key.substr(0, 2) !== '_$' && (commonLib_1.isFunction(value) || commonLib_1.isArray(value) && value.every(commonLib_1.isFunction)))
                 value = { $: value };
         }
-        if (key[0] !== '_' && commonLib_1.isMergeable(value))
+        if (key.substr(0, 2) !== '_$' && commonLib_1.isMergeable(value))
             retResult[key] = objectResolver(_elements, value, track.concat(key));
         else
             retResult[key] = value;
@@ -739,10 +739,10 @@ function makeSlice(...pathValues) {
     return setIn({}, value, path);
 }
 exports.makeSlice = makeSlice;
-function hasIn(state, ...pathes) {
-    if (pathes.length > 0) {
-        for (let i = 0; i < pathes.length; i++) {
-            let path = isArray(pathes[i]) ? pathes[i] : [pathes[i]];
+function hasIn(state, ...paths) {
+    if (paths.length > 0) {
+        for (let i = 0; i < paths.length; i++) {
+            let path = isArray(paths[i]) ? paths[i] : [paths[i]];
             for (let j = 0; j < path.length; j++) {
                 if (isUndefined(path[j]))
                     continue;
@@ -760,12 +760,12 @@ function hasIn(state, ...pathes) {
     return true;
 }
 exports.hasIn = hasIn;
-function setIn(state, value, ...pathes) {
+function setIn(state, value, ...paths) {
     let result = state;
     let key;
-    if (pathes.length > 0) {
-        for (let i = 0; i < pathes.length; i++) {
-            let path = isArray(pathes[i]) ? pathes[i] : [pathes[i]];
+    if (paths.length > 0) {
+        for (let i = 0; i < paths.length; i++) {
+            let path = isArray(paths[i]) ? paths[i] : [paths[i]];
             for (let j = 0; j < path.length; j++) {
                 if (isUndefined(path[j]))
                     continue;
@@ -836,10 +836,10 @@ function getIn(state, ...paths) {
 }
 exports.getIn = getIn;
 ;
-function getCreateIn(state, value, ...pathes) {
-    if (!hasIn(state, ...pathes))
-        setIn(state, value, ...pathes);
-    return getIn(state, ...pathes);
+function getCreateIn(state, value, ...paths) {
+    if (!hasIn(state, ...paths))
+        setIn(state, value, ...paths);
+    return getIn(state, ...paths);
 }
 exports.getCreateIn = getCreateIn;
 //////////////////////////////
@@ -1009,9 +1009,11 @@ class FForm extends react_1.Component {
         if (!props.noValidation)
             self.api.validate(true);
         self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
-        self._setRef = self._setRef.bind(self);
+        self._setRootRef = self._setRootRef.bind(self);
+        self._setFormRef = self._setFormRef.bind(self);
         self._submit = self._submit.bind(self);
         self._getPath = self._getPath.bind(self);
+        self.reset = self.reset.bind(self);
     }
     _updateMethods(nextProps, prevProps = {}) {
         const self = this;
@@ -1022,8 +1024,11 @@ class FForm extends react_1.Component {
         });
         Object.assign(self._methods, self.wrapFns(api_1.objectResolver(self.elements, newMethods), { noStrictArrayResult: true }));
     }
-    _setRef(FField) {
+    _setRootRef(FField) {
         this._root = FField;
+    }
+    _setFormRef(form) {
+        this._form = form;
     }
     _updateValues(nextProps, prevProps = {}) {
         const { state, value, inital, extData, noValidation, touched } = nextProps;
@@ -1123,12 +1128,20 @@ class FForm extends react_1.Component {
     getBranch(path) {
         return this.api.get(path);
     }
+    reset(event) {
+        if (event)
+            event.preventDefault();
+        this.api.reset();
+    }
+    submit() {
+        this._form.dispatchEvent(new Event('submit'));
+    }
     render() {
         const self = this;
         let _a = self.props, { core, state, value, inital, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = 'form' } = _a, rest = __rest(_a, ["core", "state", "value", "inital", "extData", "fieldCache", "touched", "parent", "onSubmit", "onChange", "onStateChange", "_$useTag"]);
         FForm.params.forEach(k => delete rest[k]);
-        return (react_1.createElement(UseTag, Object.assign({}, rest, { onSubmit: self._submit }),
-            react_1.createElement(FField, { ref: self._setRef, id: rest.id ? rest.id + '/#' : undefined, name: self.api.name, pFForm: self, getPath: self._getPath, FFormApi: self.api })));
+        return (react_1.createElement(UseTag, Object.assign({ ref: self._setFormRef }, rest, { onSubmit: self._submit, onReset: self.reset }),
+            react_1.createElement(FField, { ref: self._setRootRef, id: rest.id ? rest.id + '/#' : undefined, name: self.api.name, pFForm: self, getPath: self._getPath, FFormApi: self.api })));
     }
 }
 FForm.params = ['readonly', 'disabled', 'viewer', 'liveValidate', 'liveUpdate'];
@@ -1258,8 +1271,8 @@ class FField extends FRefsGeneric {
                 self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
                 const data = self.getData();
                 const mappedData = self._mappedData;
-                self.get = (...pathes) => {
-                    let path = stateLib_1.normalizePath(pathes, self.path);
+                self.get = (...paths) => {
+                    let path = stateLib_1.normalizePath(paths, self.path);
                     if (commonLib_1.isEqual(path, stateLib_1.normalizePath('./@value', self.path)))
                         return data.value;
                     return self.stateApi.get(path);
@@ -1282,15 +1295,15 @@ class FField extends FRefsGeneric {
         const schemaPart = self.api.getSchemaPart(self.path);
         self.schemaPart = schemaPart;
         self._isNotSelfManaged = !stateLib_1.isSelfManaged(self.state.branch) || undefined;
-        if ((commonLib_1.isArray(schemaPart.type) || commonLib_1.isUndefined(schemaPart.type)) && !schemaPart.ff_presets)
-            throw new Error('schema.ff_presets should be defined explicitly for multi type');
-        self.ff_layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart.ff_layout));
-        let ff_components = resolveComponents(self.pFForm.elements, schemaPart.ff_custom, schemaPart.ff_presets || schemaPart.type);
-        ff_components = self.wrapFns(ff_components);
-        let { $_maps, rest: components } = extractMaps(ff_components);
+        if ((commonLib_1.isArray(schemaPart.type) || commonLib_1.isUndefined(schemaPart.type)) && !schemaPart._presets)
+            throw new Error('schema._presets should be defined explicitly for multi type');
+        self._layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart._layout));
+        let resolvedComponents = resolveComponents(self.pFForm.elements, schemaPart._custom, schemaPart._presets || schemaPart.type);
+        resolvedComponents = self.wrapFns(resolvedComponents);
+        let { $_maps, rest: components } = extractMaps(resolvedComponents);
         self._maps = normalizeMaps($_maps);
         self._widgets = {};
-        self._ff_components = components;
+        self._components = components;
         self._blocks = commonLib_1.objKeys(components).filter(key => components[key]);
         self._blocks.forEach((block) => {
             const _a = components[block], { _$widget, $_reactRef } = _a, staticProps = __rest(_a, ["_$widget", "$_reactRef"]);
@@ -1774,7 +1787,7 @@ function bindProcessorToThis(val, opts = {}) {
     }
     else if (commonLib_1.isMergeable(val)) {
         const result = commonLib_1.isArray(val) ? [] : {};
-        commonLib_1.objKeys(val).forEach(key => result[key] = key[0] != '_' ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
+        commonLib_1.objKeys(val).forEach(key => result[key] = key.substr(0, 2) != '_$' ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
         return result;
     }
     return val;
@@ -2090,7 +2103,7 @@ let elementsBase = {
                     FFormApi: { $: '^/fn/getProp', args: 'props/pFForm/api', update: 'build' },
                     id: { $: '^/fn/getProp', args: 'props/id', update: 'build' },
                     name: { $: '^/fn/getProp', args: 'props/name', update: 'build' },
-                    $layout: { $: '^/fn/getProp', args: 'ff_layout', update: 'build' }
+                    $layout: { $: '^/fn/getProp', args: '_layout', update: 'build' }
                 }
             },
             Title: {
@@ -2322,8 +2335,9 @@ let elementsBase = {
         },
         Reset: {
             $_ref: '^/parts/Button',
+            type: 'reset',
             children: ['Reset'],
-            onClick: { $: '^/fn/api', args: ['reset'] },
+            //onClick: {$: '^/fn/api', args: ['reset']},
             $_maps: {
                 disabled: '@/status/pristine',
             }
@@ -2661,9 +2675,9 @@ function oneOfStructure(state, path) {
 }
 const additionalItemsSchema = commonLib_1.memoize(function (items) {
     return {
-        ff_compiled: true,
+        _compiled: true,
         oneOf: items,
-        ff_oneOfSelector: normalizeFn(function () {
+        _oneOfSelector: normalizeFn(function () {
             return string2path(this.path).pop() % items.length;
         }, { noStrictArrayResult: true })
     };
@@ -2774,8 +2788,8 @@ exports.arrayStart = arrayStart;
 const basicStatus = { invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true, touched: false, pristine: true };
 const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, value = schemaPart.default) {
     // const x = schemaPart.x || ({} as FFSchemaExtensionType);
-    const { ff_params = {}, ff_data = {} } = schemaPart;
-    const result = Object.assign({ params: ff_params }, ff_data);
+    const { _params = {}, _data = {} } = schemaPart;
+    const result = Object.assign({ params: _params }, _data);
     if (!commonLib_2.isObject(result.messages))
         result.messages = {};
     if (commonLib_2.isUndefined(value))
@@ -2789,13 +2803,13 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
     fData.required = schemaPart.required;
     if (schemaPart.title)
         fData.title = schemaPart.title;
-    if (schemaPart.ff_placeholder)
-        fData.placeholder = schemaPart.ff_placeholder;
+    if (schemaPart._placeholder)
+        fData.placeholder = schemaPart._placeholder;
     if (schemaPart.enum)
         fData.enum = schemaPart.enum;
-    if (schemaPart.ff_enumExten)
-        fData.enumExten = schemaPart.ff_enumExten;
-    if (schemaPart.ff_oneOfSelector)
+    if (schemaPart._enumExten)
+        fData.enumExten = schemaPart._enumExten;
+    if (schemaPart._oneOfSelector)
         fData.oneOfSelector = true;
     if (isSchemaSelfManaged(schemaPart, type))
         result.value = value;
@@ -2823,9 +2837,9 @@ function makeStateBranch(schema, getNSetOneOf, path = [], value) {
     let currentOneOf = (getNSetOneOf(path) || {}).oneOf;
     const schemaPartsOneOf = commonLib_1.toArray(getSchemaPart(schema, path, getNSetOneOf, true));
     if (commonLib_2.isUndefined(currentOneOf)) {
-        const ff_oneOfSelector = schemaPartsOneOf[currentOneOf || 0].ff_oneOfSelector;
-        if (ff_oneOfSelector) {
-            let setOneOf = processFn.call({ path: path2string(path) }, ff_oneOfSelector, value);
+        const _oneOfSelector = schemaPartsOneOf[currentOneOf || 0]._oneOfSelector;
+        if (_oneOfSelector) {
+            let setOneOf = processFn.call({ path: path2string(path) }, _oneOfSelector, value);
             if (commonLib_2.isArray(setOneOf))
                 setOneOf = setOneOf[0];
             currentOneOf = setOneOf;
@@ -2841,7 +2855,7 @@ function makeStateBranch(schema, getNSetOneOf, path = [], value) {
         oneOf = tmp.oneOf;
         type = tmp.type;
     }
-    commonLib_1.push2array(dataMapObjects, normalizeDataMap(schemaPart.ff_dataMap || [], path));
+    commonLib_1.push2array(dataMapObjects, normalizeStateMaps(schemaPart._stateMaps || [], path));
     result[SymDataMap] = {};
     result[SymData] = makeDataStorage(schemaPart, oneOf, type, value);
     getNSetOneOf(path, { oneOf, type });
@@ -2895,12 +2909,12 @@ function getArrayItemData(schemaPart, index, length) {
     result.canDel = index >= Math.min(arrayStartIndex, length - 1);
     return result;
 }
-function isSelfManaged(state, ...pathes) {
-    return commonLib_1.hasIn(state, ...pathes, SymData, 'value');
+function isSelfManaged(state, ...paths) {
+    return commonLib_1.hasIn(state, ...paths, SymData, 'value');
 }
 exports.isSelfManaged = isSelfManaged;
 function isSchemaSelfManaged(schemaPart, type) {
-    return type !== 'array' && type !== 'object' || commonLib_1.getIn(schemaPart, 'ff_managed');
+    return type !== 'array' && type !== 'object' || commonLib_1.getIn(schemaPart, '_managed');
 }
 function findOneOf(oneOfShemas, value, currentOneOf) {
     if (!commonLib_2.isArray(oneOfShemas))
@@ -2999,10 +3013,10 @@ function makeValidation(state, dispatch, action) {
         const selfManaged = isSelfManaged(state, track);
         if (!selfManaged)
             modifiedValues && commonLib_1.objKeys(modifiedValues).forEach(key => state = recurseValidationInnerPROCEDURE(state, validatedValue[key], modifiedValues[key], track.concat(key)));
-        let ff_validators = schemaPart.ff_validators;
-        if (ff_validators) {
+        let _validators = schemaPart._validators;
+        if (_validators) {
             const field = makeSynthField(UPDATABLE.api, path2string(track));
-            ff_validators.forEach((validator) => {
+            _validators.forEach((validator) => {
                 const updates = [];
                 field.updates = updates;
                 let result = processFn.call(field, validator, validatedValue);
@@ -3250,8 +3264,8 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
         let currentOneOf = branch[SymData].oneOf;
         if (oneOfSelector) {
             //const field = makeSynthField(UPDATABLE.api, path2string(track));
-            const ff_oneOfSelector = parts[currentOneOf].ff_oneOfSelector;
-            setOneOf = processFn.call({ path: path2string(track) }, ff_oneOfSelector, value);
+            const _oneOfSelector = parts[currentOneOf]._oneOfSelector;
+            setOneOf = processFn.call({ path: path2string(track) }, _oneOfSelector, value);
             if (commonLib_2.isArray(setOneOf))
                 setOneOf = setOneOf[0];
         }
@@ -3333,12 +3347,12 @@ function updateNormalizationPROC(state, UPDATABLE, item) {
     });
     return state;
 }
-function setUPDATABLE(UPDATABLE, update, replace, ...pathes) {
+function setUPDATABLE(UPDATABLE, update, replace, ...paths) {
     object2PathValues(replace).forEach(path => {
         let replaceValue = path.pop();
-        commonLib_1.setIn(UPDATABLE, commonLib_1.getIn(update, path), 'update', ...pathes, path);
+        commonLib_1.setIn(UPDATABLE, commonLib_1.getIn(update, path), 'update', ...paths, path);
         if (replaceValue)
-            commonLib_1.setIn(UPDATABLE, replaceValue, 'replace', ...pathes, path);
+            commonLib_1.setIn(UPDATABLE, replaceValue, 'replace', ...paths, path);
     });
     return UPDATABLE;
 }
@@ -3513,7 +3527,7 @@ function updatePROC(state, UPDATABLE, item) {
     return state;
 }
 exports.updatePROC = updatePROC;
-function normalizeDataMap(dataMap, emitter) {
+function normalizeStateMaps(dataMap, emitter) {
     return dataMap.map((item) => {
         let { from, to } = item, action = __rest(item, ["from", "to"]);
         if (!action.$)
@@ -3634,14 +3648,14 @@ function getFromUPD(state, UPDATABLE) {
         return getFromState(state, ...tPath);
     };
 }
-function getUpdValue(states, ...pathes) {
+function getUpdValue(states, ...paths) {
     for (let i = 0; i < states.length; i++) {
-        if (commonLib_1.hasIn(states[i], ...pathes))
-            return commonLib_1.getIn(states[i], ...pathes);
+        if (commonLib_1.hasIn(states[i], ...paths))
+            return commonLib_1.getIn(states[i], ...paths);
     }
 }
-function getFromState(state, ...pathes) {
-    return commonLib_1.getIn(state, ...pathes.map(path => normalizePath(path)));
+function getFromState(state, ...paths) {
+    return commonLib_1.getIn(state, ...paths.map(path => normalizePath(path)));
 }
 exports.getFromState = getFromState;
 const makeNUpdate = (path, keyPath, value, replace, rest = {}) => { return Object.assign({ path, [SymData]: keyPath, value, replace }, rest); };
@@ -3670,16 +3684,16 @@ function normalizeUpdate(update, state) {
     const result = [];
     let pathArray = path2string(path).split(';');
     pathArray.forEach(path => {
-        let pathes = normalizePath(path, base);
+        let paths = normalizePath(path, base);
         let keyPathes = [];
-        let a = pathes.indexOf(SymData);
+        let a = paths.indexOf(SymData);
         if (~a) {
-            keyPathes = pathes.slice(a + 1);
-            pathes = pathes.slice(0, a);
+            keyPathes = paths.slice(a + 1);
+            paths = paths.slice(0, a);
         }
-        pathes = multiplyPath(pathes, { '*': (p) => branchKeys(commonLib_1.getIn(state, p)).join(',') });
+        paths = multiplyPath(paths, { '*': (p) => branchKeys(commonLib_1.getIn(state, p)).join(',') });
         keyPathes = multiplyPath(keyPathes);
-        commonLib_1.objKeys(pathes).forEach(p => commonLib_1.objKeys(keyPathes).forEach(k => result.push(makeNUpdate(pathes[p], keyPathes[k], value, replace, rest))));
+        commonLib_1.objKeys(paths).forEach(p => commonLib_1.objKeys(keyPathes).forEach(k => result.push(makeNUpdate(paths[p], keyPathes[k], value, replace, rest))));
     });
     return result;
 }
@@ -3756,10 +3770,10 @@ function resolvePath(path, base) {
     }
     return result;
 }
-function setIfNotDeeper(state, value, ...pathes) {
+function setIfNotDeeper(state, value, ...paths) {
     if (state === value)
         return state;
-    const path = flattenPath(pathes);
+    const path = flattenPath(paths);
     let result = state;
     for (let i = 0; i < path.length - 1; i++) {
         if (result[path[i]] === value)

@@ -265,9 +265,9 @@ function oneOfStructure(state: StateType | Function, path: Path) { // makes obje
 
 const additionalItemsSchema = memoize(function (items: jsJsonSchema[]): jsJsonSchema {
   return {
-    ff_compiled: true,
+    _compiled: true,
     oneOf: items,
-    ff_oneOfSelector: normalizeFn(function () {
+    _oneOfSelector: normalizeFn(function () {
       return string2path(this.path).pop() % items.length;
     }, {noStrictArrayResult: true})
   }
@@ -370,8 +370,8 @@ const basicStatus = {invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true
 
 const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: number, type: string, value: any = schemaPart.default) {
   // const x = schemaPart.x || ({} as FFSchemaExtensionType);
-  const {ff_params = {}, ff_data = {}} = schemaPart;
-  const result: any = Object.assign({params: ff_params}, ff_data);
+  const {_params = {}, _data = {}} = schemaPart;
+  const result: any = Object.assign({params: _params}, _data);
   if (!isObject(result.messages)) result.messages = {};
 
   if (isUndefined(value)) value = types.empty[type || 'any'];
@@ -383,10 +383,10 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   fData.type = type;
   fData.required = schemaPart.required;
   if (schemaPart.title) fData.title = schemaPart.title;
-  if (schemaPart.ff_placeholder) fData.placeholder = schemaPart.ff_placeholder;
+  if (schemaPart._placeholder) fData.placeholder = schemaPart._placeholder;
   if (schemaPart.enum) fData.enum = schemaPart.enum;
-  if (schemaPart.ff_enumExten) fData.enumExten = schemaPart.ff_enumExten;
-  if (schemaPart.ff_oneOfSelector) fData.oneOfSelector = true;
+  if (schemaPart._enumExten) fData.enumExten = schemaPart._enumExten;
+  if (schemaPart._oneOfSelector) fData.oneOfSelector = true;
 
   if (isSchemaSelfManaged(schemaPart, type)) result.value = value;
   else delete result.value;
@@ -411,9 +411,9 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   let currentOneOf = (getNSetOneOf(path) || {}).oneOf;
   const schemaPartsOneOf = toArray(getSchemaPart(schema, path, getNSetOneOf, true));
   if (isUndefined(currentOneOf)) {
-    const ff_oneOfSelector = schemaPartsOneOf[currentOneOf || 0].ff_oneOfSelector;
-    if (ff_oneOfSelector) {
-      let setOneOf = processFn.call({path: path2string(path)}, ff_oneOfSelector, value);
+    const _oneOfSelector = schemaPartsOneOf[currentOneOf || 0]._oneOfSelector;
+    if (_oneOfSelector) {
+      let setOneOf = processFn.call({path: path2string(path)}, _oneOfSelector, value);
       if (isArray(setOneOf)) setOneOf = setOneOf[0];
       currentOneOf = setOneOf;
       //schemaPart = schemaPartsOneOf[oneOf];
@@ -429,7 +429,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
     oneOf = tmp.oneOf;
     type = tmp.type;
   }
-  push2array(dataMapObjects, normalizeDataMap(schemaPart.ff_dataMap || [], path));
+  push2array(dataMapObjects, normalizeStateMaps(schemaPart._stateMaps || [], path));
   result[SymDataMap] = {};
   result[SymData] = makeDataStorage(schemaPart, oneOf, type, value);
   getNSetOneOf(path, {oneOf, type});
@@ -485,12 +485,12 @@ function getArrayItemData(schemaPart: jsJsonSchema, index: number, length: numbe
   return result
 }
 
-function isSelfManaged(state: StateType, ...pathes: any[]) {
-  return hasIn(state, ...pathes, SymData, 'value')
+function isSelfManaged(state: StateType, ...paths: any[]) {
+  return hasIn(state, ...paths, SymData, 'value')
 }
 
 function isSchemaSelfManaged(schemaPart: jsJsonSchema, type: string) {
-  return type !== 'array' && type !== 'object' || getIn(schemaPart, 'ff_managed')
+  return type !== 'array' && type !== 'object' || getIn(schemaPart, '_managed')
 }
 
 function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {
@@ -584,11 +584,11 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
     if (!selfManaged)
       modifiedValues && objKeys(modifiedValues).forEach(key => state = recurseValidationInnerPROCEDURE(state, validatedValue[key], modifiedValues[key], track.concat(key)));
 
-    let ff_validators = schemaPart.ff_validators;
+    let _validators = schemaPart._validators;
 
-    if (ff_validators) {
+    if (_validators) {
       const field = makeSynthField(UPDATABLE.api, path2string(track));
-      ff_validators.forEach((validator: any) => {
+      _validators.forEach((validator: any) => {
         const updates: any[] = [];
         field.updates = updates;
         let result = processFn.call(field, validator, validatedValue);
@@ -834,8 +834,8 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     let currentOneOf = branch[SymData].oneOf;
     if (oneOfSelector) {
       //const field = makeSynthField(UPDATABLE.api, path2string(track));
-      const ff_oneOfSelector = parts[currentOneOf].ff_oneOfSelector;
-      setOneOf = processFn.call({path: path2string(track)}, ff_oneOfSelector, value);
+      const _oneOfSelector = parts[currentOneOf]._oneOfSelector;
+      setOneOf = processFn.call({path: path2string(track)}, _oneOfSelector, value);
       if (isArray(setOneOf)) setOneOf = setOneOf[0];
     }
 
@@ -917,11 +917,11 @@ function updateNormalizationPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABL
   return state;
 }
 
-function setUPDATABLE(UPDATABLE: PROCEDURE_UPDATABLE_Type, update: any, replace: any, ...pathes: any[]) {
+function setUPDATABLE(UPDATABLE: PROCEDURE_UPDATABLE_Type, update: any, replace: any, ...paths: any[]) {
   object2PathValues(replace).forEach(path => {
     let replaceValue = path.pop();
-    setIn(UPDATABLE, getIn(update, path), 'update', ...pathes, path);
-    if (replaceValue) setIn(UPDATABLE, replaceValue, 'replace', ...pathes, path);
+    setIn(UPDATABLE, getIn(update, path), 'update', ...paths, path);
+    if (replaceValue) setIn(UPDATABLE, replaceValue, 'replace', ...paths, path);
   });
   return UPDATABLE;
 }
@@ -1096,7 +1096,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
 }
 
 
-function normalizeDataMap(dataMap: FFDataMapGeneric<Function | Function[]>[], emitter: Path): normalizedDataMapType[] {
+function normalizeStateMaps(dataMap: FFDataMapGeneric<Function | Function[]>[], emitter: Path): normalizedDataMapType[] {
   return dataMap.map((item: any) => {
     let {from, to, ...action} = item;
     if (!action.$) action = true;
@@ -1221,15 +1221,15 @@ function getFromUPD(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
   }
 }
 
-function getUpdValue(states: StateType[], ...pathes: Path) {
+function getUpdValue(states: StateType[], ...paths: Path) {
   for (let i = 0; i < states.length; i++) {
-    if (hasIn(states[i], ...pathes)) return getIn(states[i], ...pathes);
+    if (hasIn(states[i], ...paths)) return getIn(states[i], ...paths);
   }
 }
 
 
-function getFromState(state: any, ...pathes: Array<symbol | string | Path>) {
-  return getIn(state, ...pathes.map(path => normalizePath(path as any)));
+function getFromState(state: any, ...paths: Array<symbol | string | Path>) {
+  return getIn(state, ...paths.map(path => normalizePath(path as any)));
 }
 
 const makeNUpdate = (path: Path, keyPath: Path, value?: any, replace?: any, rest: any = {}): NormalizedUpdateType => {return {path, [SymData]: keyPath, value, replace, ...rest}};
@@ -1264,16 +1264,16 @@ function normalizeUpdate(update: StateApiUpdateType, state: StateType): Normaliz
   const result: NormalizedUpdateType[] = [];
   let pathArray: string[] = path2string(path).split(';');
   pathArray.forEach(path => {
-    let pathes = normalizePath(path, base);
+    let paths = normalizePath(path, base);
     let keyPathes: any = [];
-    let a = pathes.indexOf(SymData);
+    let a = paths.indexOf(SymData);
     if (~a) {
-      keyPathes = pathes.slice(a + 1);
-      pathes = pathes.slice(0, a);
+      keyPathes = paths.slice(a + 1);
+      paths = paths.slice(0, a);
     }
-    pathes = multiplyPath(pathes, {'*': (p: Path) => branchKeys(getIn(state, p)).join(',')});
+    paths = multiplyPath(paths, {'*': (p: Path) => branchKeys(getIn(state, p)).join(',')});
     keyPathes = multiplyPath(keyPathes);
-    objKeys(pathes).forEach(p => objKeys(keyPathes).forEach(k => result.push(makeNUpdate(pathes[p], keyPathes[k], value, replace, rest))));
+    objKeys(paths).forEach(p => objKeys(keyPathes).forEach(k => result.push(makeNUpdate(paths[p], keyPathes[k], value, replace, rest))));
   });
   return result;
 }
@@ -1343,9 +1343,9 @@ function resolvePath(path: Path, base?: Path) {
   return result;
 }
 
-function setIfNotDeeper(state: any, value: any, ...pathes: any[]) {
+function setIfNotDeeper(state: any, value: any, ...paths: any[]) {
   if (state === value) return state;
-  const path = flattenPath(pathes);
+  const path = flattenPath(paths);
   let result = state;
   for (let i = 0; i < path.length - 1; i++) {
     if (result[path[i]] === value) return state;

@@ -312,7 +312,7 @@ class FFormStateAPI extends FFormStateManager {
     return self._setExecution(null, opts);
   };
 
-  get = (...pathes: Array<string | Path>): any => getFromState(this.getState(), ...pathes);
+  get = (...paths: Array<string | Path>): any => getFromState(this.getState(), ...paths);
 
   set = (path: string | Path | null, value: any, opts: APIOptsType & { replace?: any, setOneOf?: number, macros?: string } = {}) => {
     if (path === null) return this._setExecution([null], opts);
@@ -444,16 +444,16 @@ const compileSchema = memoize((elements: elementsType, schema: JsonSchema): jsJs
 function schemaCompiler(elements: elementsType = {}, schema: JsonSchema): jsJsonSchema {
   if (isCompiled(schema)) return schema;
 
-  let {ff_validators, ff_dataMap, ff_oneOfSelector, ...rest} = schema;
-  const result: any = isArray(schema) ? [] : {ff_compiled: true};
+  let {_validators, _stateMaps, _oneOfSelector, ...rest} = schema;
+  const result: any = isArray(schema) ? [] : {_compiled: true};
   const nFnOpts = {noStrictArrayResult: true};
-  ff_validators && (result.ff_validators = toArray(objectResolver(elements, ff_validators)).map(f => normalizeFn(f, nFnOpts)));
-  ff_dataMap && (result.ff_dataMap = objectResolver(elements, ff_dataMap));
-  ff_oneOfSelector && (result.ff_oneOfSelector = objectResolver(elements, normalizeFn(ff_oneOfSelector, nFnOpts)));
-  //if (isFunction(result.ff_oneOfSelector)) result.ff_oneOfSelector = {$: result.ff_oneOfSelector};
+  _validators && (result._validators = toArray(objectResolver(elements, _validators)).map(f => normalizeFn(f, nFnOpts)));
+  _stateMaps && (result._stateMaps = objectResolver(elements, _stateMaps));
+  _oneOfSelector && (result._oneOfSelector = objectResolver(elements, normalizeFn(_oneOfSelector, nFnOpts)));
+  //if (isFunction(result._oneOfSelector)) result._oneOfSelector = {$: result._oneOfSelector};
 
   objKeys(rest).forEach(key => {
-    if (key.substr(0, 3) == 'ff_') return result[key] = rest[key];
+    if (key.substr(0, 1) == '_') return result[key] = rest[key];
     switch (key) {
       case 'default':
       case 'enum':
@@ -475,7 +475,7 @@ function schemaCompiler(elements: elementsType = {}, schema: JsonSchema): jsJson
 }
 
 function isCompiled(schema: any): schema is jsJsonSchema {
-  return getIn(schema, 'ff_objects');
+  return getIn(schema, '_compiled');
 }
 
 function testRef(refRes: any, $_ref: string, track: string[]) {
@@ -521,10 +521,10 @@ function objectResolver(_elements: any, obj2resolve: any, track: string[] = []):
     let value = result[key];
     if (isString(value) && isRef(value.trim())) {
       value = convRef(value);
-      if (key !== '$' && key[0] !== '_' && (isFunction(value) || isArray(value) && value.every(isFunction)))
+      if (key !== '$' && key.substr(0, 2) !== '_$' && (isFunction(value) || isArray(value) && value.every(isFunction)))
         value = {$: value}
     }
-    if (key[0] !== '_' && isMergeable(value)) retResult[key] = objectResolver(_elements, value, track.concat(key));
+    if (key.substr(0, 2) !== '_$' && isMergeable(value)) retResult[key] = objectResolver(_elements, value, track.concat(key));
     else retResult[key] = value;
   });
 

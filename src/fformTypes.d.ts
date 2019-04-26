@@ -84,7 +84,7 @@ type dataMapActionType = { $: Function[], args: any[], replace: boolean }
 
 type MapFunctionType = (value: any, props: MapPropsType) => any;
 
-type MapPropsType = { path: string, pathTo: string, schema: jsJsonSchema, getFromState: (...pathes: Array<string | Path>) => any };
+type MapPropsType = { path: string, pathTo: string, schema: jsJsonSchema, getFromState: (...paths: Array<string | Path>) => any };
 
 type makeDataObjectResult = { data: FFieldDataType, dataMap: StateType }
 

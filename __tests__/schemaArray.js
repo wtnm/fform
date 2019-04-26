@@ -12,7 +12,7 @@ export default {
     "type": "array",
     "default": [{strValue: 'array level 2 objValue default', turpleValue: ['turpleValue level 2 default']}],
     "minItems": 2,
-    "ff_validators": [
+    "_validators": [
       (value, props) => {
         return value && value [0] && value[0].strValue === 'test validation' ? ['simple text message'] : undefined;
       },
@@ -47,7 +47,7 @@ export default {
           "type": "string",
           "default": "strValue default",
 
-          "ff_dataMap": [
+          "_stateMaps": [
             {"from": './@/value', to: '../mapValue/@/value'},
             {"from": './@/controls', to: '../mapArrValue/@/controls'},
             {"from": './@/controls/hidden', to: '../mapValue/@/controls/hidden', $: (v) => [!v]},
@@ -60,7 +60,7 @@ export default {
           "items": {
             "type": "string",
             "default": 'mapArrValue default',
-            "ff_dataMap": [{"from": '../../mapValue/@/value', to: './@/value'}],
+            "_stateMaps": [{"from": '../../mapValue/@/value', to: './@/value'}],
           }
         },
         "arrValue": {

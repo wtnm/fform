@@ -43,21 +43,21 @@ export default {
     'selfManagedType': {
       type: 'object',
       default: {selfValue: 'selfManagedType.selfValue', stringValue: 'selfManagedType.stringValue', numberValue: 5},
-      ff_managed: true
+      _managed: true
     },
     "multiType": {
       oneOf: [{
         type: ['array', 'string', 'null'],
-        ff_preset: 'array',
+        _presets: 'array',
         items: {type: 'string'},
       }, {
         type: ['string', 'array'],
-        ff_preset: 'array',
+        _presets: 'array',
         items: {type: 'string'},
         required: true
       }, {
         type: ['object', 'array'],
-        ff_preset: 'array',
+        _presets: 'array',
         items: {type: 'string'},
         properties: {
           oneString: {
@@ -66,15 +66,15 @@ export default {
           }, twoNumber: {
             type: ['number', 'null'],
             default: null,
-            ff_preset: 'number'
+            _presets: 'number'
           },
         },
         default: ['first value', 'second value']
       }, {
         type: ['array', 'string', 'number'],
-        ff_preset: 'arrayOf',
-        ff_managed: true,
-        items: {type: ['boolean', 'null'], ff_preset: 'boolean'},
+        _presets: 'arrayOf',
+        _managed: true,
+        items: {type: ['boolean', 'null'], _presets: 'boolean'},
         default: ''
       }
       ]
@@ -85,7 +85,7 @@ export default {
       items: {
         oneOf: [{
           type: 'object',
-          ff_dataMap: [{from: './@oneOf', to: './stringRecursiveValue@objMappedOneOf'}, {from: '../@length', to: './@objMappedLength'}],
+          _stateMaps: [{from: './@oneOf', to: './stringRecursiveValue@objMappedOneOf'}, {from: '../@length', to: './@objMappedLength'}],
           title: 'recursive Object',
           properties: {
             recusion: {
@@ -94,17 +94,17 @@ export default {
             },
             stringRecursiveValue: {
               type: 'string',
-              ff_dataMap: [{from: '../../@length', to: './@value', $: n => [n.toString()]}, {from: '../@oneOf', to: './@selfMappedOneOf'}]
+              _stateMaps: [{from: '../../@length', to: './@value', $: n => [n.toString()]}, {from: '../@oneOf', to: './@selfMappedOneOf'}]
             }
           }
         }, {
           title: 'selfManagedType',
           allOf: [{$ref: '#/definition/selfManagedType'}],
-          ff_dataMap: [{from: './@oneOf', to: './@selfManagedMappedOneOf'}, {from: '../@length', to: './@selfManagedMappedLength'}],
+          _stateMaps: [{from: './@oneOf', to: './@selfManagedMappedOneOf'}, {from: '../@length', to: './@selfManagedMappedLength'}],
         }, {
           title: 'stringType',
           allOf: [{$ref: '#/definition/stringType'}],
-          ff_dataMap: [{from: '../@oneOf', to: './@stringTypeMappedOneOf'}, {from: '../@length', to: './@stringTypeMappedLength'}],
+          _stateMaps: [{from: '../@oneOf', to: './@stringTypeMappedOneOf'}, {from: '../@length', to: './@stringTypeMappedLength'}],
         }, {
           title: 'multitypeObject',
           required: ['propOne', 'propTwo'],

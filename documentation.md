@@ -14,7 +14,7 @@
   * [Path](#path)
   * [Data object](#data-object)
 - [API](#api)
-    + [`get(...pathes: string | string[]`)](#getpathes-string--string)
+    + [`get(...paths: string | string[]`)](#getpaths-string--string)
     + [`set(path: string | string[], value: any, opts?: setOpts )`](#setpath-string--string-value-any-opts-setopts-)
     + [`getValue(opts?: getValueOpts)`](#getvalueopts-getvalueopts)
     + [`setValue(value: any, opts?: setValueOpts)`](#setvaluevalue-any-opts-setvalueopts)
@@ -29,7 +29,7 @@
     + [`getActive()`](#getactive)
     + [`execute()`](#execute)
 - [Basic schema properties](#basic-schema-properties)
-    + [Meta data](#meta-data)
+    + [Metadata](#metadata)
     + [Number Validation](#number-validation)
     + [String Validation](#string-validation)
     + [Array Validation](#array-validation)
@@ -44,8 +44,9 @@
   * [Object layout](#object-layout)
 - [Elements](#elements)
     + [Props processing](#props-processing)
+    + [Data processors](#data-processors)
+    + [$_maps](#_maps-)
     + [Structure](#structure)
-    + [Data, event processors](#data-event-processors)
 - [Styling](#styling)
 - [SSR](#ssr)
 
@@ -53,13 +54,13 @@
 
 
 ## FForm
-- `core` - instance of [FFStateApi](#ffstateapi)  or object with [FFStateApi props](#ffstateapi) 
+- `core` - instance of [FFStateApi](#ffstateapi)  or object with [FFStateApi props](#ffstateapi)
 - `state?: any` - state of FFStateApi
 - `value?: any` - form's current value
-- `inital?: any` - form's inital value
+- `inital?: any` - form's initial value
 - `noInitValidate?: boolean` - skip validation on creation
 - `fieldCache?: boolean | number` - caching delay on updating form's value. Used for optimization purposes.
-- `useTag?: string | Function` - html tag. Default 'form' 
+- `useTag?: string | Function` - html tag. Default 'form'
 - `parent?: any` - parent for form;
 - `onSubmit?: (value: any, fform?: any) => boolean` -
 - `onChange?: (value: any, fform?: any) => void` -
@@ -68,26 +69,26 @@
 After creation [FFStateApi](#ffstateapi) can accessed throught `api` property
 
 #### Passing FFStateApi props
-Property `core` with [FFStateApi props](#ffstateapi) processed only on creation (creating new instance of [FFStateApi](#ffstateapi)). On property update, if `core` is object with [FFStateApi props](#ffstateapi) then `core` is ignored (new instance of [FFStateApi](#ffstateapi) is not created). Otherwise, if (on property update) `core` is instance of [FFStateApi](#ffstateapi)  `FForm` component will make full rebuild.
+Property `core` with [FFStateApi props](#ffstateapi) processed only on creation (creating new instance of [FFStateApi](#ffstateapi)). On property update, if `core` is an object with [FFStateApi props](#ffstateapi) then `core` is ignored (new instance of [FFStateApi](#ffstateapi) is not created). Otherwise, if (on property update) `core` is instance of [FFStateApi](#ffstateapi)  `FForm` component will make full rebuild.
 
 #### Using with redux Provider
-`FFrom` can take store from context on creation if property `core` is object with [FFStateApi props](#ffstateapi). Just put `FForm` inside redux `Provider` with properly created store and leave `store` property undefined. To prevent from taking store from context (and not using store at all) set `store` property to false or null.
+`FForm` can take store from the context on creation if property `core` is object with [FFStateApi props](#ffstateapi). Just put `FForm` inside redux `Provider` with a properly created store and leave `store` property undefined. To prevent from taking store from context (and not using store at all) set `store` property to false or null.
 
 ## FFStateApi
 On creation pass to constructor object as first argument with following props:
 -   `schema` - schema that will be used to create state
 -   `name?: string` - name that will be used to access data in redux storage and for fields naming
--   `objects?` - [elements](#elements), that contains all nessary for  components creation
+-   `objects?` - [elements](#elements), that contains all necessary for  components creation
 -   `JSONValidator?` - JSON schema validator for [JSON validation](#json-validation)
 -   `store?:any` - redux store. [FForm](#fform) can take store from context
 -   `getState?: () => any` - external state setter
 -   `setState?: (state: any) => void` - external state getter
 
-After creation FFStateApi can be manipulated throught [API methods](#api)
+After creation FFStateApi can be manipulated through [API methods](#api)
 
 ### Storages
 #### Redux storage
-Create redux store with [thunk](#https://github.com/reduxjs/redux-thunk) and with `formReducer` with "fforms" in root reducer: 
+Create redux store with [thunk](#https://github.com/reduxjs/redux-thunk) and with `formReducer` with "fforms" in root reducer:
 ```
 const {formReducer} = require('fform');
 const {createStore, combineReducers, applyMiddleware} = require('redux');
@@ -108,20 +109,20 @@ if no `setState/getState` or `store` are passed on creation then [FFStateApi](#f
 
 
 ### Path<a name="path"></a>
-String (or array or strings) value delimited with '/' that describes path to field. Following pathes are equal:` '#/obects/array/field_1',  ['#', 'object/array', 'field_1'], ['object', '/array/', '/field_1/']`
+String (or array or strings) value delimited with '/' that describes path to field. Following paths are equal:` '#/objects/array/field_1',  ['#', 'object/array', 'field_1'], ['object', '/array/', '/field_1/']`
 
 Each field has [data object](#data-object) that can be accessed in path by using `'@'` symbol: `'/field_1@value', ['object/array', '@', 'length']`
 
-`'#'` - is the root element of schema state. Can be ommited.
+`'#'` - is the root element of schema state. Can be omitted.
 
-Path can be relative. Relative path starts with `'.'` or `'..'` and resolved relatively fields it eas used.
+A path can be relative. The relative path starts with `'.'` or `'..'` and resolved relatively fields it has used.
 
-API set functions support path-muliplying:
-- Comma-separated fields. Path 'array/1,2/field,prop' turns to 4 pathes 'array/1/field', 'array/1/prop', 'array/2/field', 'array/2/prop'. Works for both field-part(part before '@') and data-part(part after '@') of path.
-- Symbol `'*'` turns into all props of object/array. Path 'array/*' (for arrat with length 3) turns to 'array/0', 'array/1', 'array/2'. Works only for field-part(part before '@') of path.
+API set functions support path-multiplying:
+- Comma-separated fields. Path 'array/1,2/field,prop' turns to 4 paths 'array/1/field', 'array/1/prop', 'array/2/field', 'array/2/prop'. Works for both field-part(part before '@') and data-part(part after '@') of path.
+- Symbol `'*'` turns into all props of object/array. Path 'array/*' (for array with length 3) turns to 'array/0', 'array/1', 'array/2'. Works only for field-part(part before '@') of path.
 
 ### Data object<a name="data-object"></a>
-Each field has data object that is created according to [JSON schema](#basic-schema-properties) and can be changed throught [API](#api)
+Each field has data object that is created according to [JSON schema](#basic-schema-properties) and can be changed through [API](#api)
 Data object has the following props:
 - `value?: any`
 - `length?: number`
@@ -162,7 +163,7 @@ Data object has the following props:
 
 
 ## API
-- #### `get(...pathes: string | string[]`)
+- #### `get(...paths: string | string[]`)
 *Returns* data in [path(es)](#path)
 
 - #### `set(path: string | string[], value: any, opts?: setOpts )`
@@ -173,7 +174,7 @@ Set value in path. *Returns* [ApiPromise](#apipromise)
 		- [APIOptsType](#apioptstype)
 		- `replace?: boolean` - replace value if true or merge if false (actual for objects and arrays)
 		- `setOneOf?: number` - will try to switch to [oneOf index](#combining-schemas)
-		- `macros?: string` - excute macros
+		- `macros?: string` - executes macros
 
 
 - #### `getValue(opts?: getValueOpts)`
@@ -257,13 +258,13 @@ Executes all bathed updates.  *Returns* [ApiPromise](#apipromise)
 
 
 **ApiPromise** <a name="apipromise"></a>:
-API set functions returns promise that will be resolved after changes is made (actual only for asyncronous updates).
-Also returned promise has property 'vAsync' which is promis either. This promise will be resolved after all async validation that was triggered by update will be resolved.
+API set functions returns promise that will be resolved after changes is made (actual only for asynchronous updates).
+Also returned promise has property 'vAsync' which is promise either. This promise will be resolved after all async validation that was triggered by update will be resolved.
 
 
 **ApiOptsType** <a name="apioptstype"></a>:
-- `execute?: true | number` - if true then execute synchronously and immediatly. If number then executed asynchronously after number in milliseconds passed. Default is 0, that means asynchronous execution right after calling code is finished.
-Multiply asynchronous commands are stacking in batch and executes together.
+- `execute?: true | number` - if true then execute synchronously and immediately. If number then executed asynchronously after the number in milliseconds passed. Default is 0, that means asynchronous execution right after calling code is finished.
+Multiple asynchronous commands are stacking in batch and executes together.
 - `noValidation?: boolean` - No validation is made if true.
 
 
@@ -273,7 +274,7 @@ Multiply asynchronous commands are stacking in batch and executes together.
 -  `type?: JsonSchemaTypes | JsonSchemaTypes[]` - The basic type of this schema, can be one of * [string, number, object, array, boolean, null] * or an array of the acceptable types
 -  `enum?: any[]` - Enumerates the values that this schema can be  e.g. {"type": "string",   "enum": ["red", "green", "blue"]}
 -  `definitions?: { [key: string]: JSONschema }` - Holds simple JSON Schema definitions for  referencing from elsewhere.
-#### Meta data
+#### Metadata
 - `id?: string` - This is important because it tells refs where the root of the document is located
 - `$schema?: JSONschema;` - It is recommended that the meta-schema is included in the root of any JSON Schema
 - `title?: string` - Title of the schema
@@ -302,46 +303,46 @@ Multiply asynchronous commands are stacking in batch and executes together.
 -  `additionalProperties?: boolean | JSONschema`
 -  `properties?: { [property: string]: JSONschema }` - The keys that can exist on the object with the  json schema that should validate their value
 -  `patternProperties?: { [pattern: string]: T }` - The key of this object is a regex for which properties the schema applies to
--  `dependencies?: { [key: string]: T | string[] }` - If the key is present as a property then the string of properties must also be present. If the value is a JSON Schema then it must. Also be valid for the object if the key is  present.
+-  `dependencies?: { [key: string]: T | string[] }` - If the key is present as property then the string of properties must also be present. If the value is a JSON Schema then it must. Also, be valid for the object if the key is  present.
 #### Combining Schemas
--  `allOf?: JSONschema[]` - used for merging schemas
+-  `allOf?: JSONschema[]` - used for merging schemes
 -  `anyOf?: JSONschema[]` - only for validation
--  `oneOf?: JSONschema[]` - used for switching schemas
+-  `oneOf?: JSONschema[]` - used for switching schemes
 -  `not?: JSONschema` - The entity being validated must not match this schema
 
 ## Extended schema properties
-As JSON format doesn't support js-code all function moved to [elements](#elements). So in schema you should specify [reference to elements](#object-refs) as string value that starts with "^/". It will be resolved at [FFStateApi](#ffstateapi) creating.
+As JSON format doesn't support js-code all function moved to [elements](#elements). So in the schema you should specify a [reference to elements](#object-refs) as a string value that starts with "^/". It will be resolved at [FFStateApi](#ffstateapi) creating.
 
-- `ff_placeholder?: string`- field's placeholder
-- `ff_params?: FFParamsType` - params that can be edited in state
-	-   `liveValidate?: boolean` - 
+- `_placeholder?: string`- field's placeholder
+- `_params?: FFParamsType` - params that can be edited in state
+	-   `liveValidate?: boolean` -
 	-  `autofocus?: boolean` -
 	-  `readonly?: boolean` -
 	-  `disabled?: boolean` -
 	-  `hidden?: boolean` -
 	-  `norender?: boolean` -
 	-  `viewer?: boolean` -
-- `ff_data?: any` - any additional data you may need
-- `ff_presets?: string`- presets for rendering components
-- `ff_managed?: boolean`- determine that value managed by component itself (for objects and arrays)
-- `ff_enumExten?: { [key: string]: undefined | string | object }`- enum extension. Keys taken from enum. String converts to object with property `{label}`
-- `ff_dataMap?: Array<{from: string, to:string, $?:string, args?:'string'}>`- maps data in state. Array of objects with 2-4 properties where: `from` - path from where value is taken, `to` - path to where value is placed, `$` and `args` - [data processor](#data-event-processors) that process value when mapping.
-- `ff_validators?: Array<string | DataProcessor>`- [sync/async validators](#validation) as array of  [data processor](#data-event-processors). Each data processor receive field value as first parameter on value change. Only last function in [data processor](#data-event-processors) can be async.
-- `ff_oneOfSelector: string | DataProcessor` -  [data processor](#data-event-processors) that receive value to determine which oneOf schema should be choosen.
-- `ff_custom?: FFCustomizeType`- component [customization](#customization)
-- `ff_layout?: FFLayoutCustomizeType` - fields, objects, groups in [object/turple layout](#object-layout)
+- `_data?: any` - any additional data you may need
+- `_presets?: string`- presets for rendering components
+- `_managed?: boolean`- determine that value managed by the component itself (for objects and arrays)
+- `_enumExten?: { [key: string]: undefined | string | object }`- enum extension. Keys are taken from enum. String converts to object with property `{label}`
+- `_stateMaps?: Array<{from: string, to:string, $?:string, args?:'string'}>`- maps data in the state. An array of objects with 2-4 properties, where: `from` - path from where value is taken, `to` - path to where value is placed, `$` and `args` - [data processor](#data-event-processors) that process value when mapping.
+- `_validators?: Array<string | DataProcessor>`- [sync/async validators](#validation) as an array of  [data processor](#data-event-processors). Each data processor receives field value as the first parameter on value change. Only the last function in a [data processor](#data-event-processors) can be async.
+- `_oneOfSelector: string | DataProcessor` -  [data processor](#data-event-processors) that receive value to determine which oneOf schema should be chosen.
+- `_custom?: FFCustomizeType`- component [customization](#customization)
+- `_layout?: FFLayoutCustomizeType` - fields, objects, groups in an [object or tuple layout](#object-layout)
 
 ### Validation
 #### JSON validation
 For JSON validation used [is-my-json-valid](#https://github.com/mafintosh/is-my-json-valid) with modifications for smaller (3 times) bundle size. It is placed in `addons/is-my-json-valid-lite`. Pass it as `JSONValidator` property for [FFStateApi](#ffstateapi). Default group for JSON validation is 0.
 
 #### Sync validation
-Custom function that receive value as first parameter and should return string or object in the following format (or array of strings or objects):
+A function that receive value as the first parameter and should return string or object in the following format (or array of strings or objects):
 -  `group?: number` - group that replaces on each validation call. By default 0 - used for JSON validation, 1 - for sync validation, 2 - for async validation.
 -  `text: string | string[]` - message(s) that should be displayed
--  `priority?: number` - Default value 0. If field has at least one message with priority 0 it means that validation failed. Any priority greater that 0 doesn't affect validation status (used for warning, info, success etc). 
+-  `priority?: number` - Default value 0. If the field has at least one message with priority 0 it means that validation failed. Any priority is greater than 0 doesn't affect validation status (used for warning, info, success, etc).
 -  `path?: string` - path to another field for which you want to set message.
--  `{[key: string]: any}` - result may have any other props (such as className or style). It will be added to div layer for that priority on render.
+-  `{[key: string]: any}` - result may have any other props (such as className or style). It will be added to the div layer for that priority on render.
 
 
 #### Async validation
@@ -349,32 +350,55 @@ If function return promise then on resolve its result will be processed as for s
 
 
 ### Customization
-Each field build from following blocks: 
-- `Wrapper` - wrapps all and add array item controls when field is array element
-- `Title` - shows title property fromschema, and provide array add/del buttons when field is array
+Each field build from the following blocks:
+- `Wrapper` - wraps all and add array item controls when the field is an array element
+- `Title` - shows title property from the schema, and provide array add/del buttons when the field is an array
 - `Body` - contains Main and Messages to align then together
 - `Main` - in this block input element is placed
-- `Messages` - element that shows messages (error, warnigns, info etc)
+- `Messages` - element that shows messages (error, warnings, info, etc)
 
-In `ff_custom` schema property you can add/overwrite any proprerty of any block. It supports [elements props processing](#props-processing). It merges with `ff_presets` refs on field build. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=5).
+In `_custom` schema property, you can add/overwrite any property of any block. It supports [the element's props processing](#props-processing). It merges with `_presets` refs on field build. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=5).
 
 ### Object layout
-Schema property `ff_layout` can be object or array of strings | objects. String is the name of field and it determines the order in which fields will be placed. Object supports [elements props processing](#props-processing) with `$_fields` (that is array of strings | objects) property and can be customized. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=1).
+Schema property `_layout` can be object or array of strings | objects. The string is the name of the field and it determines the order in which fields will be placed. Object supports [elements props processing](#props-processing) with `$_fields` (that is an array of strings | objects) property and can be customized. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=1).
 
 
 ## Elements
-Each field in form receive a set of objects that is parts of elements (due to 'ff_presets' and 'ff_custom') that merges into one object. Then all functions that field finds in merged object binds to it during render. Exception is the props that starts with underscore.
+Each field in form receives a set of objects that is parts of elements (due to '_presets' and '_custom') that merges into one object. Then all functions that field finds in merged object binds to it during render. The exception is the props that start with an underscore.
 
 #### Props processing
-- `^/`<a name="object-refs"></a> - string value that begins with "^/" determines that value is the reference and resolved respectively
-- `_` - property name that starts with underscore prevent it value from deep processing (makes only resolving if string value starts with "^/")
-- `_%widget: string | Function` - HTML tag or function that will we used as react.element
+- `^/`<a name="object-refs"></a> - string value that begins with `^/` determines that value is the reference and resolved respectively
+- `_$` - leading `_$` in property name prevent it value from deep processing, but resolving if string value starts with `^/` is made
+- `$_` - leading `$_` in property name means than property has special processing
+- `_%widget: string | Function` - HTML tag or function that will we used as React-element
 - `_$cx: Function` - classnames processor, reference to '^/_$cx'
-- `$_ref: string` - reference starts with '^' path separated by '/', multi-refs separated by ':', <details><summary>example</summary> `{$_ref:'^/sets/base:^/sets/boolean'}`</details>
-- `$_reactRef: boolean | string` - creates reference to element with default name if true, if value is string then it is used as name 
-- `$_maps` - maps data from state to element. [Functions](#functions) can be used to proccess data.
+- `$_ref: string` - reference starts with '^' path separated by `/`, multi-refs separated by `:`, <details><summary>example</summary> `{$_ref:'^/sets/base:^/sets/boolean'}`</details>
+- `$_reactRef: boolean | string` - creates reference to element with default name if true, if value is string then it is used as name
+- `$_maps` - maps data from state to element. [Functions](#functions) can be used to process data.
 - `$_fields` - layout that determines field's order and add additional elements and sub-layouts
-- `anyName.bind: any[]` - binds value to function with name 'anyName'
+
+#### Data processors
+Object that has `$` property threaten as data processor. It has following properties:
+- `$: string` - link (with leading `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/first | ^/fn/second`. Output from first function send to second.
+- `replace?: boolean` - if `true` the result will be replaced, otherwise merged.
+- `args?: any[]` - arguments passed to very first function in `$`. Default `${...}`. Has several replacements:
+	- `${<number>}` - replaced with value that data processor receive according to number. If `${...}` passed then all values send to input. Depending on the place where data processor is used it receive different values:
+	 	- at `_stateMaps` - value is taken according to `from` property
+	 	- at `_validators` and `_oneOfSelector` receive form current value according to schema path
+	 	- at `elements.$_maps` receive no values
+	 	- at `elements.<onEventMethod>` receive event
+	- Args that starts with `@` replaced with [data object](data-object) value according to [path](#path). Example: `@/value`
+		- Args starts with `!` negated (`!!` negated twice). Example: `!@/value`
+- `update?: 'build' | 'data' | 'every'` - for `$_maps` processors. Determines when it executes.
+	- `build` - on component build/rebuild
+	- `data` - on [data object](data-object)
+	- `update, `every` - on each update
+
+**As functions executed in pipe each function that used in processors should return result as _array_** (except `_oneOfSelector`).
+Each function (except for those ones that are used in `_oneOfSelector`) has access to [API](#api) during runtime thought `this.api`.
+Any argument of `args` can be data processor (an object with `$` property), it will be executed (_recursively as it args can be data processor too_) and its result passed as value.
+
+#### $_maps <a name='maps'></a>
 
 #### Structure
 - `widgets` - contains react components that is used in form building, some of them:
@@ -385,7 +409,7 @@ Each field in form receive a set of objects that is parts of elements (due to 'f
     - `Wrapper`
     - `ItemMenu`
     - `CheckboxNull`
-- `sets` - presets for frequently used field's schemas, some of them:
+- `sets` - presets for frequently used field's schemes, some of them:
 	- `base`
 	- `nBase`
 	- `string`
@@ -406,16 +430,16 @@ Each field in form receive a set of objects that is parts of elements (due to 'f
 	- `checkboxes`
 - `fn` - functions that is used in [data, event processing](#data-event-processors), some of them:
 	- `api(fn: string, ...args: any[])`
-    - `format(str: string, ...args: any[])` 
+    - `format(str: string, ...args: any[])`
     - `iif(iif: any, trueVal: any, falseVaL: any, ...args: any[])`
-    - `not(v: any, ...args: any[])` 
+    - `not(v: any, ...args: any[])`
     - `equal(a: any, ...args: any[])`
     - `eventValue: (event: any, ...args: any[])`
     - `eventChecked: (event: any, ...args: any[])`
-    - `eventMultiple: (event: any, ...args: any[])` 
-    - `parseNumber: (value: any, int: boolean, empty: number | null, ...args: any[])` 
+    - `eventMultiple: (event: any, ...args: any[])`
+    - `parseNumber: (value: any, int: boolean, empty: number | null, ...args: any[])`
     - `setValue(value: any, opts: any = {}, ...args: any[])`
-- `parts` - commonly used parts of JSON, js-code, some of them:
+- `parts` <a name='parts'></a> - commonly used parts of JSON, js-code, some of them:
 	- `Submit`
 	- `Reset`
 	- `Button`
@@ -424,44 +448,25 @@ Each field in form receive a set of objects that is parts of elements (due to 'f
 	- `ArrayEmpty`
 	- `ArrayItemMenu`
 	- `Expander`
-	- `RadioSelector` 
+	- `RadioSelector`
 - `extend(objects: any[])` - merges elements with passed objects
-- `_$cx` - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
+- `_$cx` <a name="cx"></a> - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
 
-#### Data, event processors
-Object that has `$` propery threaten as data processor. It has following properties:
-- `$: string` - link (with leading `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/first | ^/fn/second`. Output from first function send to second.
-- `replace?: boolean` - if `true` the result will be replaced, otherwise merged.
-- `args?: any[]` - arguments passed to very first function in `$`. Default `${...}`. Has several replacements:
-	- `${<number>}` - replaced with value that data processor receive according to number. If `${...}` passed then all values send to input. Depending on the place where data proceeor is used it receive different values:
-	 	- at `ff_dataMaps` - value is taken according to `from` property
-	 	- at `ff_validators` and `ff_oneOfSelector` receive form current value according to schema path 
-	 	- at `Elements.$_map` receive no values
-	 	- at `Elements.onEvent` receive event
-	- Args that starts with `@` replaced with [data object](data-object) value according to [path](#path). Example: `@/value`
-		- Args starts with `!` negated (`!!` negated twice). Example: `!@/value`
-- `update?: 'build' | 'data' | 'every'` - for `$_maps` processors. Determines when it executes. 
-	- `build` - on component build/rebuild
-	- `data` - on [data object](data-object)
-	- `update, `every` - on each update
 
-**As functions executed in pipe each function that used in processors should return result as _array_** (except `ff_oneOfSelector`).
-Each function (except for those ones that are used in `ff_oneOfSelector`) has access to [api](#api) during runtime thougth `this.api`.
-Any argument of `args` can be data processor (object with `$` property), it will be executed (_recursively as it args can be data processor too_) and it result passed as value.
 
 ## Styling
-FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)) and it can be binded for class name's replacement.
+FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)) and it can be bound  for class name's replacement.
 Classes that are used in [elements](#elements):
 `hidden` - to hide elements
 `priority_0` - for errors styling
 `inline` - to place elements in line
-`required` - to mark title as required
-`layout` - default class for object layout's elemets
+`required` - to mark the title as required
+`layout` - default class for object layout's elements
 `shrink` - to shrink an element
 `expand` - to expand an element
 
-More classNames that can be apllied to [elements](#elements) can be found in `addons/styles.json` 
+More classNames that can be applied to [elements](#elements) can be found in `addons/styles.json`
 
 ## SSR
 
-Use `addon/dehydrator.js` to dehydrate state and pass it to client. On client side use passed state for itital value.
+Use `addon/dehydrator.js` to dehydrate state and pass it to the client. On the client side use passed state for the initial value.
