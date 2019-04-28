@@ -994,7 +994,7 @@ function extractMaps(obj: any, skip: string[] = []) {
 
 
 function normalizeMaps($_maps: any, prePath = '') {
-  const result: { data: NormalizedPropsMapType[], every: NormalizedPropsMapType[], build: NormalizedPropsMapType[] } = {data: [], every: [], build: []};
+  const result: { data: NormalizedDataProcessor[], every: NormalizedDataProcessor[], build: NormalizedDataProcessor[] } = {data: [], every: [], build: []};
   objKeys($_maps).forEach(key => {
     let value = $_maps[key];
     if (!value) return;
@@ -1019,9 +1019,9 @@ function normalizeMaps($_maps: any, prePath = '') {
 }
 
 //!map.$ && map.args[0] == 'selectorValue' && args[0]
-function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedPropsMapType[] | false>) {
+function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedDataProcessor[] | false>) {
   // const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
-  const needUpdate = (map: NormalizedPropsMapType): boolean => isUndefined(prevData) || !map.$ ||
+  const needUpdate = (map: NormalizedDataProcessor): boolean => isUndefined(prevData) || !map.$ ||
     (map.dataRequest && map.args.some(arg => {
       if (isNPath(arg)) return getIn(prevData, arg) !== getIn(nextData, arg);
       if (isMapFn(arg)) return needUpdate(arg._map || arg);

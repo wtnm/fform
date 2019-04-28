@@ -2948,26 +2948,25 @@ exports.rehydrateState = rehydrateState;
 /////////////////////////////////////////////
 function updateMessagesPROC(state, UPDATABLE, track, result, defaultGroup = 0) {
     function conv(item) {
-        return (typeof item === 'object') ? item : { group: defaultGroup, text: item };
+        return (typeof item === 'object') ? item : { group: defaultGroup, data: item };
     }
-    ;
-    let messages = commonLib_2.isArray(result) ? result.map(conv) : [conv(result)];
+    let messages = commonLib_1.toArray(result).map(conv);
     messages.forEach((item) => {
         let { path } = item, itemNoPath = __rest(item, ["path"]);
         if (path) {
             path = normalizePath(path, track);
-            return updateMessagesPROC(state, UPDATABLE, path, itemNoPath, defaultGroup);
+            state = updateMessagesPROC(state, UPDATABLE, path, itemNoPath, defaultGroup);
         }
         else {
-            let { group = defaultGroup, text, priority = 0 } = itemNoPath, rest = __rest(itemNoPath, ["group", "text", "priority"]);
+            let { group = defaultGroup, data, priority = 0 } = itemNoPath, rest = __rest(itemNoPath, ["group", "data", "priority"]);
             const messageData = commonLib_1.getCreateIn(UPDATABLE.update, {}, track, SymData, 'messages', priority);
             Object.assign(messageData, rest);
             if (!commonLib_2.isObject(messageData.texts))
                 messageData.texts = {};
             if (!commonLib_2.isArray(messageData.texts[group]))
                 messageData.texts[group] = [];
-            if (text)
-                commonLib_1.push2array(messageData.texts[group], text);
+            if (data)
+                commonLib_1.push2array(messageData.texts[group], data);
         }
     });
     return state;

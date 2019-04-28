@@ -326,8 +326,8 @@ As JSON format doesn't support js-code all function moved to [elements](#element
 - `_presets?: string`- presets for rendering components
 - `_managed?: boolean`- determine that value managed by the component itself (for objects and arrays)
 - `_enumExten?: { [key: string]: undefined | string | object }`- enum extension. Keys are taken from enum. String converts to object with property `{label}`
-- `_stateMaps?: Array<{from: string, to:string, $?:string, args?:'string'}>`- maps data in the state. An array of objects with 2-4 properties, where: `from` - path from where value is taken, `to` - path to where value is placed, `$` and `args` - [data processor](#data-event-processors) that process value when mapping.
-- `_validators?: Array<string | DataProcessor>`- [sync/async validators](#validation) as an array of  [data processor](#data-event-processors). Each data processor receives field value as the first parameter on value change. Only the last function in a [data processor](#data-event-processors) can be async.
+- `_stateMaps?: Array<{from: string, to:string, $?:string, args?:'string'}>`- <a name='statemaps'></a> maps data in the state. An array of objects with 2-4 properties, where: `from` - path from where value is taken, `to` - path to where value is placed, `$` and `args` - [data processor](#data-event-processors) that process value when mapping.
+- `_validators?: Array<string | dataProcessor>`- [sync/async validators](#validation) as an array of  [data processor](#data-event-processors). Each data processor receives field value as the first parameter on value change. Only the last function in a [data processor](#data-event-processors) can be async.
 - `_oneOfSelector: string | DataProcessor` -  [data processor](#data-event-processors) that receive value to determine which oneOf schema should be chosen.
 - `_custom?: FFCustomizeType`- component [customization](#customization)
 - `_layout?: FFLayoutCustomizeType` - fields, objects, groups in an [object or tuple layout](#object-layout)
@@ -339,9 +339,9 @@ For JSON validation used [is-my-json-valid](#https://github.com/mafintosh/is-my-
 #### Sync validation
 A function that receive value as the first parameter and should return string or object in the following format (or array of strings or objects):
 -  `group?: number` - group that replaces on each validation call. By default 0 - used for JSON validation, 1 - for sync validation, 2 - for async validation.
--  `text: string | string[]` - message(s) that should be displayed
+-  `data: any` - message(s) that should be displayed. Can be React-element(s).
 -  `priority?: number` - Default value 0. If the field has at least one message with priority 0 it means that validation failed. Any priority is greater than 0 doesn't affect validation status (used for warning, info, success, etc).
--  `path?: string` - path to another field for which you want to set message.
+-  `path?: string` - path to another field you want message to be set .
 -  `{[key: string]: any}` - result may have any other props (such as className or style). It will be added to the div layer for that priority on render.
 
 
@@ -368,7 +368,7 @@ Each field in form receives a set of objects that is parts of elements (due to '
 
 #### Props processing
 - `^/`<a name="object-refs"></a> - string value that begins with `^/` determines that value is the reference and resolved respectively
-- `_$` - leading `_$` in property name prevent it value from deep processing, but resolving if string value starts with `^/` is made
+- `_$` - leading `_$` in property name prevent it value from deep processing, but if value is string and starts with `^/` resolving still made
 - `$_` - leading `$_` in property name means than property has special processing
 - `_%widget: string | Function` - HTML tag or function that will we used as React-element
 - `_$cx: Function` - classnames processor, reference to '^/_$cx'
@@ -378,13 +378,13 @@ Each field in form receives a set of objects that is parts of elements (due to '
 - `$_fields` - layout that determines field's order and add additional elements and sub-layouts
 
 #### Data processors
-Object that has `$` property threaten as data processor. It has following properties:
+Any object in `elements` that has `$` property threaten as data processor. It has following properties:
 - `$: string` - link (with leading `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/first | ^/fn/second`. Output from first function send to second.
-- `replace?: boolean` - if `true` the result will be replaced, otherwise merged.
-- `args?: any[]` - arguments passed to very first function in `$`. Default `${...}`. Has several replacements:
-	- `${<number>}` - replaced with value that data processor receive according to number. If `${...}` passed then all values send to input. Depending on the place where data processor is used it receive different values:
-	 	- at `_stateMaps` - value is taken according to `from` property
-	 	- at `_validators` and `_oneOfSelector` receive form current value according to schema path
+- `replace?: boolean` - if `true` the data processor's result will be replaced, otherwise merged.
+- `args?: any[]` - arguments passed to very first function in `$`. Default `['${...}']`. Has several replacements:
+	- `${<number>}` - replaced with value that data processor receive according to number. If `${...}` passed then all values sent to input. Depending on the place where data processor is used it receive different values:
+	 	- at `schema._stateMaps` - value is taken according to `from` property
+	 	- at `schema._validators` and `schema._oneOfSelector` receive form current value according to schema path
 	 	- at `elements.$_maps` receive no values
 	 	- at `elements.<onEventMethod>` receive event
 	- Args that starts with `@` replaced with [data object](data-object) value according to [path](#path). Example: `@/value`
@@ -395,60 +395,83 @@ Object that has `$` property threaten as data processor. It has following proper
 	- `update, `every` - on each update
 
 **As functions executed in pipe each function that used in processors should return result as _array_** (except `_oneOfSelector`).
+
 Each function (except for those ones that are used in `_oneOfSelector`) has access to [API](#api) during runtime thought `this.api`.
+
 Any argument of `args` can be data processor (an object with `$` property), it will be executed (_recursively as it args can be data processor too_) and its result passed as value.
 
-#### $_maps <a name='maps'></a>
+#### $_maps <a name='_maps'></a>
+`$_maps: {path2property: string}: string | dataProcessor | dataProcessor[]` is the object that decribes translation data from state's [data objects]($data-object) to component properties.
+
+Key `path2property` defines the path (with symbol `/` as delimiter) in object, where `$_maps` belongs, for example `className/hidden`. Notice: `$_maps` doesn't change the type of property if it was set before and is mergeable (i.e. array or object type), otherwise when needed object is created. For example, if you define something like this `{"children": [], $_maps{"children/0":"@/anything"}}` the type of `children` will always be array.
+
+String value should start with `@`, and defines path in [data object]($data-object) from where the value shold be taken, examle `"className/hidden": "@/params/hidden[^]"`. Also, supports leading `!` or `!!` to negate (convert to boolean) value, examle: `"className/shown": "!@/params/hidden[^]"`.
+
+[Data processor](#data-processors) (array of it) process data it receives. In `$_maps` there is no default input values, so you have to define them in `args` property. Example: 
+```js
+{
+	"className": "",
+    "$_maps": {
+		"className/equal": {
+        	"$": "^/fn/equal", 
+            "args": ["@/someTestValue", "value2compare"]
+         }
+	}
+}
+```
+Here `someTestValue` property will be taken from [data object]($data-object) and then passed as 1st argument with string `value2compare` as 2nd to function at `elements.fn.equal`, and the result will be set in `className.equal` with `className` converted to object.
+
+**Important notice:** during runtime functions in data processor have acces to API througth `this.api` and can use `api.get` to gain access to data in another fields. It is not recommended, cause changing data in another field won't trigger data update in current. Instead use schema's [_stateMaps](#statemaps) propery to translate data from any other field's data to the current field's [data object]($data-object), and then take it from [data object]($data-object) as it shown above.
 
 #### Structure
 - `widgets` - contains react components that is used in form building, some of them:
-	- `Section`
-    - `Generic`
-    - `Input`
-    - `Builder`
-    - `Wrapper`
-    - `ItemMenu`
-    - `CheckboxNull`
+	- `Section` - renders object and array types of schema
+    - `Generic` - generic widget for many uses
+    - `Input` - widget that renders all types, except object and array
+    - `Builder` - build field from blocks
+    - `Wrapper` - wraps all others blocks and provides array item menu if needed
+    - `ItemMenu` - renders array item menu
+    - `CheckboxNull` - renders tristate checkbox
 - `sets` - presets for frequently used field's schemes, some of them:
-	- `base`
-	- `nBase`
-	- `string`
-	- `textarea`
-	- `integer`
-	- `integerNull`
-	- `number`
-	- `numberNull`
-	- `boolean`
-	- `booleanLeft`
-	- `booleanNull`
-	- `booleanNullLeft`
-	- `object`
-	- `array`
-	- `select`
-	- `multiselect`
-	- `radio`
-	- `checkboxes`
+	- `base` - basic set of blocks that used in every field
+	- `nBase` - basic set for non-object types of schema
+	- `string` - set for string type of schema
+	- `textarea` - set for large string values
+	- `integer` - set for integer type of schema
+	- `integerNull` - set for integer and null types of schema
+	- `number` - set for number type of schema
+	- `numberNull` - set for number and null type of schema
+	- `boolean` - set for boolean type of schema
+	- `booleanLeft` - set for boolean type of schema with left placement of checkbox
+	- `booleanNull` - set for boolean and null type of schema
+	- `booleanNullLeft`- set for boolean  and null type of schema with left placement of checkbox
+	- `object` - set for object and array types of schema
+	- `array`  - set for object and array types of schema
+	- `select` - set for enum values
+	- `multiselect` - set for array of enum values
+	- `radio` - set for enum values as radio buttons
+	- `checkboxes` - set for array of enum values as checkbox buttons
 - `fn` - functions that is used in [data, event processing](#data-event-processors), some of them:
-	- `api(fn: string, ...args: any[])`
-    - `format(str: string, ...args: any[])`
-    - `iif(iif: any, trueVal: any, falseVaL: any, ...args: any[])`
-    - `not(v: any, ...args: any[])`
-    - `equal(a: any, ...args: any[])`
-    - `eventValue: (event: any, ...args: any[])`
-    - `eventChecked: (event: any, ...args: any[])`
-    - `eventMultiple: (event: any, ...args: any[])`
-    - `parseNumber: (value: any, int: boolean, empty: number | null, ...args: any[])`
-    - `setValue(value: any, opts: any = {}, ...args: any[])`
+	- `api(fn: string, ...args: any[])` - executes `this.api[fn](...args)`
+    - `format(str: string, ...args: any[])` - replaces `${<number>}` in `str` with `args[<number>]`
+    - `iif(iif: any, trueVal: any, falseVaL: any, ...args: any[])` - if `iif` is trusty returns `trueVal`, otherwise `falseVaL`
+    - `not(value: any, ...args: any[])` - returns negated `value`, `args` keeps untouched
+    - `equal(value: any, ...args: any[])` - tests if `value` strictly equal to any of `args`
+    - `eventValue: (event: any, ...args: any[])` - returns `event.target.value`, `args` keeps untouched
+    - `eventChecked: (event: any, ...args: any[])` - returns `event.target.checked`, `args` keeps untouched
+    - `eventMultiple: (event: any, ...args: any[])` - returns selected values from multiselect, `args` keeps untouched
+    - `parseNumber: (value: any, int: boolean, empty: number | null, ...args: any[])` - conver value to number if `int` is false, to iteger if `int` is true. If value is empty string returns `empty`. `args` keeps untouched
+    - `setValue(value: any, opts: any = {}, ...args: any[])` - set `value` in state using [`this.api.setState`](#setvaluevalue-any-opts-setvalueopts) with `opts`. Returns untouched `args`.
 - `parts` <a name='parts'></a> - commonly used parts of JSON, js-code, some of them:
-	- `Submit`
-	- `Reset`
-	- `Button`
-	- `ArrayAddButton`
-	- `ArrayDelButton`
-	- `ArrayEmpty`
-	- `ArrayItemMenu`
-	- `Expander`
-	- `RadioSelector`
+	- `Submit` - submit button
+	- `Reset` - reset button
+	- `Button` - button
+	- `ArrayAddButton` - array add button
+	- `ArrayDelButton` - array del button
+	- `ArrayEmpty` - array is empty notificator
+	- `ArrayItemMenu` - array item menu
+	- `Expander` - expander to fill space
+	- `RadioSelector` - radio selector
 - `extend(objects: any[])` - merges elements with passed objects
 - `_$cx` <a name="cx"></a> - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
 

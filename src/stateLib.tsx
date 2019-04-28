@@ -524,21 +524,21 @@ function rehydrateState(state: any, UPDATABLE: PROCEDURE_UPDATABLE_Type) {
 
 function updateMessagesPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, track: Path, result?: MessageData, defaultGroup = 0) {
   function conv(item: MessageGroupType | string): MessageGroupType {
-    return (typeof item === 'object') ? item : {group: defaultGroup, text: item};
-  };
-  let messages: MessageGroupType[] = isArray(result) ? (result as any).map(conv) : [conv(result as any)];
+    return (typeof item === 'object') ? item : {group: defaultGroup, data: item};
+  }
+  let messages: MessageGroupType[] = toArray(result).map(conv);
   messages.forEach((item) => {
     let {path, ...itemNoPath} = item;
     if (path) {
       path = normalizePath(path, track);
-      return updateMessagesPROC(state, UPDATABLE, path, itemNoPath, defaultGroup)
+      state = updateMessagesPROC(state, UPDATABLE, path, itemNoPath, defaultGroup)
     } else {
-      let {group = defaultGroup, text, priority = 0, ...rest} = itemNoPath;
+      let {group = defaultGroup, data, priority = 0, ...rest} = itemNoPath;
       const messageData = getCreateIn(UPDATABLE.update, {}, track, SymData, 'messages', priority);
       Object.assign(messageData, rest);
       if (!isObject(messageData.texts)) messageData.texts = {};
       if (!isArray(messageData.texts[group])) messageData.texts[group] = [];
-      if (text) push2array(messageData.texts[group], text);
+      if (data) push2array(messageData.texts[group], data);
     }
   });
   return state

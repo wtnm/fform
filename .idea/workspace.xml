@@ -1,23 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="elements.sets changes">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__tests__/schemaArray.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/schemaArray.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__tests__/schemaOneOf.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/schemaOneOf.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js" afterDir="false" />
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="schema extended props name changed">
       <change beforePath="$PROJECT_DIR$/dist/fform.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/fform.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.min.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/documentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample/sample.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sample.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample/sampleSchema.json" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sampleSchema.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sample/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/sample/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/api.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/commonLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/commonLib.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/fform.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/fform.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fformTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/fformTypes.d.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/schemaTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/schemaTypes.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/stateLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/stateLib.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -37,6 +28,15 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/package.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="40">
+              <caret line="2" column="26" selection-start-line="2" selection-start-column="26" selection-end-line="2" selection-end-column="26" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="320">
@@ -45,11 +45,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/fform.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="254">
-              <caret line="948" column="9" selection-start-line="948" selection-start-column="9" selection-end-line="948" selection-end-column="9" />
+            <state relative-caret-position="288">
+              <caret line="1220" column="6" lean-forward="true" selection-start-line="1220" selection-start-column="6" selection-end-line="1220" selection-end-column="6" />
             </state>
           </provider>
         </entry>
@@ -88,19 +88,7 @@
         <entry file="file://$PROJECT_DIR$/__tests__/schemaOneOf.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="320">
-              <caret line="111" column="22" lean-forward="true" selection-start-line="111" selection-start-column="22" selection-end-line="111" selection-end-column="22" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/documentation.md">
-          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-            <state split_layout="FIRST">
-              <first_editor relative-caret-position="312">
-                <caret line="388" column="37" selection-start-line="388" selection-start-column="37" selection-end-line="388" selection-end-column="37" />
-              </first_editor>
-              <second_editor />
+              <caret line="111" column="22" selection-start-line="111" selection-start-column="22" selection-end-line="111" selection-end-column="22" />
             </state>
           </provider>
         </entry>
@@ -126,8 +114,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="320">
-              <caret line="75" column="12" selection-start-line="75" selection-start-column="12" selection-end-line="75" selection-end-column="12" />
+            <state relative-caret-position="380">
+              <caret line="102" column="18" selection-start-line="102" selection-start-column="5" selection-end-line="102" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -172,8 +160,8 @@
       <find>'_'</find>
       <find>'_$'</find>
       <find>ff_</find>
-      <find>_dataMap</find>
       <find>_stateMaps</find>
+      <find>_dataMap</find>
     </findStrings>
     <replaceStrings>
       <replace>tagRef</replace>
@@ -258,18 +246,18 @@
         <option value="$PROJECT_DIR$/src/tsconfig.json" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/__tests__/testForm.js" />
-        <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/src/commonLib.tsx" />
         <option value="$PROJECT_DIR$/src/fformTypes.d.ts" />
         <option value="$PROJECT_DIR$/sample/sample.tsx" />
         <option value="$PROJECT_DIR$/src/fform.tsx" />
         <option value="$PROJECT_DIR$/src/api.tsx" />
-        <option value="$PROJECT_DIR$/src/schemaTypes.d.ts" />
         <option value="$PROJECT_DIR$/src/stateLib.tsx" />
         <option value="$PROJECT_DIR$/sample/sampleSchema.json" />
         <option value="$PROJECT_DIR$/__tests__/schemaArray.js" />
         <option value="$PROJECT_DIR$/__tests__/schemaOneOf.js" />
         <option value="$PROJECT_DIR$/documentation.md" />
+        <option value="$PROJECT_DIR$/package.json" />
+        <option value="$PROJECT_DIR$/src/schemaTypes.d.ts" />
       </list>
     </option>
   </component>
@@ -464,7 +452,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Node.js.examplesLinks.js">
+  <component name="RunManager" selected="JavaScript Debug.Form">
     <configuration default="true" type="NodeJSRemoteDebug" factoryName="Node.js Remote Debug">
       <node-js-remote-debug />
       <method />
@@ -1299,14 +1287,7 @@
       <workItem from="1556103124387" duration="2576000" />
       <workItem from="1556117291636" duration="1880000" />
       <workItem from="1556197682423" duration="1883000" />
-      <workItem from="1556261865296" duration="2784000" />
-    </task>
-    <task id="LOCAL-00092" summary="fixes">
-      <created>1552575820758</created>
-      <option name="number" value="00092" />
-      <option name="presentableId" value="LOCAL-00092" />
-      <option name="project" value="LOCAL" />
-      <updated>1552575820759</updated>
+      <workItem from="1556261865296" duration="6093000" />
     </task>
     <task id="LOCAL-00093" summary="fixes">
       <created>1552585041463</created>
@@ -1644,7 +1625,14 @@
       <option name="project" value="LOCAL" />
       <updated>1555860147592</updated>
     </task>
-    <option name="localTasksCounter" value="141" />
+    <task id="LOCAL-00141" summary="schema extended props name changed">
+      <created>1556265713070</created>
+      <option name="number" value="00141" />
+      <option name="presentableId" value="LOCAL-00141" />
+      <option name="project" value="LOCAL" />
+      <updated>1556265713071</updated>
+    </task>
+    <option name="localTasksCounter" value="142" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1680,7 +1668,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3584077000" />
+    <option name="totallyTimeSpent" value="3587386000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1696,16 +1684,16 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.58917195" weight="0.19607843" />
-      <window_info active="true" content_ui="combo" id="Project" order="1" sideWeight="0.57088846" visible="true" weight="0.16004239" />
-      <window_info id="Structure" order="2" sideWeight="0.42911154" side_tool="true" visible="true" weight="0.119766824" />
+      <window_info active="true" content_ui="combo" id="Project" order="1" sideWeight="0.57028115" visible="true" weight="0.15050344" />
+      <window_info id="Structure" order="2" sideWeight="0.42911154" side_tool="true" weight="0.119766824" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
-      <window_info id="npm" order="4" sideWeight="0.41949153" side_tool="true" weight="0.10439852" />
+      <window_info id="npm" order="4" sideWeight="0.42971888" side_tool="true" visible="true" weight="0.112877585" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
       <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.51228327" side_tool="true" weight="0.27745664" />
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="DB Execution Console" order="3" />
       <window_info anchor="bottom" id="Terminal" order="4" sideWeight="0.4892585" weight="0.32410613" />
-      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48771676" visible="true" weight="0.22543353" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48771676" weight="0.22543353" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.24624278" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" weight="0.44739884" />
@@ -1749,7 +1737,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="more tests" />
     <MESSAGE value="dataMaps &amp; validators rework" />
     <MESSAGE value="preparation for testing with react and preact" />
     <MESSAGE value="switched to chai.expect" />
@@ -1774,7 +1761,8 @@
     <MESSAGE value="processFn reworked" />
     <MESSAGE value="added data processors to fform methods" />
     <MESSAGE value="elements.sets changes" />
-    <option name="LAST_COMMIT_MESSAGE" value="elements.sets changes" />
+    <MESSAGE value="schema extended props name changed" />
+    <option name="LAST_COMMIT_MESSAGE" value="schema extended props name changed" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2078,13 +2066,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="40">
-          <caret line="2" column="26" selection-start-line="2" selection-start-column="26" selection-end-line="2" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_CONFIG_DIR$/javascript/nodejs/10.13.0/core-modules/internal/bootstrap/node.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="14540">
@@ -2120,34 +2101,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/api.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="450" column="72" selection-start-line="450" selection-start-column="72" selection-end-line="450" selection-end-column="72" />
-          <folding>
-            <element signature="n#!!doc" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="320">
-          <caret line="75" column="12" selection-start-line="75" selection-start-column="12" selection-end-line="75" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="320">
           <caret line="431" column="47" selection-start-line="431" selection-start-column="47" selection-end-line="431" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/fform.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="254">
-          <caret line="948" column="9" selection-start-line="948" selection-start-column="9" selection-end-line="948" selection-end-column="9" />
         </state>
       </provider>
     </entry>
@@ -2165,20 +2122,51 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/__tests__/schemaOneOf.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="320">
-          <caret line="111" column="22" lean-forward="true" selection-start-line="111" selection-start-column="22" selection-end-line="111" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/documentation.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="FIRST">
-          <first_editor relative-caret-position="312">
-            <caret line="388" column="37" selection-start-line="388" selection-start-column="37" selection-end-line="388" selection-end-column="37" />
+          <first_editor relative-caret-position="432">
+            <caret line="394" column="39" lean-forward="true" selection-start-line="394" selection-start-column="39" selection-end-line="394" selection-end-column="39" />
           </first_editor>
           <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="40">
+          <caret line="2" column="26" selection-start-line="2" selection-start-column="26" selection-end-line="2" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__tests__/schemaOneOf.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="320">
+          <caret line="111" column="22" selection-start-line="111" selection-start-column="22" selection-end-line="111" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/api.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="220">
+          <caret line="450" column="72" selection-start-line="450" selection-start-column="72" selection-end-line="450" selection-end-column="72" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="380">
+          <caret line="102" column="18" selection-start-line="102" selection-start-column="5" selection-end-line="102" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/fform.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="288">
+          <caret line="1220" column="6" lean-forward="true" selection-start-line="1220" selection-start-column="6" selection-end-line="1220" selection-end-column="6" />
         </state>
       </provider>
     </entry>

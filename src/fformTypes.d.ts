@@ -1,17 +1,14 @@
 declare type mixed = string | number | boolean | null | {}
 declare type Path = Array<string | number | symbol | any>;  // [Path, Path, any] | [Path, any]
 declare type PathItem = { path: Path, keyPath?: Path, fullPath?: Path };
-declare type MapValuesItem = { from: PathItem, to: PathItem, fn: any };
 declare type StateApiUpdateType = { path: any, value: any, replace?: any, macros?: string, [key: string]: any };
 declare type NormalizedUpdateType = { path: Path, value: any, replace?: any, [key: string]: any };
 
-
-declare type PathSlice = Array<string | number | any | Array<string | number | any>>;
 declare type MessageData = Array<MessageGroupType | string> | MessageGroupType | string;
 
 type MessageGroupType = {
   group?: number;
-  text: string | string[];
+  data: any;
   priority?: number;  // 0 and below means validation failed, else if priority > 0 message considered valid 
   path?: Path | string;
   className?: string;
@@ -65,8 +62,6 @@ interface MessagesDataType {
   className?: any;
 }
 
-type MessageType = 'danger' | 'warning' | 'success' | 'info' | 'notice' | '';
-
 interface elementsType {
   "presets"?: { [key: string]: jsFFCustomizeType | string };
   "widgets"?: { [key: string]: any };
@@ -76,19 +71,9 @@ interface elementsType {
   [key: string]: any;
 }
 
-type styleType = { [key: string]: string | number }
-
 type normalizedDataMapType = { emitter: Path, from: string, to: string, action: dataMapActionType | boolean | undefined }; //{ fromPath: Path, fromKeyPath: Path, to: string, fn: MapFunctionType | false }
 
 type dataMapActionType = { $: Function[], args: any[], replace: boolean }
-
-type MapFunctionType = (value: any, props: MapPropsType) => any;
-
-type MapPropsType = { path: string, pathTo: string, schema: jsJsonSchema, getFromState: (...paths: Array<string | Path>) => any };
-
-type makeDataObjectResult = { data: FFieldDataType, dataMap: StateType }
-
-type ObjectDataStorageForSchema = { [key: string]: any } & { [symbol: string]: { isArray: boolean, length?: number, addable: boolean } }
 
 type vPromisesType = Promise<any> & {
   validatedValue: any,
