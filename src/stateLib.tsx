@@ -384,10 +384,31 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   fData.required = schemaPart.required;
   fData.title = schemaPart.title;
   fData.placeholder = schemaPart._placeholder;
-  if(schemaPart.enum) fData.enum = schemaPart.enum;
-  if(schemaPart._enumExten) fData.enumExten = schemaPart._enumExten;
-  if (fData.enumExten && !fData.enum)
+  if (schemaPart.enum) fData.enum = schemaPart.enum;
+  if (schemaPart._enumExten) fData.enumExten = schemaPart._enumExten;
+
+  if (isArray(schemaPart._enumExten) && isArray(schemaPart.enum)) {
+    let enumExten = {};
+    fData.enumExten = fData.enumExten.map((v: any) => isString(v) ? {label: v} : v);
+    fData.enum.forEach((v: any, i: number) => enumExten[v] = fData.enumExten[i]);
+    fData.enumExten = enumExten;
+  } else if (schemaPart._enumExten && !fData.enum) {
+    if (isArray(fData.enumExten)) {
+      let enumExten = {};
+      fData.enumExten.forEach((v: any) => {
+        // if (!isString(v) && !v) return;
+        if (isString(v)) enumExten[v] = {label: v};
+        else if (isObject(v)) {
+          if (!isUndefined(v.value)) {
+            if (isUndefined(v.label)) v = {...v, label: v.value};
+            enumExten[v.value] = v;
+          } else if (!isUndefined(v.label)) enumExten[v.label] = v;
+        }
+      });
+      fData.enumExten = enumExten;
+    }
     fData.enum = objKeys(fData.enumExten).filter(k => fData.enumExten[k]);
+  }
   if (schemaPart._oneOfSelector) fData.oneOfSelector = true;
 
   if (isSchemaSelfManaged(schemaPart, type)) result.value = value;

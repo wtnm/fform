@@ -91,7 +91,7 @@ interface FFCommonSchemaType {
   _managed?: boolean; // determine that value managed by component itself (for elements and arrays)
   _custom?: FFCustomizeType; // components customization
   _layout?: FFLayoutGeneric<FFCustomizeType> | Array<string | FFLayoutGeneric<FFCustomizeType>>; // fields order and object/group extenion
-  _enumExten?: { [key: string]: undefined | string | object }; // enum extension value taken from enum, string turn to label
+  _enumExten?: any; // enum extension value taken from enum, string turn to label
 
 }
 

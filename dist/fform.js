@@ -1872,9 +1872,7 @@ function updateProps(mappedData, prevData, nextData, ...iterMaps) {
 }
 exports.updateProps = updateProps;
 const getExten = (enumExten, value) => {
-    if (commonLib_1.isFunction(enumExten))
-        return enumExten(value);
-    let res = commonLib_1.getIn(enumExten, value);
+    let res = commonLib_1.isFunction(enumExten) ? enumExten(value) : commonLib_1.getIn(enumExten, value);
     if (res && commonLib_1.isString(res))
         res = { label: res };
     return commonLib_1.isObject(res) ? res : {};
@@ -2256,7 +2254,7 @@ let elementsBase = {
         arrayOfEnum(enumVals = [], enumExten = {}, staticProps = {}, name) {
             return [enumVals.map(val => {
                     let extenProps = getExten(enumExten, val);
-                    return Object.assign({ value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)) }, extenProps, staticProps);
+                    return Object.assign({ key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)) }, extenProps, staticProps, { value: val });
                 })];
         },
         enumInputs(enumVals = [], enumExten = {}, containerProps = {}, inputProps = {}, labelProps = {}, name) {
@@ -2264,7 +2262,7 @@ let elementsBase = {
             return [enumVals.map(val => {
                     let extenProps = getExten(enumExten, val);
                     return Object.assign({ key: val }, containerProps, { children: [
-                            Object.assign({ value: val, name: name && (this.props.name + (name === true ? '' : name)) }, commonLib_1.merge(inputProps, extenProps)),
+                            Object.assign({ name: name && (this.props.name + (name === true ? '' : name)) }, commonLib_1.merge(inputProps, extenProps), { value: val }),
                             Object.assign({}, labelProps, { children: [extenProps.label || val] })
                         ] });
                 })];
@@ -2814,8 +2812,33 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
         fData.enum = schemaPart.enum;
     if (schemaPart._enumExten)
         fData.enumExten = schemaPart._enumExten;
-    if (fData.enumExten && !fData.enum)
+    if (commonLib_2.isArray(schemaPart._enumExten) && commonLib_2.isArray(schemaPart.enum)) {
+        let enumExten = {};
+        fData.enumExten = fData.enumExten.map((v) => commonLib_2.isString(v) ? { label: v } : v);
+        fData.enum.forEach((v, i) => enumExten[v] = fData.enumExten[i]);
+        fData.enumExten = enumExten;
+    }
+    else if (schemaPart._enumExten && !fData.enum) {
+        if (commonLib_2.isArray(fData.enumExten)) {
+            let enumExten = {};
+            fData.enumExten.forEach((v) => {
+                // if (!isString(v) && !v) return;
+                if (commonLib_2.isString(v))
+                    enumExten[v] = { label: v };
+                else if (commonLib_2.isObject(v)) {
+                    if (!commonLib_2.isUndefined(v.value)) {
+                        if (commonLib_2.isUndefined(v.label))
+                            v = Object.assign({}, v, { label: v.value });
+                        enumExten[v.value] = v;
+                    }
+                    else if (!commonLib_2.isUndefined(v.label))
+                        enumExten[v.label] = v;
+                }
+            });
+            fData.enumExten = enumExten;
+        }
         fData.enum = commonLib_1.objKeys(fData.enumExten).filter(k => fData.enumExten[k]);
+    }
     if (schemaPart._oneOfSelector)
         fData.oneOfSelector = true;
     if (isSchemaSelfManaged(schemaPart, type))

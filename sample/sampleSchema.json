@@ -299,7 +299,7 @@
         "option 2",
         "option 3"
       ],
-      "default": "2"
+      "default": "option 2"
     },
     "checkboxSelect": {
       "title": "Checkbox select",

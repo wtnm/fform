@@ -1039,8 +1039,7 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
 }
 
 const getExten = (enumExten: any, value: any) => {
-  if (isFunction(enumExten)) return enumExten(value);
-  let res = getIn(enumExten, value);
+  let res = isFunction(enumExten) ? enumExten(value) : getIn(enumExten, value);
   if (res && isString(res)) res = {label: res};
   return isObject(res) ? res : {};
 };
@@ -1429,7 +1428,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     arrayOfEnum(enumVals: any[] = [], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
       return [enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
-        return {value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)), ...extenProps, ...staticProps}
+        return {key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)), ...extenProps, ...staticProps, value: val}
       })]
     },
     enumInputs(enumVals: any[] = [], enumExten: any = {}, containerProps: any = {}, inputProps: any = {}, labelProps: any = {}, name?: true | string) {
@@ -1440,7 +1439,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
           key: val,
           ...containerProps,
           children: [
-            {value: val, name: name && (this.props.name + (name === true ? '' : name)), ...merge(inputProps, extenProps)},
+            {name: name && (this.props.name + (name === true ? '' : name)), ...merge(inputProps, extenProps), value: val},
             {...labelProps, children: [extenProps.label || val]}
           ]
         }
