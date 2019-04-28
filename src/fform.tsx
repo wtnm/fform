@@ -16,7 +16,7 @@ import {
   isFunction,
   merge,
   objKeys,
-  memoize,
+  memoize, isNumber,
 } from "./commonLib";
 import {
   arrayStart,
@@ -957,7 +957,7 @@ function bindProcessorToThis(val: any, opts: anyObject = {}) {
     return fn
   } else if (isMergeable(val)) {
     const result = isArray(val) ? [] : {};
-    objKeys(val).forEach(key => result[key] = key.substr(0,2) != '_$' ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
+    objKeys(val).forEach(key => result[key] = key.substr(0, 2) != '_$' ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
     return result
   }
   return val
@@ -1038,7 +1038,12 @@ function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps:
   return mergeUPD_PROC(mappedData, dataUpdates);
 }
 
-const getExten = (enumExten: any, value: any) => (isFunction(enumExten) ? enumExten(value) : getIn(enumExten, value)) || {};
+const getExten = (enumExten: any, value: any) => {
+  if (isFunction(enumExten)) return enumExten(value);
+  let res = getIn(enumExten, value);
+  if (res && isString(res)) res = {label: res};
+  return isObject(res) ? res : {};
+};
 
 
 function classNames(...styles: any[]) {
@@ -1421,7 +1426,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         return {children, ...restSP, className: {['priority_' + priority]: true, ...cnSP, ...className}, ...rest}
       })]
     },
-    arrayOfEnum(enumVals: any[], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
+    arrayOfEnum(enumVals: any[] = [], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
       return [enumVals.map(val => {
         let extenProps = getExten(enumExten, val);
         return {value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)), ...extenProps, ...staticProps}

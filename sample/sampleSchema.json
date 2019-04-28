@@ -294,35 +294,26 @@
       "title": "Radio select",
       "type": "string",
       "_presets": "radio:$inlineItems:$inlineTitle",
-      "enum": [
+      "_enumExten": [
         "option 1",
         "option 2",
         "option 3"
       ],
-      "default": "option 2"
+      "default": "2"
     },
     "checkboxSelect": {
       "title": "Checkbox select",
       "_presets": "checkboxes:$inlineItems:$inlineTitle",
       "type": "array",
-      "required": true,
-      "_data": {
-        "fData": {
-          "enum": [
-            "option 1",
-            "option 2",
-            "option 3"
-          ]
-        }
-      },
       "_managed": true,
+      "required": true,
+      "_enumExten": {
+        "option 1": true,
+        "option 2": true,
+        "option 3": true
+      },
       "items": {
-        "type": "string",
-        "enum": [
-          "option 1",
-          "option 2",
-          "option 3"
-        ]
+        "type": "string"
       },
       "default": [
         "option 2",
@@ -337,23 +328,14 @@
       "title": "Multiselect",
       "_presets": "multiselect",
       "type": "array",
-      "_data": {
-        "fData": {
-          "enum": [
-            "option 1",
-            "option 2",
-            "option 3"
-          ]
-        }
-      },
       "_managed": true,
+      "_enumExten": {
+        "option 1": "value 1",
+        "option 2": "value 2",
+        "option 3": "value 3"
+      },
       "items": {
-        "type": "string",
-        "enum": [
-          "option 1",
-          "option 2",
-          "option 3"
-        ]
+        "type": "string"
       }
     },
     "textarea": {

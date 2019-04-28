@@ -1871,7 +1871,14 @@ function updateProps(mappedData, prevData, nextData, ...iterMaps) {
     return stateLib_1.mergeUPD_PROC(mappedData, dataUpdates);
 }
 exports.updateProps = updateProps;
-const getExten = (enumExten, value) => (commonLib_1.isFunction(enumExten) ? enumExten(value) : commonLib_1.getIn(enumExten, value)) || {};
+const getExten = (enumExten, value) => {
+    if (commonLib_1.isFunction(enumExten))
+        return enumExten(value);
+    let res = commonLib_1.getIn(enumExten, value);
+    if (res && commonLib_1.isString(res))
+        res = { label: res };
+    return commonLib_1.isObject(res) ? res : {};
+};
 function classNames(...styles) {
     const classes = [];
     for (let i = 0; i < styles.length; i++) {
@@ -2246,7 +2253,7 @@ let elementsBase = {
                     return Object.assign({ children }, restSP, { className: Object.assign({ ['priority_' + priority]: true }, cnSP, className) }, rest);
                 })];
         },
-        arrayOfEnum(enumVals, enumExten = {}, staticProps = {}, name) {
+        arrayOfEnum(enumVals = [], enumExten = {}, staticProps = {}, name) {
             return [enumVals.map(val => {
                     let extenProps = getExten(enumExten, val);
                     return Object.assign({ value: val, key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)) }, extenProps, staticProps);
@@ -2803,8 +2810,12 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
     fData.required = schemaPart.required;
     fData.title = schemaPart.title;
     fData.placeholder = schemaPart._placeholder;
-    fData.enum = schemaPart.enum;
-    fData.enumExten = schemaPart._enumExten;
+    if (schemaPart.enum)
+        fData.enum = schemaPart.enum;
+    if (schemaPart._enumExten)
+        fData.enumExten = schemaPart._enumExten;
+    if (fData.enumExten && !fData.enum)
+        fData.enum = commonLib_1.objKeys(fData.enumExten).filter(k => fData.enumExten[k]);
     if (schemaPart._oneOfSelector)
         fData.oneOfSelector = true;
     if (isSchemaSelfManaged(schemaPart, type))
@@ -2857,11 +2868,6 @@ function makeStateBranch(schema, getNSetOneOf, path = [], value) {
     getNSetOneOf(path, { oneOf, type });
     if ((result[SymData].hasOwnProperty('value'))) {
         defaultValues = result[SymData].value;
-        if (type == 'array' && !schemaPart.enum) {
-            let elemSchema = getSchemaPart(schema, path.concat(defaultValues.length), getNSetOneOf);
-            let fDataExten = { enum: elemSchema.enum, enumExten: elemSchema._enumExten };
-            result[SymData] = commonLib_1.merge(result[SymData], { fData: fDataExten }, { replace: { fData: { enum: true, enumExten: true } } });
-        }
     }
     else {
         if (type == 'array') {

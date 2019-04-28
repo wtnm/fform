@@ -384,8 +384,10 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   fData.required = schemaPart.required;
   fData.title = schemaPart.title;
   fData.placeholder = schemaPart._placeholder;
-  fData.enum = schemaPart.enum;
-  fData.enumExten = schemaPart._enumExten;
+  if(schemaPart.enum) fData.enum = schemaPart.enum;
+  if(schemaPart._enumExten) fData.enumExten = schemaPart._enumExten;
+  if (fData.enumExten && !fData.enum)
+    fData.enum = objKeys(fData.enumExten).filter(k => fData.enumExten[k]);
   if (schemaPart._oneOfSelector) fData.oneOfSelector = true;
 
   if (isSchemaSelfManaged(schemaPart, type)) result.value = value;
@@ -436,11 +438,6 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
 
   if ((result[SymData].hasOwnProperty('value'))) {
     defaultValues = result[SymData].value;
-    if (type == 'array' && !schemaPart.enum) {
-      let elemSchema = getSchemaPart(schema, path.concat(defaultValues.length), getNSetOneOf);
-      let fDataExten = {enum: elemSchema.enum, enumExten: elemSchema._enumExten};
-      result[SymData] = merge(result[SymData], {fData: fDataExten}, {replace: {fData: {enum: true, enumExten: true}}})
-    }
   } else {
     if (type == 'array') {
       defaultValues = [];
