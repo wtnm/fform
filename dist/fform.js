@@ -2801,14 +2801,10 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
     const fData = result.fData;
     fData.type = type;
     fData.required = schemaPart.required;
-    if (schemaPart.title)
-        fData.title = schemaPart.title;
-    if (schemaPart._placeholder)
-        fData.placeholder = schemaPart._placeholder;
-    if (schemaPart.enum)
-        fData.enum = schemaPart.enum;
-    if (schemaPart._enumExten)
-        fData.enumExten = schemaPart._enumExten;
+    fData.title = schemaPart.title;
+    fData.placeholder = schemaPart._placeholder;
+    fData.enum = schemaPart.enum;
+    fData.enumExten = schemaPart._enumExten;
     if (schemaPart._oneOfSelector)
         fData.oneOfSelector = true;
     if (isSchemaSelfManaged(schemaPart, type))
@@ -2859,8 +2855,14 @@ function makeStateBranch(schema, getNSetOneOf, path = [], value) {
     result[SymDataMap] = {};
     result[SymData] = makeDataStorage(schemaPart, oneOf, type, value);
     getNSetOneOf(path, { oneOf, type });
-    if ((result[SymData].hasOwnProperty('value')))
+    if ((result[SymData].hasOwnProperty('value'))) {
         defaultValues = result[SymData].value;
+        if (type == 'array' && !schemaPart.enum) {
+            let elemSchema = getSchemaPart(schema, path.concat(defaultValues.length), getNSetOneOf);
+            let fDataExten = { enum: elemSchema.enum, enumExten: elemSchema._enumExten };
+            result[SymData] = commonLib_1.merge(result[SymData], { fData: fDataExten }, { replace: { fData: { enum: true, enumExten: true } } });
+        }
+    }
     else {
         if (type == 'array') {
             defaultValues = [];
@@ -3239,6 +3241,7 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
         value = commonLib_1.getIn(state, SymData, 'default', track);
     if (commonLib_1.getIn(state, SymData, 'current', track) === value && !commonLib_1.hasIn(UPDATABLE.update, SymData, 'current', track))
         return state;
+    const schema = UPDATABLE.api.schema;
     let branch = commonLib_1.getIn(state, track);
     // if no branch then no need to modify state for this value, just update current
     if (!branch) {
@@ -3259,7 +3262,7 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
         value = types.empty[type || 'any'];
     if (oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
         // setOneOf = 
-        const parts = getSchemaPart(UPDATABLE.api.schema, track, oneOfFromState(state), true);
+        const parts = getSchemaPart(schema, track, oneOfFromState(state), true);
         let currentOneOf = branch[SymData].oneOf;
         if (oneOfSelector) {
             //const field = makeSynthField(UPDATABLE.api, path2string(track));

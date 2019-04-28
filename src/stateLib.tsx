@@ -382,10 +382,10 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   const fData = result.fData;
   fData.type = type;
   fData.required = schemaPart.required;
-  if (schemaPart.title) fData.title = schemaPart.title;
-  if (schemaPart._placeholder) fData.placeholder = schemaPart._placeholder;
-  if (schemaPart.enum) fData.enum = schemaPart.enum;
-  if (schemaPart._enumExten) fData.enumExten = schemaPart._enumExten;
+  fData.title = schemaPart.title;
+  fData.placeholder = schemaPart._placeholder;
+  fData.enum = schemaPart.enum;
+  fData.enumExten = schemaPart._enumExten;
   if (schemaPart._oneOfSelector) fData.oneOfSelector = true;
 
   if (isSchemaSelfManaged(schemaPart, type)) result.value = value;
@@ -434,8 +434,14 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   result[SymData] = makeDataStorage(schemaPart, oneOf, type, value);
   getNSetOneOf(path, {oneOf, type});
 
-  if ((result[SymData].hasOwnProperty('value'))) defaultValues = result[SymData].value;
-  else {
+  if ((result[SymData].hasOwnProperty('value'))) {
+    defaultValues = result[SymData].value;
+    if (type == 'array' && !schemaPart.enum) {
+      let elemSchema = getSchemaPart(schema, path.concat(defaultValues.length), getNSetOneOf);
+      let fDataExten = {enum: elemSchema.enum, enumExten: elemSchema._enumExten};
+      result[SymData] = merge(result[SymData], {fData: fDataExten}, {replace: {fData: {enum: true, enumExten: true}}})
+    }
+  } else {
     if (type == 'array') {
       defaultValues = [];
       defaultValues.length = result[SymData].length;
@@ -526,6 +532,7 @@ function updateMessagesPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Typ
   function conv(item: MessageGroupType | string): MessageGroupType {
     return (typeof item === 'object') ? item : {group: defaultGroup, data: item};
   }
+
   let messages: MessageGroupType[] = toArray(result).map(conv);
   messages.forEach((item) => {
     let {path, ...itemNoPath} = item;
@@ -808,6 +815,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   if (value === SymClear) value = getIn(state, SymData, 'default', track);
   if (getIn(state, SymData, 'current', track) === value && !hasIn(UPDATABLE.update, SymData, 'current', track)) return state;
 
+  const schema = UPDATABLE.api.schema;
   let branch = getIn(state, track);
 
   // if no branch then no need to modify state for this value, just update current
@@ -830,7 +838,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   if (isUndefined(value)) value = types.empty[type || 'any'];
   if (oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
     // setOneOf = 
-    const parts = getSchemaPart(UPDATABLE.api.schema, track, oneOfFromState(state), true);
+    const parts = getSchemaPart(schema, track, oneOfFromState(state), true);
     let currentOneOf = branch[SymData].oneOf;
     if (oneOfSelector) {
       //const field = makeSynthField(UPDATABLE.api, path2string(track));
@@ -848,7 +856,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   }
 
   if (isSelfManaged(branch)) { // if object has own value then replace it directly
-    state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['value'], value, replace))
+    state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['value'], value, replace));
   } else {
     if (isMergeable(value)) {  // if we receive object or array then apply their values to state
       if (type == 'array' && !isUndefined(value.length)) {

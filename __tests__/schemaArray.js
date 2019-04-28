@@ -20,14 +20,14 @@ export default {
         return value && value [0] && value[0].strValue === 'test validation' ? 'more simple text message' : undefined;
       },
       (value, props) => {
-        return value && value [0] && value[0].strValue === 'test validation' ? {text: 'text message for mapValue', path: './0/mapValue'} : {text: undefined, path: './0/mapValue'};
+        return value && value [0] && value[0].strValue === 'test validation' ? {data: 'text message for mapValue', path: './0/mapValue'} : {data: undefined, path: './0/mapValue'};
       },
       (value, props) => {
         return new Promise((resolve) => {
           setTimeout(() => resolve(
             value && value [0] && (value[0].strValue === 'test validation' || value[0].strValue === 'another validation') ?
-              {text: 'async text message for arrValue ' + value[0].strValue, path: './0/arrValue'} : {
-                text: undefined,
+              {data: 'async text message for arrValue ' + value[0].strValue, path: './0/arrValue'} : {
+                data: undefined,
                 path: './0/arrValue'
               }), 10)
         });
