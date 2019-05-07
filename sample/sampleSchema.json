@@ -305,7 +305,7 @@
       "title": "Checkbox select",
       "_presets": "checkboxes:$inlineItems:$inlineTitle",
       "type": "array",
-      "_managed": true,
+      "_simple": true,
       "required": true,
       "_enumExten": {
         "option 1": true,
@@ -328,7 +328,7 @@
       "title": "Multiselect",
       "_presets": "multiselect",
       "type": "array",
-      "_managed": true,
+      "_simple": true,
       "_enumExten": {
         "option 1": "value 1",
         "option 2": "value 2",

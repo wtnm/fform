@@ -514,7 +514,7 @@ function isSelfManaged(state: StateType, ...paths: any[]) {
 }
 
 function isSchemaSelfManaged(schemaPart: jsJsonSchema, type: string) {
-  return type !== 'array' && type !== 'object' || getIn(schemaPart, '_managed')
+  return type !== 'array' && type !== 'object' || getIn(schemaPart, '_simple')
 }
 
 function findOneOf(oneOfShemas: any, value?: any, currentOneOf?: number) {

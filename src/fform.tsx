@@ -790,9 +790,12 @@ class GenericWidget extends FRefsGeneric {
 
   protected setRef2rest(rest: anyObject, $_reactRef: anyObject) {
     if (!$_reactRef) return rest;
-    if ($_reactRef['ref']) rest.ref = $_reactRef['ref'];
-    if ($_reactRef['tagRef'])
-      rest.tagRef = $_reactRef['tagRef'];
+    objKeys($_reactRef).filter(v=>isNaN(+v)).forEach(k=>rest[k]=$_reactRef[k]); // assing all except numeric keys
+    return rest;
+    // if ($_reactRef['ref']) rest.ref = $_reactRef['ref'];
+    // else Object.assign(rest, $_reactRef);
+    // if ($_reactRef['tagRef'])
+    //   rest.tagRef = $_reactRef['tagRef'];
   }
 
   render(): any {
@@ -1147,7 +1150,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         }
       }
     },
-    nBase: {
+    simple: {
       $_ref: '^/sets/base',
       Main: {
         _$widget: '^/widgets/Input',
@@ -1187,11 +1190,11 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       },
     },
     string: {
-      $_ref: '^/sets/nBase',
+      $_ref: '^/sets/simple',
       Main: {type: 'text'}
     },
     textarea: {
-      $_ref: '^/sets/nBase',
+      $_ref: '^/sets/simple',
       Main: {type: 'textarea', viewerProps: {className: {viewer: false, 'viewer-inverted': true}}},
       Title: {
         $_maps: {
@@ -1200,7 +1203,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       }
     },
     integer: {
-      $_ref: '^/sets/nBase',
+      $_ref: '^/sets/simple',
       Main: {
         type: 'number',
         onChange: {$: '^/fn/eventValue|parseNumber|setValue', args: ['${0}', true, 0]},
@@ -1223,12 +1226,12 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_ref: '^/sets/integerNull',
       Main: {onChange: {args: {1: false, 2: null}}, step: 'any'}
     },
-    'null': {$_ref: '^/sets/nBase', Main: false},
+    'null': {$_ref: '^/sets/simple', Main: false},
     boolean: {
-      $_ref: '^/sets/nBase',
+      $_ref: '^/sets/simple',
       Main: {
         type: 'checkbox',
-        onChange: {$: '^/fn/eventChecked|setValue|updCached'}
+        onChange: {$: '^/fn/eventChecked|setValue|liveUpdate'}
       },
     },
     booleanLeft: {
@@ -1239,18 +1242,18 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         _$cx: '^/_$cx',
         $_reactRef: {'0': {ref: true}},
         children: [
-          {$_ref: '^/sets/nBase/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: {_$useTag: 'span'}},
-          {$_ref: '^/sets/nBase/Title', _$useTag: 'span', $_maps: {'className/hidden': '@/params/viewer'}}
+          {$_ref: '^/sets/simple/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: {_$useTag: 'span'}},
+          {$_ref: '^/sets/simple/Title', _$useTag: 'span', $_maps: {'className/hidden': '@/params/viewer'}}
         ]
       },
-      Title: {$_ref: '^/sets/nBase/Title', $_maps: {'className/hidden': {$: '^/fn/not', args: '@/params/viewer'}}},
+      Title: {$_ref: '^/sets/simple/Title', $_maps: {'className/hidden': {$: '^/fn/not', args: '@/params/viewer'}}},
     },
     booleanNull: {
       $_ref: '^/sets/boolean',
       Main: {
         _$useTag: '^/widgets/CheckboxNull',
         $_reactRef: {tagRef: true},
-        onChange: {$: '^/fn/setValue|updCached', args: ['${0}']},
+        onChange: {$: '^/fn/setValue|liveUpdate', args: ['${0}']},
       },
     },
     booleanNullLeft: {
@@ -1269,7 +1272,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         uniqKey: 'params/uniqKey',
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
-        viewerProps: {$_ref: '^/sets/nBase/Main/viewerProps'},
+        viewerProps: {$_ref: '^/sets/simple/Main/viewerProps'},
         $_maps: {
           length: '@/length',
           oneOf: '@/oneOf',
@@ -1288,7 +1291,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         _$cx: '^/_$cx',
         _$useTag: 'legend',
         children: [
-          {$_ref: '^/sets/nBase/Title', _$useTag: 'span'},
+          {$_ref: '^/sets/simple/Title', _$useTag: 'span'},
           {$_ref: '^/parts/ArrayAddButton'},
           {$_ref: '^/parts/ArrayDelButton'},
           {$_ref: '^/parts/ArrayEmpty'}],
@@ -1297,7 +1300,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     },
     array: {$_ref: '^/sets/object'},
     select: {
-      $_ref: '^/sets/nBase',
+      $_ref: '^/sets/simple',
       Main: {
         type: 'select',
         children: [],
@@ -1316,11 +1319,11 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     },
     radio: {
       $_ref: '^/sets/base',
-      Title: {$_ref: '^/sets/nBase/Title'},
+      Title: {$_ref: '^/sets/simple/Title'},
       Main: {
         $_ref: '^/parts/RadioSelector',
         $_reactRef: true,
-        viewerProps: {$_ref: '^/sets/nBase/Main/viewerProps'},
+        viewerProps: {$_ref: '^/sets/simple/Main/viewerProps'},
         $_maps: {
           value: '@/value',
           viewer: '@/params/viewer',
@@ -1341,16 +1344,16 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         }
       }
     },
-    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue|updCached'}}, '5': '[]'}}}}}},
+    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue|liveUpdate'}}, '5': '[]'}}}}}},
 
-    $radioNull: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: '^/fn/eventValue|radioClear|updCached'}}}}}}},
-    $radioEmpty: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: {$: '^/fn/eventValue|radioClear|updCached', args: ['${0}', '']}}}}}}}},
+    $radioNull: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: '^/fn/eventValue|radioClear|liveUpdate'}}}}}}},
+    $radioEmpty: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: {$: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', '']}}}}}}}},
     $autowidth: {
       Autowidth: {$_ref: '^/parts/Autowidth'},
       Wrapper: {className: {shrink: true}},
     },
     $noArrayControls: {Wrapper: {$_maps: {'arrayItem': false}}},
-    $noArrayButtons: {Title: {$_ref: '^/sets/nBase/Title'}},
+    $noArrayButtons: {Title: {$_ref: '^/sets/simple/Title'}},
     $inlineItems: {Main: {className: {'inline': true}}},
     $inlineTitle: {Wrapper: {className: {'inline': true}}},
     $inlineLayout: {Main: {LayoutDefaultClass: {'inline': true}}},
@@ -1394,7 +1397,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       !this.liveValidate && this.api.validate('./',);
       return args;
     },
-    updCached(...args: any[]) {
+    liveUpdate(...args: any[]) {
       this._forceUpd = true;
       return args;
     },
@@ -1474,9 +1477,9 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
               {
                 _$widget: 'input',
                 type: 'radio',
-                onChange: {$: '^/fn/eventValue|setValue|updCached', args: ['${0}', {path: './@/selector/value'}]},
-                onBlur: '^/sets/nBase/Main/onBlur',
-                onFocus: '^/sets/nBase/Main/onFocus',
+                onChange: {$: '^/fn/eventValue|setValue|liveUpdate', args: ['${0}', {path: './@/selector/value'}]},
+                onBlur: '^/sets/simple/Main/onBlur',
+                onFocus: '^/sets/simple/Main/onFocus',
               },
               {_$useTag: 'span', _$cx: '^/_$cx',},
               true

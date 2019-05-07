@@ -43,7 +43,7 @@ export default {
     'selfManagedType': {
       type: 'object',
       default: {selfValue: 'selfManagedType.selfValue', stringValue: 'selfManagedType.stringValue', numberValue: 5},
-      _managed: true
+      _simple: true
     },
     "multiType": {
       oneOf: [{
@@ -73,7 +73,7 @@ export default {
       }, {
         type: ['array', 'string', 'number'],
         _presets: 'arrayOf',
-        _managed: true,
+        _simple: true,
         items: {type: ['boolean', 'null'], _presets: 'boolean'},
         default: ''
       }

@@ -324,7 +324,7 @@ As JSON format doesn't support js-code all function moved to [elements](#element
 	-  `viewer?: boolean` -
 - `_data?: any` - any additional data you may need
 - `_presets?: string`- presets for rendering components
-- `_managed?: boolean`- determine that value managed by the component itself (for objects and arrays)
+- `_simple?: boolean`- determine that value managed by the component itself (for objects and arrays)
 - `_enumExten?: { [key: string]: undefined | string | object }`- enum extension. Keys are taken from enum. String converts to object with property `{label}`
 - `_stateMaps?: Array<{from: string, to:string, $?:string, args?:'string'}>`- <a name='statemaps'></a> maps data in the state. An array of objects with 2-4 properties, where: `from` - path from where value is taken, `to` - path to where value is placed, `$` and `args` - [data processor](#data-event-processors) that process value when mapping.
 - `_validators?: Array<string | dataProcessor>`- [sync/async validators](#validation) as an array of  [data processor](#data-event-processors). Each data processor receives field value as the first parameter on value change. Only the last function in a [data processor](#data-event-processors) can be async.
@@ -434,7 +434,7 @@ Here `someTestValue` property will be taken from [data object]($data-object) and
     - `CheckboxNull` - renders tristate checkbox
 - `sets` - presets for frequently used field's schemes, some of them:
 	- `base` - basic set of blocks that used in every field
-	- `nBase` - basic set for non-object types of schema
+	- `simple` - basic set for non-object types of schema
 	- `string` - set for string type of schema
 	- `textarea` - set for large string values
 	- `integer` - set for integer type of schema
@@ -462,6 +462,7 @@ Here `someTestValue` property will be taken from [data object]($data-object) and
     - `eventMultiple: (event: any, ...args: any[])` - returns selected values from multiselect, `args` keeps untouched
     - `parseNumber: (value: any, int: boolean, empty: number | null, ...args: any[])` - conver value to number if `int` is false, to iteger if `int` is true. If value is empty string returns `empty`. `args` keeps untouched
     - `setValue(value: any, opts: any = {}, ...args: any[])` - set `value` in state using [`this.api.setState`](#setvaluevalue-any-opts-setvalueopts) with `opts`. Returns untouched `args`.
+    - `liveUpdate` - updates value not waiting for focus out (as if liveUpdate enabled)
 - `parts` <a name='parts'></a> - commonly used parts of JSON, js-code, some of them:
 	- `Submit` - submit button
 	- `Reset` - reset button
