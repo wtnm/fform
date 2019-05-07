@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="_enumExten mods">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="fixes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__tests__/schemaOneOf.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/schemaOneOf.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/documentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample/sampleSchema.json" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sampleSchema.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fform.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/fform.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/schemaTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/schemaTypes.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/stateLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/stateLib.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/fform.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.min.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -32,7 +26,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
+            <state relative-caret-position="7920">
               <caret line="396" column="25" selection-start-line="396" selection-start-column="25" selection-end-line="396" selection-end-column="25" />
             </state>
           </provider>
@@ -251,12 +245,12 @@
         <option value="$PROJECT_DIR$/src/api.tsx" />
         <option value="$PROJECT_DIR$/__tests__/schemaOneOf.js" />
         <option value="$PROJECT_DIR$/documentation.md" />
-        <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/src/schemaTypes.d.ts" />
         <option value="$PROJECT_DIR$/__tests__/schemaArray.js" />
         <option value="$PROJECT_DIR$/sample/sampleSchema.json" />
         <option value="$PROJECT_DIR$/src/fform.tsx" />
         <option value="$PROJECT_DIR$/src/stateLib.tsx" />
+        <option value="$PROJECT_DIR$/package.json" />
       </list>
     </option>
   </component>
@@ -268,8 +262,7 @@
     <auto-save>true</auto-save>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
+    <option name="x" value="-7" />
     <option name="width" value="1936" />
     <option name="height" value="1056" />
   </component>
@@ -593,9 +586,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.compile" />
         <item itemvalue="npm.compile:sample:dev" />
         <item itemvalue="npm.compile:dev" />
-        <item itemvalue="npm.compile" />
         <item itemvalue="npm.compile:js" />
       </list>
     </recent_temporary>
@@ -1288,14 +1281,8 @@
       <workItem from="1556197682423" duration="1883000" />
       <workItem from="1556261865296" duration="6093000" />
       <workItem from="1556441079991" duration="11037000" />
-      <workItem from="1557233480714" duration="602000" />
-    </task>
-    <task id="LOCAL-00097" summary="fixes">
-      <created>1552664489200</created>
-      <option name="number" value="00097" />
-      <option name="presentableId" value="LOCAL-00097" />
-      <option name="project" value="LOCAL" />
-      <updated>1552664489201</updated>
+      <workItem from="1557233480714" duration="680000" />
+      <workItem from="1557239659754" duration="105000" />
     </task>
     <task id="LOCAL-00098" summary="fixes">
       <created>1552668433594</created>
@@ -1633,7 +1620,14 @@
       <option name="project" value="LOCAL" />
       <updated>1556452332464</updated>
     </task>
-    <option name="localTasksCounter" value="146" />
+    <task id="LOCAL-00146" summary="fixes">
+      <created>1557239571075</created>
+      <option name="number" value="00146" />
+      <option name="presentableId" value="LOCAL-00146" />
+      <option name="project" value="LOCAL" />
+      <updated>1557239571076</updated>
+    </task>
+    <option name="localTasksCounter" value="147" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1669,7 +1663,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3599025000" />
+    <option name="totallyTimeSpent" value="3599208000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1685,16 +1679,16 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.58917195" weight="0.19607843" />
-      <window_info active="true" content_ui="combo" id="Project" order="1" sideWeight="0.56607497" visible="true" weight="0.15209328" />
-      <window_info id="Structure" order="2" sideWeight="0.43392506" side_tool="true" visible="true" weight="0.11605723" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.564257" visible="true" weight="0.14891362" />
+      <window_info id="Structure" order="2" sideWeight="0.4367589" side_tool="true" weight="0.11658718" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
-      <window_info id="npm" order="4" sideWeight="0.43259558" side_tool="true" weight="0.11340752" />
+      <window_info id="npm" order="4" sideWeight="0.43574297" side_tool="true" visible="true" weight="0.11446741" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
       <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.51228327" side_tool="true" weight="0.27745664" />
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="DB Execution Console" order="3" />
-      <window_info anchor="bottom" id="Terminal" order="4" sideWeight="0.4892585" weight="0.32410613" />
-      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48771676" visible="true" weight="0.33294797" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="4" sideWeight="0.4892585" visible="true" weight="0.32254335" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48771676" weight="0.33294797" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.24624278" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" weight="0.4" />
@@ -1746,7 +1740,6 @@
     <MESSAGE value="components fixes" />
     <MESSAGE value="documentation inital" />
     <MESSAGE value="documentation more" />
-    <MESSAGE value="fixes" />
     <MESSAGE value="SSR implement" />
     <MESSAGE value="clean" />
     <MESSAGE value="minor fixes" />
@@ -1763,7 +1756,8 @@
     <MESSAGE value="schema extended props name changed" />
     <MESSAGE value="types clean" />
     <MESSAGE value="_enumExten mods" />
-    <option name="LAST_COMMIT_MESSAGE" value="_enumExten mods" />
+    <MESSAGE value="fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2103,7 +2097,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
+        <state relative-caret-position="7920">
           <caret line="396" column="25" selection-start-line="396" selection-start-column="25" selection-end-line="396" selection-end-column="25" />
         </state>
       </provider>
