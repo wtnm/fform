@@ -384,6 +384,7 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   fData.required = schemaPart.required;
   fData.title = schemaPart.title;
   fData.placeholder = schemaPart._placeholder;
+  // fData.default = isUndefined(schemaPart.default) ? types.empty[type || 'any'] : schemaPart.default;
   if (schemaPart.enum) fData.enum = schemaPart.enum;
   if (schemaPart._enumExten) fData.enumExten = schemaPart._enumExten;
 
@@ -706,6 +707,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
 }
 
 function setDirtyPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, inital: any, current: any, track: Path = []) {
+  if (isUndefined(inital)) inital = getIn(state, SymData, 'default', track);
   if (current === inital) return state;
   const {schema} = UPDATABLE.api;
   let schemaPart;
@@ -727,6 +729,7 @@ function updateDirtyPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, 
   try {schemaPart = getSchemaPart(schema, track, oneOfFromState(state))} catch (e) {}
   if (!schemaPart || isSelfManaged(state, track)) { //direct compare
     let current = getIn(state, SymData, 'current', track);
+    if (isUndefined(inital)) inital = getIn(state, SymData, 'default', track);
     let value = forceDirty || current !== inital ? 1 : -1;
     let path: Path = track;
     let keyPath = ['status', 'dirty'];
@@ -744,7 +747,7 @@ function updateDirtyPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, 
     }
     // if (schemaPart.type == 'array' && !~keys.indexOf('length')) keys.push('length');
     forceDirty = forceDirty || !isMergeable(inital);
-    keys.forEach(key => state = updateDirtyPROC(state, UPDATABLE, getIn(inital, key), currentChanges[key], track.concat(key), forceDirty))
+    keys.forEach(key => state = updateDirtyPROC(state, UPDATABLE, getIn(inital, key), getIn(currentChanges, key), track.concat(key), forceDirty))
   }
   return state
 }
@@ -829,8 +832,8 @@ function initState(UPDATABLE: PROCEDURE_UPDATABLE_Type) {
 
 function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, value: any, replace: any, track: Path = [], setOneOf?: number): StateType {
 
-  if (value === SymReset) value = getIn(state, SymData, 'inital', track);
-  if (value === SymClear) value = getIn(state, SymData, 'default', track);
+  if (value === SymReset || isUndefined(value)) value = getIn(state, SymData, 'inital', track);
+  if (value === SymClear || isUndefined(value)) value = getIn(state, SymData, 'default', track);
   if (getIn(state, SymData, 'current', track) === value && !hasIn(UPDATABLE.update, SymData, 'current', track)) return state;
 
   const schema = UPDATABLE.api.schema;
@@ -853,7 +856,10 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   }
   const oneOfSelector = branch[SymData].fData.oneOfSelector;
   const type = branch[SymData].fData.type;
-  if (isUndefined(value)) value = types.empty[type || 'any'];
+  // if (isUndefined(value)) {
+  //   value = getIn(state, SymData, 'inital', track);
+  //   if (isUndefined(value)) value = branch[SymData].fData.default;
+  // }
   if (oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
     // setOneOf = 
     const parts = getSchemaPart(schema, track, oneOfFromState(state), true);

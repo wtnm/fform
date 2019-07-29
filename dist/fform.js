@@ -110,8 +110,10 @@ var __rest = (this && this.__rest) || function (s, e) {
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
         t[p] = s[p];
     if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
-            t[p[i]] = s[p[i]];
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -969,8 +971,10 @@ var __rest = (this && this.__rest) || function (s, e) {
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
         t[p] = s[p];
     if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
-            t[p[i]] = s[p[i]];
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -1005,6 +1009,8 @@ class FForm extends react_1.Component {
                 nextProps[k] = (v) => commonLib_1.isUndefined(v) ? props[k] : v;
         });
         self._updateMethods(props);
+        if (commonLib_1.isUndefined(nextProps['value']))
+            nextProps['value'] = nextProps['inital'];
         self._updateValues(nextProps);
         if (!props.noValidation)
             self.api.validate(true);
@@ -1138,8 +1144,9 @@ class FForm extends react_1.Component {
     }
     render() {
         const self = this;
-        let _a = self.props, { core, state, value, inital, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = 'form' } = _a, rest = __rest(_a, ["core", "state", "value", "inital", "extData", "fieldCache", "touched", "parent", "onSubmit", "onChange", "onStateChange", "_$useTag"]);
+        let _a = self.props, { core, state, value, inital, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = self.elements.widgets.Form || 'form' } = _a, rest = __rest(_a, ["core", "state", "value", "inital", "extData", "fieldCache", "touched", "parent", "onSubmit", "onChange", "onStateChange", "_$useTag"]);
         FForm.params.forEach(k => delete rest[k]);
+        commonLib_1.objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete rest[k]); // remove props that starts with '_' or '$'
         return (react_1.createElement(UseTag, Object.assign({ ref: self._setFormRef }, rest, { onSubmit: self._submit, onReset: self.reset }),
             react_1.createElement(FField, { ref: self._setRootRef, id: rest.id ? rest.id + '/#' : undefined, name: self.api.name, pFForm: self, getPath: self._getPath, FFormApi: self.api })));
     }
@@ -1716,7 +1723,12 @@ class UniversalInput extends GenericWidget {
 }
 class Autowidth extends react_1.Component {
     componentDidMount() {
-        const style = window && window.getComputedStyle(this.props.$FField.$refs['@Main']);
+        let style;
+        try {
+            style = window && window.getComputedStyle(this.props.$FField.$refs['@Main']);
+        }
+        catch (e) {
+        }
         if (!style || !this._elem)
             return;
         ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'letterSpacing'].forEach(key => this._elem.style[key] = style[key]);
@@ -1728,6 +1740,7 @@ class Autowidth extends react_1.Component {
         return (react_1.createElement("div", { style: Autowidth.sizerStyle, ref: (elem) => {
                 (self._elem = elem) &&
                     props.$FField.$refs['@Main'] &&
+                    props.$FField.$refs['@Main'].style &&
                     (props.$FField.$refs['@Main'].style.width = Math.max(elem.scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px');
             } }, value));
     }
@@ -1753,13 +1766,13 @@ function Wrapper(props) {
         return result;
 }
 function ItemMenu(props) {
-    const { _$useTag: UseTag = 'div', _$cx, disabled, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick } = props, rest = __rest(props, ["_$useTag", "_$cx", "disabled", "className", "buttonsProps", "arrayItem", "buttons", "onClick"]);
+    const { _$useTag: UseTag = 'div', _$buttonDefaults = {}, _$cx, disabled, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick } = props, rest = __rest(props, ["_$useTag", "_$buttonDefaults", "_$cx", "disabled", "className", "buttonsProps", "arrayItem", "buttons", "onClick"]);
     if (!arrayItem)
         return null;
     // console.log(arrayItem)
     buttons.forEach((key) => delete rest[key]);
     return (react_1.createElement(UseTag, Object.assign({ className: _$cx(className) }, rest), buttons.map((key) => {
-        const _a = buttonsProps[key] || {}, { _$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key } = _a, restBut = __rest(_a, ["_$widget", "type", "disabledCheck", "className", "onClick", "title", "children"]);
+        const _a = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {}), { _$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key } = _a, restBut = __rest(_a, ["_$widget", "type", "disabledCheck", "className", "onClick", "title", "children"]);
         return (react_1.createElement(ButW, Object.assign({ key: key, type: type, title: title, className: _$cx ? _$cx(ButCN) : ButCN, children: children, disabled: disabled || disabledCheck && !arrayItem[disabledCheck] }, restBut, { onClick: () => onClick(key) })));
     })));
 }
@@ -1905,6 +1918,7 @@ function classNames(...styles) {
     }
     return classes.join(' ');
 }
+exports.classNames = classNames;
 //
 // function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: string]: string } } = {}) { //skipFields: string[] = [], replaceFields: { [key: string]: string } = {}) {
 //   const skipFields = opts.skipFields || [];
@@ -1989,7 +2003,7 @@ let elementsBase = {
                 onFocus: { $: '^/fn/focus' },
                 $_maps: {
                     // priority: '@/status/priority',
-                    value: '@/value',
+                    value: { $: '^/fn/iif', args: [{ $: '^/fn/equal', args: ['@value', null] }, '', '@value'] },
                     viewer: '@/params/viewer',
                     autoFocus: '@/params/autofocus',
                     readOnly: '@/params/readonly',
@@ -2034,9 +2048,6 @@ let elementsBase = {
             Main: {
                 type: 'number',
                 onChange: { $: '^/fn/eventValue|parseNumber|setValue', args: ['${0}', true, 0] },
-                $_maps: {
-                    value: { $: '^/fn/iif', args: [{ $: '^/fn/equal', args: ['@value', null] }, '', '@value'] },
-                }
             }
         },
         integerNull: {
@@ -2409,8 +2420,10 @@ var __rest = (this && this.__rest) || function (s, e) {
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
         t[p] = s[p];
     if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
-            t[p[i]] = s[p[i]];
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -2810,6 +2823,7 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
     fData.required = schemaPart.required;
     fData.title = schemaPart.title;
     fData.placeholder = schemaPart._placeholder;
+    // fData.default = isUndefined(schemaPart.default) ? types.empty[type || 'any'] : schemaPart.default;
     if (schemaPart.enum)
         fData.enum = schemaPart.enum;
     if (schemaPart._enumExten)
@@ -3143,6 +3157,8 @@ function makeValidation(state, dispatch, action) {
     return state;
 }
 function setDirtyPROC(state, UPDATABLE, inital, current, track = []) {
+    if (commonLib_2.isUndefined(inital))
+        inital = commonLib_1.getIn(state, SymData, 'default', track);
     if (current === inital)
         return state;
     const { schema } = UPDATABLE.api;
@@ -3170,6 +3186,8 @@ function updateDirtyPROC(state, UPDATABLE, inital, currentChanges, track = [], f
     catch (e) { }
     if (!schemaPart || isSelfManaged(state, track)) { //direct compare
         let current = commonLib_1.getIn(state, SymData, 'current', track);
+        if (commonLib_2.isUndefined(inital))
+            inital = commonLib_1.getIn(state, SymData, 'default', track);
         let value = forceDirty || current !== inital ? 1 : -1;
         let path = track;
         let keyPath = ['status', 'dirty'];
@@ -3189,7 +3207,7 @@ function updateDirtyPROC(state, UPDATABLE, inital, currentChanges, track = [], f
         }
         // if (schemaPart.type == 'array' && !~keys.indexOf('length')) keys.push('length');
         forceDirty = forceDirty || !commonLib_2.isMergeable(inital);
-        keys.forEach(key => state = updateDirtyPROC(state, UPDATABLE, commonLib_1.getIn(inital, key), currentChanges[key], track.concat(key), forceDirty));
+        keys.forEach(key => state = updateDirtyPROC(state, UPDATABLE, commonLib_1.getIn(inital, key), commonLib_1.getIn(currentChanges, key), track.concat(key), forceDirty));
     }
     return state;
 }
@@ -3266,9 +3284,9 @@ exports.initState = initState;
 //      items updating PROCEDURES
 /////////////////////////////////////////////
 function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneOf) {
-    if (value === SymReset)
+    if (value === SymReset || commonLib_2.isUndefined(value))
         value = commonLib_1.getIn(state, SymData, 'inital', track);
-    if (value === SymClear)
+    if (value === SymClear || commonLib_2.isUndefined(value))
         value = commonLib_1.getIn(state, SymData, 'default', track);
     if (commonLib_1.getIn(state, SymData, 'current', track) === value && !commonLib_1.hasIn(UPDATABLE.update, SymData, 'current', track))
         return state;
@@ -3289,8 +3307,10 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
     }
     const oneOfSelector = branch[SymData].fData.oneOfSelector;
     const type = branch[SymData].fData.type;
-    if (commonLib_2.isUndefined(value))
-        value = types.empty[type || 'any'];
+    // if (isUndefined(value)) {
+    //   value = getIn(state, SymData, 'inital', track);
+    //   if (isUndefined(value)) value = branch[SymData].fData.default;
+    // }
     if (oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
         // setOneOf = 
         const parts = getSchemaPart(schema, track, oneOfFromState(state), true);

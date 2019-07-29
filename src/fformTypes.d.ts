@@ -99,8 +99,9 @@ interface FFormApiProps {
 
 
 interface FFormProps {
-  useTag?: any;
+  _$useTag?: any;
 
+  id?: any;
   core: any;
   state?: any;
   value?: any;
@@ -112,9 +113,11 @@ interface FFormProps {
 
   parent?: any;
 
-  onSubmit?: (value: any, fform?: any) => boolean;
+  onSubmit?: (event: any, value: any, fform: any) => any;
   onChange?: (value: any, fform?: any) => void;
   onStateChange?: (state: any, fform?: any) => void;
+
+  [k: string]: any;
 }
 
 

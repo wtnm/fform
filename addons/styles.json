@@ -27,7 +27,7 @@
         }
       }
     },
-    "nBase": {
+    "simple": {
       "Title": {
         "className": {
           "title": true

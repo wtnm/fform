@@ -43,7 +43,7 @@ import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
 /////////////////////////////////////////////
 //  Main class
 /////////////////////////////////////////////
-class FForm extends Component<any, any> {
+class FForm extends Component<FFormProps> {
   static params = ['readonly', 'disabled', 'viewer', 'liveValidate', 'liveUpdate'];
   private _unsubscribe: any;
   private _savedState: any;
@@ -79,6 +79,7 @@ class FForm extends Component<any, any> {
       if (!isUndefined(nextProps[k])) nextProps[k] = (v: any) => isUndefined(v) ? props[k] : v
     });
     self._updateMethods(props);
+    if (isUndefined(nextProps['value'])) nextProps['value'] = nextProps['inital'];
     self._updateValues(nextProps);
     if (!props.noValidation) self.api.validate(true);
     self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
@@ -215,8 +216,9 @@ class FForm extends Component<any, any> {
 
   render() {
     const self = this;
-    let {core, state, value, inital, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = 'form', ...rest} = self.props;
+    let {core, state, value, inital, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = self.elements.widgets.Form || 'form', ...rest} = self.props;
     FForm.params.forEach(k => delete (rest as any)[k]);
+    objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete (rest as any)[k]); // remove props that starts with '_' or '$'
     return (
       <UseTag ref={self._setFormRef} {...rest} onSubmit={self._submit} onReset={self.reset}>
         <FField ref={self._setRootRef} id={rest.id ? rest.id + '/#' : undefined} name={self.api.name} pFForm={self} getPath={self._getPath} FFormApi={self.api}/>
@@ -790,7 +792,7 @@ class GenericWidget extends FRefsGeneric {
 
   protected setRef2rest(rest: anyObject, $_reactRef: anyObject) {
     if (!$_reactRef) return rest;
-    objKeys($_reactRef).filter(v=>isNaN(+v)).forEach(k=>rest[k]=$_reactRef[k]); // assing all except numeric keys
+    objKeys($_reactRef).filter(v => isNaN(+v)).forEach(k => rest[k] = $_reactRef[k]); // assing all except numeric keys
     return rest;
     // if ($_reactRef['ref']) rest.ref = $_reactRef['ref'];
     // else Object.assign(rest, $_reactRef);
@@ -864,7 +866,12 @@ class Autowidth extends Component<any, any> {
   private _elem: any;
 
   componentDidMount() {
-    const style = window && window.getComputedStyle(this.props.$FField.$refs['@Main']);
+    let style: any;
+    try {
+      style = window && window.getComputedStyle(this.props.$FField.$refs['@Main']);
+    } catch (e) {
+
+    }
     if (!style || !this._elem) return;
     ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'letterSpacing'].forEach(key => this._elem.style[key] = style[key]);
   }
@@ -876,6 +883,7 @@ class Autowidth extends Component<any, any> {
     return (<div style={Autowidth.sizerStyle as any} ref={(elem) => {
       (self._elem = elem) &&
       props.$FField.$refs['@Main'] &&
+      props.$FField.$refs['@Main'].style &&
       (props.$FField.$refs['@Main'].style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
     }}>{value}</div>)
   }
@@ -915,14 +923,15 @@ function Wrapper(props: any) {
 
 
 function ItemMenu(props: any) {
-  const {_$useTag: UseTag = 'div', _$cx, disabled, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
+  const {_$useTag: UseTag = 'div', _$buttonDefaults = {}, _$cx, disabled, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
   if (!arrayItem) return null;
   // console.log(arrayItem)
   buttons.forEach((key: string) => delete rest[key]);
   return (
     <UseTag className={_$cx(className)} {...rest}>
       {buttons.map((key: string) => {
-        const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key, ...restBut} = buttonsProps[key] || {};
+        const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key, ...restBut}
+          = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {});
         return (
           <ButW key={key} type={type} title={title} className={_$cx ? _$cx(ButCN) : ButCN} children={children}
                 disabled={disabled || disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
@@ -1162,7 +1171,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         onFocus: {$: '^/fn/focus'},
         $_maps: {
           // priority: '@/status/priority',
-          value: '@/value',
+          value: {$: '^/fn/iif', args: [{$: '^/fn/equal', args: ['@value', null]}, '', '@value']},
           viewer: '@/params/viewer',
           autoFocus: '@/params/autofocus',
           readOnly: '@/params/readonly',
@@ -1207,9 +1216,6 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         type: 'number',
         onChange: {$: '^/fn/eventValue|parseNumber|setValue', args: ['${0}', true, 0]},
-        $_maps: {
-          value: {$: '^/fn/iif', args: [{$: '^/fn/equal', args: ['@value', null]}, '', '@value']},
-        }
       }
     },
     integerNull: {
@@ -1572,4 +1578,4 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 
 export {elementsBase as elements, formReducer, FForm, FFormStateAPI, fformCores};
 
-export {extractMaps, normalizeMaps, updateProps}
+export {extractMaps, normalizeMaps, updateProps, classNames}
