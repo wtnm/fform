@@ -1,0 +1,16 @@
+.fform-wrapper, .fform-array-item {
+    margin-bottom: 0.5em;
+}
+
+.fform-btn-margin-right {
+    margin-right: 0.3em;
+}
+
+.fform-radio-input {
+    vertical-align: middle;
+    margin-right: 0.2em;
+}
+
+.fform-messages > .invalid-feedback {
+  display: block;
+}

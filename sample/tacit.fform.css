@@ -1,0 +1,37 @@
+input, textarea, select, button, html, body {
+    font-size: 16px
+}
+
+button {
+    background: #fff;
+    color: #888;
+    border: 1px solid #ccc;
+    border-radius: .2em;
+    padding: 0.3em 0.8em;
+    flex-grow: 1;
+}
+
+button:disabled {
+    background: #fff;
+    color: #c0c0c0;
+    cursor: not-allowed;
+}
+
+button:hover {
+    background: #f5f5f5;
+    color: #000;
+}
+
+
+.fform-messages {
+    margin-top: -0.9em;
+    margin-bottom: 0.9em;
+}
+
+.fform-add-button {
+    margin-left: 1em;
+}
+
+.fform-message-priority-0 {
+    color: #e60900;
+}

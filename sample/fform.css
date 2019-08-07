@@ -1,0 +1,67 @@
+
+
+.fform-wrapper, .fform-layout, .fform-body, .fform-array-item, .fform-radio, .fform-flex {
+    display: flex;
+    flex-flow: column;
+    flex: 1 1 auto;
+    align-items: stretch;
+    margin: 0;
+}
+
+.fform-required:after {
+    content: " *";
+}
+
+.fform-title-container {
+    width: 100%;
+}
+
+.fform-title-viewer {
+    margin-bottom: 0;
+}
+
+.fform-title-viewer:after {
+    content: "";
+}
+
+.fform-title-viewer-inverted {
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.fform-wrapper {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+
+.fform-viewer {
+    margin-right: 1em;
+    font-weight: bold;
+    margin-bottom: 1em;
+}
+
+.fform-viewer-inverted {
+    margin-right: 1em;
+    font-weight: normal;
+    margin-bottom: 1.5em;
+}
+
+.fform-hidden, .fform-button-viewer {
+    display: none;
+}
+
+.fform-inline {
+    flex-direction: row;
+}
+
+.fform-shrink {
+    flex-grow: 0;
+}
+
+.fform-expand {
+    flex-grow: 10;
+}
+
+.fform-title, .fform-radio-label {
+    margin-right: 1em;
+}

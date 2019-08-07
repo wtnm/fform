@@ -3,34 +3,34 @@
     "base": {
       "Wrapper": {
         "className": {
-          "wrapper": true
+          "fform-wrapper": true
         },
         "ArrayItemBody": {
           "className": {
-            "array-item": true
+            "fform-array-item": true
           }
         },
         "ArrayItemMenu": {
           "className": {
-            "array-menu": true
+            "fform-array-menu": true
           }
         }
       },
       "Body": {
         "className": {
-          "body": true
+          "fform-body": true
         }
       },
       "Message": {
         "className": {
-          "messages": true
+          "fform-messages": true
         }
       }
     },
     "simple": {
       "Title": {
         "className": {
-          "title": true
+          "fform-title": true
         }
       },
       "Main": {
@@ -40,43 +40,43 @@
     "object": {
       "Title": {
         "className": {
-          "title-container": true
+          "fform-title-container": true
         },
         "children": [
           {
             "className": {
-              "title": true
+              "fform-title": true
             }
           },
           {
             "className": {
-              "add-button": true
+              "fform-add-button": true
             }
           },
           {
             "className": {
-              "del-button": true
+              "fform-del-button": true
             }
           },
           {
             "className": {
-              "empty-message": true
+              "fform-empty-message": true
             }
           }
         ]
       },
       "Main": {
         "LayoutDefaultClass": {
-          "layout": true
+          "fform-layout": true
         }
       }
     },
     "booleanLeft": {
       "Main": {
-        "className": "boolean-left-container",
+        "className": "fform-boolean-left-container",
         "children": {
           "0": {
-            "className": "boolean-left"
+            "className": "fform-boolean-left"
           }
         }
       }
@@ -85,7 +85,7 @@
   "parts": {
     "RadioSelector": {
       "className": {
-        "radio": true
+        "fform-radio": true
       },
       "$_maps": {
         "children": {
@@ -93,17 +93,17 @@
             "args": {
               "2": {
                 "className": {
-                  "radio-container": true
+                  "fform-radio-container": true
                 }
               },
               "3": {
                 "className": {
-                  "radio-input": true
+                  "fform-radio-input": true
                 }
               },
               "4": {
                 "className": {
-                  "radio-label": true
+                  "fform-radio-label": true
                 }
               }
             }
@@ -113,7 +113,7 @@
     },
     "ArrayItemMenu": {
       "className": {
-        "item-menu": true
+        "fform-item-menu": true
       },
       "buttonsProps": {
         "first": {

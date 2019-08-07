@@ -39,6 +39,7 @@ import {
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
 
+const _$cxSym = Symbol('_$cx');
 
 /////////////////////////////////////////////
 //  Main class
@@ -65,7 +66,8 @@ class FForm extends Component<FFormProps> {
     super(props, context);
     const self = this;
     let {core: coreParams} = props;
-
+    // debugger
+    console.log('init');
     self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
 
     Object.defineProperty(self, "elements", {get: () => self.api.props.elements});
@@ -114,7 +116,8 @@ class FForm extends Component<FFormProps> {
     if (inital && inital !== prevProps.inital) self.api.setValue(inital, {replace: true, inital: true, noValidation});
     if (value && value !== prevProps.value) self.api.setValue(value, {replace: true, noValidation});
     if (extData && extData !== prevProps.extData) objKeys(extData).forEach(key => (self.api.set(key, (extData as any)[key], {replace: true})));
-    if (!isUndefined(touched) && touched !== null && touched !== prevProps.touched) self.api.reset({status: 'untouched', value: touched ? 0 : undefined});
+    if (!isUndefined(touched) && touched !== null && touched !== prevProps.touched)
+      self.api.reset({status: 'untouched', value: touched ? 0 : undefined});
     FForm.params.forEach(k => (!isUndefined(nextProps[k]) && nextProps[k] !== prevProps[k] &&
       self.api.switch('/@/params/' + k, nextProps[k])));
   }
@@ -352,8 +355,8 @@ class FField extends FRefsGeneric {
     const self = this;
     self._cachedTimeout = undefined;
     if (update && self._cached) {
+      self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate && !self._forceUpd, path: self.path, ...self._cached.opts});
       self._forceUpd = false;
-      self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate, path: self.path, ...self._cached.opts});
       self._cached = undefined;
     }
   }
@@ -1109,7 +1112,10 @@ function classNames(...styles: any[]) {
 
 let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOptionsArgument) => any } = {
   extend(elements: any[], opts?: MergeStateOptionsArgument) {
-    return merge.all(this, elements, opts)
+    let res = merge.all(this, elements, opts);
+    if (this['_$cx.bind'] !== res['_$cx.bind'])
+      res = merge(res, {'_$cx': res['_$cx.bind'] ? this[_$cxSym].bind(res['_$cx.bind']) : this[_$cxSym]});
+    return res;
   },
   // types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
   widgets: {
@@ -1131,7 +1137,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         },
         _$cx: '^/_$cx',
         $_maps: {
-          'className/hidden': '@/params/hidden',
+          'className/fform-hidden': '@/params/hidden',
           'arrayItem': '@/arrayItem'
         }
       },
@@ -1146,7 +1152,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Body: {
         _$widget: '^/widgets/Generic',
         _$cx: '^/_$cx',
-        className: 'body',
+        className: 'fform-body',
       },
       //Main: {},
       Message: {
@@ -1155,7 +1161,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         children: [],
         $_maps: {
           children: {$: '^/fn/messages', args: ['@/messages', {}]},
-          'className/hidden': {$: '^/fn/not', args: '@/status/touched'},
+          'className/fform-hidden': {$: '^/fn/not', args: '@/status/touched'},
         }
       }
     },
@@ -1165,7 +1171,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         _$widget: '^/widgets/Input',
         _$cx: '^/_$cx',
         $_reactRef: {ref: true},
-        viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {viewer: true}},
+        viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {'fform-viewer': true}},
         onChange: {$: '^/fn/eventValue|setValue'},
         onBlur: {$: '^/fn/blur'},
         onFocus: {$: '^/fn/focus'},
@@ -1182,6 +1188,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
           'viewerProps/enumExten': '@/fData/enumExten',
           id: {$: '^/fn/getProp', args: 'props/id', update: 'build'},
           name: {$: '^/fn/getProp', args: 'props/name', update: 'build'},
+          'className/fform-input-priority': {$: '^/fn/setInputPriority', args: '@/status/priority'}
         }
       },
       Title: {
@@ -1190,11 +1197,11 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         _$useTag: 'label',
         children: [],
         $_maps: {
-          'className/required': '@/fData/required',
+          'className/fform-required': '@/fData/required',
           'children/0': '@/fData/title',
-          'className/hidden': {$: '^/fn/not', args: '@/fData/title'},
+          'className/fform-hidden': {$: '^/fn/not', args: '@/fData/title'},
           htmlFor: {$: '^/fn/getProp', args: ['id'], update: 'build'},
-          'className/title-viewer': '@/params/viewer'
+          'className/fform-title-viewer': '@/params/viewer'
         }
       },
     },
@@ -1204,10 +1211,10 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     },
     textarea: {
       $_ref: '^/sets/simple',
-      Main: {type: 'textarea', viewerProps: {className: {viewer: false, 'viewer-inverted': true}}},
+      Main: {type: 'textarea', viewerProps: {className: {'fform-viewer': false, 'fform-viewer-inverted': true}}},
       Title: {
         $_maps: {
-          'className/title-viewer-inverted': '@/params/viewer'
+          'className/fform-fform-title-viewer-inverted': '@/params/viewer'
         }
       }
     },
@@ -1249,10 +1256,10 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         $_reactRef: {'0': {ref: true}},
         children: [
           {$_ref: '^/sets/simple/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: {_$useTag: 'span'}},
-          {$_ref: '^/sets/simple/Title', _$useTag: 'span', $_maps: {'className/hidden': '@/params/viewer'}}
+          {$_ref: '^/sets/simple/Title', _$useTag: 'span', $_maps: {'className/fform-hidden': '@/params/viewer'}}
         ]
       },
-      Title: {$_ref: '^/sets/simple/Title', $_maps: {'className/hidden': {$: '^/fn/not', args: '@/params/viewer'}}},
+      Title: {$_ref: '^/sets/simple/Title', $_maps: {'className/fform-hidden': {$: '^/fn/not', args: '@/params/viewer'}}},
     },
     booleanNull: {
       $_ref: '^/sets/boolean',
@@ -1310,6 +1317,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         type: 'select',
         children: [],
+        onChange: {$: '^/fn/eventValue|liveUpdate|setValue'},
         $_maps: {
           'children': {$: '^/fn/arrayOfEnum', args: ['@/fData/enum', '@/fData/enumExten', {_$widget: 'option'}], replace: false},
           'label': false
@@ -1320,7 +1328,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_ref: '^/sets/select',
       Main: {
         multiple: true,
-        onChange: {$: '^/fn/eventMultiple|setValue'}
+        onChange: {$: '^/fn/eventMultiple|setValue|liveUpdate'}
       }
     },
     radio: {
@@ -1356,18 +1364,18 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     $radioEmpty: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: {$: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', '']}}}}}}}},
     $autowidth: {
       Autowidth: {$_ref: '^/parts/Autowidth'},
-      Wrapper: {className: {shrink: true}},
+      Wrapper: {className: {'fform-shrink': true}},
     },
     $noArrayControls: {Wrapper: {$_maps: {'arrayItem': false}}},
     $noArrayButtons: {Title: {$_ref: '^/sets/simple/Title'}},
-    $inlineItems: {Main: {className: {'inline': true}}},
-    $inlineTitle: {Wrapper: {className: {'inline': true}}},
-    $inlineLayout: {Main: {LayoutDefaultClass: {'inline': true}}},
-    $inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'inline': true}}}},
+    $inlineItems: {Main: {className: {'fform-inline': true}}},
+    $inlineTitle: {Wrapper: {className: {'fform-inline': true}}},
+    $inlineLayout: {Main: {LayoutDefaultClass: {'fform-inline': true}}},
+    $inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'fform-inline': true}}}},
     $arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
     $noTitle: {Title: false},
-    $shrink: {Wrapper: {className: {'shrink': true}}},
-    $expand: {Wrapper: {className: {'expand': true}}},
+    $shrink: {Wrapper: {className: {'fform-shrink': true}}},
+    $expand: {Wrapper: {className: {'fform-expand': true}}},
     $password: {Main: {type: 'password'}}
   },
   fn: {
@@ -1431,7 +1439,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
           toArray(texts[key]).forEach((v, i, arr) =>
             (isString(v) && isString(children[children.length - 1])) ? children.push(v, {_$widget: 'br'}) : children.push(v)));
         if (norender || !children.length) return null;
-        return {children, ...restSP, className: {['priority_' + priority]: true, ...cnSP, ...className}, ...rest}
+        return {children, ...restSP, className: {['fform-message-priority-' + priority]: true, ...cnSP, ...className}, ...rest}
       })]
     },
     arrayOfEnum(enumVals: any[] = [], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
@@ -1463,6 +1471,10 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       value = toArray(value);
       return [enumVals.map(val => {return {'children': {'0': {[property]: !!~value.indexOf(val)}}}})]
     },
+    setInputPriority(priority?: number) {
+      if (typeof priority == 'number') return ['fform-input-priority-' + priority];
+      else return [false]
+    }
   },
   parts: {
     RadioSelector: {
@@ -1504,7 +1516,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_maps: {
         value: 'value',
         placeholder: '@/params/placeholder',
-        'className/hidden': '@/params/hidden',
+        'className/fform-hidden': '@/params/hidden',
         $FField: {$: '^/fn/getProp', args: [], update: 'build'},
       }
     },
@@ -1514,7 +1526,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       _$useTag: 'button',
       type: 'button',
       $_maps: {
-        'className/button-viewer': '@/params/viewer',
+        'className/fform-button-viewer': '@/params/viewer',
         disabled: '@/params/disabled',
       }
     },
@@ -1538,7 +1550,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       children: ['+'],
       onClick: {$: '^/fn/api', args: ['arrayAdd', './', 1]},
       $_maps: {
-        'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
+        'className/fform-hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
         'disabled': {$: '^/fn/equal', args: [true, {$: '^/fn/not', args: '@/fData/canAdd'}, '@params/disabled']}
       }
     },
@@ -1547,14 +1559,14 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       children: ['-'],
       onClick: {$: '^/fn/api', args: ['arrayAdd', './', -1]},
       $_maps: {
-        'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
+        'className/fform-hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
         'disabled': {$: '^/fn/equal', args: [true, {$: '^/fn/not', args: '@/length'}, '@params/disabled']},
       },
     },
     ArrayEmpty: {
       children: '(array is empty)',
       _$useTag: 'span',
-      $_maps: {'className/hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/length', 0]}}
+      $_maps: {'className/fform-hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/length', 0]}}
     },
     ArrayItemMenu: {
       _$widget: '^/widgets/ItemMenu',
@@ -1568,11 +1580,12 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         down: {disabledCheck: 'canDown'},
         del: {disabledCheck: 'canDel'},
       },
-      $_maps: {arrayItem: '@/arrayItem', 'className/button-viewer': '@/params/viewer', disabled: '@params/disabled'},
+      $_maps: {arrayItem: '@/arrayItem', 'className/fform-button-viewer': '@/params/viewer', disabled: '@params/disabled'},
     },
-    Expander: {_$widget: 'div', className: {expand: true}}
+    Expander: {_$widget: 'div', className: {'fform-expand': true}}
   },
-  _$cx: classNames
+  _$cx: classNames,
+  [_$cxSym]: classNames
 };
 
 

@@ -986,6 +986,7 @@ const api_1 = __webpack_require__(/*! ./api */ "./src/api.tsx");
 exports.FFormStateAPI = api_1.FFormStateAPI;
 exports.fformCores = api_1.fformCores;
 exports.formReducer = api_1.formReducer;
+const _$cxSym = Symbol('_$cx');
 /////////////////////////////////////////////
 //  Main class
 /////////////////////////////////////////////
@@ -996,6 +997,8 @@ class FForm extends react_1.Component {
         this.wrapFns = bindProcessorToThis;
         const self = this;
         let { core: coreParams } = props;
+        // debugger
+        console.log('init');
         self.api = coreParams instanceof api_1.FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
         Object.defineProperty(self, "elements", { get: () => self.api.props.elements });
         Object.defineProperty(self, "valid", { get: () => self.api.get('/@/status/valid') });
@@ -1251,8 +1254,8 @@ class FField extends FRefsGeneric {
         const self = this;
         self._cachedTimeout = undefined;
         if (update && self._cached) {
+            self.stateApi.setValue(self._cached.value, Object.assign({ noValidation: !self.liveValidate && !self._forceUpd, path: self.path }, self._cached.opts));
             self._forceUpd = false;
-            self.stateApi.setValue(self._cached.value, Object.assign({ noValidation: !self.liveValidate, path: self.path }, self._cached.opts));
             self._cached = undefined;
         }
     }
@@ -1941,7 +1944,10 @@ exports.classNames = classNames;
 /////////////////////////////////////////////
 let elementsBase = {
     extend(elements, opts) {
-        return commonLib_1.merge.all(this, elements, opts);
+        let res = commonLib_1.merge.all(this, elements, opts);
+        if (this['_$cx.bind'] !== res['_$cx.bind'])
+            res = commonLib_1.merge(res, { '_$cx': res['_$cx.bind'] ? this[_$cxSym].bind(res['_$cx.bind']) : this[_$cxSym] });
+        return res;
     },
     // types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
     widgets: {
@@ -1963,7 +1969,7 @@ let elementsBase = {
                 },
                 _$cx: '^/_$cx',
                 $_maps: {
-                    'className/hidden': '@/params/hidden',
+                    'className/fform-hidden': '@/params/hidden',
                     'arrayItem': '@/arrayItem'
                 }
             },
@@ -1978,7 +1984,7 @@ let elementsBase = {
             Body: {
                 _$widget: '^/widgets/Generic',
                 _$cx: '^/_$cx',
-                className: 'body',
+                className: 'fform-body',
             },
             //Main: {},
             Message: {
@@ -1987,7 +1993,7 @@ let elementsBase = {
                 children: [],
                 $_maps: {
                     children: { $: '^/fn/messages', args: ['@/messages', {}] },
-                    'className/hidden': { $: '^/fn/not', args: '@/status/touched' },
+                    'className/fform-hidden': { $: '^/fn/not', args: '@/status/touched' },
                 }
             }
         },
@@ -1997,7 +2003,7 @@ let elementsBase = {
                 _$widget: '^/widgets/Input',
                 _$cx: '^/_$cx',
                 $_reactRef: { ref: true },
-                viewerProps: { _$cx: '^/_$cx', emptyMock: '(no value)', className: { viewer: true } },
+                viewerProps: { _$cx: '^/_$cx', emptyMock: '(no value)', className: { 'fform-viewer': true } },
                 onChange: { $: '^/fn/eventValue|setValue' },
                 onBlur: { $: '^/fn/blur' },
                 onFocus: { $: '^/fn/focus' },
@@ -2014,6 +2020,7 @@ let elementsBase = {
                     'viewerProps/enumExten': '@/fData/enumExten',
                     id: { $: '^/fn/getProp', args: 'props/id', update: 'build' },
                     name: { $: '^/fn/getProp', args: 'props/name', update: 'build' },
+                    'className/fform-input-priority': { $: '^/fn/setInputPriority', args: '@/status/priority' }
                 }
             },
             Title: {
@@ -2022,11 +2029,11 @@ let elementsBase = {
                 _$useTag: 'label',
                 children: [],
                 $_maps: {
-                    'className/required': '@/fData/required',
+                    'className/fform-required': '@/fData/required',
                     'children/0': '@/fData/title',
-                    'className/hidden': { $: '^/fn/not', args: '@/fData/title' },
+                    'className/fform-hidden': { $: '^/fn/not', args: '@/fData/title' },
                     htmlFor: { $: '^/fn/getProp', args: ['id'], update: 'build' },
-                    'className/title-viewer': '@/params/viewer'
+                    'className/fform-title-viewer': '@/params/viewer'
                 }
             },
         },
@@ -2036,10 +2043,10 @@ let elementsBase = {
         },
         textarea: {
             $_ref: '^/sets/simple',
-            Main: { type: 'textarea', viewerProps: { className: { viewer: false, 'viewer-inverted': true } } },
+            Main: { type: 'textarea', viewerProps: { className: { 'fform-viewer': false, 'fform-viewer-inverted': true } } },
             Title: {
                 $_maps: {
-                    'className/title-viewer-inverted': '@/params/viewer'
+                    'className/fform-fform-title-viewer-inverted': '@/params/viewer'
                 }
             }
         },
@@ -2081,10 +2088,10 @@ let elementsBase = {
                 $_reactRef: { '0': { ref: true } },
                 children: [
                     { $_ref: '^/sets/simple/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: { _$useTag: 'span' } },
-                    { $_ref: '^/sets/simple/Title', _$useTag: 'span', $_maps: { 'className/hidden': '@/params/viewer' } }
+                    { $_ref: '^/sets/simple/Title', _$useTag: 'span', $_maps: { 'className/fform-hidden': '@/params/viewer' } }
                 ]
             },
-            Title: { $_ref: '^/sets/simple/Title', $_maps: { 'className/hidden': { $: '^/fn/not', args: '@/params/viewer' } } },
+            Title: { $_ref: '^/sets/simple/Title', $_maps: { 'className/fform-hidden': { $: '^/fn/not', args: '@/params/viewer' } } },
         },
         booleanNull: {
             $_ref: '^/sets/boolean',
@@ -2143,6 +2150,7 @@ let elementsBase = {
             Main: {
                 type: 'select',
                 children: [],
+                onChange: { $: '^/fn/eventValue|liveUpdate|setValue' },
                 $_maps: {
                     'children': { $: '^/fn/arrayOfEnum', args: ['@/fData/enum', '@/fData/enumExten', { _$widget: 'option' }], replace: false },
                     'label': false
@@ -2153,7 +2161,7 @@ let elementsBase = {
             $_ref: '^/sets/select',
             Main: {
                 multiple: true,
-                onChange: { $: '^/fn/eventMultiple|setValue' }
+                onChange: { $: '^/fn/eventMultiple|setValue|liveUpdate' }
             }
         },
         radio: {
@@ -2188,18 +2196,18 @@ let elementsBase = {
         $radioEmpty: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: { $: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', ''] } } } } } } } },
         $autowidth: {
             Autowidth: { $_ref: '^/parts/Autowidth' },
-            Wrapper: { className: { shrink: true } },
+            Wrapper: { className: { 'fform-shrink': true } },
         },
         $noArrayControls: { Wrapper: { $_maps: { 'arrayItem': false } } },
         $noArrayButtons: { Title: { $_ref: '^/sets/simple/Title' } },
-        $inlineItems: { Main: { className: { 'inline': true } } },
-        $inlineTitle: { Wrapper: { className: { 'inline': true } } },
-        $inlineLayout: { Main: { LayoutDefaultClass: { 'inline': true } } },
-        $inlineArrayControls: { Wrapper: { ArrayItemBody: { className: { 'inline': true } } } },
+        $inlineItems: { Main: { className: { 'fform-inline': true } } },
+        $inlineTitle: { Wrapper: { className: { 'fform-inline': true } } },
+        $inlineLayout: { Main: { LayoutDefaultClass: { 'fform-inline': true } } },
+        $inlineArrayControls: { Wrapper: { ArrayItemBody: { className: { 'fform-inline': true } } } },
         $arrayControls3but: { Wrapper: { ArrayItemMenu: { buttons: ['up', 'down', 'del'], } } },
         $noTitle: { Title: false },
-        $shrink: { Wrapper: { className: { 'shrink': true } } },
-        $expand: { Wrapper: { className: { 'expand': true } } },
+        $shrink: { Wrapper: { className: { 'fform-shrink': true } } },
+        $expand: { Wrapper: { className: { 'fform-expand': true } } },
         $password: { Main: { type: 'password' } }
     },
     fn: {
@@ -2261,7 +2269,7 @@ let elementsBase = {
                     commonLib_1.objKeys(texts).forEach((key) => commonLib_1.toArray(texts[key]).forEach((v, i, arr) => (commonLib_1.isString(v) && commonLib_1.isString(children[children.length - 1])) ? children.push(v, { _$widget: 'br' }) : children.push(v)));
                     if (norender || !children.length)
                         return null;
-                    return Object.assign({ children }, restSP, { className: Object.assign({ ['priority_' + priority]: true }, cnSP, className) }, rest);
+                    return Object.assign({ children }, restSP, { className: Object.assign({ ['fform-message-priority-' + priority]: true }, cnSP, className) }, rest);
                 })];
         },
         arrayOfEnum(enumVals = [], enumExten = {}, staticProps = {}, name) {
@@ -2290,6 +2298,12 @@ let elementsBase = {
             value = commonLib_1.toArray(value);
             return [enumVals.map(val => { return { 'children': { '0': { [property]: !!~value.indexOf(val) } } }; })];
         },
+        setInputPriority(priority) {
+            if (typeof priority == 'number')
+                return ['fform-input-priority-' + priority];
+            else
+                return [false];
+        }
     },
     parts: {
         RadioSelector: {
@@ -2331,7 +2345,7 @@ let elementsBase = {
             $_maps: {
                 value: 'value',
                 placeholder: '@/params/placeholder',
-                'className/hidden': '@/params/hidden',
+                'className/fform-hidden': '@/params/hidden',
                 $FField: { $: '^/fn/getProp', args: [], update: 'build' },
             }
         },
@@ -2341,7 +2355,7 @@ let elementsBase = {
             _$useTag: 'button',
             type: 'button',
             $_maps: {
-                'className/button-viewer': '@/params/viewer',
+                'className/fform-button-viewer': '@/params/viewer',
                 disabled: '@/params/disabled',
             }
         },
@@ -2365,7 +2379,7 @@ let elementsBase = {
             children: ['+'],
             onClick: { $: '^/fn/api', args: ['arrayAdd', './', 1] },
             $_maps: {
-                'className/hidden': { $: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array'] },
+                'className/fform-hidden': { $: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array'] },
                 'disabled': { $: '^/fn/equal', args: [true, { $: '^/fn/not', args: '@/fData/canAdd' }, '@params/disabled'] }
             }
         },
@@ -2374,14 +2388,14 @@ let elementsBase = {
             children: ['-'],
             onClick: { $: '^/fn/api', args: ['arrayAdd', './', -1] },
             $_maps: {
-                'className/hidden': { $: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array'] },
+                'className/fform-hidden': { $: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array'] },
                 'disabled': { $: '^/fn/equal', args: [true, { $: '^/fn/not', args: '@/length' }, '@params/disabled'] },
             },
         },
         ArrayEmpty: {
             children: '(array is empty)',
             _$useTag: 'span',
-            $_maps: { 'className/hidden': { $: '^/fn/equal | ^/fn/not', args: ['@/length', 0] } }
+            $_maps: { 'className/fform-hidden': { $: '^/fn/equal | ^/fn/not', args: ['@/length', 0] } }
         },
         ArrayItemMenu: {
             _$widget: '^/widgets/ItemMenu',
@@ -2395,11 +2409,12 @@ let elementsBase = {
                 down: { disabledCheck: 'canDown' },
                 del: { disabledCheck: 'canDel' },
             },
-            $_maps: { arrayItem: '@/arrayItem', 'className/button-viewer': '@/params/viewer', disabled: '@params/disabled' },
+            $_maps: { arrayItem: '@/arrayItem', 'className/fform-button-viewer': '@/params/viewer', disabled: '@params/disabled' },
         },
-        Expander: { _$widget: 'div', className: { expand: true } }
+        Expander: { _$widget: 'div', className: { 'fform-expand': true } }
     },
-    _$cx: classNames
+    _$cx: classNames,
+    [_$cxSym]: classNames
 };
 exports.elements = elementsBase;
 

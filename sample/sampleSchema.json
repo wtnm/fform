@@ -1,112 +1,128 @@
 {
   "type": "object",
-  "_layout": [
-    {
-      "className": {
-        "layout": true,
-        "inline": true
-      },
-      "$_fields": [
-        {
-          "$_ref": "^/parts/Button",
-          "children": "switch to viewer",
-          "className": {
-            "shrink": true
-          },
-          "$_maps": {
-            "disabled": "@/params/viewer",
-            "className/button-viewer": false
-          },
-          "onClick": {
-            "$": "^/fn/api",
-            "args": [
-              "set",
-              "/@/params/viewer",
-              true,
-              {
-                "macros": "switch"
-              }
-            ]
-          }
-        },
-        {
-          "$_ref": "^/parts/Button",
-          "children": "switch to editor",
-          "className": {
-            "shrink": true
-          },
-          "$_maps": {
-            "disabled": {
-              "$": "^/fn/not",
-              "args": "@/params/viewer"
-            },
-            "className/button-viewer": false
-          },
-          "onClick": {
-            "$": "^/fn/setValue",
-            "args": [
-              false,
-              {
-                "path": "/@/params/viewer",
-                "macros": "switch"
-              }
-            ]
-          }
-        },
-        {
-          "_$widget": "input",
-          "type": "text",
-          "onChange": {
-            "$": "^/fn/eventValue|setValue",
-            "args": [
-              "${0}",
-              {
-                "path": "./@/focusValue",
-                "execute": true
-              }
-            ]
-          },
-          "$_reactRef": {
-            "ref": "!focusInput"
-          },
-          "$_maps": {
-            "className/hidden": "@/params/viewer",
-            "value": "@/focusValue"
-          }
-        },
-        {
-          "$_ref": "^/parts/Button",
-          "children": "focus",
-          "className": {
-            "shrink": true
-          },
-          "onClick": "^/user/focusInput"
-        },
-        {
-          "$_ref": "^/parts/Expander"
-        }
-      ]
-    }
-  ],
   "_data": {
     "focusValue": "/array/2/1"
+  },
+  "_layout": {
+    "$_fields": [
+      {
+        "className": {
+          "fform-layout": true,
+          "fform-inline": true,
+          "fform-wrapper": true
+        },
+        "$_fields": [
+          {
+            "$_ref": "^/parts/Button",
+            "children": "switch to viewer",
+            "className": {
+              "fform-shrink": true
+            },
+            "$_maps": {
+              "disabled": "@/params/viewer",
+              "className/fform-button-viewer": false
+            },
+            "onClick": {
+              "$": "^/fn/api",
+              "args": [
+                "set",
+                "/@/params/viewer",
+                true,
+                {
+                  "macros": "switch"
+                }
+              ]
+            }
+          },
+          {
+            "$_ref": "^/parts/Button",
+            "children": "switch to editor",
+            "className": {
+              "fform-shrink": true
+            },
+            "$_maps": {
+              "disabled": {
+                "$": "^/fn/not",
+                "args": "@/params/viewer"
+              },
+              "className/fform-button-viewer": false
+            },
+            "onClick": {
+              "$": "^/fn/setValue",
+              "args": [
+                false,
+                {
+                  "path": "/@/params/viewer",
+                  "macros": "switch"
+                }
+              ]
+            }
+          },
+          {
+            "_$widget": "input",
+            "type": "text",
+            "onChange": {
+              "$": "^/fn/eventValue|setValue",
+              "args": [
+                "${0}",
+                {
+                  "path": "./@/focusValue",
+                  "execute": true
+                }
+              ]
+            },
+            "$_reactRef": {
+              "ref": "!focusInput"
+            },
+            "$_maps": {
+              "className/fform-hidden": "@/params/viewer",
+              "value": "@/focusValue"
+            }
+          },
+          {
+            "$_ref": "^/parts/Button",
+            "children": "focus",
+            "className": {
+              "fform-shrink": true
+            },
+            "onClick": "^/user/focusInput"
+          },
+          {
+            "$_ref": "^/parts/Expander"
+          }
+        ]
+      },
+      "array",
+      "booleanLeft",
+      "booleanNullLeft",
+      "select",
+      "radioSelect",
+      "checkboxSelect",
+      "autowidth",
+      "multiselect",
+      "textarea",
+      {
+        "className": {
+          "fform-inline": true
+        },
+        "$_fields": [
+          {
+            "$_ref": "^/parts/Submit",
+            "children": [
+              "Send"
+            ]
+          },
+          {
+            "$_ref": "^/parts/Reset"
+          }
+        ]
+      }
+    ]
   },
   "properties": {
     "array": {
       "type": "array",
       "title": "Array of mix",
-      "_layout": [
-        {
-          "className": {
-            "layout": true,
-            "inline": true
-          },
-          "$_fields": [
-            "0",
-            "1"
-          ]
-        }
-      ],
       "default": [
         "vd 1",
         "vd 2",
@@ -118,6 +134,21 @@
           "more text"
         ]
       ],
+      "_layout": {
+        "$_fields": [
+          {
+            "className": {
+              "fform-layout": true,
+              "fform-inline": true
+            },
+            "$_fields": [
+              "0",
+              "1"
+            ]
+          },
+          "2"
+        ]
+      },
       "items": [
         {
           "type": "string",
@@ -130,6 +161,7 @@
         },
         {
           "type": "array",
+          "maxItems": 4,
           "title": "Array of values",
           "_presets": "array:$noArrayControls",
           "_custom": {
@@ -223,26 +255,30 @@
               }
             }
           },
-          "maxItems": 4,
+          "_layout": {
+            "$_fields": [
+              "0"
+            ]
+          },
           "items": {
             "oneOf": [
               {
                 "type": "string",
-                "_presets": "string:$inlineTitle:$inlineArrayControls",
-                "default": "default"
+                "default": "default",
+                "_presets": "string:$inlineTitle:$inlineArrayControls"
               },
               {
                 "type": [
                   "number",
                   "null"
                 ],
-                "_presets": "numberNull:$inlineTitle:$inlineArrayControls",
-                "default": null
+                "default": null,
+                "_presets": "numberNull:$inlineTitle:$inlineArrayControls"
               },
               {
                 "type": "boolean",
-                "_presets": "boolean:$inlineTitle:$inlineArrayControls",
-                "default": false
+                "default": false,
+                "_presets": "boolean:$inlineTitle:$inlineArrayControls"
               }
             ]
           }
@@ -252,8 +288,8 @@
     "booleanLeft": {
       "type": "boolean",
       "title": "boolean left",
-      "_presets": "booleanLeft:$inlineTitle",
       "default": false,
+      "_presets": "booleanLeft:$inlineTitle",
       "_enumExten": {
         "true": {
           "label": "yes"
@@ -269,8 +305,8 @@
         "null"
       ],
       "title": "booleanNull left",
-      "_presets": "booleanNullLeft:$inlineTitle",
       "default": false,
+      "_presets": "booleanNullLeft:$inlineTitle",
       "_stateMaps": [
         {
           "from": "./@/value",
@@ -280,67 +316,76 @@
       ]
     },
     "select": {
-      "title": "Select",
       "type": "string",
+      "title": "Select",
+      "default": "option 2",
+      "_presets": "select:$inlineTitle",
       "enum": [
         "option 1",
         "option 2",
         "option 3"
-      ],
-      "default": "option 2",
-      "_presets": "select:$inlineTitle"
+      ]
     },
     "radioSelect": {
-      "title": "Radio select",
       "type": "string",
+      "title": "Radio select",
+      "default": "option 2",
       "_presets": "radio:$inlineItems:$inlineTitle",
       "_enumExten": [
         "option 1",
         "option 2",
         "option 3"
-      ],
-      "default": "option 2"
+      ]
     },
     "checkboxSelect": {
-      "title": "Checkbox select",
-      "_presets": "checkboxes:$inlineItems:$inlineTitle",
       "type": "array",
+      "title": "Checkbox select",
+      "default": [
+        "option 2",
+        "option 3"
+      ],
+      "_presets": "checkboxes:$inlineItems:$inlineTitle",
       "_simple": true,
-      "required": true,
       "_enumExten": {
         "option 1": true,
         "option 2": true,
         "option 3": true
       },
+      "_layout": {
+        "$_fields": [
+          "0"
+        ]
+      },
       "items": {
         "type": "string"
-      },
-      "default": [
-        "option 2",
-        "option 3"
-      ]
+      }
     },
     "autowidth": {
       "type": "number",
       "_presets": "number:$autowidth"
     },
     "multiselect": {
+      "type": "array",
       "title": "Multiselect",
       "_presets": "multiselect",
-      "type": "array",
       "_simple": true,
       "_enumExten": {
         "option 1": "value 1",
         "option 2": "value 2",
         "option 3": "value 3"
       },
+      "_layout": {
+        "$_fields": [
+          "0"
+        ]
+      },
       "items": {
         "type": "string"
       }
     },
     "textarea": {
-      "title": "Textarea",
       "type": "string",
+      "title": "Textarea",
       "_presets": "textarea"
     }
   }
