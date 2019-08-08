@@ -2,8 +2,8 @@ import * as React from 'react';
 
 import {FForm, elements, FFormStateAPI} from '../src/fform';
 import * as sampleSchema from './sampleSchema.json'
-import * as style from '../addons/styles.json'
-import * as bootstrap from '../addons/bootstrap.json'
+import * as basicStyling from '../addons/styling/basic.json'
+import * as bootstrapStyling from '../addons/styling/bootstrap.json'
 
 const {render} = require('react-dom');
 
@@ -55,7 +55,7 @@ class CssSelector extends React.Component<any, any> {
   render() {
     const self = this;
 
-    const sampleElements = elements.extend([style, self.state.css === 'bootstrap' ? bootstrap : {}, {
+    const sampleElements = elements.extend([basicStyling, self.state.css === 'bootstrap' ? bootstrapStyling : {}, {
       'user': {
         focusInput: function () {
           let focusInput = this.getRef('!focusInput');
@@ -73,11 +73,11 @@ class CssSelector extends React.Component<any, any> {
     }
     return <div><FForm value={self.state.css} id="cssSelectorForm" onChange={self._setCss.bind(self)}
                        core={{schema: cssSelectSchema, name: "cssSelectorForm", elements: sampleElements}}/>
-      <link rel="stylesheet" href="./fform.css"/>
+      <link rel="stylesheet" href="../addons/styling/fform.css"/>
       {self.state.css === 'bootstrap' ? [<link key="0" rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css"/>,
-        <link key="1" rel="stylesheet" href="./bootstrap.fform.css"/>
+        <link key="1" rel="stylesheet" href="../addons/styling/bootstrap.fform.css"/>
       ] : self.state.css === 'tacit' ? [<link key="0" rel="stylesheet" href="./tacit.min.css"/>,
-        <link key="1" rel="stylesheet" href="./tacit.fform.css"/>] : []}
+        <link key="1" rel="stylesheet" href="../addons/styling/tacit.fform.css"/>] : []}
       <h3>FForm sample</h3>
       <div>
         <div>

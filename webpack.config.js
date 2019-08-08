@@ -37,7 +37,11 @@ module.exports = (env, argv) => {
         {
           test: /\.(ts|tsx)$/,
           loader: `${argv.mode === 'production' ? 'babel-loader!' : ''}ts-loader`,
-        }
+        },
+        {
+          test: /\.css$/i,
+          use: ['basicStyling-loader', 'css-loader'],
+        },
       ],
     },
 
