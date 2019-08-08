@@ -1,0 +1,52 @@
+{
+  "sets": {
+    "simple": {
+      "Main": {
+        "className": {
+          "form-control": true
+        }
+      }
+    },
+    "boolean": {
+      "Main": {
+        "className": {
+          "form-control": false
+        }
+      }
+    }
+  },
+  "parts": {
+    "Button": {
+      "className": {
+        "btn": true,
+        "btn-outline-secondary": true,
+        "fform-btn-margin-right": true
+      }
+    },
+    "Submit": {
+      "className": {
+        "btn": true,
+        "btn-primary": true,
+        "btn-outline-secondary": false
+      }
+    },
+    "ArrayItemMenu": {
+      "_$buttonDefaults": {
+        "className": {
+          "btn": true,
+          "btn-outline-secondary": true,
+          "fform-btn-margin-right": true
+        }
+      }
+    },
+    "Autowidth": {
+      "addWidth": 55
+    }
+  },
+  "_$cx.bind": {
+    "fform-input-priority-0": "is-invalid",
+    "fform-input-priority-2": "is-valid",
+    "fform-message-priority-0": "invalid-feedback",
+    "fform-message-priority-2": "valid-feedback"
+  }
+}

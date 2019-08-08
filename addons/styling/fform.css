@@ -1,5 +1,4 @@
 
-
 .fform-wrapper, .fform-layout, .fform-body, .fform-array-item, .fform-radio, .fform-flex {
     display: flex;
     flex-flow: column;
@@ -8,8 +7,9 @@
     margin: 0;
 }
 
-.fform-required:after {
-    content: " *";
+
+.fform-title, .fform-radio-label {
+    margin-right: 1em;
 }
 
 .fform-title-container {
@@ -27,6 +27,10 @@
 .fform-title-viewer-inverted {
     font-weight: bold;
     margin-bottom: 0;
+}
+
+.fform-required:after {
+    content: " *";
 }
 
 .fform-wrapper {
@@ -62,6 +66,8 @@
     flex-grow: 10;
 }
 
-.fform-title, .fform-radio-label {
-    margin-right: 1em;
+.fform-wrap {
+    flex-wrap: wrap;
 }
+
+
