@@ -1129,7 +1129,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
 
 
 function normalizeStateMaps(dataMap: FFDataMapGeneric<Function | Function[]>[], emitter: Path): normalizedDataMapType[] {
-  return dataMap.map((item: any) => {
+  return toArray(dataMap).map((item: any) => {
     let {from, to, ...action} = item;
     if (!action.$) action = true;
     else action = normalizeFn(action);
@@ -1425,6 +1425,8 @@ function string2path(path: string) {
 //      common utils
 /////////////////////////////////////////////
 
+const isElemRef = (val: any) => isString(val) && val.trim().substr(0, 2) == '^/';
+
 function object2PathValues(vals: { [key: string]: any }, options: object2PathValuesOptions = {}, track: Path = []): PathValueType[] {
   const fn = options.symbol ? objKeysNSymb : objKeys;
   const check = options.arrayAsValue ? isObject : isMergeable;
@@ -1433,7 +1435,10 @@ function object2PathValues(vals: { [key: string]: any }, options: object2PathVal
   fn(vals).forEach((key) => {
     let path = track.concat(key);
     if (check(vals[key])) object2PathValues(vals[key], options, path).forEach(item => result.push(item)); // result = result.concat(object2PathValues(vals[key], path));
-    else result.push(push2array(path, vals[key]))
+    else {
+      path.push(vals[key]);
+      result.push(path)
+    }
   });
   if (!result.length) return [push2array(track.slice(), {})]; // empty object
   return result
@@ -1590,6 +1595,7 @@ export {
   initState,
   rehydrateState,
   processProp,
+  isElemRef
 };
 export {SymData, SymReset, SymClear, SymDelete, SymDataMap}
 export {makeNUpdate, updatePROC, string2NUpdate};

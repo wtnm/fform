@@ -35,11 +35,16 @@ import {
   isMapFn,
   normalizeFn,
   normalizeArgs,
-  processProp
+  processProp,
+  isElemRef
 } from './stateLib'
 import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
 
 const _$cxSym = Symbol('_$cx');
+
+// jsonschema Ajv = require('jsonschema');
+//
+// console.log(jsonschema)
 
 /////////////////////////////////////////////
 //  Main class
@@ -317,10 +322,10 @@ class FField extends FRefsGeneric {
     return self.$refs['@Main'] && self.$refs['@Main'].getRef && self.$refs['@Main'].getRef(path)
   }
 
-  _resolver(obj: any) {
+  _resolver(value: any) {
     const self = this;
     try {
-      return objectResolver(self.pFForm.elements, obj);
+      return objectResolver(self.pFForm.elements, value);
     } catch (e) {
       throw self._addErrPath(e)
     }
@@ -1436,8 +1441,10 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         const {norender, texts, className = {}, ...rest} = messages[priority];
         const children: any[] = [];
         objKeys(texts).forEach((key: string) =>
-          toArray(texts[key]).forEach((v, i, arr) =>
-            (isString(v) && isString(children[children.length - 1])) ? children.push(v, {_$widget: 'br'}) : children.push(v)));
+          toArray(texts[key]).forEach((v, i, arr) => {
+            if (isElemRef(v)) v = this._resolver(v);
+            (isString(v) && isString(children[children.length - 1])) ? children.push({_$widget: 'br'}, v) : children.push(v)
+          }));
         if (norender || !children.length) return null;
         return {children, ...restSP, className: {['fform-message-priority-' + priority]: true, ...cnSP, ...className}, ...rest}
       })]

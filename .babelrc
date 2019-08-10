@@ -8,12 +8,11 @@
   },
   "presets": [
     [
-      "es2015",
+      "@babel/env",
       {
         "modules": false
       }
     ],
-    "stage-3",
-    "react"
+    "@babel/react"
   ]
 }

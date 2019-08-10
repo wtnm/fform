@@ -1,5 +1,9 @@
 export default function (isjv) {
   return function (schema) {
+    if(schema.oneOf){
+      schema = {...schema, anyOf:schema.oneOf}
+      delete schema.oneOf;
+    }
     const validator = isjv(schema, {greedy: true});
     return function (data) {
       validator(data);

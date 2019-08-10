@@ -24,7 +24,7 @@ async function submit(event: any, value: any, fform: any) {
     setTimeout(() => {
       const res: any = {};
       const warn: any = {};
-      if (value.radioSelect !== 'option 1') res['radioSelect'] = 'value should be option 1';
+      if (value.radioSelect !== 'option 1') res['radioSelect'] = ['value should be option 1', 'value option 1'];
       if (value.textarea !== 'textarea') warn['textarea'] = 'value should be "textarea"';
       fform.api.setMessages(null, {priority: 1});
       fform.api.setMessages(warn, {priority: 1});

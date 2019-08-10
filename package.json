@@ -1,6 +1,6 @@
 {
   "name": "fform",
-  "version": "1.0.0-beta.8",
+  "version": "1.0.0-beta.9",
   "description": "Flexibile Form",
   "main": "dist/fform.js",
   "scripts": {
@@ -23,15 +23,16 @@
     "constructor",
     "builder"
   ],
-  "dependencies": {
-    "ee-ts": "^1.0.1"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@babel/preset-env": "^7.5.5",
+    "@babel/preset-react": "^7.0.0",
     "@types/chai": "^4.1.7",
     "@types/expect": "^1.20.3",
     "@types/mocha": "^5.2.5",
     "@types/node": "^12.0.10",
     "@types/react": "^16.7.6",
+    "ajv": "^6.10.2",
     "autoprefixer": "^9.3.1",
     "babel-core": "^6.26.3",
     "babel-jest": "^24.5.0",
@@ -53,6 +54,7 @@
     "ignore-styles": "^5.0.1",
     "immutable": "^4.0.0-rc.12",
     "jsdom": "^15.1.1",
+    "jsonschema": "^1.2.4",
     "mocha": "^6.1.4",
     "mock-require": "^3.0.3",
     "postcss-loader": "^3.0.0",

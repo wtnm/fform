@@ -71,6 +71,221 @@ const SymDataMap = Symbol.for('FFormDataMap');
 
 function sleep(time) {return new Promise((resolve) => setTimeout(() => resolve(), time))}
 
+const Validator = require('jsonschema').Validator;
+
+var v = new Validator();
+let ts = {
+  "_compiled": true,
+  "definitions": {
+    "loginForm": {
+      "_compiled": true,
+      "_oneOfSelector": {
+        "noStrictArrayResult": true,
+        "args": [
+          "${...}"
+        ]
+      },
+      "type": "object",
+      "_layout": {
+        "$_fields": [
+          "login",
+          "password",
+          {
+            "_$widget": "a",
+            "href": "#",
+            "className": {
+              "grayed": true
+            },
+            "onClick": {
+              "$": "^/fn/restorePass"
+            },
+            "children": [
+              "Restore password"
+            ],
+            "$_maps": {
+              "className/activated": "@/params/activated"
+            }
+          },
+          {
+            "className": {
+              "fform-inline": true
+            },
+            "$_fields": [
+              {
+                "$_ref": "^/parts/Button",
+                "children": [],
+                "onClick": {
+                  "$": "^/fn/setValue",
+                  "args": [
+                    {
+                      "$": "^/fn/iif",
+                      "args": [
+                        "@oneOf",
+                        0,
+                        1
+                      ]
+                    },
+                    {
+                      "path": "./@oneOf"
+                    }
+                  ]
+                },
+                "$_maps": {
+                  "children/0": {
+                    "$": "^/fn/iif",
+                    "args": [
+                      "@oneOf",
+                      "Back to login form",
+                      "Register"
+                    ]
+                  }
+                }
+              },
+              {
+                "$_ref": "^/parts/Submit",
+                "children": [
+                  "Send"
+                ]
+              }
+            ]
+          },
+          "oneOf"
+        ]
+      },
+      "properties": {
+        "login": {
+          "_compiled": true,
+          "_stateMaps": [
+            {
+              "from": "./@/value",
+              "to": "../@/params/activated",
+              "$": [
+                null,
+                null
+              ],
+              "args": [
+                "${0}",
+                10
+              ]
+            }
+          ],
+          "type": "string",
+          "pattern": "\\S+@\\S+\\.\\S+",
+          "title": "login",
+          "_presets": "string:$inlineTitle",
+          "_placeholder": "Enter login...",
+          "_params": {
+            "liveUpdate": true
+          },
+          "_custom": {
+            "Main": {
+              "onChange": "^/fn/eventValue|parsePhone|setValue",
+              "$_maps": {
+                "value": {
+                  "$": "^/fn/formatPhone",
+                  "args": [
+                    "@/value"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "password": {
+          "_compiled": true,
+          "type": "string",
+          "title": "password",
+          "_presets": "string:$password:$inlineTitle",
+          "_placeholder": "Enter password..."
+        },
+        "oneOf": {
+          "_compiled": true,
+          "_stateMaps": [
+            {
+              "from": "../@/oneOf",
+              "to": "./@/value"
+            }
+          ],
+          "type": "integer",
+          "_params": {
+            "hidden": true
+          }
+        }
+      }
+    }
+  },
+  "anyOf": [
+    {
+      "_compiled": true,
+      "allOf": [
+        {"$ref": "#/definitions/loginForm"},
+        {"properties": {"oneOf": {"minimum": 0, "maximum": 0}}}
+      ]
+    },
+    {
+      "_compiled": true,
+      "allOf": [
+        {
+          "_compiled": true,
+          "$ref": "#/definitions/loginForm"
+        },
+        {
+          "_compiled": true,
+          "_layout": {
+            "$_fields": {
+              "0": {
+                "$_fields": [
+                  "login",
+                  "email",
+                  {
+                    "className": {
+                      "fform-inline": true
+                    },
+                    "$_fields": [
+                      "password",
+                      "confirm"
+                    ]
+                  }
+                ]
+              },
+              "2": false
+            }
+          },
+          "properties": {
+            "confirm": {
+              "_compiled": true,
+              "type": "string",
+              "title": "confirm",
+              "_placeholder": "Confirm password...",
+              "_presets": "string:$password:$inlineTitle"
+            },
+            "email": {
+              "_compiled": true,
+              "type": "string",
+              "title": "E-mail",
+              "_placeholder": "Enter email...",
+              "_presets": "string:$inlineTitle",
+              "pattern": "\\S+@\\S+\\.\\S+"
+            }
+          }
+        }
+      ]
+    }
+  ]
+};
+
+
+let res = v.validate({
+  "login": "3454@sdffd.ru",
+  "password": "",
+  "oneOf": 0,
+  "email": "sdf",
+  "confirm": ""
+}, ts, {nestedErrors: true});
+
+console.log(res);
+
+
 /*describe('components tests', function () {
   let usePreact = 1;
   let React = usePreact ? require('preact') : require('react');

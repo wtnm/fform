@@ -335,8 +335,9 @@ class FFormStateAPI extends FFormStateManager {
                     this.switch([path, '@/messages/' + priority], props, rest);
             }
             else {
-                stateLib_1.object2PathValues(value, { arrayAsValue: true }).forEach(p => {
-                    this.set([path, p, msgPath], p.pop(), rest);
+                let r = stateLib_1.object2PathValues(value, { arrayAsValue: true });
+                r.forEach(p => {
+                    this.set([path, p, msgPath], p.pop(), Object.assign({ replace: true }, rest));
                     if (commonLib_1.isObject(props))
                         this.set([path, p, '@/messages/' + priority], props, rest);
                 });
@@ -562,7 +563,7 @@ exports.objectDerefer = objectDerefer;
 function objectResolver(_elements, obj2resolve, track = []) {
     const convRef = (refs, prefix = '') => commonLib_1.deArray(refs.split('|').map((ref, i) => {
         ref = ref.trim();
-        if (isRef(ref))
+        if (stateLib_1.isElemRef(ref))
             prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
         else
             ref = prefix + ref;
@@ -570,18 +571,21 @@ function objectResolver(_elements, obj2resolve, track = []) {
         testRef(refRes, ref, track.concat('@' + i));
         return refRes;
     }));
-    const isRef = (val) => val.substr(0, 2) == '^/';
+    if (stateLib_1.isElemRef(obj2resolve))
+        return convRef(obj2resolve);
+    if (!commonLib_1.isMergeable(obj2resolve))
+        return obj2resolve;
     const _objs = { '^': _elements };
     const result = objectDerefer(_elements, obj2resolve);
     const retResult = commonLib_1.isArray(result) ? [] : {};
     commonLib_1.objKeys(result).forEach((key) => {
         let value = result[key];
-        if (commonLib_1.isString(value) && isRef(value.trim())) {
+        if (stateLib_1.isElemRef(value)) {
             value = convRef(value);
             if (key !== '$' && key.substr(0, 2) !== '_$' && (commonLib_1.isFunction(value) || commonLib_1.isArray(value) && value.every(commonLib_1.isFunction)))
                 value = { $: value };
         }
-        if (key.substr(0, 2) !== '_$' && commonLib_1.isMergeable(value))
+        if (key.substr(0, 2) !== '_$')
             retResult[key] = objectResolver(_elements, value, track.concat(key));
         else
             retResult[key] = value;
@@ -987,6 +991,9 @@ exports.FFormStateAPI = api_1.FFormStateAPI;
 exports.fformCores = api_1.fformCores;
 exports.formReducer = api_1.formReducer;
 const _$cxSym = Symbol('_$cx');
+// jsonschema Ajv = require('jsonschema');
+//
+// console.log(jsonschema)
 /////////////////////////////////////////////
 //  Main class
 /////////////////////////////////////////////
@@ -1223,10 +1230,10 @@ class FField extends FRefsGeneric {
             return path.length == 1 ? self.$refs[path[0]] : self.$refs[path[0]].getRef(path.slice(1));
         return self.$refs['@Main'] && self.$refs['@Main'].getRef && self.$refs['@Main'].getRef(path);
     }
-    _resolver(obj) {
+    _resolver(value) {
         const self = this;
         try {
-            return api_1.objectResolver(self.pFForm.elements, obj);
+            return api_1.objectResolver(self.pFForm.elements, value);
         }
         catch (e) {
             throw self._addErrPath(e);
@@ -2266,7 +2273,11 @@ let elementsBase = {
             return [commonLib_1.objKeys(messages).map(priority => {
                     const _a = messages[priority], { norender, texts, className = {} } = _a, rest = __rest(_a, ["norender", "texts", "className"]);
                     const children = [];
-                    commonLib_1.objKeys(texts).forEach((key) => commonLib_1.toArray(texts[key]).forEach((v, i, arr) => (commonLib_1.isString(v) && commonLib_1.isString(children[children.length - 1])) ? children.push(v, { _$widget: 'br' }) : children.push(v)));
+                    commonLib_1.objKeys(texts).forEach((key) => commonLib_1.toArray(texts[key]).forEach((v, i, arr) => {
+                        if (stateLib_1.isElemRef(v))
+                            v = this._resolver(v);
+                        (commonLib_1.isString(v) && commonLib_1.isString(children[children.length - 1])) ? children.push({ _$widget: 'br' }, v) : children.push(v);
+                    }));
                     if (norender || !children.length)
                         return null;
                     return Object.assign({ children }, restSP, { className: Object.assign({ ['fform-message-priority-' + priority]: true }, cnSP, className) }, rest);
@@ -3596,7 +3607,7 @@ function updatePROC(state, UPDATABLE, item) {
 }
 exports.updatePROC = updatePROC;
 function normalizeStateMaps(dataMap, emitter) {
-    return dataMap.map((item) => {
+    return commonLib_1.toArray(dataMap).map((item) => {
         let { from, to } = item, action = __rest(item, ["from", "to"]);
         if (!action.$)
             action = true;
@@ -3892,6 +3903,8 @@ exports.string2path = string2path;
 /////////////////////////////////////////////
 //      common utils
 /////////////////////////////////////////////
+const isElemRef = (val) => commonLib_2.isString(val) && val.trim().substr(0, 2) == '^/';
+exports.isElemRef = isElemRef;
 function object2PathValues(vals, options = {}, track = []) {
     const fn = options.symbol ? commonLib_1.objKeysNSymb : commonLib_1.objKeys;
     const check = options.arrayAsValue ? commonLib_2.isObject : commonLib_2.isMergeable;
@@ -3902,8 +3915,10 @@ function object2PathValues(vals, options = {}, track = []) {
         let path = track.concat(key);
         if (check(vals[key]))
             object2PathValues(vals[key], options, path).forEach(item => result.push(item)); // result = result.concat(object2PathValues(vals[key], path));
-        else
-            result.push(commonLib_1.push2array(path, vals[key]));
+        else {
+            path.push(vals[key]);
+            result.push(path);
+        }
     });
     if (!result.length)
         return [commonLib_1.push2array(track.slice(), {})]; // empty object

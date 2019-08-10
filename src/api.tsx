@@ -28,6 +28,7 @@ import {
   initState,
   updateState,
   object2PathValues,
+  isElemRef,
   SymData, SymReset, SymClear, SymDataMap, rehydrateState
 } from "./stateLib";
 
@@ -355,8 +356,9 @@ class FFormStateAPI extends FFormStateManager {
       this.switch([path, msgPath], [], rest);
       if (isObject(props)) this.switch([path, '@/messages/' + priority], props, rest);
     } else {
-      object2PathValues(value, {arrayAsValue: true}).forEach(p => {
-        this.set([path, p, msgPath], p.pop(), rest);
+      let r = object2PathValues(value, {arrayAsValue: true});
+      r.forEach(p => {
+        this.set([path, p, msgPath], p.pop(), {replace: true, ...rest});
         if (isObject(props)) this.set([path, p, '@/messages/' + priority], props, rest);
       })
     }
@@ -507,24 +509,25 @@ function objectDerefer(_elements: any, obj2deref: any, track: string[] = []) { /
 function objectResolver(_elements: any, obj2resolve: any, track: string[] = []): any {
   const convRef = (refs: string, prefix = '') => deArray(refs.split('|').map((ref, i) => {
     ref = ref.trim();
-    if (isRef(ref)) prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
+    if (isElemRef(ref)) prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
     else ref = prefix + ref;
     let refRes = getIn(_objs, string2path(ref));
     testRef(refRes, ref, track.concat('@' + i));
     return refRes;
   }));
-  const isRef = (val: string) => val.substr(0, 2) == '^/';
+  if (isElemRef(obj2resolve)) return convRef(obj2resolve);
+  if (!isMergeable(obj2resolve)) return obj2resolve;
   const _objs = {'^': _elements};
   const result = objectDerefer(_elements, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
     let value = result[key];
-    if (isString(value) && isRef(value.trim())) {
+    if (isElemRef(value)) {
       value = convRef(value);
       if (key !== '$' && key.substr(0, 2) !== '_$' && (isFunction(value) || isArray(value) && value.every(isFunction)))
         value = {$: value}
     }
-    if (key.substr(0, 2) !== '_$' && isMergeable(value)) retResult[key] = objectResolver(_elements, value, track.concat(key));
+    if (key.substr(0, 2) !== '_$') retResult[key] = objectResolver(_elements, value, track.concat(key));
     else retResult[key] = value;
   });
 
