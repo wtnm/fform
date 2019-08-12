@@ -18,9 +18,15 @@ const {createStore, combineReducers, applyMiddleware} = require('redux');
 const thunk = require('redux-thunk').default;
 //const JSONValidator = require('../addons/is-my-json-valid-lite');
 
-const imjvWrapper = require('../addons/imjvWrapper').default;
+const imjvWrapper = require('../addons/wrappers/imjv').default;
 const imjvValidator = require('../addons/is-my-json-valid-lite');
-const JSONValidator = imjvWrapper(imjvValidator);
+const imjvJSONValidator = imjvWrapper(imjvValidator);
+
+const jsonschemaWrapper = require('../addons/wrappers/jsonschema').default;
+const JSValidator = require('jsonschema').Validator;
+const JSJSONValidator = jsonschemaWrapper(new JSValidator());
+
+const JSONValidator = JSJSONValidator;
 
 const dehydrate = require('../addons/dehydrator').default;
 
@@ -58,232 +64,14 @@ global.cancelAnimationFrame = function (id) {
 };
 copyProps(window, global);
 */
-const Enzyme = require('enzyme');
-const AdapterReact16 = require('enzyme-adapter-react-16');
-const {Adapter: AdapterPreact} = require('enzyme-adapter-preact');
 
 
 const SymData = Symbol.for('FFormData');
 const SymReset = Symbol.for('FFormReset'); // TODO: Reset tests
-// const RawValuesKeys = ['current', 'inital', 'default'];
 const SymDataMapTree = Symbol.for('FFormDataMapTree');
 const SymDataMap = Symbol.for('FFormDataMap');
 
 function sleep(time) {return new Promise((resolve) => setTimeout(() => resolve(), time))}
-
-const Validator = require('jsonschema').Validator;
-
-var v = new Validator();
-let ts = {
-  "_compiled": true,
-  "definitions": {
-    "loginForm": {
-      "_compiled": true,
-      "_oneOfSelector": {
-        "noStrictArrayResult": true,
-        "args": [
-          "${...}"
-        ]
-      },
-      "type": "object",
-      "_layout": {
-        "$_fields": [
-          "login",
-          "password",
-          {
-            "_$widget": "a",
-            "href": "#",
-            "className": {
-              "grayed": true
-            },
-            "onClick": {
-              "$": "^/fn/restorePass"
-            },
-            "children": [
-              "Restore password"
-            ],
-            "$_maps": {
-              "className/activated": "@/params/activated"
-            }
-          },
-          {
-            "className": {
-              "fform-inline": true
-            },
-            "$_fields": [
-              {
-                "$_ref": "^/parts/Button",
-                "children": [],
-                "onClick": {
-                  "$": "^/fn/setValue",
-                  "args": [
-                    {
-                      "$": "^/fn/iif",
-                      "args": [
-                        "@oneOf",
-                        0,
-                        1
-                      ]
-                    },
-                    {
-                      "path": "./@oneOf"
-                    }
-                  ]
-                },
-                "$_maps": {
-                  "children/0": {
-                    "$": "^/fn/iif",
-                    "args": [
-                      "@oneOf",
-                      "Back to login form",
-                      "Register"
-                    ]
-                  }
-                }
-              },
-              {
-                "$_ref": "^/parts/Submit",
-                "children": [
-                  "Send"
-                ]
-              }
-            ]
-          },
-          "oneOf"
-        ]
-      },
-      "properties": {
-        "login": {
-          "_compiled": true,
-          "_stateMaps": [
-            {
-              "from": "./@/value",
-              "to": "../@/params/activated",
-              "$": [
-                null,
-                null
-              ],
-              "args": [
-                "${0}",
-                10
-              ]
-            }
-          ],
-          "type": "string",
-          "pattern": "\\S+@\\S+\\.\\S+",
-          "title": "login",
-          "_presets": "string:$inlineTitle",
-          "_placeholder": "Enter login...",
-          "_params": {
-            "liveUpdate": true
-          },
-          "_custom": {
-            "Main": {
-              "onChange": "^/fn/eventValue|parsePhone|setValue",
-              "$_maps": {
-                "value": {
-                  "$": "^/fn/formatPhone",
-                  "args": [
-                    "@/value"
-                  ]
-                }
-              }
-            }
-          }
-        },
-        "password": {
-          "_compiled": true,
-          "type": "string",
-          "title": "password",
-          "_presets": "string:$password:$inlineTitle",
-          "_placeholder": "Enter password..."
-        },
-        "oneOf": {
-          "_compiled": true,
-          "_stateMaps": [
-            {
-              "from": "../@/oneOf",
-              "to": "./@/value"
-            }
-          ],
-          "type": "integer",
-          "_params": {
-            "hidden": true
-          }
-        }
-      }
-    }
-  },
-  "anyOf": [
-    {
-      "_compiled": true,
-      "allOf": [
-        {"$ref": "#/definitions/loginForm"},
-        {"properties": {"oneOf": {"minimum": 0, "maximum": 0}}}
-      ]
-    },
-    {
-      "_compiled": true,
-      "allOf": [
-        {
-          "_compiled": true,
-          "$ref": "#/definitions/loginForm"
-        },
-        {
-          "_compiled": true,
-          "_layout": {
-            "$_fields": {
-              "0": {
-                "$_fields": [
-                  "login",
-                  "email",
-                  {
-                    "className": {
-                      "fform-inline": true
-                    },
-                    "$_fields": [
-                      "password",
-                      "confirm"
-                    ]
-                  }
-                ]
-              },
-              "2": false
-            }
-          },
-          "properties": {
-            "confirm": {
-              "_compiled": true,
-              "type": "string",
-              "title": "confirm",
-              "_placeholder": "Confirm password...",
-              "_presets": "string:$password:$inlineTitle"
-            },
-            "email": {
-              "_compiled": true,
-              "type": "string",
-              "title": "E-mail",
-              "_placeholder": "Enter email...",
-              "_presets": "string:$inlineTitle",
-              "pattern": "\\S+@\\S+\\.\\S+"
-            }
-          }
-        }
-      ]
-    }
-  ]
-};
-
-
-let res = v.validate({
-  "login": "3454@sdffd.ru",
-  "password": "",
-  "oneOf": 0,
-  "email": "sdf",
-  "confirm": ""
-}, ts, {nestedErrors: true});
-
-console.log(res);
 
 
 /*describe('components tests', function () {
@@ -1214,6 +1002,43 @@ describe('FForm api tests', function () {
   // });
 });
 
+describe('test removeNotAllowedProperties', async function () {
+  let schema = {
+    "oneOf": [
+      {
+        type: "object",
+        "properties": {
+          "one": {type: "string", default: "one"}
+        },
+        "patternProperties": {
+          "^_": {type: "string"}
+        },
+        additionalProperties: false
+      },
+      {
+        type: "object",
+        "properties": {
+          "two": {type: "integer", default: 2}
+        },
+        required: ["two"],
+      }
+    ]
+  };
+  const addCore = new components.FFormStateAPI({name: 'removeNotAllowedProperties', schema, JSONValidator});
+
+  it('test makeStateBranch with removeNotAllowedProperties', async function () {
+    await addCore.setValue({"one": "", "test": "", "_test": ""});
+    let state = addCore.getState();
+    expect(state[SymData].current).to.be.eql({"one": "", "_test": ""});
+    await addCore.setValue({"two": 2, "three": 3}, {setOneOf: 1});
+    state = addCore.getState();
+    expect(state[SymData].current).to.be.eql({"one": "", "two": 2, "three": 3, "_test": ""});
+    await addCore.set('./@/oneOf', 0);
+    state = addCore.getState();
+    expect(state[SymData].current).to.be.eql({"one": "", "_test": ""});
+  })
+});
+
 describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel_2.array_1[0][0].bazinga[Symbol.for('FFormData')]
 
     const extStore = {
@@ -1394,7 +1219,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/0/turpleValue/0')).to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/1')).to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/2')).to.be.equal(undefined);
-        expect(core.get('0/0/turpleValue/@/messages/0/texts/0/0')).to.be.equal('has less items than allowed');
+        expect(core.get('0/0/turpleValue/@/messages/0/texts/0/0').length).to.be.ok;
 
         core.setValue([], {path: '0/1/arrValue', inital: true});
         core.setValue([], {path: '0/1/turpleValue', inital: true, execute: true});
@@ -1453,7 +1278,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
       });
 
       it('test api.arrayAdd with sync validation' + core.name, async function () {
-        expect(core.get('0/0/turpleValue/@/messages/0/texts/0/0')).to.be.equal('has less items than allowed');
+        expect(core.get('0/0/turpleValue/@/messages/0/texts/0/0')).to.be.ok;
         core.arrayAdd('0/0/turpleValue', ['te'], {execute: 1});
         core.arrayAdd('0/0/turpleValue', [5, 8], {execute: true});
         expect(core.get('0/0/turpleValue/@/messages/0/texts/0/0')).to.be.equal(undefined);

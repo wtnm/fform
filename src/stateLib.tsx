@@ -222,7 +222,7 @@ function branchKeys(branch: StateType) {
   let keys: string[] = [];
   if (isSelfManaged(branch)) return keys;
   if (branch[SymData].fData.type == 'array') for (let j = 0; j < getIn(branch, SymData, 'length'); j++) keys.push(j.toString());
-  else keys = objKeys(branch).filter(v => v);
+  else keys = objKeys(branch).filter(Boolean);
   return keys;
 }
 
@@ -384,6 +384,7 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   fData.required = schemaPart.required;
   fData.title = schemaPart.title;
   fData.placeholder = schemaPart._placeholder;
+  fData.additionalProperties = schemaPart.additionalProperties;
   // fData.default = isUndefined(schemaPart.default) ? types.empty[type || 'any'] : schemaPart.default;
   if (schemaPart.enum) fData.enum = schemaPart.enum;
   if (schemaPart._enumExten) fData.enumExten = schemaPart._enumExten;
@@ -475,6 +476,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
       }
     } else if (type == 'object') {
       defaultValues = {};
+      if (value && schemaPart.additionalProperties === false) value = removeNotAllowedProperties(schemaPart, value);
       let arrayOfRequired = result[SymData].fData.required;
       arrayOfRequired = isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
       objKeys(schemaPart.properties || {}).forEach(field => {
@@ -860,7 +862,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   //   value = getIn(state, SymData, 'inital', track);
   //   if (isUndefined(value)) value = branch[SymData].fData.default;
   // }
-  if (oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
+  if (!isUndefined(setOneOf) || oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
     // setOneOf = 
     const parts = getSchemaPart(schema, track, oneOfFromState(state), true);
     let currentOneOf = branch[SymData].oneOf;
@@ -874,6 +876,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     const {schemaPart, oneOf, type} = findOneOf(parts, value, isUndefined(setOneOf) ? currentOneOf : setOneOf);
     if (currentOneOf !== oneOf) {
       if (schemaPart) {
+        if (!isSchemaSelfManaged(schemaPart, type) && branch[SymData].fData.type === type) value = merge(getIn(state, SymData, 'current', track), value, {replace});
         return updatePROC(state, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
       } else console.warn('Type "' + (typeof value) + '" not found in path [' + track.join('/') + ']')
     }
@@ -887,18 +890,26 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
         state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['length'], value.length));
         branch = getIn(state, track);
       }
+
+      const removeNotAllowedProps = type == 'object' && branch[SymData].fData.additionalProperties === false;
+      if (removeNotAllowedProps)  // keep only existing in state(schema) properties
+        value = removeNotAllowedProperties(getSchemaPart(schema, track, oneOfFromState(state)), value);
+
       if (replace === true) { // restore value's props-structure that are exist in state
         let v = isArray(value) ? [] : {};
         branchKeys(branch).forEach(k => v[k] = undefined);
         value = Object.assign(v, value);
       }
+
       objKeys(value).forEach(key =>
-        state = updateCurrentPROC(state, UPDATABLE, value[key], replace === true ? true : getIn(replace, key), track.concat(key)))
-      if (replace === true) { // this code removes props from current that are not preset in value and not exists in state
+        state = updateCurrentPROC(state, UPDATABLE, value[key], replace === true ? true : getIn(replace, key), track.concat(key)));
+
+      if (replace === true || removeNotAllowedProps) { // remove props from current that are not in value or in state
         state = mergeUPD_PROC(state, UPDATABLE);
         branch = getIn(state, track);
         let current = getIn(state, SymData, 'current', track);
-        branchKeys(branch).forEach(k => value[k] = current[k]); // value was reassigned in block below, so change it directly
+        value = {...value};
+        branchKeys(branch).forEach(k => value[k] = current[k]);
         state = updatePROC(state, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
       }
     }
@@ -907,6 +918,18 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   return state
 }
 
+
+function removeNotAllowedProperties(schemaPart: jsJsonSchema, value: any) {
+  if (schemaPart.type !== 'object' || schemaPart.additionalProperties !== false) return value;
+  let v = {};
+  let properties = schemaPart.properties || {};
+  let patterns = objKeys(schemaPart.patternProperties || {}).map(pattern => new RegExp(pattern));
+  objKeys(value).forEach(k => {// test if match against properties or patternProperties
+    if (properties[k] || patterns.some(re => k.match(re))) v[k] = value[k];
+  });
+  return v;
+
+}
 
 function splitValuePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType): StateType {
   const {value: itemValue, path, replace} = item;

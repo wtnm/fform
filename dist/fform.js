@@ -2681,7 +2681,7 @@ function branchKeys(branch) {
         for (let j = 0; j < commonLib_1.getIn(branch, SymData, 'length'); j++)
             keys.push(j.toString());
     else
-        keys = commonLib_1.objKeys(branch).filter(v => v);
+        keys = commonLib_1.objKeys(branch).filter(Boolean);
     return keys;
 }
 exports.branchKeys = branchKeys;
@@ -2849,6 +2849,7 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
     fData.required = schemaPart.required;
     fData.title = schemaPart.title;
     fData.placeholder = schemaPart._placeholder;
+    fData.additionalProperties = schemaPart.additionalProperties;
     // fData.default = isUndefined(schemaPart.default) ? types.empty[type || 'any'] : schemaPart.default;
     if (schemaPart.enum)
         fData.enum = schemaPart.enum;
@@ -2949,6 +2950,8 @@ function makeStateBranch(schema, getNSetOneOf, path = [], value) {
         }
         else if (type == 'object') {
             defaultValues = {};
+            if (value && schemaPart.additionalProperties === false)
+                value = removeNotAllowedProperties(schemaPart, value);
             let arrayOfRequired = result[SymData].fData.required;
             arrayOfRequired = commonLib_2.isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
             commonLib_1.objKeys(schemaPart.properties || {}).forEach(field => {
@@ -3337,7 +3340,7 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
     //   value = getIn(state, SymData, 'inital', track);
     //   if (isUndefined(value)) value = branch[SymData].fData.default;
     // }
-    if (oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
+    if (!commonLib_2.isUndefined(setOneOf) || oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
         // setOneOf = 
         const parts = getSchemaPart(schema, track, oneOfFromState(state), true);
         let currentOneOf = branch[SymData].oneOf;
@@ -3351,6 +3354,8 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
         const { schemaPart, oneOf, type } = findOneOf(parts, value, commonLib_2.isUndefined(setOneOf) ? currentOneOf : setOneOf);
         if (currentOneOf !== oneOf) {
             if (schemaPart) {
+                if (!isSchemaSelfManaged(schemaPart, type) && branch[SymData].fData.type === type)
+                    value = commonLib_1.merge(commonLib_1.getIn(state, SymData, 'current', track), value, { replace });
                 return updatePROC(state, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, { type, setValue: value }));
             }
             else
@@ -3366,22 +3371,38 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
                 state = updatePROC(state, UPDATABLE, makeNUpdate(track, ['length'], value.length));
                 branch = commonLib_1.getIn(state, track);
             }
+            const removeNotAllowedProps = type == 'object' && branch[SymData].fData.additionalProperties === false;
+            if (removeNotAllowedProps) // keep only existing in state(schema) properties
+                value = removeNotAllowedProperties(getSchemaPart(schema, track, oneOfFromState(state)), value);
             if (replace === true) { // restore value's props-structure that are exist in state
                 let v = commonLib_2.isArray(value) ? [] : {};
                 branchKeys(branch).forEach(k => v[k] = undefined);
                 value = Object.assign(v, value);
             }
             commonLib_1.objKeys(value).forEach(key => state = updateCurrentPROC(state, UPDATABLE, value[key], replace === true ? true : commonLib_1.getIn(replace, key), track.concat(key)));
-            if (replace === true) { // this code removes props from current that are not preset in value and not exists in state
+            if (replace === true || removeNotAllowedProps) { // remove props from current that are not in value or in state
                 state = mergeUPD_PROC(state, UPDATABLE);
                 branch = commonLib_1.getIn(state, track);
                 let current = commonLib_1.getIn(state, SymData, 'current', track);
-                branchKeys(branch).forEach(k => value[k] = current[k]); // value was reassigned in block below, so change it directly
+                value = Object.assign({}, value);
+                branchKeys(branch).forEach(k => value[k] = current[k]);
                 state = updatePROC(state, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
             }
         }
     }
     return state;
+}
+function removeNotAllowedProperties(schemaPart, value) {
+    if (schemaPart.type !== 'object' || schemaPart.additionalProperties !== false)
+        return value;
+    let v = {};
+    let properties = schemaPart.properties || {};
+    let patterns = commonLib_1.objKeys(schemaPart.patternProperties || {}).map(pattern => new RegExp(pattern));
+    commonLib_1.objKeys(value).forEach(k => {
+        if (properties[k] || patterns.some(re => k.match(re)))
+            v[k] = value[k];
+    });
+    return v;
 }
 function splitValuePROC(state, UPDATABLE, item) {
     const { value: itemValue, path, replace } = item;

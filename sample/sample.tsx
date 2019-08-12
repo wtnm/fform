@@ -7,7 +7,7 @@ import * as bootstrapStyling from '../addons/styling/bootstrap.json'
 
 const {render} = require('react-dom');
 
-import imjvWrapper from '../addons/imjvWrapper';
+import imjvWrapper from '../addons/wrappers/imjv';
 
 // const imjvValidator: any = require('../addons/is-my-json-valid-lite');
 import * as imjvValidator from '../addons/is-my-json-valid-lite';
