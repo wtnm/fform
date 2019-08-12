@@ -876,6 +876,8 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     const {schemaPart, oneOf, type} = findOneOf(parts, value, isUndefined(setOneOf) ? currentOneOf : setOneOf);
     if (currentOneOf !== oneOf) {
       if (schemaPart) {
+        let cur = getIn(state, SymData, 'current', track);
+        if (!cur) debugger;
         if (!isSchemaSelfManaged(schemaPart, type) && branch[SymData].fData.type === type) value = merge(getIn(state, SymData, 'current', track), value, {replace});
         return updatePROC(state, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
       } else console.warn('Type "' + (typeof value) + '" not found in path [' + track.join('/') + ']')
@@ -908,7 +910,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
         state = mergeUPD_PROC(state, UPDATABLE);
         branch = getIn(state, track);
         let current = getIn(state, SymData, 'current', track);
-        value = {...value};
+        //value = {...value};
         branchKeys(branch).forEach(k => value[k] = current[k]);
         state = updatePROC(state, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
       }

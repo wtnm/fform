@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="messages minor fixes">
-      <change afterPath="$PROJECT_DIR$/addons/wrappers/jsonschema.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__tests__/testForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/testForm.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/addons/imjvWrapper.js" beforeDir="false" afterPath="$PROJECT_DIR$/addons/wrappers/imjv.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample/sample.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sample.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/stateLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/stateLib.tsx" afterDir="false" />
-    </list>
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="implement props removal on additionalProperties = false" />
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
     <ignored path="$PROJECT_DIR$/tmp/" />
@@ -31,8 +22,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="262">
-              <caret line="45" column="22" selection-start-line="45" selection-start-column="2" selection-end-line="45" selection-end-column="22" />
+            <state relative-caret-position="182">
+              <caret line="44" column="22" lean-forward="true" selection-start-line="44" selection-start-column="22" selection-end-line="44" selection-end-column="22" />
             </state>
           </provider>
         </entry>
@@ -1312,14 +1303,7 @@
       <workItem from="1565450160174" duration="4532000" />
       <workItem from="1565473331767" duration="3286000" />
       <workItem from="1565606297729" duration="1397000" />
-      <workItem from="1565616532472" duration="13535000" />
-    </task>
-    <task id="LOCAL-00105" summary="fixes">
-      <created>1553121232535</created>
-      <option name="number" value="00105" />
-      <option name="presentableId" value="LOCAL-00105" />
-      <option name="project" value="LOCAL" />
-      <updated>1553121232535</updated>
+      <workItem from="1565616532472" duration="13631000" />
     </task>
     <task id="LOCAL-00106" summary="fixes">
       <created>1553640082843</created>
@@ -1657,7 +1641,14 @@
       <option name="project" value="LOCAL" />
       <updated>1565476616076</updated>
     </task>
-    <option name="localTasksCounter" value="154" />
+    <task id="LOCAL-00154" summary="implement props removal on additionalProperties = false">
+      <created>1565638745613</created>
+      <option name="number" value="00154" />
+      <option name="presentableId" value="LOCAL-00154" />
+      <option name="project" value="LOCAL" />
+      <updated>1565638745614</updated>
+    </task>
+    <option name="localTasksCounter" value="155" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1693,7 +1684,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3667667000" />
+    <option name="totallyTimeSpent" value="3667763000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1718,7 +1709,7 @@
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="DB Execution Console" order="3" />
       <window_info anchor="bottom" id="Terminal" order="4" sideWeight="0.4892585" weight="0.2416185" />
-      <window_info active="true" anchor="bottom" id="Run" order="5" sideWeight="0.48771676" visible="true" weight="0.28554913" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48771676" weight="0.28554913" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.3236994" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" weight="0.36416185" />
@@ -1762,7 +1753,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="components focus fix" />
     <MESSAGE value="components fixes" />
     <MESSAGE value="documentation inital" />
     <MESSAGE value="documentation more" />
@@ -1787,7 +1777,8 @@
     <MESSAGE value="inital and default value fixes" />
     <MESSAGE value="css fixes" />
     <MESSAGE value="messages minor fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="messages minor fixes" />
+    <MESSAGE value="implement props removal on additionalProperties = false" />
+    <option name="LAST_COMMIT_MESSAGE" value="implement props removal on additionalProperties = false" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2195,8 +2186,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="45" column="22" selection-start-line="45" selection-start-column="2" selection-end-line="45" selection-end-column="22" />
+        <state relative-caret-position="182">
+          <caret line="44" column="22" lean-forward="true" selection-start-line="44" selection-start-column="22" selection-end-line="44" selection-end-column="22" />
         </state>
       </provider>
     </entry>
