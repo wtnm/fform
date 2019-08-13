@@ -16,8 +16,9 @@ const JSONValidator = imjvWrapper(imjvValidator);
 
 function sleep(time: number) {return new Promise((resolve) => setTimeout(() => resolve(), time))}
 
-async function submit(event: any, value: any, fform: any) {
+async function submit(event: any) {
   event.preventDefault();
+  let {value, fform} = event;
   await sleep(200);
   alert(JSON.stringify(value, null, 2));
   return new Promise((resolve, rejects) => {
@@ -26,9 +27,9 @@ async function submit(event: any, value: any, fform: any) {
       const warn: any = {};
       if (value.radioSelect !== 'option 1') res['radioSelect'] = ['value should be option 1', 'value option 1'];
       if (value.textarea !== 'textarea') warn['textarea'] = 'value should be "textarea"';
-      fform.api.setMessages(null, {priority: 1});
-      fform.api.setMessages(warn, {priority: 1});
-      resolve(res);
+      // fform.api.setMessages(null, {priority: 1});
+      // fform.api.setMessages(warn, {priority: 1});
+      resolve([res, {[Symbol.for("FFormData")]: {priority: 1}}, {...warn, [Symbol.for("FFormData")]: {priority: 1}}]);
     }, 10)
   })
 }
@@ -48,7 +49,7 @@ class CssSelector extends React.Component<any, any> {
   state: any = {css: 'bootstrap'};
   cores: any = {};
 
-  _setCss(css: string) {
+  _setCss({value: css}: any) {
     this.setState({css})
   }
 

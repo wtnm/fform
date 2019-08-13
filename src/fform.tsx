@@ -93,7 +93,6 @@ class FForm extends Component<FFormProps> {
     self._setRootRef = self._setRootRef.bind(self);
     self._setFormRef = self._setFormRef.bind(self);
     self._submit = self._submit.bind(self);
-    self._getPath = self._getPath.bind(self);
     self.reset = self.reset.bind(self);
   }
 
@@ -131,33 +130,50 @@ class FForm extends Component<FFormProps> {
     const self = this;
     if (self._savedState == state) return;
     self._savedState = state;
-    if (self._methods.onStateChange) self._methods.onStateChange(state, self);
+
+    if (self._methods.onStateChange) self._methods.onStateChange(self._extendEvent(new Event('stateChanged')));
     if (state[SymData].current !== self._savedValue) {
       self._savedValue = state[SymData].current;
-      if (self._methods.onChange) self._methods.onChange(self._savedValue, self)
+      if (self._methods.onChange) self._methods.onChange(self._extendEvent(new Event('valueChanged')))
     }
     if (self._root) self._root.setState({branch: state});
+  }
+
+  private _extendEvent(event: any) {
+    const self = this;
+    event.value = self._savedValue;
+    event.state = self._savedState;
+    event.fform = self;
+    return event;
   }
 
   private _submit(event: any) {
     const self = this;
     const setPending = (val: any) => self.api.set([], val, {[SymData]: ['status', 'pending']});
 
+    const setMessagesFromSubmit = (messages: any) => {
+      toArray(messages).forEach(value => {
+        let opts = value[SymData];
+        self.api.setMessages(objKeys(value).length ? value : null, opts)
+      })
+    };
+
     self.api.set([], 0, {[SymData]: ['status', 'untouched'], execute: true, macros: 'switch'});
 
     if (self._methods.onSubmit) {
       self.api.setMessages(null, {execute: true});
-      let result = self._methods.onSubmit(event, self._savedValue, self);
+
+      let result = self._methods.onSubmit(self._extendEvent(event));
       if (result && result.then && typeof result.then === 'function') { //Promise
         setPending(1);
-        result.then((val: any) => {
+        result.then((messages: any) => {
           setPending(0);
-          self.api.setMessages(val)
+          setMessagesFromSubmit(messages)
         }, (reason: any) => {
           setPending(0);
-          self.api.setMessages(reason)
+          setMessagesFromSubmit(reason)
         })
-      } else self.api.setMessages(result)
+      } else setMessagesFromSubmit(result)
     }
   }
 
@@ -196,7 +212,7 @@ class FForm extends Component<FFormProps> {
     return this._root && this._root.getRef(path)
   }
 
-  _getPath() {
+  static _getPath() {
     return '#';
   }
 
@@ -229,7 +245,7 @@ class FForm extends Component<FFormProps> {
     objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete (rest as any)[k]); // remove props that starts with '_' or '$'
     return (
       <UseTag ref={self._setFormRef} {...rest} onSubmit={self._submit} onReset={self.reset}>
-        <FField ref={self._setRootRef} id={rest.id ? rest.id + '/#' : undefined} name={self.api.name} pFForm={self} getPath={self._getPath} FFormApi={self.api}/>
+        <FField ref={self._setRootRef} id={rest.id ? rest.id + '/#' : undefined} name={self.api.name} pFForm={self} getPath={FForm._getPath} FFormApi={self.api}/>
       </UseTag>
     )
   }
@@ -1596,6 +1612,6 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 };
 
 
-export {elementsBase as elements, formReducer, FForm, FFormStateAPI, fformCores};
+export {elementsBase as elements, formReducer, FForm, FField, FFormStateAPI, fformCores};
 
 export {extractMaps, normalizeMaps, updateProps, classNames}

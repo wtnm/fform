@@ -98,6 +98,17 @@ interface FFormApiProps {
 }
 
 
+interface FViewerProps {
+  value: any;
+  elements: any;
+  _$useTag?: any;
+  parent?: any;
+  id?: any;
+  name?: any;
+
+  [k: string]: any;
+}
+
 interface FFormProps {
   _$useTag?: any;
 

@@ -1028,7 +1028,6 @@ class FForm extends react_1.Component {
         self._setRootRef = self._setRootRef.bind(self);
         self._setFormRef = self._setFormRef.bind(self);
         self._submit = self._submit.bind(self);
-        self._getPath = self._getPath.bind(self);
         self.reset = self.reset.bind(self);
     }
     _updateMethods(nextProps, prevProps = {}) {
@@ -1068,34 +1067,47 @@ class FForm extends react_1.Component {
             return;
         self._savedState = state;
         if (self._methods.onStateChange)
-            self._methods.onStateChange(state, self);
+            self._methods.onStateChange(self._extendEvent(new Event('stateChanged')));
         if (state[stateLib_1.SymData].current !== self._savedValue) {
             self._savedValue = state[stateLib_1.SymData].current;
             if (self._methods.onChange)
-                self._methods.onChange(self._savedValue, self);
+                self._methods.onChange(self._extendEvent(new Event('valueChanged')));
         }
         if (self._root)
             self._root.setState({ branch: state });
     }
+    _extendEvent(event) {
+        const self = this;
+        event.value = self._savedValue;
+        event.state = self._savedState;
+        event.fform = self;
+        return event;
+    }
     _submit(event) {
         const self = this;
         const setPending = (val) => self.api.set([], val, { [stateLib_1.SymData]: ['status', 'pending'] });
+        const setMessagesFromSubmit = (messages) => {
+            commonLib_1.toArray(messages).forEach(value => {
+                let opts = value[stateLib_1.SymData];
+                self.api.setMessages(commonLib_1.objKeys(value).length ? value : null, opts);
+            });
+        };
         self.api.set([], 0, { [stateLib_1.SymData]: ['status', 'untouched'], execute: true, macros: 'switch' });
         if (self._methods.onSubmit) {
             self.api.setMessages(null, { execute: true });
-            let result = self._methods.onSubmit(event, self._savedValue, self);
+            let result = self._methods.onSubmit(self._extendEvent(event));
             if (result && result.then && typeof result.then === 'function') { //Promise
                 setPending(1);
-                result.then((val) => {
+                result.then((messages) => {
                     setPending(0);
-                    self.api.setMessages(val);
+                    setMessagesFromSubmit(messages);
                 }, (reason) => {
                     setPending(0);
-                    self.api.setMessages(reason);
+                    setMessagesFromSubmit(reason);
                 });
             }
             else
-                self.api.setMessages(result);
+                setMessagesFromSubmit(result);
         }
     }
     _getCoreFromParams(coreParams, context) {
@@ -1129,7 +1141,7 @@ class FForm extends react_1.Component {
     getRef(path) {
         return this._root && this._root.getRef(path);
     }
-    _getPath() {
+    static _getPath() {
         return '#';
     }
     getDataObject(branch, ffield) {
@@ -1158,7 +1170,7 @@ class FForm extends react_1.Component {
         FForm.params.forEach(k => delete rest[k]);
         commonLib_1.objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete rest[k]); // remove props that starts with '_' or '$'
         return (react_1.createElement(UseTag, Object.assign({ ref: self._setFormRef }, rest, { onSubmit: self._submit, onReset: self.reset }),
-            react_1.createElement(FField, { ref: self._setRootRef, id: rest.id ? rest.id + '/#' : undefined, name: self.api.name, pFForm: self, getPath: self._getPath, FFormApi: self.api })));
+            react_1.createElement(FField, { ref: self._setRootRef, id: rest.id ? rest.id + '/#' : undefined, name: self.api.name, pFForm: self, getPath: FForm._getPath, FFormApi: self.api })));
     }
 }
 FForm.params = ['readonly', 'disabled', 'viewer', 'liveValidate', 'liveUpdate'];
@@ -1394,6 +1406,7 @@ class FField extends FRefsGeneric {
         }
     }
 }
+exports.FField = FField;
 //enumOptions={self._enumOptions}
 /////////////////////////////////////////////
 //  Section class
@@ -3354,6 +3367,9 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
         const { schemaPart, oneOf, type } = findOneOf(parts, value, commonLib_2.isUndefined(setOneOf) ? currentOneOf : setOneOf);
         if (currentOneOf !== oneOf) {
             if (schemaPart) {
+                let cur = commonLib_1.getIn(state, SymData, 'current', track);
+                if (!cur)
+                    debugger;
                 if (!isSchemaSelfManaged(schemaPart, type) && branch[SymData].fData.type === type)
                     value = commonLib_1.merge(commonLib_1.getIn(state, SymData, 'current', track), value, { replace });
                 return updatePROC(state, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, { type, setValue: value }));
@@ -3384,7 +3400,7 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
                 state = mergeUPD_PROC(state, UPDATABLE);
                 branch = commonLib_1.getIn(state, track);
                 let current = commonLib_1.getIn(state, SymData, 'current', track);
-                value = Object.assign({}, value);
+                //value = {...value};
                 branchKeys(branch).forEach(k => value[k] = current[k]);
                 state = updatePROC(state, UPDATABLE, makeNUpdate([], ['current'].concat(track), value, replace));
             }
