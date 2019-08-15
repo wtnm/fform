@@ -4,6 +4,7 @@ import {FForm, elements, FFormStateAPI} from '../src/fform';
 import * as sampleSchema from './sampleSchema.json'
 import * as basicStyling from '../addons/styling/basic.json'
 import * as bootstrapStyling from '../addons/styling/bootstrap.json'
+import {FViewer} from '../src/fviewer'
 
 const {render} = require('react-dom');
 
@@ -48,6 +49,7 @@ const cssSelectSchema = {
 class CssSelector extends React.Component<any, any> {
   state: any = {css: 'bootstrap'};
   cores: any = {};
+  elements: any = {};
 
   _setCss({value: css}: any) {
     this.setState({css})
@@ -55,35 +57,38 @@ class CssSelector extends React.Component<any, any> {
 
   render() {
     const self = this;
-
-    const sampleElements = elements.extend([basicStyling, self.state.css === 'bootstrap' ? bootstrapStyling : {}, {
-      'user': {
-        focusInput: function () {
-          let focusInput = this.getRef('!focusInput');
-          focusInput = focusInput.value;
-          let target = this.pFForm.getRef(focusInput);
-          if (!target) return alert('No target field');
-          if (!target.focus) return alert('Target field has no focus');
-          target.focus();
+    if (!self.elements[self.state.css])
+      self.elements[self.state.css] = elements.extend([basicStyling, self.state.css === 'bootstrap' ? bootstrapStyling : {}, {
+        'user': {
+          focusInput: function () {
+            let focusInput = this.getRef('!focusInput');
+            focusInput = focusInput.value;
+            let target = this.pFForm.getRef(focusInput);
+            if (!target) return alert('No target field');
+            if (!target.focus) return alert('Target field has no focus');
+            target.focus();
+          }
         }
-      }
-    }]);
+      }]);
+    const sampleElements = self.elements[self.state.css];
+
     if (!self.cores[self.state.css]) {
       self.cores[self.state.css] = new FFormStateAPI({schema: sampleSchema as any, name: "sampleForm", elements: sampleElements, JSONValidator});
       self.cores[self.state.css].reset({status: 'untouched', value: 0});
     }
     return <div><FForm value={self.state.css} id="cssSelectorForm" onChange={self._setCss.bind(self)}
                        core={{schema: cssSelectSchema, name: "cssSelectorForm", elements: sampleElements}}/>
-      <link rel="stylesheet" href="../addons/styling/fform.css"/>
       {self.state.css === 'bootstrap' ? [<link key="0" rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css"/>,
         <link key="1" rel="stylesheet" href="../addons/styling/bootstrap.fform.css"/>
       ] : self.state.css === 'tacit' ? [<link key="0" rel="stylesheet" href="./tacit.min.css"/>,
         <link key="1" rel="stylesheet" href="../addons/styling/tacit.fform.css"/>] : []}
+      <link rel="stylesheet" href="../addons/styling/fform.css"/>
       <h3>FForm sample</h3>
       <div>
         <div>
           <FForm value={{autowidth: 1, select: null}} id="sampleForm" ref={(r) => window['main'] = r}
                  onSubmit={submit} touched core={self.cores[self.state.css]}/>
+          <FViewer value={{autowidth: 123, select: 'option 3'}} schema={sampleSchema} elements={sampleElements}/>
         </div>
       </div>
     </div>

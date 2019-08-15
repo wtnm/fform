@@ -102,7 +102,7 @@ class FFormStateManager {
 
     const self = this;
     self.props = props;
-    self.schema = isCompiled(props.schema) ? props.schema : compileSchema(props.elements, props.schema);
+    self.schema = compileSchema(props.schema, props.elements);
     self.name = props.name || '';
     self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
     self._reducer = formReducer();
@@ -387,7 +387,7 @@ class FFormStateAPI extends FFormStateManager {
     ], opts);
   };
 
-  getSchemaPart = (path: string | Path) => {
+  getSchemaPart = (path: string | Path = []) => {
     path = normalizePath(path);
     return getSchemaPart(this.schema, path, oneOfFromState(this.getState()))
   }
@@ -440,8 +440,9 @@ function formReducer(name?: string): any {
 /////////////////////////////////////////////
 //  Schema compile functions
 /////////////////////////////////////////////
+const compileSchema = (schema: any, elements: any) => isCompiled(schema) ? schema : getCompiledSchema(elements, schema);
 
-const compileSchema = memoize((elements: elementsType, schema: JsonSchema): jsJsonSchema => schemaCompiler(elements, schema));
+const getCompiledSchema = memoize((elements: elementsType, schema: JsonSchema): jsJsonSchema => schemaCompiler(elements, schema));
 
 function schemaCompiler(elements: elementsType = {}, schema: JsonSchema): jsJsonSchema {
   if (isCompiled(schema)) return schema;
@@ -535,4 +536,4 @@ function objectResolver(_elements: any, obj2resolve: any, track: string[] = []):
 }
 
 
-export {anSetState, getFRVal, FFormStateAPI, formReducer, fformCores, objectDerefer, objectResolver}
+export {anSetState, getFRVal, FFormStateAPI, compileSchema, formReducer, fformCores, objectDerefer, objectResolver}

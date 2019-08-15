@@ -174,7 +174,7 @@ class FFormStateManager {
             throw new Error('Expected "name" to be passed together with "store".');
         const self = this;
         self.props = props;
-        self.schema = isCompiled(props.schema) ? props.schema : compileSchema(props.elements, props.schema);
+        self.schema = compileSchema(props.schema, props.elements);
         self.name = props.name || '';
         self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
         self._reducer = formReducer();
@@ -355,7 +355,7 @@ class FFormStateAPI extends FFormStateManager {
                 Object.assign({ path: [path, '@', '/params/hidden'], value: false }, opts),
             ], opts);
         };
-        this.getSchemaPart = (path) => {
+        this.getSchemaPart = (path = []) => {
             path = stateLib_1.normalizePath(path);
             return stateLib_1.getSchemaPart(this.schema, path, stateLib_1.oneOfFromState(this.getState()));
         };
@@ -492,7 +492,9 @@ exports.formReducer = formReducer;
 /////////////////////////////////////////////
 //  Schema compile functions
 /////////////////////////////////////////////
-const compileSchema = commonLib_1.memoize((elements, schema) => schemaCompiler(elements, schema));
+const compileSchema = (schema, elements) => isCompiled(schema) ? schema : getCompiledSchema(elements, schema);
+exports.compileSchema = compileSchema;
+const getCompiledSchema = commonLib_1.memoize((elements, schema) => schemaCompiler(elements, schema));
 function schemaCompiler(elements = {}, schema) {
     if (isCompiled(schema))
         return schema;
@@ -1259,6 +1261,10 @@ class FField extends FRefsGeneric {
     _updateStateApi(stateApi) {
         const self = this;
         if (stateApi) {
+            if (!stateApi.wrapper) {
+                self.api = stateApi;
+                return;
+            }
             const api = stateApi.wrapper({
                 get path() { return self.path; },
             });
@@ -1392,18 +1398,17 @@ class FField extends FRefsGeneric {
     }
     render() {
         const self = this;
-        try {
-            if (commonLib_1.isUndefined(self.state.branch))
-                return null;
-            if (commonLib_1.getIn(self.getData(), 'params', 'norender'))
-                return false;
-            if (self._rebuild)
-                this._build();
-            return self._widgets['Builder'] ? react_1.createElement(self._widgets['Builder'], self._mappedData['Builder'], self._mappedData) : null;
-        }
-        catch (e) {
-            throw self._addErrPath(e);
-        }
+        //try {
+        if (commonLib_1.isUndefined(self.state.branch))
+            return null;
+        if (commonLib_1.getIn(self.getData(), 'params', 'norender'))
+            return false;
+        if (self._rebuild)
+            this._build();
+        return self._widgets['Builder'] ? react_1.createElement(self._widgets['Builder'], self._mappedData['Builder'], self._mappedData) : null;
+        // } catch (e) {
+        //   throw self._addErrPath(e)
+        // }
     }
 }
 exports.FField = FField;
@@ -1622,24 +1627,23 @@ class FSection extends FRefsGeneric {
     render() {
         const self = this;
         let props = self.props;
-        try {
-            if (props.viewer) {
-                let _a = props.viewerProps || {}, { _$widget = UniversalViewer } = _a, rest = __rest(_a, ["_$widget"]);
-                rest.inputProps = props;
-                rest.value = props.$FField.value;
-                return react_1.createElement(_$widget, rest);
-            }
-            if (stateLib_1.isSelfManaged(props.$branch))
-                return null;
-            if (self._rebuild)
-                self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-            return react_1.createElement(FSectionWidget, { "_$widget": self._$widget, "_$cx": props._$cx, key: 'widget_0', ref: self._setWidRef((0)), getMappedData: self._getMappedData(0) },
-                self._objectLayouts,
-                self._arrayLayouts);
+        // try {
+        if (props.viewer) {
+            let _a = props.viewerProps || {}, { _$widget = UniversalViewer } = _a, rest = __rest(_a, ["_$widget"]);
+            rest.inputProps = props;
+            rest.value = props.$FField.value;
+            return react_1.createElement(_$widget, rest);
         }
-        catch (e) {
-            throw self.props.$FField._addErrPath(e);
-        }
+        if (stateLib_1.isSelfManaged(props.$branch))
+            return null;
+        if (self._rebuild)
+            self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
+        return react_1.createElement(FSectionWidget, { "_$widget": self._$widget, "_$cx": props._$cx, key: 'widget_0', ref: self._setWidRef((0)), getMappedData: self._getMappedData(0) },
+            self._objectLayouts,
+            self._arrayLayouts);
+        // } catch (e) {
+        //   throw self.props.$FField._addErrPath(e)
+        // }
     }
 }
 /////////////////////////////////////////////
@@ -2283,7 +2287,7 @@ let elementsBase = {
         },
         messages(messages, staticProps = {}) {
             const { className: cnSP = {} } = staticProps, restSP = __rest(staticProps, ["className"]);
-            return [commonLib_1.objKeys(messages).map(priority => {
+            return [commonLib_1.objKeys(messages || []).map(priority => {
                     const _a = messages[priority], { norender, texts, className = {} } = _a, rest = __rest(_a, ["norender", "texts", "className"]);
                     const children = [];
                     commonLib_1.objKeys(texts).forEach((key) => commonLib_1.toArray(texts[key]).forEach((v, i, arr) => {
@@ -2498,6 +2502,12 @@ types.string = commonLib_2.isString; //(value: any) => typeof value === "string"
 types.array = commonLib_2.isArray;
 types.object = commonLib_2.isObject; //(value: any) => typeof value === "object" && value && !isArray(value);// isObject(value);  //
 types.empty = { 'any': null, 'null': null, 'boolean': false, 'number': 0, 'integer': 0, 'string': '', array: Object.freeze([]), object: Object.freeze({}) };
+types.detect = (value) => {
+    for (let i = 0; i < types.length; i++) {
+        if (types[types[i]](value))
+            return types[i];
+    }
+};
 /////////////////////////////////////////////
 //  Macros
 /////////////////////////////////////////////
@@ -2741,7 +2751,7 @@ const additionalItemsSchema = commonLib_1.memoize(function (items) {
         }, { noStrictArrayResult: true })
     };
 });
-function getSchemaPart(schema, path, getOneOf, fullOneOf) {
+function getSchemaPart(schema, path, value_or_getOneOf, fullOneOf) {
     function getArrayItemSchemaPart(index, schemaPart) {
         let items = [];
         if (schemaPart.items) {
@@ -2782,7 +2792,7 @@ function getSchemaPart(schema, path, getOneOf, fullOneOf) {
                 schemaPart = derefAndMergeAllOf(schema, schemaPart); // merge allOf, with derefing it and merge with schemaPart
                 if (schemaPart.oneOf) {
                     let { oneOf } = schemaPart, restSchemaPart = __rest(schemaPart, ["oneOf"]);
-                    schemaPart = oneOf.map((oneOfPart) => commonLib_1.merge(derefAndMergeAllOf(schema, oneOfPart), restSchemaPart, { array: 'replace' })); // deref every oneOf, merge allOf in there, and merge with schemaPart
+                    schemaPart = oneOf.map((oneOfPart, i) => commonLib_1.merge.all(derefAndMergeAllOf(schema, oneOfPart), [restSchemaPart, { _oneOfIndex: i }], { array: 'replace' })); // deref every oneOf, merge allOf in there, and merge with schemaPart
                 }
                 combinedSchemas.set(schemaPartAsKey, schemaPart);
             }
@@ -2801,17 +2811,42 @@ function getSchemaPart(schema, path, getOneOf, fullOneOf) {
         }
         return schemaPart;
     }
+    function detectOneOfNType(schemaPart, valuePart, path) {
+        let oneOf = 0, type = types.detect(valuePart);
+        if (type) {
+            schemaPart = commonLib_1.toArray(schemaPart);
+            for (let j = 0; j < schemaPart.length; j++) {
+                let types = schemaPart[j].type;
+                if (!types || commonLib_1.toArray(types).some(t => (t === type))) {
+                    oneOf = j;
+                    break;
+                }
+            }
+            if (schemaPart[oneOf]._oneOfSelector) {
+                oneOf = processFn.call({ path: path2string(path) }, schemaPart[oneOf]._oneOfSelector, valuePart);
+                if (commonLib_2.isArray(oneOf))
+                    oneOf = oneOf[0];
+            }
+        }
+        return { oneOf, type };
+    }
+    const getOneOf = commonLib_2.isFunction(value_or_getOneOf) ? value_or_getOneOf : undefined;
+    const value = !commonLib_2.isFunction(value_or_getOneOf) ? value_or_getOneOf : undefined;
     const errorText = 'Schema path not found: ';
     let schemaPart = schema;
     const combinedSchemas = commonLib_1.getCreateIn(schemaStorage(schema), new Map(), 'combinedSchemas');
-    let type;
+    //let type;
     for (let i = path[0] == '#' ? 1 : 0; i < path.length; i++) {
         if (!schemaPart)
             throw new Error(errorText + path.join('/'));
         schemaPart = combineSchemasINNER_PROCEDURE(schemaPart);
-        let { oneOf, type } = getOneOf(path.slice(0, i));
+        //let oneOf: number = 0, type: string | undefined;
+        let track = path.slice(0, i);
+        let { oneOf, type } = getOneOf ? getOneOf(track) : detectOneOfNType(schemaPart, commonLib_1.getIn(value, track), track);
         if (commonLib_2.isArray(schemaPart))
             schemaPart = schemaPart[oneOf || 0];
+        if (commonLib_2.isUndefined(type))
+            type = commonLib_1.toArray(schemaPart.type || 'null')[0];
         if (type == 'array') {
             if (isNaN(parseInt(path[i])))
                 throw new Error(errorText + path.join('/'));
@@ -2827,8 +2862,10 @@ function getSchemaPart(schema, path, getOneOf, fullOneOf) {
     schemaPart = combineSchemasINNER_PROCEDURE(schemaPart);
     if (fullOneOf)
         return schemaPart;
-    if (commonLib_2.isArray(schemaPart))
-        schemaPart = schemaPart[getOneOf(path).oneOf || 0];
+    if (commonLib_2.isArray(schemaPart)) {
+        let { oneOf, type } = getOneOf ? getOneOf(path) : detectOneOfNType(schemaPart, commonLib_1.getIn(value, path), path);
+        schemaPart = schemaPart[oneOf || 0];
+    }
     return schemaPart;
 }
 exports.getSchemaPart = getSchemaPart;
@@ -3005,6 +3042,7 @@ exports.isSelfManaged = isSelfManaged;
 function isSchemaSelfManaged(schemaPart, type) {
     return type !== 'array' && type !== 'object' || commonLib_1.getIn(schemaPart, '_simple');
 }
+exports.isSchemaSelfManaged = isSchemaSelfManaged;
 function findOneOf(oneOfShemas, value, currentOneOf) {
     if (!commonLib_2.isArray(oneOfShemas))
         oneOfShemas = [oneOfShemas];
@@ -3368,14 +3406,13 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
         if (currentOneOf !== oneOf) {
             if (schemaPart) {
                 let cur = commonLib_1.getIn(state, SymData, 'current', track);
-                if (!cur)
-                    debugger;
+                //if (!cur) debugger;
                 if (!isSchemaSelfManaged(schemaPart, type) && branch[SymData].fData.type === type)
                     value = commonLib_1.merge(commonLib_1.getIn(state, SymData, 'current', track), value, { replace });
                 return updatePROC(state, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, { type, setValue: value }));
             }
             else
-                console.warn('Type "' + (typeof value) + '" not found in path [' + track.join('/') + ']');
+                console.warn('Type "' + (types.detect(value)) + '" not found in path [' + track.join('/') + ']');
         }
     }
     if (isSelfManaged(branch)) { // if object has own value then replace it directly

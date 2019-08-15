@@ -2,22 +2,33 @@
 
 import {createElement as h, Component} from 'react';
 import {FField, FFormStateAPI} from "./fform";
-import {getIn, isEqual, isUndefined, merge, objKeys, toArray} from "./commonLib";
-import {objectResolver} from "./api";
-import {isSelfManaged, SymData} from "./stateLib";
+import {getIn, isArray, isEqual, isUndefined, merge, objKeys, toArray} from "./commonLib";
+import {compileSchema} from "./api";
+import {getSchemaPart, types, normalizePath, SymData, isSchemaSelfManaged, isSelfManaged} from "./stateLib";
 
 
-class FViewer extends Component<any> {
+class FViewer extends Component<FViewerProps> {
   protected _root: any;
   protected _form: any;
-  api: any;
+  protected _state: any;
   parent: any;
+  schema: any;
+  static readonly paramsBase: any = {viewer: true};
+  static readonly paramsHidden: any = {viewer: true, hidden: true};
 
-  constructor(props: any, context: any) {
-    super(props, context);
+  get elements() {return this.props.elements}
+
+  get api() {return this}
+
+  constructor(props: FViewerProps, ...args: any[]) {
+    super(props, ...args);
     const self = this;
-
+    self.schema = compileSchema(props.schema, props.elements);
+    self._setRootRef = self._setRootRef.bind(self);
+    self._setFormRef = self._setFormRef.bind(self);
+    this._state = this._value2state(props.value);
   }
+
 
   private _setRootRef(FField: any) {
     this._root = FField;
@@ -27,11 +38,30 @@ class FViewer extends Component<any> {
     this._form = form;
   }
 
+  private _value2state(newVal: any, prevVal?: any, prevState?: any, track: Path = []) {
+    if (newVal === prevVal) return prevState;
+    let type = types.detect(newVal);
+    let schemaPart = getSchemaPart(this.schema, track, newVal);
+    let isSelf = isSchemaSelfManaged(schemaPart, type);
+    let isHidden = false;
+    let dataObj: any = {oneOf: schemaPart._oneOfIndex || 0, schemaPart, fData: {type}, params: isHidden ? FViewer.paramsHidden : FViewer.paramsBase}
+    if (isSelf) {
+      dataObj.value = newVal;
+      return {[SymData]: dataObj}
+    } else {
+      if (isArray(newVal)) dataObj.length = newVal.length;
+      let state = {[SymData]: dataObj};
+      objKeys(newVal).forEach(k => state[k] = this._value2state(newVal[k], getIn(prevVal, k), getIn(prevState, k), track.concat(k)))
+      return state
+    }
+  }
 
-  shouldComponentUpdate(nextProps: FFormProps) {
+
+  shouldComponentUpdate(nextProps: FViewerProps) {
     const self = this;
     self.parent = nextProps.parent;
-
+    if (['elements', 'schema'].some(nm => self.props[nm] !== nextProps[nm]))
+      self.schema = compileSchema(nextProps.schema, nextProps.elements);
     return !isEqual(self.props, nextProps, {skipKeys: ['parent']});
   }
 
@@ -49,13 +79,19 @@ class FViewer extends Component<any> {
   }
 
   getValue(branch: any, ffield: FField) {
-    return branch
+    if (isSelfManaged(branch)) return getIn(branch, SymData, 'value');
+    else return getIn(this.props.value, normalizePath(ffield.path))
   }
 
   getBranch(path: string) {
-    return {} //this.api.get(path)
+    return getIn(this._state, normalizePath(path)) //this.api.get(path)
   }
 
+  getSchemaPart(path: string | Path) {
+    return getIn(this._state, normalizePath(path), SymData, 'schemaPart');
+    //path = normalizePath(path);
+    //return getSchemaPart(this.schema, path, this.props.value)
+  }
 
   render() {
     const self = this;
@@ -63,8 +99,10 @@ class FViewer extends Component<any> {
     objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete (rest as any)[k]); // remove props that starts with '_' or '$'
     return (
       <UseTag ref={self._setFormRef} {...rest} >
-        <FField ref={self._setRootRef} id={rest.id ? rest.id + '/#' : undefined} name={rest.name ? rest.name + '/#' : undefined} pFForm={self} getPath={FViewer._getPath} FFormApi={self.api}/>
+        <FField ref={self._setRootRef} id={rest.id ? rest.id + '/#' : undefined} name={rest.name ? rest.name + '/#' : undefined} pFForm={self} getPath={FViewer._getPath} FFormApi={self}/>
       </UseTag>
     )
   }
 }
+
+export {FViewer};

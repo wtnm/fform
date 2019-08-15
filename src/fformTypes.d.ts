@@ -100,6 +100,7 @@ interface FFormApiProps {
 
 interface FViewerProps {
   value: any;
+  schema: any;
   elements: any;
   _$useTag?: any;
   parent?: any;

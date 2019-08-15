@@ -1002,7 +1002,7 @@ describe('FForm api tests', function () {
   // });
 });
 
-describe('test removeNotAllowedProperties', async function () {
+describe('test removeNotAllowedProperties', function () {
   let schema = {
     "oneOf": [
       {
@@ -1012,6 +1012,10 @@ describe('test removeNotAllowedProperties', async function () {
         },
         "patternProperties": {
           "^_": {type: "string"}
+        },
+        _oneOfSelector: (value) => {
+          if (value && value.hasOwnProperty("two")) return 1;
+          return 0;
         },
         additionalProperties: false
       },
@@ -1036,6 +1040,25 @@ describe('test removeNotAllowedProperties', async function () {
     await addCore.set('./@/oneOf', 0);
     state = addCore.getState();
     expect(state[SymData].current).to.be.eql({"one": "", "_test": ""});
+  });
+
+  it('test getSchemaPart with value', async function () {
+    let schemaPart = stateLib.getSchemaPart(addCore.schema, ["two"], {"two": 2, "three": 3});
+    expect(schemaPart).to.be.eql({
+      "_compiled": true,
+      "type": "integer",
+      "default": 2
+    });
+    schemaPart = stateLib.getSchemaPart(addCore.schema, [], {"two": 2, "three": 3});
+    expect(schemaPart._oneOfIndex).to.be.equal(1);
+    schemaPart = stateLib.getSchemaPart(addCore.schema, ["one"], {"one": "", "_test": ""});
+    expect(schemaPart).to.be.eql({
+      "_compiled": true,
+      "type": "string",
+      "default": "one"
+    });
+    schemaPart = stateLib.getSchemaPart(addCore.schema, [], {"one": "", "_test": ""});
+    expect(schemaPart._oneOfIndex).to.be.equal(0);
   })
 });
 

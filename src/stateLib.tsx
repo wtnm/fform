@@ -2,6 +2,7 @@ import {getCreateIn, setIn, hasIn, getIn, objKeys, moveArrayElems, makeSlice, me
 import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction} from "./commonLib";
 import {anSetState} from './api';
 import {object} from "prop-types";
+import {on} from "cluster";
 
 /////////////////////////////////////////////
 //  Symbols
@@ -30,7 +31,11 @@ types.string = isString; //(value: any) => typeof value === "string";
 types.array = isArray;
 types.object = isObject; //(value: any) => typeof value === "object" && value && !isArray(value);// isObject(value);  //
 types.empty = {'any': null, 'null': null, 'boolean': false, 'number': 0, 'integer': 0, 'string': '', array: Object.freeze([]), object: Object.freeze({})};
-
+types.detect = (value: any) => {
+  for (let i = 0; i < types.length; i++) {
+    if (types[types[i]](value)) return types[i]
+  }
+};
 
 /////////////////////////////////////////////
 //  Macros
@@ -273,7 +278,7 @@ const additionalItemsSchema = memoize(function (items: jsJsonSchema[]): jsJsonSc
   }
 });
 
-function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf: (path: Path) => oneOfStructureType, fullOneOf?: boolean): jsJsonSchema {
+function getSchemaPart(schema: jsJsonSchema, path: Path, value_or_getOneOf: ((path: Path) => oneOfStructureType) | any, fullOneOf?: boolean): jsJsonSchema {
 
   function getArrayItemSchemaPart(index: number, schemaPart: jsJsonSchema): jsJsonSchema {
     let items: jsJsonSchema[] = [];
@@ -311,7 +316,7 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf: (path: Path) 
         schemaPart = derefAndMergeAllOf(schema, schemaPart);  // merge allOf, with derefing it and merge with schemaPart
         if (schemaPart.oneOf) {
           let {oneOf, ...restSchemaPart} = schemaPart;
-          (schemaPart as any) = oneOf.map((oneOfPart) => merge(derefAndMergeAllOf(schema, oneOfPart), restSchemaPart, {array: 'replace'})) // deref every oneOf, merge allOf in there, and merge with schemaPart
+          (schemaPart as any) = oneOf.map((oneOfPart, i) => merge.all(derefAndMergeAllOf(schema, oneOfPart), [restSchemaPart, {_oneOfIndex: i}], {array: 'replace'})) // deref every oneOf, merge allOf in there, and merge with schemaPart
         }
         combinedSchemas.set(schemaPartAsKey, schemaPart);
       }
@@ -332,16 +337,41 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf: (path: Path) 
     return schemaPart
   }
 
+  function detectOneOfNType(schemaPart: jsJsonSchema | jsJsonSchema[], valuePart: any, path: Path): oneOfStructureType {
+    let oneOf = 0, type = types.detect(valuePart);
+    if (type) {
+      schemaPart = toArray(schemaPart);
+      for (let j = 0; j < schemaPart.length; j++) {
+        let types = schemaPart[j].type;
+        if (!types || toArray(types).some(t => (t === type))) {
+          oneOf = j;
+          break;
+        }
+      }
+      if (schemaPart[oneOf]._oneOfSelector) {
+        oneOf = processFn.call({path: path2string(path)}, schemaPart[oneOf]._oneOfSelector, valuePart);
+        if (isArray(oneOf)) oneOf = oneOf[0]
+      }
+    }
+    return {oneOf, type};
+  }
 
+
+  const getOneOf = isFunction(value_or_getOneOf) ? value_or_getOneOf : undefined;
+  const value = !isFunction(value_or_getOneOf) ? value_or_getOneOf : undefined;
   const errorText = 'Schema path not found: ';
   let schemaPart: jsJsonSchema | jsJsonSchema[] = schema;
   const combinedSchemas = getCreateIn(schemaStorage(schema), new Map(), 'combinedSchemas');
-  let type;
+  //let type;
   for (let i = path[0] == '#' ? 1 : 0; i < path.length; i++) {
     if (!schemaPart) throw new Error(errorText + path.join('/'));
     schemaPart = combineSchemasINNER_PROCEDURE(schemaPart);
-    let {oneOf, type} = getOneOf(path.slice(0, i));
+    //let oneOf: number = 0, type: string | undefined;
+    let track = path.slice(0, i);
+    let {oneOf, type} = getOneOf ? getOneOf(track) : detectOneOfNType(schemaPart, getIn(value, track), track);
     if (isArray(schemaPart)) schemaPart = schemaPart[oneOf || 0];
+
+    if (isUndefined(type)) type = toArray(schemaPart.type || 'null')[0];
 
     if (type == 'array') {
       if (isNaN(parseInt(path[i]))) throw new Error(errorText + path.join('/'));
@@ -353,9 +383,13 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, getOneOf: (path: Path) 
   }
   schemaPart = combineSchemasINNER_PROCEDURE(schemaPart);
   if (fullOneOf) return schemaPart as any;
-  if (isArray(schemaPart)) schemaPart = schemaPart[getOneOf(path).oneOf || 0];
+  if (isArray(schemaPart)) {
+    let {oneOf, type} = getOneOf ? getOneOf(path) : detectOneOfNType(schemaPart, getIn(value, path), path);
+    schemaPart = schemaPart[oneOf || 0];
+  }
   return schemaPart;
 }
+
 
 const arrayStart = memoize(function (schemaPart: jsJsonSchema) {
     if (!isArray(schemaPart.items)) return 0;
@@ -877,10 +911,10 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
     if (currentOneOf !== oneOf) {
       if (schemaPart) {
         let cur = getIn(state, SymData, 'current', track);
-        if (!cur) debugger;
+        //if (!cur) debugger;
         if (!isSchemaSelfManaged(schemaPart, type) && branch[SymData].fData.type === type) value = merge(getIn(state, SymData, 'current', track), value, {replace});
         return updatePROC(state, UPDATABLE, makeNUpdate(track, ['oneOf'], oneOf, false, {type, setValue: value}));
-      } else console.warn('Type "' + (typeof value) + '" not found in path [' + track.join('/') + ']')
+      } else console.warn('Type "' + (types.detect(value)) + '" not found in path [' + track.join('/') + ']')
     }
   }
 
@@ -1605,6 +1639,7 @@ export {
   arrayStart,
   mergeUPD_PROC,
   isSelfManaged,
+  isSchemaSelfManaged,
   normalizeUpdate,
   setIfNotDeeper,
   objMap,

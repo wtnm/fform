@@ -84,6 +84,7 @@ interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
 }
 
 interface FFCommonSchemaType {
+  _oneOfIndex?: number;
   _placeholder?: string;
   _params?: FFParamsType; // editable in state params
   _data?: { [key: string]: any } | { [key: number]: any };
