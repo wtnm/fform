@@ -1,18 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="events reworked">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="fviewer inital implementation">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__tests__/testForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/testForm.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample/sample.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sample.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/api.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fform.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/fform.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fformTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/fformTypes.d.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/fviewer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/fviewer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/schemaTypes.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/schemaTypes.d.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/stateLib.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/stateLib.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -34,7 +25,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="289">
+            <state relative-caret-position="4600">
               <caret line="230" column="14" selection-start-line="230" selection-start-column="14" selection-end-line="230" selection-end-column="14" />
             </state>
           </provider>
@@ -64,7 +55,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="299">
+            <state relative-caret-position="1720">
               <caret line="86" column="23" selection-start-line="86" selection-start-column="23" selection-end-line="86" selection-end-column="23" />
             </state>
           </provider>
@@ -73,8 +64,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/fviewer.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
-              <caret line="78" column="3" lean-forward="true" selection-start-line="78" selection-start-column="3" selection-end-line="78" selection-end-column="3" />
+            <state relative-caret-position="358">
+              <caret line="66" column="22" selection-start-line="66" selection-start-column="22" selection-end-line="66" selection-end-column="22" />
             </state>
           </provider>
         </entry>
@@ -87,7 +78,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/addons/styling/fform.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="275">
+            <state relative-caret-position="1100">
               <caret line="55" selection-start-line="55" selection-end-line="55" />
             </state>
           </provider>
@@ -96,8 +87,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/fform.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="326">
-              <caret line="223" column="4" selection-start-line="223" selection-start-column="4" selection-end-line="224" selection-end-column="54" />
+            <state relative-caret-position="226">
+              <caret line="138" column="47" selection-start-line="138" selection-start-column="41" selection-end-line="138" selection-end-column="47" />
             </state>
           </provider>
         </entry>
@@ -135,7 +126,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>opts</find>
       <find>dispatchEvent</find>
       <find>event</find>
       <find>onChange</find>
@@ -165,6 +155,7 @@
       <find>isSelfManaged</find>
       <find>path</find>
       <find>getDataObject</find>
+      <find>_root.setState</find>
     </findStrings>
     <replaceStrings>
       <replace>inlineArrayControls</replace>
@@ -361,6 +352,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -409,7 +401,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -1324,14 +1315,8 @@
       <workItem from="1565642402398" duration="24000" />
       <workItem from="1565695101279" duration="9097000" />
       <workItem from="1565781898271" duration="13702000" />
-      <workItem from="1565883245466" duration="3657000" />
-    </task>
-    <task id="LOCAL-00108" summary="fixes">
-      <created>1554003451093</created>
-      <option name="number" value="00108" />
-      <option name="presentableId" value="LOCAL-00108" />
-      <option name="project" value="LOCAL" />
-      <updated>1554003451094</updated>
+      <workItem from="1565883245466" duration="3695000" />
+      <workItem from="1565906250741" duration="177000" />
     </task>
     <task id="LOCAL-00109" summary="fixes">
       <created>1554090851532</created>
@@ -1669,7 +1654,14 @@
       <option name="project" value="LOCAL" />
       <updated>1565724939025</updated>
     </task>
-    <option name="localTasksCounter" value="157" />
+    <task id="LOCAL-00157" summary="fviewer inital implementation">
+      <created>1565903226094</created>
+      <option name="number" value="00157" />
+      <option name="presentableId" value="LOCAL-00157" />
+      <option name="project" value="LOCAL" />
+      <updated>1565903226095</updated>
+    </task>
+    <option name="localTasksCounter" value="158" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -1705,7 +1697,7 @@
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3694243000" />
+    <option name="totallyTimeSpent" value="3694458000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1721,8 +1713,8 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.58917195" weight="0.19607843" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.49741825" visible="true" weight="0.15315315" />
-      <window_info id="Structure" order="2" sideWeight="0.5025818" side_tool="true" visible="true" weight="0.15421304" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.49655172" visible="true" weight="0.1526232" />
+      <window_info id="Structure" order="2" sideWeight="0.50344825" side_tool="true" visible="true" weight="0.15421304" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.49264705" side_tool="true" weight="0.14149444" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
@@ -1730,10 +1722,10 @@
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="DB Execution Console" order="3" />
       <window_info anchor="bottom" id="Terminal" order="4" sideWeight="0.4892585" weight="0.2416185" />
-      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48771676" weight="0.32716763" />
+      <window_info active="true" anchor="bottom" id="Run" order="5" sideWeight="0.48771676" visible="true" weight="0.32716763" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.3236994" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info active="true" anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" visible="true" weight="0.36416185" />
+      <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" weight="0.36416185" />
       <window_info anchor="bottom" id="Find" order="9" weight="0.34104046" />
       <window_info anchor="right" x="0" y="0" width="434" height="856" id="Documentation" order="0" side_tool="true" weight="0.32922912" />
     </layout>
@@ -1774,7 +1766,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="documentation inital" />
     <MESSAGE value="documentation more" />
     <MESSAGE value="SSR implement" />
     <MESSAGE value="clean" />
@@ -1799,7 +1790,8 @@
     <MESSAGE value="messages minor fixes" />
     <MESSAGE value="implement props removal on additionalProperties = false" />
     <MESSAGE value="events reworked" />
-    <option name="LAST_COMMIT_MESSAGE" value="events reworked" />
+    <MESSAGE value="fviewer inital implementation" />
+    <option name="LAST_COMMIT_MESSAGE" value="fviewer inital implementation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1829,12 +1821,6 @@
           <url>file://$PROJECT_DIR$/src/core/components.tsx</url>
           <line>1295</line>
           <option name="timeStamp" value="54" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/src/fviewer.tsx</url>
-          <line>28</line>
-          <properties lambdaOrdinal="-1" />
-          <option name="timeStamp" value="62" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -2164,8 +2150,36 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4600">
+          <caret line="230" column="14" selection-start-line="230" selection-start-column="14" selection-end-line="230" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/fformTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="960">
+          <caret line="48" column="17" selection-start-line="48" selection-start-column="17" selection-end-line="48" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1720">
+          <caret line="86" column="23" selection-start-line="86" selection-start-column="23" selection-end-line="86" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/addons/styling/tacit.fform.css">
       <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/addons/styling/fform.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1100">
+          <caret line="55" selection-start-line="55" selection-end-line="55" />
+        </state>
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.babelrc">
       <provider selected="true" editor-type-id="text-editor">
@@ -2184,20 +2198,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/fformTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="960">
-          <caret line="48" column="17" selection-start-line="48" selection-start-column="17" selection-end-line="48" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/schemaTypes.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="299">
-          <caret line="86" column="23" selection-start-line="86" selection-start-column="23" selection-end-line="86" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="166">
@@ -2208,31 +2208,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/addons/styling/fform.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="275">
-          <caret line="55" selection-start-line="55" selection-end-line="55" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/fform.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="326">
-          <caret line="223" column="4" selection-start-line="223" selection-start-column="4" selection-end-line="224" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/stateLib.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="230" column="14" selection-start-line="230" selection-start-column="14" selection-end-line="230" selection-end-column="14" />
+        <state relative-caret-position="226">
+          <caret line="138" column="47" selection-start-line="138" selection-start-column="41" selection-end-line="138" selection-end-column="47" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/fviewer.tsx">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="78" column="3" lean-forward="true" selection-start-line="78" selection-start-column="3" selection-end-line="78" selection-end-column="3" />
+        <state relative-caret-position="358">
+          <caret line="66" column="22" selection-start-line="66" selection-start-column="22" selection-end-line="66" selection-end-column="22" />
         </state>
       </provider>
     </entry>

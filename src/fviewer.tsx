@@ -62,7 +62,11 @@ class FViewer extends Component<FViewerProps> {
     self.parent = nextProps.parent;
     if (['elements', 'schema'].some(nm => self.props[nm] !== nextProps[nm]))
       self.schema = compileSchema(nextProps.schema, nextProps.elements);
-    return !isEqual(self.props, nextProps, {skipKeys: ['parent']});
+    if (self.props.value !== nextProps.value) {
+      self._state = this._value2state(nextProps.value, self.props.value, self._state);
+      if (self._root) self._root.setState({branch: self._state})
+    }
+    return !isEqual(self.props, nextProps, {skipKeys: ['parent', 'value']});
   }
 
 
