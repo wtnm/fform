@@ -96,10 +96,12 @@ class CssSelector extends React.Component<any, any> {
     return <div><FForm value={self.state.css} id="cssSelectorForm" onChange={self._setCss.bind(self)}
                        core={{schema: cssSelectSchema, name: "cssSelectorForm", elements: sampleElements}}/>
       {self.state.css === 'bootstrap' ? [<link key="0" rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css"/>,
+        <link rel="stylesheet" href="../addons/styling/fform.css"/>,
         <link key="1" rel="stylesheet" href="../addons/styling/bootstrap.fform.css"/>
       ] : self.state.css === 'tacit' ? [<link key="0" rel="stylesheet" href="./tacit.min.css"/>,
+        <link rel="stylesheet" href="../addons/styling/fform.css"/>,
         <link key="1" rel="stylesheet" href="../addons/styling/tacit.fform.css"/>] : []}
-      <link rel="stylesheet" href="../addons/styling/fform.css"/>
+
       <h3>FForm sample</h3>
       <div>
         <FForm value={{autowidth: 1, select: null}} id="sampleForm" ref={(r) => window['main'] = r}

@@ -13,6 +13,7 @@ class FViewer extends Component<FViewerProps> {
   protected _state: any;
   protected _customData: { [key: string]: anyObject };
   protected _customReplace: any;
+  api: any;
   parent: any;
   schema: any;
   static readonly paramsBase: any = {viewer: true};
@@ -20,7 +21,6 @@ class FViewer extends Component<FViewerProps> {
 
   get elements() {return this.props.elements}
 
-  get api() {return this}
 
   constructor(props: FViewerProps, ...args: any[]) {
     super(props, ...args);
@@ -31,6 +31,13 @@ class FViewer extends Component<FViewerProps> {
     self._customData = self._normalizeCustom(props.customData);
     self._customReplace = self._normalizeCustom(props.customReplace);
     self._state = self._value2state(props.value);
+    self._setApi(props);
+  }
+
+  private _setApi(props: FViewerProps) {
+    const self = this;
+    self.api = {getSchemaPart: self.getSchemaPart.bind(self), schema: props.schema, elements: props.elements}
+
   }
 
   private _normalizeCustom(customData: { [key: string]: any } = {}) {
@@ -99,8 +106,9 @@ class FViewer extends Component<FViewerProps> {
       self.schema = compileSchema(nextProps.schema, nextProps.elements);
 
     let prevState = self._state;
+    const propsCompare = (key: string) => self.props[key] !== nextProps[key];
 
-    if (self.props.customData !== nextProps.customData || self.props.customReplace !== nextProps.customReplace) {
+    if (['customData', 'customReplace'].some(propsCompare)) {
       let prevCustom = self._customData;
       let prevReplace = self._customReplace;
       self._customData = self._normalizeCustom(nextProps.customData);
@@ -124,6 +132,8 @@ class FViewer extends Component<FViewerProps> {
 
     if (self._root && prevState !== self._state) self._root.setState({branch: self._state});
 
+    if (['schema', 'elements'].some(propsCompare)) self._setApi(nextProps);
+    
     return !isEqual(self.props, nextProps, {skipKeys: ['parent', 'value', 'customData', 'customReplace']});
   }
 
@@ -159,7 +169,7 @@ class FViewer extends Component<FViewerProps> {
     objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete (rest as any)[k]); // remove props that starts with '_' or '$'
     return (
       <UseTag ref={self._setFormRef} {...rest} >
-        <FField ref={self._setRootRef} id={rest.id ? rest.id + '/#' : undefined} name={rest.name ? rest.name + '/#' : undefined} pFForm={self} getPath={FViewer._getPath} FFormApi={self}/>
+        <FField ref={self._setRootRef} id={rest.id ? rest.id + '/#' : undefined} name={rest.name ? rest.name + '/#' : undefined} pFForm={self} getPath={FViewer._getPath} FFormApi={self.api}/>
       </UseTag>
     )
   }
