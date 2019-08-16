@@ -30,7 +30,7 @@ import {
   mergeUPD_PROC,
   branchKeys,
   isNPath,
-  multiplyPath,
+  multiplePath,
   processFn,
   isMapFn,
   normalizeFn,
@@ -1038,7 +1038,7 @@ function normalizeMaps($_maps: any, prePath = '') {
   objKeys($_maps).forEach(key => {
     let value = $_maps[key];
     if (!value) return;
-    const to = multiplyPath(normalizePath((prePath ? prePath + '/' : '') + key));
+    const to = multiplePath(normalizePath((prePath ? prePath + '/' : '') + key));
     if (isFunction(value) || isArray(value)) {
       toArray(value).forEach((fn: any) => {
         const {update = 'data', replace = true, ...rest} = fn._map;

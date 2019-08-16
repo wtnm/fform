@@ -102,6 +102,8 @@ interface FViewerProps {
   value: any;
   schema: any;
   elements: any;
+  customData?: any;
+  customReplace?: any;
   _$useTag?: any;
   parent?: any;
   id?: any;

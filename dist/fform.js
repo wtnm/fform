@@ -1868,7 +1868,7 @@ function normalizeMaps($_maps, prePath = '') {
         let value = $_maps[key];
         if (!value)
             return;
-        const to = stateLib_1.multiplyPath(stateLib_1.normalizePath((prePath ? prePath + '/' : '') + key));
+        const to = stateLib_1.multiplePath(stateLib_1.normalizePath((prePath ? prePath + '/' : '') + key));
         if (commonLib_1.isFunction(value) || commonLib_1.isArray(value)) {
             commonLib_1.toArray(value).forEach((fn) => {
                 const _a = fn._map, { update = 'data', replace = true } = _a, rest = __rest(_a, ["update", "replace"]);
@@ -3844,8 +3844,8 @@ function normalizeUpdate(update, state) {
             keyPathes = paths.slice(a + 1);
             paths = paths.slice(0, a);
         }
-        paths = multiplyPath(paths, { '*': (p) => branchKeys(commonLib_1.getIn(state, p)).join(',') });
-        keyPathes = multiplyPath(keyPathes);
+        paths = multiplePath(paths, { '*': (p) => branchKeys(commonLib_1.getIn(state, p)).join(',') });
+        keyPathes = multiplePath(keyPathes);
         commonLib_1.objKeys(paths).forEach(p => commonLib_1.objKeys(keyPathes).forEach(k => result.push(makeNUpdate(paths[p], keyPathes[k], value, replace, rest))));
     });
     return result;
@@ -3866,7 +3866,7 @@ symConv._data = { '#': '' };
 symConv.sym2str = (sym) => typeof sym == 'symbol' && !commonLib_2.isUndefined(symConv(sym)) ? symConv(sym) : sym;
 symConv.str2sym = (str) => typeof str == 'string' && !commonLib_2.isUndefined(symConv(str)) ? symConv(str) : str;
 symConv('@', SymData);
-function multiplyPath(path, strReplace = {}) {
+function multiplePath(path, strReplace = {}) {
     let result = { '': [] };
     path.forEach(value => {
         let res = {};
@@ -3879,7 +3879,7 @@ function multiplyPath(path, strReplace = {}) {
                 let tmp = value(result[key]);
                 if (typeof tmp == 'string')
                     tmp = string2path(tmp);
-                tmp = multiplyPath(tmp, strReplace);
+                tmp = multiplePath(tmp, strReplace);
                 commonLib_1.objKeys(tmp).forEach(k => res[key && (key + (k ? ',' + k : '')) || k] = result[key].concat(tmp[k]));
             });
         }
@@ -3890,7 +3890,7 @@ function multiplyPath(path, strReplace = {}) {
     });
     return result;
 }
-exports.multiplyPath = multiplyPath;
+exports.multiplePath = multiplePath;
 const num2string = (value) => typeof value == 'number' ? value.toString() : value;
 function relativePath(base, destination) {
     if (base[0] === '#')

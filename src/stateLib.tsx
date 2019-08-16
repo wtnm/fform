@@ -1362,8 +1362,8 @@ function normalizeUpdate(update: StateApiUpdateType, state: StateType): Normaliz
       keyPathes = paths.slice(a + 1);
       paths = paths.slice(0, a);
     }
-    paths = multiplyPath(paths, {'*': (p: Path) => branchKeys(getIn(state, p)).join(',')});
-    keyPathes = multiplyPath(keyPathes);
+    paths = multiplePath(paths, {'*': (p: Path) => branchKeys(getIn(state, p)).join(',')});
+    keyPathes = multiplePath(keyPathes);
     objKeys(paths).forEach(p => objKeys(keyPathes).forEach(k => result.push(makeNUpdate(paths[p], keyPathes[k], value, replace, rest))));
   });
   return result;
@@ -1388,7 +1388,7 @@ symConv.str2sym = (str: any) => typeof str == 'string' && !isUndefined(symConv(s
 symConv('@', SymData);
 
 
-function multiplyPath(path: Path, strReplace: { [key: string]: any } = {}) {
+function multiplePath(path: Path, strReplace: { [key: string]: any } = {}) {
   let result: any = {'': []};
   path.forEach(value => {
     let res: any = {};
@@ -1399,7 +1399,7 @@ function multiplyPath(path: Path, strReplace: { [key: string]: any } = {}) {
       objKeys(result).forEach(key => {
         let tmp: any = value(result[key]);
         if (typeof tmp == 'string') tmp = string2path(tmp);
-        tmp = multiplyPath(tmp, strReplace);
+        tmp = multiplePath(tmp, strReplace);
         objKeys(tmp).forEach(k => res[key && (key + (k ? ',' + k : '')) || k] = result[key].concat(tmp[k]))
       });
     } else objKeys(result).forEach(key => push2array(result[key], value));
@@ -1645,7 +1645,7 @@ export {
   objMap,
   setUPDATABLE,
   isNPath,
-  multiplyPath,
+  multiplePath,
   normalizeArgs,
   normalizeFn,
   processFn,
