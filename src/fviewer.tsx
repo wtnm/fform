@@ -56,24 +56,33 @@ class FViewer extends Component<FViewerProps> {
     let dataObj: any = {oneOf: schemaPart._oneOfIndex || 0, schemaPart, fData: {type}, params: FViewer.paramsBase};
     let isSelf = isSchemaSelfManaged(schemaPart, type);
     if (isSelf) dataObj.value = newVal;
-    else if (isArray(newVal)) dataObj.length = newVal.length;
+    else {
+      if (isArray(newVal)) dataObj.length = newVal.length;
+      dataObj.branchKeys = objKeys(newVal).join(',');
+    }
     return dataObj
   }
 
-  private _value2state(newVal: any, prevVal?: any, prevState?: any, track: Path = []) {
+  private _value2state(newVal: any, prevVal?: any, prevState?: any) {
     const self = this;
-    if (newVal === prevVal) return prevState;
 
-    let type = types.detect(newVal);
-    let schemaPart = getSchemaPart(self.schema, track, newVal);
-    let dataObj = FViewer._makeStateDataObj(schemaPart, type, newVal);
-    let pathKey = path2string(track);
-    let mergeCustom = self._customData[pathKey];
-    let state = {[SymData]: mergeCustom ? merge(dataObj, mergeCustom, {replace: getIn(self._customReplace, pathKey)}) : dataObj};
-    if (!isSelfManaged(state)) objKeys(newVal).forEach(k =>
-      state[k] = self._value2state(newVal[k], getIn(prevVal, k), getIn(prevState, k), track.concat(k)));
+    function recurse(newValPart: any, prevValPart?: any, prevStatePart?: any, track: Path = []) {
+      if (newValPart === prevValPart) return prevStatePart;
 
-    return state
+      let type = types.detect(newValPart);
+      let schemaPart = getSchemaPart(self.schema, track, newVal);
+      let dataObj = FViewer._makeStateDataObj(schemaPart, type, newValPart);
+      let pathKey = path2string(track);
+      let mergeCustom = self._customData[pathKey];
+      let state = {[SymData]: mergeCustom ? merge(dataObj, mergeCustom, {replace: getIn(self._customReplace, pathKey)}) : dataObj};
+      if (!isSelfManaged(state)) objKeys(newValPart).forEach(k =>
+        state[k] = recurse(newValPart[k], getIn(prevValPart, k), getIn(prevStatePart, k), track.concat(k)));
+
+      return state
+    }
+
+    return recurse(newVal, prevVal, prevState)
+
   }
 
 
@@ -107,7 +116,7 @@ class FViewer extends Component<FViewerProps> {
     }
 
     if (self.props.value !== nextProps.value) self._state = this._value2state(nextProps.value, self.props.value, self._state);
-    
+
     if (self._root && prevState !== self._state) self._root.setState({branch: self._state});
 
     return !isEqual(self.props, nextProps, {skipKeys: ['parent', 'value', 'customData', 'customReplace']});

@@ -1592,7 +1592,7 @@ class FSection extends FRefsGeneric {
     }
     shouldComponentUpdate(nextProps) {
         const self = this;
-        if (nextProps.FFormApi !== self.props.FFormApi || nextProps.oneOf !== self.props.oneOf)
+        if (['FFormApi', 'oneOf', 'branchKeys'].some(k => nextProps[k] !== self.props[k]))
             return self._rebuild = true;
         let doUpdate = !commonLib_1.isEqual(nextProps, self.props, { skipKeys: ['$branch'] });
         let prevBranch = self.props.$branch;
@@ -2145,6 +2145,7 @@ let elementsBase = {
                 $_maps: {
                     length: '@/length',
                     oneOf: '@/oneOf',
+                    branchKeys: '@/branchKeys',
                     isArray: { $: '^/fn/equal', args: ['@/fData/type', 'array'] },
                     $branch: { $: '^/fn/getProp', args: '$branch', update: 'every' },
                     arrayStart: { $: '^/fn/getArrayStart', args: [], update: 'build' },

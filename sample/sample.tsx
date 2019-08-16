@@ -12,6 +12,7 @@ import imjvWrapper from '../addons/wrappers/imjv';
 
 // const imjvValidator: any = require('../addons/is-my-json-valid-lite');
 import * as imjvValidator from '../addons/is-my-json-valid-lite';
+import {objKeys} from "../src/commonLib";
 
 const JSONValidator = imjvWrapper(imjvValidator);
 
@@ -45,14 +46,30 @@ const cssSelectSchema = {
   ]
 };
 
+const viewerData = {
+  '0': {value: {autowidth: 123, select: 'option 3'}},
+  '1': {value: {autowidth: 243523, select: 'option 2', radioSelect: 'option 1', booleanNullLeft: null, array: ['val 1', 'val 2']}},
+};
+
+const viewerSelectSchema = {
+  "type": "string",
+  "title": "Switch data for viewer:",
+  "_presets": "radio:$inlineItems:$inlineTitle",
+  "enum": objKeys(viewerData),
+};
+
 
 class CssSelector extends React.Component<any, any> {
-  state: any = {css: 'bootstrap'};
+  state: any = {css: 'bootstrap', viewerIdx: '1'};
   cores: any = {};
   elements: any = {};
 
   _setCss({value: css}: any) {
     this.setState({css})
+  }
+
+  _setViewerData({value: viewerIdx}: any) {
+    this.setState({viewerIdx})
   }
 
   render() {
@@ -85,11 +102,15 @@ class CssSelector extends React.Component<any, any> {
       <link rel="stylesheet" href="../addons/styling/fform.css"/>
       <h3>FForm sample</h3>
       <div>
-        <div>
-          <FForm value={{autowidth: 1, select: null}} id="sampleForm" ref={(r) => window['main'] = r}
-                 onSubmit={submit} touched core={self.cores[self.state.css]}/>
-          <FViewer value={{autowidth: 123, select: 'option 3'}} schema={sampleSchema} elements={sampleElements}/>
-        </div>
+        <FForm value={{autowidth: 1, select: null}} id="sampleForm" ref={(r) => window['main'] = r}
+               onSubmit={submit} touched core={self.cores[self.state.css]}/>
+      </div>
+      <br/><br/>
+      <h3>FViewer sample</h3>
+      <div>
+        <FForm value={self.state.viewerIdx} id="viewerDataSelectorForm" onChange={self._setViewerData.bind(self)}
+               core={{schema: viewerSelectSchema, name: "viewerDataSelectorForm", elements: sampleElements}}/>
+        <FViewer {...viewerData[self.state.viewerIdx]} schema={sampleSchema} elements={sampleElements}/>
       </div>
     </div>
 

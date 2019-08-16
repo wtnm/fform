@@ -508,10 +508,10 @@ class FField extends FRefsGeneric {
   render() {
     const self = this;
     //try {
-      if (isUndefined(self.state.branch)) return null;
-      if (getIn(self.getData(), 'params', 'norender')) return false;
-      if (self._rebuild) this._build();
-      return self._widgets['Builder'] ? h(self._widgets['Builder'], self._mappedData['Builder'], self._mappedData) : null;
+    if (isUndefined(self.state.branch)) return null;
+    if (getIn(self.getData(), 'params', 'norender')) return false;
+    if (self._rebuild) this._build();
+    return self._widgets['Builder'] ? h(self._widgets['Builder'], self._mappedData['Builder'], self._mappedData) : null;
     // } catch (e) {
     //   throw self._addErrPath(e)
     // }
@@ -719,7 +719,8 @@ class FSection extends FRefsGeneric {
 
   shouldComponentUpdate(nextProps: any) {
     const self = this;
-    if (nextProps.FFormApi !== self.props.FFormApi || nextProps.oneOf !== self.props.oneOf) return self._rebuild = true;
+    if (['FFormApi', 'oneOf', 'branchKeys'].some(k => nextProps[k] !== self.props[k]))
+      return self._rebuild = true;
 
     let doUpdate = !isEqual(nextProps, self.props, {skipKeys: ['$branch']});
 
@@ -760,16 +761,16 @@ class FSection extends FRefsGeneric {
     const self = this;
     let props = self.props;
     // try {
-      if (props.viewer) {
-        let {_$widget = UniversalViewer, ...rest} = props.viewerProps || {};
-        rest.inputProps = props;
-        rest.value = props.$FField.value;
-        return h(_$widget, rest)
-      }
-      if (isSelfManaged(props.$branch)) return null;
-      if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-      return <FSectionWidget _$widget={self._$widget} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
-                             getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
+    if (props.viewer) {
+      let {_$widget = UniversalViewer, ...rest} = props.viewerProps || {};
+      rest.inputProps = props;
+      rest.value = props.$FField.value;
+      return h(_$widget, rest)
+    }
+    if (isSelfManaged(props.$branch)) return null;
+    if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
+    return <FSectionWidget _$widget={self._$widget} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
+                           getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
     // } catch (e) {
     //   throw self.props.$FField._addErrPath(e)
     // }
@@ -1314,6 +1315,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         $_maps: {
           length: '@/length',
           oneOf: '@/oneOf',
+          branchKeys: '@/branchKeys',
           isArray: {$: '^/fn/equal', args: ['@/fData/type', 'array']},
           $branch: {$: '^/fn/getProp', args: '$branch', update: 'every'},
           arrayStart: {$: '^/fn/getArrayStart', args: [], update: 'build'},
