@@ -53,12 +53,17 @@ class FViewer extends Component<FViewerProps> {
   }
 
   static _makeStateDataObj(schemaPart: any, type: string, newVal: any) {
-    let dataObj: any = {oneOf: schemaPart._oneOfIndex || 0, schemaPart, fData: {type}, params: FViewer.paramsBase};
+    let fData: any = {type};
+    fData.title = schemaPart.title;
+    if (schemaPart.enum) fData.enum = schemaPart.enum;
+    if (schemaPart._enumExten) fData.enumExten = schemaPart._enumExten;
+
+    let dataObj: any = {oneOf: schemaPart._oneOfIndex || 0, fData, schemaPart, params: FViewer.paramsBase};
     let isSelf = isSchemaSelfManaged(schemaPart, type);
     if (isSelf) dataObj.value = newVal;
     else {
       if (isArray(newVal)) dataObj.length = newVal.length;
-      dataObj.branchKeys = objKeys(newVal).join(',');
+      dataObj.branchKeys = objKeys(newVal).sort().join(',');
     }
     return dataObj
   }
