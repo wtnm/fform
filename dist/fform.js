@@ -1592,7 +1592,7 @@ class FSection extends FRefsGeneric {
     }
     shouldComponentUpdate(nextProps) {
         const self = this;
-        if (['FFormApi', 'oneOf', 'branchKeys'].some(k => nextProps[k] !== self.props[k]))
+        if (['FFormApi', 'oneOf', 'branchKeys'].some(comparePropsFn(self.props, nextProps)))
             return self._rebuild = true;
         let doUpdate = !commonLib_1.isEqual(nextProps, self.props, { skipKeys: ['$branch'] });
         let prevBranch = self.props.$branch;
@@ -1919,6 +1919,13 @@ const getExten = (enumExten, value) => {
         res = { label: res };
     return commonLib_1.isObject(res) ? res : {};
 };
+function comparePropsFn(prevProps, nextProps, opts = {}) {
+    if (opts.equal)
+        return (key) => prevProps[key] === nextProps[key];
+    else
+        return (key) => prevProps[key] !== nextProps[key];
+}
+exports.comparePropsFn = comparePropsFn;
 function classNames(...styles) {
     const classes = [];
     for (let i = 0; i < styles.length; i++) {

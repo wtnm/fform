@@ -1,8 +1,8 @@
 /** @jsx h */
 
 import {createElement as h, Component} from 'react';
-import {FField, FFormStateAPI} from "./fform";
-import {getIn, isArray, isEqual, isUndefined, merge, objKeys, toArray} from "./commonLib";
+import {FField, comparePropsFn} from "./fform";
+import {getIn, isArray, isEqual, merge, objKeys} from "./commonLib";
 import {compileSchema} from "./api";
 import {getSchemaPart, types, normalizePath, SymData, isSchemaSelfManaged, isSelfManaged, multiplePath, path2string, setUPDATABLE, string2path, mergeUPD_PROC} from "./stateLib";
 
@@ -106,15 +106,18 @@ class FViewer extends Component<FViewerProps> {
       self.schema = compileSchema(nextProps.schema, nextProps.elements);
 
     let prevState = self._state;
-    const propsCompare = (key: string) => self.props[key] !== nextProps[key];
 
-    if (['customData', 'customReplace'].some(propsCompare)) {
+    const propsNotEqual = comparePropsFn(self.props, nextProps);
+
+    if (['customData', 'customReplace'].some(propsNotEqual)) {
       let prevCustom = self._customData;
       let prevReplace = self._customReplace;
       self._customData = self._normalizeCustom(nextProps.customData);
       self._customReplace = self._normalizeCustom(nextProps.customReplace);
       const dataUpdates = {update: {}, replace: {}, api: {}};
+      const prevKeys = objKeys(prevCustom);
       objKeys(self._customData).forEach(key => {
+        prevKeys.splice(prevKeys.indexOf(key), 1);
         let path = string2path(key);
         let branch = getIn(self._state, path);
         if (branch && (prevCustom[key] !== self._customData[key] || prevReplace[key] !== self._customReplace[key]))
@@ -125,6 +128,11 @@ class FViewer extends Component<FViewerProps> {
             true,
             path, SymData);
       });
+      prevKeys.forEach(key => { // reset keys that are not preset in new customData
+        let path = string2path(key);
+        let branch = getIn(self._state, path);
+        if (branch) setUPDATABLE(dataUpdates, FViewer._makeStateDataObj(branch.schemaPart, branch.fData.type, branch.value), true, path, SymData);
+      });
       self._state = mergeUPD_PROC(self._state, dataUpdates);
     }
 
@@ -132,8 +140,8 @@ class FViewer extends Component<FViewerProps> {
 
     if (self._root && prevState !== self._state) self._root.setState({branch: self._state});
 
-    if (['schema', 'elements'].some(propsCompare)) self._setApi(nextProps);
-    
+    if (['schema', 'elements'].some(propsNotEqual)) self._setApi(nextProps);
+
     return !isEqual(self.props, nextProps, {skipKeys: ['parent', 'value', 'customData', 'customReplace']});
   }
 

@@ -300,7 +300,7 @@ Multiple asynchronous commands are stacking in batch and executes together.
 -  `maxProperties?: number`
 -  `minProperties?: number`
 -  `required?: string[] | boolean`
--  `additionalProperties?: boolean | JSONschema`
+-  `additionalProperties?: boolean | JSONschema` - if `false`, then any keys that are not listed in the `properties` or match the `patternProperties` are not allowed.
 -  `properties?: { [property: string]: JSONschema }` - The keys that can exist on the object with the  json schema that should validate their value
 -  `patternProperties?: { [pattern: string]: T }` - The key of this object is a regex for which properties the schema applies to
 -  `dependencies?: { [key: string]: T | string[] }` - If the key is present as property then the string of properties must also be present. If the value is a JSON Schema then it must. Also, be valid for the object if the key is  present.
@@ -334,7 +334,14 @@ As JSON format doesn't support js-code all function moved to [elements](#element
 
 ### Validation
 #### JSON validation
-For JSON validation used [is-my-json-valid](#https://github.com/mafintosh/is-my-json-valid) with modifications for smaller (3 times) bundle size. It is placed in `addons/is-my-json-valid-lite`. Pass it as `JSONValidator` property for [FFStateApi](#ffstateapi). Default group for JSON validation is 0.
+FForm uses external JSON Validators by wrapping them and converting the result to a single format. There are 2 wrappers, for now, that can be found in `addons/wrappers`, one for `is-my-json-valid`, another for `jsonschema`. Use wrapper and pass the result as `JSONValidator` property for [FFStateApi](#ffstateapi). Examle:
+```javascript
+const jsonschemaWrapper = require('fform/addons/wrappers/jsonschema').default;
+const Validator = require('jsonschema').Validator;
+const JSONValidator = jsonschemaWrapper(new Validator());
+```
+
+Default `message group` for JSON validation is 0 (more details about groups below).
 
 #### Sync validation
 A function that receive value as the first parameter and should return string or object in the following format (or array of strings or objects):
@@ -479,18 +486,20 @@ Here `someTestValue` property will be taken from [data object]($data-object) and
 
 
 ## Styling
-FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)) and it can be bound  for class name's replacement.
-Classes that are used in [elements](#elements):
-`hidden` - to hide elements
-`priority_0` - for errors styling
-`inline` - to place elements in line
-`required` - to mark the title as required
-`layout` - default class for object layout's elements
-`shrink` - to shrink an element
-`expand` - to expand an element
+FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)). [Elements](#elements) property `_$cx.bind` can be used to bind objects with class replacements to `_$cx` .
 
-More classNames that can be applied to [elements](#elements) can be found in `addons/styles.json`
+Most common classes that are used in [elements](#elements):
+`fform-hidden` - to hide elements
+`fform-message-priority-N` - for message styles
+`fform-inline` - to place elements in line
+`fform-required` - to mark a title as required
+`fform-viewer` - class for viewer
+`fform-layout` - default class for object layout's elements
+`fform-shrink` - to shrink an element
+`fform-expand` - to expand an element
+
+More classNames that can be applied to [elements](#elements) can be found in `addons/styling/basic.json`
 
 ## SSR
 
-Use `addon/dehydrator.js` to dehydrate state and pass it to the client. On the client side use passed state for the initial value.
+Use `addon/dehydrator.js` to dehydrate state and pass it to the client. On the client side use the passed state as initial value.

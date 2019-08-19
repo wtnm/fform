@@ -719,7 +719,7 @@ class FSection extends FRefsGeneric {
 
   shouldComponentUpdate(nextProps: any) {
     const self = this;
-    if (['FFormApi', 'oneOf', 'branchKeys'].some(k => nextProps[k] !== self.props[k]))
+    if (['FFormApi', 'oneOf', 'branchKeys'].some(comparePropsFn(self.props, nextProps)))
       return self._rebuild = true;
 
     let doUpdate = !isEqual(nextProps, self.props, {skipKeys: ['$branch']});
@@ -1085,6 +1085,10 @@ const getExten = (enumExten: any, value: any) => {
   return isObject(res) ? res : {};
 };
 
+function comparePropsFn(prevProps: anyObject, nextProps: anyObject, opts: { equal?: boolean } = {}) {
+  if (opts.equal) return (key: string) => prevProps[key] === nextProps[key];
+  else return (key: string) => prevProps[key] !== nextProps[key];
+}
 
 function classNames(...styles: any[]) {
   const classes: any[] = [];
@@ -1620,4 +1624,4 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 
 export {elementsBase as elements, formReducer, FForm, FField, FFormStateAPI, fformCores};
 
-export {extractMaps, normalizeMaps, updateProps, classNames}
+export {extractMaps, normalizeMaps, updateProps, classNames, comparePropsFn}
