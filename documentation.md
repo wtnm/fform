@@ -270,16 +270,16 @@ Multiple asynchronous commands are stacking in batch and executes together.
 
 
 ## Basic schema properties
-- `$ref?: string`
--  `type?: JsonSchemaTypes | JsonSchemaTypes[]` - The basic type of this schema, can be one of * [string, number, object, array, boolean, null] * or an array of the acceptable types
--  `enum?: any[]` - Enumerates the values that this schema can be  e.g. {"type": "string",   "enum": ["red", "green", "blue"]}
--  `definitions?: { [key: string]: JSONschema }` - Holds simple JSON Schema definitions for  referencing from elsewhere.
+- **`$ref?: string`**
+- **`type?: JsonSchemaTypes | JsonSchemaTypes[]`** - The basic type of this schema, can be one of * [string, number, object, array, boolean, null] * or an array of the acceptable types
+-  **`enum?: any[]`** - Enumerates the values that this schema can be  e.g. {"type": "string",   "enum": ["red", "green", "blue"]}
+-  **`definitions?: { [key: string]: JSONschema }`** - Holds simple JSON Schema definitions for  referencing from elsewhere.
 #### Metadata
+- **`title?: string`** - Title of the schema
+- **`default?: any`** - Default json for the object represented by this schema
 - `id?: string` - This is important because it tells refs where the root of the document is located
 - `$schema?: JSONschema;` - It is recommended that the meta-schema is included in the root of any JSON Schema
-- `title?: string` - Title of the schema
 - `description?: string` - Schema description
-- `default?: any` - Default json for the object represented by this schema
 #### Number Validation
 -  `multipleOf?: number` - The value must be a multiple of the number (e.g. 10 is a multiple of 5)
 -  `maximum?: number` - maximum value
@@ -291,23 +291,24 @@ Multiple asynchronous commands are stacking in batch and executes together.
 -  `minLength?: number`
 -  `pattern?: string `- This is a regex string that the value must conform to
 #### Array Validation
--  `additionalItems?: boolean | JSONschema`
--  `items?: JSONschema | JSONschema[]`
--  `maxItems?: number`
+-  **`additionalItems?: boolean | JSONschema`**
+-  **`items?: JSONschema | JSONschema[]`**
+-  **`maxItems?: number`**
 -  `minItems?: number`
 -  `uniqueItems?: boolean`
 #### Object Validation
--  `maxProperties?: number`
--  `minProperties?: number`
--  `required?: string[] | boolean`
--  `additionalProperties?: boolean | JSONschema` - if `false`, then any keys that are not listed in the `properties` or match the `patternProperties` are not allowed.
--  `properties?: { [property: string]: JSONschema }` - The keys that can exist on the object with the  json schema that should validate their value
+
+-  **`required?: string[] | boolean`**
+-  **`additionalProperties?: boolean | JSONschema`** - if `false`, then any keys that are not listed in the `properties` or match the `patternProperties` are not allowed.
+-  **`properties?: { [property: string]: JSONschema }`** - The keys that can exist on the object with the  json schema that should validate their value
 -  `patternProperties?: { [pattern: string]: T }` - The key of this object is a regex for which properties the schema applies to
 -  `dependencies?: { [key: string]: T | string[] }` - If the key is present as property then the string of properties must also be present. If the value is a JSON Schema then it must. Also, be valid for the object if the key is  present.
+-  `maxProperties?: number`
+-  `minProperties?: number`
 #### Combining Schemas
--  `allOf?: JSONschema[]` - used for merging schemes
+-  **`oneOf?: JSONschema[]`** - used for switching schemes
+-  **`allOf?: JSONschema[]`** - used for merging schemes
 -  `anyOf?: JSONschema[]` - only for validation
--  `oneOf?: JSONschema[]` - used for switching schemes
 -  `not?: JSONschema` - The entity being validated must not match this schema
 
 ## Extended schema properties

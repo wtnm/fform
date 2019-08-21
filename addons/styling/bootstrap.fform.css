@@ -2,6 +2,10 @@
     margin-bottom: 0.5em;
 }
 
+.fform-btn-grow {
+    flex-grow: 1;
+}
+
 .fform-btn-margin-right {
     margin-right: 0.3em;
 }
@@ -12,5 +16,5 @@
 }
 
 .fform-messages > .invalid-feedback {
-  display: block;
+    display: block;
 }

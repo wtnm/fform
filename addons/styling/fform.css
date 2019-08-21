@@ -50,24 +50,24 @@
     margin-bottom: 1.5em;
 }
 
-.fform-hidden, .fform-button-viewer {
-    display: none;
+.fform-hidden {
+    display: none !important;;
 }
 
 .fform-inline {
-    flex-direction: row;
+    flex-direction: row !important;;
 }
 
 .fform-shrink {
-    flex-grow: 0;
+    flex-grow: 0 !important;
 }
 
 .fform-expand {
-    flex-grow: 10;
+    flex-grow: 10 !important;;
 }
 
 .fform-wrap {
-    flex-wrap: wrap;
+    flex-wrap: wrap !important;;
 }
 
 

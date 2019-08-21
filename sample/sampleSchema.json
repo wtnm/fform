@@ -20,7 +20,7 @@
             },
             "$_maps": {
               "disabled": "@/params/viewer",
-              "className/fform-button-viewer": false
+              "className/fform-hidden": "@/params/noEditor"
             },
             "onClick": {
               "$": "^/fn/api",
@@ -41,11 +41,8 @@
               "fform-shrink": true
             },
             "$_maps": {
-              "disabled": {
-                "$": "^/fn/not",
-                "args": "@/params/viewer"
-              },
-              "className/fform-button-viewer": false
+              "disabled": "!@/params/viewer",
+              "className/fform-hidden": "@/params/noEditor"
             },
             "onClick": {
               "$": "^/fn/setValue",

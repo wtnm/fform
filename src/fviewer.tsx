@@ -16,8 +16,7 @@ class FViewer extends Component<FViewerProps> {
   api: any;
   parent: any;
   schema: any;
-  static readonly paramsBase: any = {viewer: true};
-  static readonly paramsHidden: any = {viewer: true, hidden: true};
+  static readonly paramsBase: any = {viewer: true, noEditor: true};
 
   get elements() {return this.props.elements}
 

@@ -19,24 +19,15 @@
     "Button": {
       "className": {
         "btn": true,
+        "fform-btn-grow": true,
         "btn-outline-secondary": true,
         "fform-btn-margin-right": true
       }
     },
     "Submit": {
       "className": {
-        "btn": true,
         "btn-primary": true,
         "btn-outline-secondary": false
-      }
-    },
-    "ArrayItemMenu": {
-      "_$buttonDefaults": {
-        "className": {
-          "btn": true,
-          "btn-outline-secondary": true,
-          "fform-btn-margin-right": true
-        }
       }
     },
     "Autowidth": {

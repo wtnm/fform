@@ -1191,7 +1191,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         children: [],
         $_maps: {
           children: {$: '^/fn/messages', args: ['@/messages', {}]},
-          'className/fform-hidden': {$: '^/fn/not', args: '@/status/touched'},
+          'className/fform-hidden': {$: '^/fn/or', args: ['@/params/viewer', '!@/status/touched']},
         }
       }
     },
@@ -1414,9 +1414,14 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     format(str: string, ...args: any[]) {
       return args.reduce((str, val, i) => str.replace('${' + i + '}', val), str)
     },
-    iif(iif: any, trueVal: any, falseVaL: any, ...args: any[]) { return [iif ? trueVal : falseVaL, ...args]},
-    not(v: any, ...args: any[]) {return [!v, ...args]},
-    equal(a: any, ...args: any[]) {return [args.some(b => a === b)]},
+
+    iif: (iif: any, trueVal: any, falseVaL: any, ...args: any[]) => [iif ? trueVal : falseVaL, ...args],
+    not: (v: any, ...args: any[]) => [!v, ...args],
+    equal: (a: any, ...args: any[]) => [args.some(b => a === b)],
+    equalAll: (a: any, ...args: any[]) => [args.every(b => a === b)],
+    or: (...args: any[]) => [args.some(Boolean)],
+    and: (...args: any[]) => [args.every(Boolean)],
+
     getArrayStart(...args: any[]) {return [arrayStart(this.schemaPart), ...args]},
     getProp(key: string, ...args: any[]) {return [getIn(this, normalizePath(key)), ...args]},
 
@@ -1554,12 +1559,10 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       }
     },
     Button: {
-      _$widget: '^/widgets/Generic',
-      _$cx: '^/_$cx',
-      _$useTag: 'button',
+      _$widget: 'button',
       type: 'button',
       $_maps: {
-        'className/fform-button-viewer': '@/params/viewer',
+        'className/fform-hidden': '@/params/viewer',
         disabled: '@/params/disabled',
       }
     },
@@ -1567,13 +1570,11 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_ref: '^/parts/Button',
       type: 'submit',
       children: ['Submit']
-      // $_maps: {disabled: {$: '^/fn/not', args: '@/status/valid'},}
     },
     Reset: {
       $_ref: '^/parts/Button',
       type: 'reset',
       children: ['Reset'],
-      //onClick: {$: '^/fn/api', args: ['reset']},
       $_maps: {
         disabled: '@/status/pristine',
       }
@@ -1583,18 +1584,14 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       children: ['+'],
       onClick: {$: '^/fn/api', args: ['arrayAdd', './', 1]},
       $_maps: {
-        'className/fform-hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
+        'className/fform-hidden': {$: '^/fn/or', args: ['@/params/viewer', {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']}]},
         'disabled': {$: '^/fn/equal', args: [true, {$: '^/fn/not', args: '@/fData/canAdd'}, '@params/disabled']}
       }
     },
     ArrayDelButton: {
-      $_ref: '^/parts/Button',
+      $_ref: '^/parts/ArrayAddButton',
       children: ['-'],
-      onClick: {$: '^/fn/api', args: ['arrayAdd', './', -1]},
-      $_maps: {
-        'className/fform-hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']},
-        'disabled': {$: '^/fn/equal', args: [true, {$: '^/fn/not', args: '@/length'}, '@params/disabled']},
-      },
+      onClick: {args: {2: -1}},
     },
     ArrayEmpty: {
       children: '(array is empty)',
@@ -1604,6 +1601,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     ArrayItemMenu: {
       _$widget: '^/widgets/ItemMenu',
       _$cx: '^/_$cx',
+      _$buttonDefaults: '^/parts/Button',
       buttons: ['first', 'last', 'up', 'down', 'del'],
       onClick: {$: '^/fn/api', args: ['arrayItemOps', './', '${0}']},
       buttonsProps: {

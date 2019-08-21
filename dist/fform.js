@@ -2024,7 +2024,7 @@ let elementsBase = {
                 children: [],
                 $_maps: {
                     children: { $: '^/fn/messages', args: ['@/messages', {}] },
-                    'className/fform-hidden': { $: '^/fn/not', args: '@/status/touched' },
+                    'className/fform-hidden': { $: '^/fn/or', args: ['@/params/viewer', '!@/status/touched'] },
                 }
             }
         },
@@ -2247,9 +2247,12 @@ let elementsBase = {
         format(str, ...args) {
             return args.reduce((str, val, i) => str.replace('${' + i + '}', val), str);
         },
-        iif(iif, trueVal, falseVaL, ...args) { return [iif ? trueVal : falseVaL, ...args]; },
-        not(v, ...args) { return [!v, ...args]; },
-        equal(a, ...args) { return [args.some(b => a === b)]; },
+        iif: (iif, trueVal, falseVaL, ...args) => [iif ? trueVal : falseVaL, ...args],
+        not: (v, ...args) => [!v, ...args],
+        equal: (a, ...args) => [args.some(b => a === b)],
+        equalAll: (a, ...args) => [args.every(b => a === b)],
+        or: (...args) => [args.some(Boolean)],
+        and: (...args) => [args.every(Boolean)],
         getArrayStart(...args) { return [stateLib_1.arrayStart(this.schemaPart), ...args]; },
         getProp(key, ...args) { return [commonLib_1.getIn(this, stateLib_1.normalizePath(key)), ...args]; },
         eventValue: (event, ...args) => [event.target.value, ...args],
@@ -2386,12 +2389,10 @@ let elementsBase = {
             }
         },
         Button: {
-            _$widget: '^/widgets/Generic',
-            _$cx: '^/_$cx',
-            _$useTag: 'button',
+            _$widget: 'button',
             type: 'button',
             $_maps: {
-                'className/fform-button-viewer': '@/params/viewer',
+                'className/fform-hidden': '@/params/viewer',
                 disabled: '@/params/disabled',
             }
         },
@@ -2399,13 +2400,11 @@ let elementsBase = {
             $_ref: '^/parts/Button',
             type: 'submit',
             children: ['Submit']
-            // $_maps: {disabled: {$: '^/fn/not', args: '@/status/valid'},}
         },
         Reset: {
             $_ref: '^/parts/Button',
             type: 'reset',
             children: ['Reset'],
-            //onClick: {$: '^/fn/api', args: ['reset']},
             $_maps: {
                 disabled: '@/status/pristine',
             }
@@ -2415,18 +2414,14 @@ let elementsBase = {
             children: ['+'],
             onClick: { $: '^/fn/api', args: ['arrayAdd', './', 1] },
             $_maps: {
-                'className/fform-hidden': { $: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array'] },
+                'className/fform-hidden': { $: '^/fn/or', args: ['@/params/viewer', { $: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array'] }] },
                 'disabled': { $: '^/fn/equal', args: [true, { $: '^/fn/not', args: '@/fData/canAdd' }, '@params/disabled'] }
             }
         },
         ArrayDelButton: {
-            $_ref: '^/parts/Button',
+            $_ref: '^/parts/ArrayAddButton',
             children: ['-'],
-            onClick: { $: '^/fn/api', args: ['arrayAdd', './', -1] },
-            $_maps: {
-                'className/fform-hidden': { $: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array'] },
-                'disabled': { $: '^/fn/equal', args: [true, { $: '^/fn/not', args: '@/length' }, '@params/disabled'] },
-            },
+            onClick: { args: { 2: -1 } },
         },
         ArrayEmpty: {
             children: '(array is empty)',
@@ -2436,6 +2431,7 @@ let elementsBase = {
         ArrayItemMenu: {
             _$widget: '^/widgets/ItemMenu',
             _$cx: '^/_$cx',
+            _$buttonDefaults: '^/parts/Button',
             buttons: ['first', 'last', 'up', 'down', 'del'],
             onClick: { $: '^/fn/api', args: ['arrayItemOps', './', '${0}'] },
             buttonsProps: {
