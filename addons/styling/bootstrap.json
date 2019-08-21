@@ -19,9 +19,7 @@
     "Button": {
       "className": {
         "btn": true,
-        "fform-btn-grow": true,
-        "btn-outline-secondary": true,
-        "fform-btn-margin-right": true
+        "btn-outline-secondary": true
       }
     },
     "Submit": {

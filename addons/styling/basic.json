@@ -73,16 +73,25 @@
     },
     "booleanLeft": {
       "Main": {
-        "className": "fform-boolean-left-container",
+        "className": {
+          "fform-boolean-left-container": true
+        },
         "children": {
           "0": {
-            "className": "fform-boolean-left"
+            "className": {
+              "fform-boolean-left": true
+            }
           }
         }
       }
     }
   },
   "parts": {
+    "Button": {
+      "className": {
+        "fform-button": true
+      }
+    },
     "RadioSelector": {
       "className": {
         "fform-radio": true

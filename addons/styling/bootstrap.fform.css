@@ -2,12 +2,10 @@
     margin-bottom: 0.5em;
 }
 
-.fform-btn-grow {
-    flex-grow: 1;
-}
-
-.fform-btn-margin-right {
+.fform-button {
     margin-right: 0.3em;
+    margin-bottom: 0.5em;
+    flex-grow: 1;
 }
 
 .fform-radio-input {

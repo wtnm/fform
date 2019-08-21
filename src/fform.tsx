@@ -798,6 +798,8 @@ class GenericWidget extends FRefsGeneric {
     if (isFunction(refObject)) refObject = {ref: refObject};
     if (isFunction(passedReactRef)) refObject.ref = passedReactRef;
     else Object.assign(refObject, passedReactRef);
+    console.log('className', className);
+    if (typeof className == "string") debugger;
     return <Widget key={key}
                    className={(!passCx(Widget) && this.props._$cx) ? this.props._$cx(className) : className}
                    _$cx={passCx(Widget) ? this.props._$cx : undefined} {...rest} {...refObject}/>
@@ -1244,7 +1246,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {type: 'textarea', viewerProps: {className: {'fform-viewer': false, 'fform-viewer-inverted': true}}},
       Title: {
         $_maps: {
-          'className/fform-fform-title-viewer-inverted': '@/params/viewer'
+          'className/fform-title-viewer-inverted': '@/params/viewer'
         }
       }
     },
@@ -1585,17 +1587,20 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       onClick: {$: '^/fn/api', args: ['arrayAdd', './', 1]},
       $_maps: {
         'className/fform-hidden': {$: '^/fn/or', args: ['@/params/viewer', {$: '^/fn/equal | ^/fn/not', args: ['@/fData/type', 'array']}]},
-        'disabled': {$: '^/fn/equal', args: [true, {$: '^/fn/not', args: '@/fData/canAdd'}, '@params/disabled']}
+        'disabled': {$: '^/fn/or', args: ['!@/fData/canAdd', '@params/disabled']}
       }
     },
     ArrayDelButton: {
       $_ref: '^/parts/ArrayAddButton',
       children: ['-'],
       onClick: {args: {2: -1}},
+      $_maps: {
+        'disabled': {$: '^/fn/or', args: ['!@/length', '@params/disabled']}
+      }
     },
     ArrayEmpty: {
       children: '(array is empty)',
-      _$useTag: 'span',
+      _$widget: 'span',
       $_maps: {'className/fform-hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/length', 0]}}
     },
     ArrayItemMenu: {
