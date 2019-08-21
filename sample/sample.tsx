@@ -58,6 +58,18 @@ const viewerSelectSchema = {
   "enum": objKeys(viewerData),
 };
 
+const elemExtend = {
+  'user': {
+    focusInput: function () {
+      let focusInput = this.getRef('!focusInput');
+      focusInput = focusInput.value;
+      let target = this.pFForm.getRef(focusInput);
+      if (!target) return alert('No target field');
+      if (!target.focus) return alert('Target field has no focus');
+      target.focus();
+    }
+  }
+};
 
 class CssSelector extends React.Component<any, any> {
   state: any = {css: 'bootstrap', viewerIdx: '1'};
@@ -75,18 +87,11 @@ class CssSelector extends React.Component<any, any> {
   render() {
     const self = this;
     if (!self.elements[self.state.css])
-      self.elements[self.state.css] = elements.extend([basicStyling, self.state.css === 'bootstrap' ? bootstrapStyling : {}, {
-        'user': {
-          focusInput: function () {
-            let focusInput = this.getRef('!focusInput');
-            focusInput = focusInput.value;
-            let target = this.pFForm.getRef(focusInput);
-            if (!target) return alert('No target field');
-            if (!target.focus) return alert('Target field has no focus');
-            target.focus();
-          }
-        }
-      }]);
+      self.elements[self.state.css] = elements.extend([
+        basicStyling,
+        self.state.css === 'bootstrap' ? bootstrapStyling : {},
+
+        elemExtend]);
     const sampleElements = self.elements[self.state.css];
 
     if (!self.cores[self.state.css]) {

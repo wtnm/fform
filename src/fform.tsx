@@ -38,7 +38,7 @@ import {
   processProp,
   isElemRef
 } from './stateLib'
-import {FFormStateAPI, fformCores, objectResolver, formReducer} from './api'
+import {FFormStateAPI, fformCores, objectResolver, formReducer, skipKey} from './api'
 
 const _$cxSym = Symbol('_$cx');
 
@@ -445,7 +445,7 @@ class FField extends FRefsGeneric {
     self._components = components;
     self._blocks = objKeys(components).filter(key => components[key]);
     self._blocks.forEach((block: string) => {
-      const {_$widget, $_reactRef, ...staticProps} = components[block];
+      const {_$widget, $_reactRef, _$skipKeys, ...staticProps} = components[block];
       if (!_$widget) throw new Error('_$widget for "' + block + '" is empty');
       self._widgets[block] = _$widget;
       if ($_reactRef) { // $_reactRef - prop for react ref-function
@@ -610,7 +610,7 @@ class FSection extends FRefsGeneric {
     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
       let {$_maps, rest} = extractMaps(layout, ['$_fields']);
       // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
-      let {$_fields, $_reactRef, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
+      let {$_fields, $_reactRef, _$skipKeys, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
       if ($_fields || !counter) className = merge(LayoutDefaultClass, className);
       staticProps.className = className;
       let refObject = self._refProcess('@widget_' + counter, $_reactRef) || {};
@@ -798,7 +798,7 @@ class GenericWidget extends FRefsGeneric {
     if (isFunction(refObject)) refObject = {ref: refObject};
     if (isFunction(passedReactRef)) refObject.ref = passedReactRef;
     else Object.assign(refObject, passedReactRef);
-    console.log('className', className);
+    // console.log('className', className);
     if (typeof className == "string") debugger;
     return <Widget key={key}
                    className={(!passCx(Widget) && this.props._$cx) ? this.props._$cx(className) : className}
@@ -1000,7 +1000,7 @@ function bindProcessorToThis(val: any, opts: anyObject = {}) {
     return fn
   } else if (isMergeable(val)) {
     const result = isArray(val) ? [] : {};
-    objKeys(val).forEach(key => result[key] = key.substr(0, 2) != '_$' ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
+    objKeys(val).forEach(key => result[key] = !skipKey(key, val) ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
     return result
   }
   return val
@@ -1627,4 +1627,4 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 
 export {elementsBase as elements, formReducer, FForm, FField, FFormStateAPI, fformCores};
 
-export {extractMaps, normalizeMaps, updateProps, classNames, comparePropsFn}
+export {extractMaps, normalizeMaps, updateProps, classNames, comparePropsFn, getExten}

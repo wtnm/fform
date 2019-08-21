@@ -507,6 +507,10 @@ function objectDerefer(_elements: any, obj2deref: any, track: string[] = []) { /
   //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
 }
 
+function skipKey(key: string, obj?: any) {
+  return key.substr(0, 2) == '_$' || obj['_$skipKeys'] && ~obj['_$skipKeys'].indexOf(key)
+}
+
 function objectResolver(_elements: any, obj2resolve: any, track: string[] = []): any {
   const convRef = (refs: string, prefix = '') => deArray(refs.split('|').map((ref, i) => {
     ref = ref.trim();
@@ -523,12 +527,14 @@ function objectResolver(_elements: any, obj2resolve: any, track: string[] = []):
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
     let value = result[key];
+    // if(key == '_$styles') debugger;
+    // console.log('value', value);
     if (isElemRef(value)) {
       value = convRef(value);
-      if (key !== '$' && key.substr(0, 2) !== '_$' && (isFunction(value) || isArray(value) && value.every(isFunction)))
+      if (key !== '$' && !skipKey(key, result) && (isFunction(value) || isArray(value) && value.every(isFunction)))
         value = {$: value}
     }
-    if (key.substr(0, 2) !== '_$') retResult[key] = objectResolver(_elements, value, track.concat(key));
+    if (!skipKey(key, result)) retResult[key] = objectResolver(_elements, value, track.concat(key));
     else retResult[key] = value;
   });
 
@@ -536,4 +542,4 @@ function objectResolver(_elements: any, obj2resolve: any, track: string[] = []):
 }
 
 
-export {anSetState, getFRVal, FFormStateAPI, compileSchema, formReducer, fformCores, objectDerefer, objectResolver}
+export {anSetState, getFRVal, FFormStateAPI, compileSchema, formReducer, fformCores, objectDerefer, objectResolver, skipKey}

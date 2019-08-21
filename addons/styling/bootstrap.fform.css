@@ -2,13 +2,18 @@
     margin-bottom: 0.5em;
 }
 
+
+.fform-title, .fform-radio-container {
+    margin-top: 0.25em;
+}
+
 .fform-button {
     margin-right: 0.3em;
     margin-bottom: 0.5em;
     flex-grow: 1;
 }
 
-.fform-radio-input {
+.fform-radio-input, .fform-boolean-left {
     vertical-align: middle;
     margin-right: 0.2em;
 }

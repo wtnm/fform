@@ -431,19 +431,27 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   } else if (schemaPart._enumExten && !fData.enum) {
     if (isArray(fData.enumExten)) {
       let enumExten = {};
+      let _enum: string[] = [];
       fData.enumExten.forEach((v: any) => {
         // if (!isString(v) && !v) return;
-        if (isString(v)) enumExten[v] = {label: v};
-        else if (isObject(v)) {
+        if (isString(v)) {
+          enumExten[v] = {label: v};
+          _enum.push(v)
+        } else if (isObject(v)) {
           if (!isUndefined(v.value)) {
             if (isUndefined(v.label)) v = {...v, label: v.value};
             enumExten[v.value] = v;
-          } else if (!isUndefined(v.label)) enumExten[v.label] = v;
+            _enum.push(v.value);
+          } else if (!isUndefined(v.label)) {
+            enumExten[v.label] = v;
+            _enum.push(v.label)
+          }
         }
+
       });
       fData.enumExten = enumExten;
-    }
-    fData.enum = objKeys(fData.enumExten).filter(k => fData.enumExten[k]);
+      fData.enum = _enum;
+    } else fData.enum = objKeys(fData.enumExten).filter(k => fData.enumExten[k]);
   }
   if (schemaPart._oneOfSelector) fData.oneOfSelector = true;
 

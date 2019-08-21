@@ -58,6 +58,12 @@
           {
             "_$widget": "input",
             "type": "text",
+            "className": {
+              "form-control": true
+            },
+            "style": {
+              "width": "auto"
+            },
             "onChange": {
               "$": "^/fn/eventValue|setValue",
               "args": [
@@ -329,8 +335,11 @@
       "default": "option 2",
       "_presets": "radio:$inlineItems:$inlineTitle",
       "_enumExten": [
-        "option 1",
         "option 2",
+        {
+          "value": "1",
+          "label": "option 1"
+        },
         "option 3"
       ]
     },

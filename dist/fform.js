@@ -562,6 +562,10 @@ function objectDerefer(_elements, obj2deref, track = []) {
     //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
 }
 exports.objectDerefer = objectDerefer;
+function skipKey(key, obj) {
+    return key.substr(0, 2) == '_$' || obj['_$skipKeys'] && ~obj['_$skipKeys'].indexOf(key);
+}
+exports.skipKey = skipKey;
 function objectResolver(_elements, obj2resolve, track = []) {
     const convRef = (refs, prefix = '') => commonLib_1.deArray(refs.split('|').map((ref, i) => {
         ref = ref.trim();
@@ -582,12 +586,14 @@ function objectResolver(_elements, obj2resolve, track = []) {
     const retResult = commonLib_1.isArray(result) ? [] : {};
     commonLib_1.objKeys(result).forEach((key) => {
         let value = result[key];
+        // if(key == '_$styles') debugger;
+        // console.log('value', value);
         if (stateLib_1.isElemRef(value)) {
             value = convRef(value);
-            if (key !== '$' && key.substr(0, 2) !== '_$' && (commonLib_1.isFunction(value) || commonLib_1.isArray(value) && value.every(commonLib_1.isFunction)))
+            if (key !== '$' && !skipKey(key, result) && (commonLib_1.isFunction(value) || commonLib_1.isArray(value) && value.every(commonLib_1.isFunction)))
                 value = { $: value };
         }
-        if (key.substr(0, 2) !== '_$')
+        if (!skipKey(key, result))
             retResult[key] = objectResolver(_elements, value, track.concat(key));
         else
             retResult[key] = value;
@@ -1341,7 +1347,7 @@ class FField extends FRefsGeneric {
         self._components = components;
         self._blocks = commonLib_1.objKeys(components).filter(key => components[key]);
         self._blocks.forEach((block) => {
-            const _a = components[block], { _$widget, $_reactRef } = _a, staticProps = __rest(_a, ["_$widget", "$_reactRef"]);
+            const _a = components[block], { _$widget, $_reactRef, _$skipKeys } = _a, staticProps = __rest(_a, ["_$widget", "$_reactRef", "_$skipKeys"]);
             if (!_$widget)
                 throw new Error('_$widget for "' + block + '" is empty');
             self._widgets[block] = _$widget;
@@ -1493,7 +1499,7 @@ class FSection extends FRefsGeneric {
         function normalizeLayout(counter, layout) {
             let { $_maps, rest } = extractMaps(layout, ['$_fields']);
             // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
-            let { $_fields, $_reactRef, _$widget = LayoutDefaultWidget, className } = rest, staticProps = __rest(rest, ["$_fields", "$_reactRef", "_$widget", "className"]);
+            let { $_fields, $_reactRef, _$skipKeys, _$widget = LayoutDefaultWidget, className } = rest, staticProps = __rest(rest, ["$_fields", "$_reactRef", "_$skipKeys", "_$widget", "className"]);
             if ($_fields || !counter)
                 className = commonLib_1.merge(LayoutDefaultClass, className);
             staticProps.className = className;
@@ -1663,7 +1669,7 @@ class GenericWidget extends FRefsGeneric {
             refObject.ref = passedReactRef;
         else
             Object.assign(refObject, passedReactRef);
-        console.log('className', className);
+        // console.log('className', className);
         if (typeof className == "string")
             debugger;
         return react_1.createElement(Widget, Object.assign({ key: key, className: (!passCx(Widget) && this.props._$cx) ? this.props._$cx(className) : className, "_$cx": passCx(Widget) ? this.props._$cx : undefined }, rest, refObject));
@@ -1832,7 +1838,7 @@ function bindProcessorToThis(val, opts = {}) {
     }
     else if (commonLib_1.isMergeable(val)) {
         const result = commonLib_1.isArray(val) ? [] : {};
-        commonLib_1.objKeys(val).forEach(key => result[key] = key.substr(0, 2) != '_$' ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
+        commonLib_1.objKeys(val).forEach(key => result[key] = !api_1.skipKey(key, val) ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
         return result;
     }
     return val;
@@ -1922,6 +1928,7 @@ const getExten = (enumExten, value) => {
         res = { label: res };
     return commonLib_1.isObject(res) ? res : {};
 };
+exports.getExten = getExten;
 function comparePropsFn(prevProps, nextProps, opts = {}) {
     if (opts.equal)
         return (key) => prevProps[key] === nextProps[key];
@@ -2924,23 +2931,31 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
     else if (schemaPart._enumExten && !fData.enum) {
         if (commonLib_2.isArray(fData.enumExten)) {
             let enumExten = {};
+            let _enum = [];
             fData.enumExten.forEach((v) => {
                 // if (!isString(v) && !v) return;
-                if (commonLib_2.isString(v))
+                if (commonLib_2.isString(v)) {
                     enumExten[v] = { label: v };
+                    _enum.push(v);
+                }
                 else if (commonLib_2.isObject(v)) {
                     if (!commonLib_2.isUndefined(v.value)) {
                         if (commonLib_2.isUndefined(v.label))
                             v = Object.assign({}, v, { label: v.value });
                         enumExten[v.value] = v;
+                        _enum.push(v.value);
                     }
-                    else if (!commonLib_2.isUndefined(v.label))
+                    else if (!commonLib_2.isUndefined(v.label)) {
                         enumExten[v.label] = v;
+                        _enum.push(v.label);
+                    }
                 }
             });
             fData.enumExten = enumExten;
+            fData.enum = _enum;
         }
-        fData.enum = commonLib_1.objKeys(fData.enumExten).filter(k => fData.enumExten[k]);
+        else
+            fData.enum = commonLib_1.objKeys(fData.enumExten).filter(k => fData.enumExten[k]);
     }
     if (schemaPart._oneOfSelector)
         fData.oneOfSelector = true;
