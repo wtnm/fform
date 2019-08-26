@@ -18,6 +18,6 @@
     margin-right: 0.2em;
 }
 
-.fform-messages > .invalid-feedback {
+.fform-wrapper .valid-feedback, .invalid-feedback {
     display: block;
 }

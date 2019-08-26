@@ -72,6 +72,7 @@ type JsonAny = anyObject | string | object | undefined | boolean | number | null
 
 interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaType {
   _compiled: boolean;
+  _oneOfIndex?: number;
   _validators?: JsonFunctionGeneric<Function>[]; // sync/async validators
   _stateMaps?: FFDataMapGeneric<Function | Function[]>[]; // mapping values in state
   _oneOfSelector?: number | JsonFunctionGeneric<Function | Function[]> // oneOf selector for field
@@ -84,7 +85,6 @@ interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
 }
 
 interface FFCommonSchemaType {
-  _oneOfIndex?: number;
   _placeholder?: string;
   _params?: FFParamsType; // editable in state params
   _data?: { [key: string]: any } | { [key: number]: any };
@@ -93,7 +93,6 @@ interface FFCommonSchemaType {
   _custom?: FFCustomizeType; // components customization
   _layout?: FFLayoutGeneric<FFCustomizeType> | Array<string | FFLayoutGeneric<FFCustomizeType>>; // fields order and object/group extenion
   _enumExten?: any; // enum extension value taken from enum, string turn to label
-
 }
 
 type ReplaceType = boolean | { [key: string]: ReplaceType } | { [key: number]: ReplaceType }

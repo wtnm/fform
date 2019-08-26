@@ -315,7 +315,7 @@ Multiple asynchronous commands are stacking in batch and executes together.
 As JSON format doesn't support js-code all function moved to [elements](#elements). So in the schema you should specify a [reference to elements](#object-refs) as a string value that starts with "^/". It will be resolved at [FFStateApi](#ffstateapi) creating.
 
 - `_placeholder?: string`- field's placeholder
-- `_params?: FFParamsType` - params that can be edited in state
+- `_params?: FFParamsType` - params that can be changed in [data-object](#data-object)
 	-   `liveValidate?: boolean` -
 	-  `autofocus?: boolean` -
 	-  `readonly?: boolean` -
@@ -323,11 +323,11 @@ As JSON format doesn't support js-code all function moved to [elements](#element
 	-  `hidden?: boolean` -
 	-  `norender?: boolean` -
 	-  `viewer?: boolean` -
-- `_data?: any` - any additional data you may need
+- `_data?: any` - any additional data in [data-object](#data-object)
 - `_presets?: string`- presets for rendering components
 - `_simple?: boolean`- determine that value managed by the component itself (for objects and arrays)
 - `_enumExten?: { [key: string]: undefined | string | object }`- enum extension. Keys are taken from enum. String converts to object with property `{label}`
-- `_stateMaps?: Array<{from: string, to:string, $?:string, args?:'string'}>`- <a name='statemaps'></a> maps data in the state. An array of objects with 2-4 properties, where: `from` - path from where value is taken, `to` - path to where value is placed, `$` and `args` - [data processor](#data-event-processors) that process value when mapping.
+- `_stateMaps?: Array<{from: string, to:string, $?:string, args?:'string'}>`- <a name='statemaps'></a> maps (and process) data within the state. An array of objects with following properties: `from` - path (can be relative) from where value is taken, `to` - path (can be relative) to where value is placed, `$` and `args` - [data processor](#data-processors) that process value when mapping.
 - `_validators?: Array<string | dataProcessor>`- [sync/async validators](#validation) as an array of  [data processor](#data-event-processors). Each data processor receives field value as the first parameter on value change. Only the last function in a [data processor](#data-event-processors) can be async.
 - `_oneOfSelector: string | DataProcessor` -  [data processor](#data-event-processors) that receive value to determine which oneOf schema should be chosen.
 - `_custom?: FFCustomizeType`- component [customization](#customization)
@@ -395,7 +395,7 @@ Any object in `elements` that has `$` property threaten as data processor. It ha
 	 	- at `schema._validators` and `schema._oneOfSelector` receive form current value according to schema path
 	 	- at `elements.$_maps` receive no values
 	 	- at `elements.<onEventMethod>` receive event
-	- Args that starts with `@` replaced with [data object](data-object) value according to [path](#path). Example: `@/value`
+	- Args that starts with `@` replaced with [data object](#data-object) value according to [path](#path). Example: `@/value`
 		- Args starts with `!` negated (`!!` negated twice). Example: `!@/value`
 - `update?: 'build' | 'data' | 'every'` - for `$_maps` processors. Determines when it executes.
 	- `build` - on component build/rebuild

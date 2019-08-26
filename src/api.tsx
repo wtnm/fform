@@ -444,19 +444,19 @@ const compileSchema = (schema: any, elements: any) => isCompiled(schema) ? schem
 
 const getCompiledSchema = memoize((elements: elementsType, schema: JsonSchema): jsJsonSchema => schemaCompiler(elements, schema));
 
-function schemaCompiler(elements: elementsType = {}, schema: JsonSchema): jsJsonSchema {
+function schemaCompiler(elements: elementsType = {}, schema: JsonSchema | JsonSchema[], track: Path = []): jsJsonSchema {
   if (isCompiled(schema)) return schema;
 
-  let {_validators, _stateMaps, _oneOfSelector, ...rest} = schema;
   const result: any = isArray(schema) ? [] : {_compiled: true};
+
+  let {_validators, _stateMaps, _oneOfSelector, ...rest} = schema as any;
   const nFnOpts = {noStrictArrayResult: true};
-  _validators && (result._validators = toArray(objectResolver(elements, _validators)).map(f => normalizeFn(f, nFnOpts)));
-  _stateMaps && (result._stateMaps = objectResolver(elements, _stateMaps));
-  _oneOfSelector && (result._oneOfSelector = objectResolver(elements, normalizeFn(_oneOfSelector, nFnOpts)));
-  //if (isFunction(result._oneOfSelector)) result._oneOfSelector = {$: result._oneOfSelector};
+  _validators && (result._validators = toArray(objectResolver(elements, _validators, track)).map(f => normalizeFn(f, nFnOpts)));
+  _stateMaps && (result._stateMaps = objectResolver(elements, _stateMaps, track));
+  _oneOfSelector && (result._oneOfSelector = objectResolver(elements, normalizeFn(_oneOfSelector, nFnOpts), track));
 
   objKeys(rest).forEach(key => {
-    if (key.substr(0, 1) == '_') return result[key] = rest[key];
+    if (key.substr(0, 1) == '_') return result[key] = key !== '_presets' && isElemRef(rest[key]) ? convRef(elements, rest[key], track) : rest[key];
     switch (key) {
       case 'default':
       case 'enum':
@@ -466,10 +466,15 @@ function schemaCompiler(elements: elementsType = {}, schema: JsonSchema): jsJson
       case 'properties':
       case 'patternProperties':
       case 'dependencies':
-        result[key] = objMap(rest[key], schemaCompiler.bind(null, elements));
+        let res = {};
+        let obj = rest[key] || {};
+        if (isArray(obj)) res = obj; // "dependencies" may be of string[] type
+        else objKeys(obj).forEach((k) => (res[k] = schemaCompiler(elements, obj[k] as any, track.concat(key, k))));
+        result[key] = res;
+        //result[key] = objMap(rest[key], schemaCompiler.bind(null, elements));
         break;
       default:
-        if (isMergeable(rest[key])) result[key] = schemaCompiler(elements, rest[key]);
+        if (isMergeable(rest[key])) result[key] = schemaCompiler(elements, rest[key], track.concat(key));
         else result[key] = rest[key];
         break;
     }
@@ -511,26 +516,36 @@ function skipKey(key: string, obj?: any) {
   return key.substr(0, 2) == '_$' || obj['_$skipKeys'] && ~obj['_$skipKeys'].indexOf(key)
 }
 
-function objectResolver(_elements: any, obj2resolve: any, track: string[] = []): any {
-  const convRef = (refs: string, prefix = '') => deArray(refs.split('|').map((ref, i) => {
+const convRef = (_elements: any, refs: string, track: Path = [], prefix = '') => {
+  const _objs = {'^': _elements};
+  return deArray(refs.split('|').map((ref: any, i) => {
     ref = ref.trim();
     if (isElemRef(ref)) prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
     else ref = prefix + ref;
-    let refRes = getIn(_objs, string2path(ref));
-    testRef(refRes, ref, track.concat('@' + i));
-    return refRes;
+    ref = ref.split(':');
+    let result: any;
+    for (let i = 0; i < ref.length; i++) {
+      let r = ref[i];
+      if (!r) continue;
+      if (!isElemRef(r)) r = prefix + r;
+      let refRes = getIn(_objs, string2path(r));
+      testRef(refRes, r, track.concat('@' + i));
+      result = result ? merge(result, refRes) : refRes;
+    }
+    return result;
   }));
-  if (isElemRef(obj2resolve)) return convRef(obj2resolve);
+};
+
+function objectResolver(_elements: any, obj2resolve: any, track: string[] = []): any {
+  if (isElemRef(obj2resolve)) return convRef(_elements, obj2resolve, track);
   if (!isMergeable(obj2resolve)) return obj2resolve;
   const _objs = {'^': _elements};
   const result = objectDerefer(_elements, obj2resolve);
   const retResult = isArray(result) ? [] : {};
   objKeys(result).forEach((key) => {
     let value = result[key];
-    // if(key == '_$styles') debugger;
-    // console.log('value', value);
     if (isElemRef(value)) {
-      value = convRef(value);
+      value = convRef(_elements, value, track);
       if (key !== '$' && !skipKey(key, result) && (isFunction(value) || isArray(value) && value.every(isFunction)))
         value = {$: value}
     }

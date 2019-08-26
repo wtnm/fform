@@ -72,7 +72,7 @@ How to use with different storages see in [documentation](documentation.md#redux
 - [simple form](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=0)
 - [layouts and viewer](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=1)
 - [arrays and oneOf](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=2)
-- [dataMaps](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=3)
+- [stateMaps](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=3)
 - [validation](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=4)
 - [format and parse](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=5)
 - [schema exten](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=6)

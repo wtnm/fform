@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "_presets": "object:$noMessage",
   "_data": {
     "focusValue": "/array/2/1"
   },
@@ -104,6 +105,12 @@
       "autowidth",
       "multiselect",
       "textarea",
+      {
+        "className": {
+          "fform-wrapper": true
+        },
+        "$_ref": "^/parts/Message"
+      },
       {
         "className": {
           "fform-inline": true

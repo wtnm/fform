@@ -495,19 +495,18 @@ exports.formReducer = formReducer;
 const compileSchema = (schema, elements) => isCompiled(schema) ? schema : getCompiledSchema(elements, schema);
 exports.compileSchema = compileSchema;
 const getCompiledSchema = commonLib_1.memoize((elements, schema) => schemaCompiler(elements, schema));
-function schemaCompiler(elements = {}, schema) {
+function schemaCompiler(elements = {}, schema, track = []) {
     if (isCompiled(schema))
         return schema;
-    let { _validators, _stateMaps, _oneOfSelector } = schema, rest = __rest(schema, ["_validators", "_stateMaps", "_oneOfSelector"]);
     const result = commonLib_1.isArray(schema) ? [] : { _compiled: true };
+    let _a = schema, { _validators, _stateMaps, _oneOfSelector } = _a, rest = __rest(_a, ["_validators", "_stateMaps", "_oneOfSelector"]);
     const nFnOpts = { noStrictArrayResult: true };
-    _validators && (result._validators = commonLib_1.toArray(objectResolver(elements, _validators)).map(f => stateLib_1.normalizeFn(f, nFnOpts)));
-    _stateMaps && (result._stateMaps = objectResolver(elements, _stateMaps));
-    _oneOfSelector && (result._oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(_oneOfSelector, nFnOpts)));
-    //if (isFunction(result._oneOfSelector)) result._oneOfSelector = {$: result._oneOfSelector};
+    _validators && (result._validators = commonLib_1.toArray(objectResolver(elements, _validators, track)).map(f => stateLib_1.normalizeFn(f, nFnOpts)));
+    _stateMaps && (result._stateMaps = objectResolver(elements, _stateMaps, track));
+    _oneOfSelector && (result._oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(_oneOfSelector, nFnOpts), track));
     commonLib_1.objKeys(rest).forEach(key => {
         if (key.substr(0, 1) == '_')
-            return result[key] = rest[key];
+            return result[key] = key !== '_presets' && stateLib_1.isElemRef(rest[key]) ? convRef(elements, rest[key], track) : rest[key];
         switch (key) {
             case 'default':
             case 'enum':
@@ -517,11 +516,18 @@ function schemaCompiler(elements = {}, schema) {
             case 'properties':
             case 'patternProperties':
             case 'dependencies':
-                result[key] = stateLib_1.objMap(rest[key], schemaCompiler.bind(null, elements));
+                let res = {};
+                let obj = rest[key] || {};
+                if (commonLib_1.isArray(obj))
+                    res = obj; // "dependencies" may be of string[] type
+                else
+                    commonLib_1.objKeys(obj).forEach((k) => (res[k] = schemaCompiler(elements, obj[k], track.concat(key, k))));
+                result[key] = res;
+                //result[key] = objMap(rest[key], schemaCompiler.bind(null, elements));
                 break;
             default:
                 if (commonLib_1.isMergeable(rest[key]))
-                    result[key] = schemaCompiler(elements, rest[key]);
+                    result[key] = schemaCompiler(elements, rest[key], track.concat(key));
                 else
                     result[key] = rest[key];
                 break;
@@ -566,19 +572,32 @@ function skipKey(key, obj) {
     return key.substr(0, 2) == '_$' || obj['_$skipKeys'] && ~obj['_$skipKeys'].indexOf(key);
 }
 exports.skipKey = skipKey;
-function objectResolver(_elements, obj2resolve, track = []) {
-    const convRef = (refs, prefix = '') => commonLib_1.deArray(refs.split('|').map((ref, i) => {
+const convRef = (_elements, refs, track = [], prefix = '') => {
+    const _objs = { '^': _elements };
+    return commonLib_1.deArray(refs.split('|').map((ref, i) => {
         ref = ref.trim();
         if (stateLib_1.isElemRef(ref))
             prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
         else
             ref = prefix + ref;
-        let refRes = commonLib_1.getIn(_objs, stateLib_1.string2path(ref));
-        testRef(refRes, ref, track.concat('@' + i));
-        return refRes;
+        ref = ref.split(':');
+        let result;
+        for (let i = 0; i < ref.length; i++) {
+            let r = ref[i];
+            if (!r)
+                continue;
+            if (!stateLib_1.isElemRef(r))
+                r = prefix + r;
+            let refRes = commonLib_1.getIn(_objs, stateLib_1.string2path(r));
+            testRef(refRes, r, track.concat('@' + i));
+            result = result ? commonLib_1.merge(result, refRes) : refRes;
+        }
+        return result;
     }));
+};
+function objectResolver(_elements, obj2resolve, track = []) {
     if (stateLib_1.isElemRef(obj2resolve))
-        return convRef(obj2resolve);
+        return convRef(_elements, obj2resolve, track);
     if (!commonLib_1.isMergeable(obj2resolve))
         return obj2resolve;
     const _objs = { '^': _elements };
@@ -586,10 +605,8 @@ function objectResolver(_elements, obj2resolve, track = []) {
     const retResult = commonLib_1.isArray(result) ? [] : {};
     commonLib_1.objKeys(result).forEach((key) => {
         let value = result[key];
-        // if(key == '_$styles') debugger;
-        // console.log('value', value);
         if (stateLib_1.isElemRef(value)) {
-            value = convRef(value);
+            value = convRef(_elements, value, track);
             if (key !== '$' && !skipKey(key, result) && (commonLib_1.isFunction(value) || commonLib_1.isArray(value) && value.every(commonLib_1.isFunction)))
                 value = { $: value };
         }
@@ -1012,8 +1029,6 @@ class FForm extends react_1.Component {
         this.wrapFns = bindProcessorToThis;
         const self = this;
         let { core: coreParams } = props;
-        // debugger
-        console.log('init');
         self.api = coreParams instanceof api_1.FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
         Object.defineProperty(self, "elements", { get: () => self.api.props.elements });
         Object.defineProperty(self, "valid", { get: () => self.api.get('/@/status/valid') });
@@ -1094,8 +1109,10 @@ class FForm extends react_1.Component {
     _submit(event) {
         const self = this;
         const setPending = (val) => self.api.set([], val, { [stateLib_1.SymData]: ['status', 'pending'] });
-        const setMessagesFromSubmit = (messages) => {
+        const setMessagesFromSubmit = (messages = []) => {
             commonLib_1.toArray(messages).forEach(value => {
+                if (!value)
+                    return;
                 let opts = value[stateLib_1.SymData];
                 self.api.setMessages(commonLib_1.objKeys(value).length ? value : null, opts);
             });
@@ -2028,15 +2045,7 @@ let elementsBase = {
                 className: 'fform-body',
             },
             //Main: {},
-            Message: {
-                _$widget: '^/widgets/Generic',
-                _$cx: '^/_$cx',
-                children: [],
-                $_maps: {
-                    children: { $: '^/fn/messages', args: ['@/messages', {}] },
-                    'className/fform-hidden': { $: '^/fn/or', args: ['@/params/viewer', '!@/status/touched'] },
-                }
-            }
+            Message: { $_ref: '^/parts/Message' }
         },
         simple: {
             $_ref: '^/sets/base',
@@ -2248,6 +2257,7 @@ let elementsBase = {
         $inlineArrayControls: { Wrapper: { ArrayItemBody: { className: { 'fform-inline': true } } } },
         $arrayControls3but: { Wrapper: { ArrayItemMenu: { buttons: ['up', 'down', 'del'], } } },
         $noTitle: { Title: false },
+        $noMessage: { Message: false },
         $shrink: { Wrapper: { className: { 'fform-shrink': true } } },
         $expand: { Wrapper: { className: { 'fform-expand': true } } },
         $password: { Main: { type: 'password' } }
@@ -2355,6 +2365,15 @@ let elementsBase = {
         }
     },
     parts: {
+        Message: {
+            _$widget: '^/widgets/Generic',
+            _$cx: '^/_$cx',
+            children: [],
+            $_maps: {
+                children: { $: '^/fn/messages', args: ['@/messages', {}] },
+                'className/fform-hidden': { $: '^/fn/or', args: ['@/params/viewer', '!@/status/touched'] },
+            }
+        },
         RadioSelector: {
             _$widget: '^/widgets/Input',
             _$cx: '^/_$cx',

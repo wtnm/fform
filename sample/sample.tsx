@@ -31,7 +31,7 @@ async function submit(event: any) {
       if (value.textarea !== 'textarea') warn['textarea'] = 'value should be "textarea"';
       // fform.api.setMessages(null, {priority: 1});
       // fform.api.setMessages(warn, {priority: 1});
-      resolve([res, {[Symbol.for("FFormData")]: {priority: 1}}, {...warn, [Symbol.for("FFormData")]: {priority: 1}}]);
+      resolve([['test message','more test message'], res, {[Symbol.for("FFormData")]: {priority: 1}}, {...warn, [Symbol.for("FFormData")]: {priority: 1}}]);
     }, 10)
   })
 }

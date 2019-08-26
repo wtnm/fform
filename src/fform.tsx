@@ -71,8 +71,6 @@ class FForm extends Component<FFormProps> {
     super(props, context);
     const self = this;
     let {core: coreParams} = props;
-    // debugger
-    console.log('init');
     self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
 
     Object.defineProperty(self, "elements", {get: () => self.api.props.elements});
@@ -151,8 +149,9 @@ class FForm extends Component<FFormProps> {
     const self = this;
     const setPending = (val: any) => self.api.set([], val, {[SymData]: ['status', 'pending']});
 
-    const setMessagesFromSubmit = (messages: any) => {
+    const setMessagesFromSubmit = (messages: any = []) => {
       toArray(messages).forEach(value => {
+        if (!value) return;
         let opts = value[SymData];
         self.api.setMessages(objKeys(value).length ? value : null, opts)
       })
@@ -1187,15 +1186,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         className: 'fform-body',
       },
       //Main: {},
-      Message: {
-        _$widget: '^/widgets/Generic',
-        _$cx: '^/_$cx',
-        children: [],
-        $_maps: {
-          children: {$: '^/fn/messages', args: ['@/messages', {}]},
-          'className/fform-hidden': {$: '^/fn/or', args: ['@/params/viewer', '!@/status/touched']},
-        }
-      }
+      Message: {$_ref: '^/parts/Message'}
     },
     simple: {
       $_ref: '^/sets/base',
@@ -1407,6 +1398,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     $inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'fform-inline': true}}}},
     $arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
     $noTitle: {Title: false},
+    $noMessage: {Message: false},
     $shrink: {Wrapper: {className: {'fform-shrink': true}}},
     $expand: {Wrapper: {className: {'fform-expand': true}}},
     $password: {Main: {type: 'password'}}
@@ -1517,6 +1509,15 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     }
   },
   parts: {
+    Message: {
+      _$widget: '^/widgets/Generic',
+      _$cx: '^/_$cx',
+      children: [],
+      $_maps: {
+        children: {$: '^/fn/messages', args: ['@/messages', {}]},
+        'className/fform-hidden': {$: '^/fn/or', args: ['@/params/viewer', '!@/status/touched']},
+      }
+    },
     RadioSelector: {
       _$widget: '^/widgets/Input',
       _$cx: '^/_$cx',
