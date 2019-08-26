@@ -29,9 +29,9 @@ async function submit(event: any) {
       const warn: any = {};
       if (value.radioSelect !== 'option 1') res['radioSelect'] = ['value should be option 1', 'value option 1'];
       if (value.textarea !== 'textarea') warn['textarea'] = 'value should be "textarea"';
-      // fform.api.setMessages(null, {priority: 1});
-      // fform.api.setMessages(warn, {priority: 1});
-      resolve([['test message','more test message'], res, {[Symbol.for("FFormData")]: {priority: 1}}, {...warn, [Symbol.for("FFormData")]: {priority: 1}}]);
+      let testMsg = ['test message', 'more test message'];
+      testMsg[Symbol.for("FFormData")] = {priority: 2};
+      resolve([testMsg, res, {[Symbol.for("FFormData")]: {priority: 1}}, {...warn, [Symbol.for("FFormData")]: {priority: 1}}]);
     }, 10)
   })
 }
