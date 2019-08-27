@@ -49,10 +49,9 @@
     + [`_layout?: FFLayoutCustomizeType`](#_layout-fflayoutcustomizetype)
 - [Validation](#validation)
     + [JSON validation](#json-validation)
-    + [Sync validation](#sync-validation)
-    + [Async validation](#async-validation)
-  * [Customization](#customization)
-  * [Object layout](#object-layout)
+    + [Sync/async validation](#syncasync-validation)
+- [Field customization](#field-customization)
+- [Form layout](#form-layout)
 - [Elements](#elements)
     + [Props processing](#props-processing)
     + [Data processors](#data-processors)
@@ -65,19 +64,25 @@
 
 
 ## FForm
+Component expects following properties:
 - `core` - instance of [FFStateApi](#ffstateapi)  or object with [FFStateApi props](#ffstateapi)
-- `state?: any` - state of FFStateApi
-- `value?: any` - form's current value
-- `inital?: any` - form's initial value
-- `noInitValidate?: boolean` - skip validation on creation
+- `state?: any` - state of FFStateApi.
+- `value?: any` - form's current value.
+- `inital?: any` - form's initial value.
 - `fieldCache?: boolean | number` - caching delay on updating form's value. Used for optimization purposes.
-- `useTag?: string | Function` - html tag. Default 'form'
-- `parent?: any` - parent for form;
-- `onSubmit?: (value: any, fform?: any) => boolean` -
-- `onChange?: (value: any, fform?: any) => void` -
-- `onStateChange?: (state: any, fform?: any) => void` -
+- `_$useTag?: string | Function` - html tag. Default `form`.
+- `touched` - sets `untouched` property to `false`.
 
-After creation [FFStateApi](#ffstateapi) can accessed throught `api` property
+- `onSubmit?: (event: any) => any` - executed on form submit. Supports `event.preventDefault()`.
+- `onChange?: (event: any) => void` - executed on value change.
+- `onStateChange?: (event: any) => void` - executed on state change.
+
+For methods `onSubmit`, `onChange`, `onStateChange` event has access to additional properties:
+`value` - current form value.
+`state` - current form state.
+`fform` - link to the form.
+
+After creation [FFStateApi](#ffstateapi) can accessed throught `api` property.
 
 #### Passing FFStateApi props
 Property `core` with [FFStateApi props](#ffstateapi) processed only on creation (creating new instance of [FFStateApi](#ffstateapi)). On property update, if `core` is an object with [FFStateApi props](#ffstateapi) then `core` is ignored (new instance of [FFStateApi](#ffstateapi) is not created). Otherwise, if (on property update) `core` is instance of [FFStateApi](#ffstateapi)  `FForm` component will make full rebuild.
@@ -358,7 +363,7 @@ Determines that the value controlled by the component itself (actual for objects
 
 #### `_stateMaps?: Array<{from: string, to:string, $?:string, args?:'string'}>` <a name='statemaps'></a> 
 Transmits (and processes) data within the state. An array of objects with following properties: `from` - path (can be relative) from where value is taken, `to` - path (can be relative) to where value is placed, `$` and `args` - [data processor](#data-processors) that process value when mapping. Data processor receives value according to `from` property as the first parameter
-During execution each function in [data processor](#data-processors) has access (thougth `this`) to special object with following properties:
+During execution each function in [data processor](#data-processors) has access (as `this`) to special object with following properties:
 - `api` - [API](#api) functions. Supports relative path.
 - `from` - absolute path that points to value that were passed to [data processor](#data-processors)
 - `to` - absolute path that point to where result will be placed
@@ -367,13 +372,23 @@ During execution each function in [data processor](#data-processors) has access 
 After [data processor](#data-processors) executed the result will be placed according to `to` property, even if value is `undefined`. Sometimes, it is not nessesary, so to prevent this behaviour use `this.api.set(null)` construction in any function during execution. Any API call of `set` or `setValue` methods prevents from setting result that returned by [data processor](#data-processors).
 
 #### `_validators?: Array<string | dataProcessor>`
-[Sync/async validators](#validation) as an array of  [data processor](#data-event-processors). Each data processor receives field value as the first parameter on value change. Only the last function in a [data processor](#data-event-processors) can be async.
-During execution each validator has access (thougth `this`) to special object with following properties:
+<a name='_validators'></a> [Sync/async validators](#validation) as an array of  [data processors](#data-processors). Each data processor receives form value according to path as the first parameter when value changed. 
+During execution each validator has access (as `this`) to special object with following properties:
 - `api` - [API](#api) functions. Supports relative path.
 - `path` = absolute path points to location it is executed.
 
+[Data processors](#data-processors) result expected to be following type:  `Array<MessageGroupType | string> | MessageGroupType | string;`, where `MessageGroupType` is object with following properties:
+-	`group?: number` -  text group, default value is: 0 - for JSON validation, 1 - for sync validation, 2 - for async validation, 3 - for submit validation.
+-	`data: string | string[]` - message data. Can be [elements](#elements) reference and supports [elements props processing](#props-processing).
+-	`priority?: number` - Defines the priority layer the message will be set. Default priority is `0`. If `0`-priority layer is not empty the validation considered failed. Any other priority values used for information purposes only.
+-	`path?: string` - path of field where message will be placed. Default value is current schema path.
+- `[key: string]: any` - any props (className, style, etc.) that will be set for this priority layer.
+  inputClassName?: string;  // className for input choosen from the message with lowest priority
+
+For async validation [Data processors](#data-processors) should return `Promise` that will be resolved to the result of type described above. Notice, that due to data processor's limitation, the promise should be returne by the last function in a [data processor](#data-processors).
+
 #### `_oneOfSelector: string | DataProcessor`
-[Data processor](#data-event-processors) that receive value to determine which oneOf schema should be chosen. Receives form value according to schema path.
+[Data processor](#data-event-processors) that receive value to determine which oneOf schema should be chosen. Receives form value according to schema path. Expected result is index of `oneOf` array.
 
 #### `_custom?: FFCustomizeType`
 Component [customization](#customization).
@@ -391,32 +406,23 @@ const Validator = require('jsonschema').Validator;
 const JSONValidator = jsonschemaWrapper(new Validator());
 ```
 
-Default `message group` for JSON validation is 0 (more details about groups below).
+Default `group` for JSON validation is 0 (more details about groups [here](#_validators)).
 
-#### Sync validation
-A function that receive value as the first parameter and should return string or object in the following format (or array of strings or objects):
--  `group?: number` - group that replaces on each validation call. By default 0 - used for JSON validation, 1 - for sync validation, 2 - for async validation.
--  `data: any` - message(s) that should be displayed. Can be React-element(s).
--  `priority?: number` - Default value 0. If the field has at least one message with priority 0 it means that validation failed. Any priority is greater than 0 doesn't affect validation status (used for warning, info, success, etc).
--  `path?: string` - path to another field you want message to be set .
--  `{[key: string]: any}` - result may have any other props (such as className or style). It will be added to the div layer for that priority on render.
+#### Sync/async validation
+Sync/async validation described [here](#_validators).
 
 
-#### Async validation
-If function return promise then on resolve its result will be processed as for sync function (with default group equal 2)
-
-
-### Customization
-Each field build from the following blocks:
+## Field customization
+Each field of form is built by builder, that assembles field from the following blocks:
 - `Wrapper` - wraps all and add array item controls when the field is an array element
 - `Title` - shows title property from the schema, and provide array add/del buttons when the field is an array
 - `Body` - contains Main and Messages to align then together
 - `Main` - in this block input element is placed
 - `Messages` - element that shows messages (error, warnings, info, etc)
 
-In `_custom` schema property, you can add/overwrite any property of any block. It supports [the element's props processing](#props-processing). It merges with `_presets` refs on field build. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=5).
+In `_custom` schema property, you can add/overwrite any property of any block. It supports [the element's props processing](#props-processing). It merges with `_presets` refs on field build. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=5) for details.
 
-### Object layout
+## Form layout
 Schema property `_layout` can be object or array of strings | objects. The string is the name of the field and it determines the order in which fields will be placed. Object supports [elements props processing](#props-processing) with `$_fields` (that is an array of strings | objects) property and can be customized. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=1).
 
 
@@ -552,4 +558,4 @@ More classNames that can be applied to [elements](#elements) can be found in `ad
 
 ## SSR
 
-Use `addon/dehydrator.js` to dehydrate state and pass it to the client. On the client side use the passed state as initial value.
+Use `addon/dehydrator.js` to dehydrate state on server side and pass it to the client. On the client side use the passed state as `state` prop of [FForm](#fform) component.

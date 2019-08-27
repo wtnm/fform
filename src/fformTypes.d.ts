@@ -11,8 +11,7 @@ type MessageGroupType = {
   data: any;
   priority?: number;  // 0 and below means validation failed, else if priority > 0 message considered valid 
   path?: Path | string;
-  className?: string;
-  inputClassName?: string;  // className for input choosen from the message with lowest priority
+  [key: string]: any;
 }
 
 interface anyObject {
