@@ -55,6 +55,7 @@
     "immutable": "^4.0.0-rc.12",
     "jsdom": "^15.1.1",
     "jsonschema": "^1.2.4",
+    "markdown-toc": "^1.2.0",
     "mocha": "^6.1.4",
     "mock-require": "^3.0.3",
     "postcss-loader": "^3.0.0",

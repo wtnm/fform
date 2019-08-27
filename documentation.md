@@ -36,7 +36,18 @@
     + [Object Validation](#object-validation)
     + [Combining Schemas](#combining-schemas)
 - [Extended schema properties](#extended-schema-properties)
-  * [Validation](#validation)
+    + [`_placeholder?: string`](#_placeholder-string)
+    + [`_params?: FFParamsType`](#_params-ffparamstype)
+    + [`_data?: any`](#_data-any)
+    + [`_presets?: string`](#_presets-string)
+    + [`_simple?: boolean`](#_simple-boolean)
+    + [`_enumExten?: { [key: string]: undefined | string | object }`](#_enumexten--key-string-undefined--string--object-)
+    + [`_stateMaps?: Array`](#_statemaps-array-)
+    + [`_validators?: Array`](#_validators-array)
+    + [`_oneOfSelector: string | DataProcessor`](#_oneofselector-string--dataprocessor)
+    + [`_custom?: FFCustomizeType`](#_custom-ffcustomizetype)
+    + [`_layout?: FFLayoutCustomizeType`](#_layout-fflayoutcustomizetype)
+- [Validation](#validation)
     + [JSON validation](#json-validation)
     + [Sync validation](#sync-validation)
     + [Async validation](#async-validation)
@@ -270,70 +281,108 @@ Multiple asynchronous commands are stacking in batch and executes together.
 
 
 ## Basic schema properties
-- **`$ref?: string`**
-- **`type?: JsonSchemaTypes | JsonSchemaTypes[]`** - The basic type of this schema, can be one of * [string, number, object, array, boolean, null] * or an array of the acceptable types
--  **`enum?: any[]`** - Enumerates the values that this schema can be  e.g. {"type": "string",   "enum": ["red", "green", "blue"]}
--  **`definitions?: { [key: string]: JSONschema }`** - Holds simple JSON Schema definitions for  referencing from elsewhere.
+- **`$ref?: string`** - used by `fform`. Reference to another part of the schema. Logically replaced with the thing that it points to.  If set, then all other properties are ignored. Logically replaced with the thing that it points to. Togetger with `allOf` property, it is used to extend schemes.
+- **`type?: string | string[]`** - used by `fform`. The basic type of this schema, can be one of * [string, number, object, array, boolean, null] * or an array of the acceptable types
+-  **`enum?: any[]`** - used by `fform`. Enumerates the values that this schema can be  e.g. {"type": "string",   "enum": ["red", "green", "blue"]}
+-  **`definitions?: { [key: string]: JSONschema }`** - used by `fform`. Holds simple JSON Schema definitions for  referencing from elsewhere.
+
 #### Metadata
-- **`title?: string`** - Title of the schema
-- **`default?: any`** - Default json for the object represented by this schema
-- `id?: string` - This is important because it tells refs where the root of the document is located
-- `$schema?: JSONschema;` - It is recommended that the meta-schema is included in the root of any JSON Schema
-- `description?: string` - Schema description
+- **`title?: string`** - used by `fform`. Title of the field.
+- **`default?: any`** - used by `fform`. Default value for the object represented by this schema.
+- `id?: string` - This tells refs where the root of the document is located.
+- `$schema?: JSONschema;` - It is recommended that the meta-schema is included in the root of any JSON Schema.
+- `description?: string` - Schema description.
+
 #### Number Validation
 -  `multipleOf?: number` - The value must be a multiple of the number (e.g. 10 is a multiple of 5)
--  `maximum?: number` - maximum value
--  `exclusiveMaximum?: boolean` - If true maximum must be > value, >= otherwise
--  `minimum?: number `- minimum value
--  `exclusiveMinimum?: boolean` - If true minimum must be < value, <= otherwise
-#### String Validation
--  `maxLength?: number`
--  `minLength?: number`
--  `pattern?: string `- This is a regex string that the value must conform to
-#### Array Validation
--  **`additionalItems?: boolean | JSONschema`**
--  **`items?: JSONschema | JSONschema[]`**
--  **`maxItems?: number`**
--  `minItems?: number`
--  `uniqueItems?: boolean`
-#### Object Validation
+-  `maximum?: number` - maximum value.
+-  `exclusiveMaximum?: boolean` - If true maximum must be > value, >= otherwise.
+-  `minimum?: number `- minimum value.
+-  `exclusiveMinimum?: boolean` - If true minimum must be < value, <= otherwise.
 
--  **`required?: string[] | boolean`**
--  **`additionalProperties?: boolean | JSONschema`** - if `false`, then any keys that are not listed in the `properties` or match the `patternProperties` are not allowed.
--  **`properties?: { [property: string]: JSONschema }`** - The keys that can exist on the object with the  json schema that should validate their value
+#### String Validation
+-  `maxLength?: number` - maximum length.
+-  `minLength?: number` - minimum length.
+-  `pattern?: string `- This is a regex string that the value must conform to.
+
+#### Array Validation
+-  **`items?: JSONschema | JSONschema[]`**  - used by `fform`. Defines fields in array.
+-  **`additionalItems?: boolean | JSONschema`**  - used by `fform`. If `false` then array limited to `items` property. If `true` then `items` is used for array elements. If `JSONschema` then it is used for array elements which index is greater then `items` length.
+-  **`maxItems?: number`**  - used by `fform`. Maximum length of array. Used to calculate `canAdd` value in [data-object](#data-object).
+-  **`minItems?: number`**  - used by `fform`. Used to calculate `canDel` value in [data-object](#data-object).
+-   `uniqueItems?: boolean` - if `true` then array elements must be unique.
+
+#### Object Validation
+-  **`required?: string[] | boolean`**  - used by `fform`.
+-  **`properties?: { [property: string]: JSONschema }`** - used by `fform`. The keys that can exist on the object with the  json schema that should validate their value
+-  **`additionalProperties?: boolean | JSONschema`** - used by `fform`. If `false`, then any keys that are not listed in the `properties` or match the `patternProperties` are not allowed.
 -  `patternProperties?: { [pattern: string]: T }` - The key of this object is a regex for which properties the schema applies to
 -  `dependencies?: { [key: string]: T | string[] }` - If the key is present as property then the string of properties must also be present. If the value is a JSON Schema then it must. Also, be valid for the object if the key is  present.
--  `maxProperties?: number`
--  `minProperties?: number`
+-  `maxProperties?: number` - maximum number of properties.
+-  `minProperties?: number` - minimum number of properties.
+
 #### Combining Schemas
--  **`oneOf?: JSONschema[]`** - used for switching schemes
--  **`allOf?: JSONschema[]`** - used for merging schemes
--  `anyOf?: JSONschema[]` - only for validation
--  `not?: JSONschema` - The entity being validated must not match this schema
+-  **`oneOf?: JSONschema[]`** - used by `fform`. Switches the form between listed schemes. Must be valid against exactly one of the subschemas.
+-  **`allOf?: JSONschema[]`** - used by `fform`. Merges listed schemes. Must be valid against all of the subschemas.
+-  `anyOf?: JSONschema[]` - Must be valid against any of the subschemas.
+-  `not?: JSONschema` - Must not be valid against the given schema.
 
 ## Extended schema properties
 As JSON format doesn't support js-code all function moved to [elements](#elements). So in the schema you should specify a [reference to elements](#object-refs) as a string value that starts with "^/". It will be resolved at [FFStateApi](#ffstateapi) creating.
 
-- `_placeholder?: string`- field's placeholder
-- `_params?: FFParamsType` - params that can be changed in [data-object](#data-object)
-	-   `liveValidate?: boolean` -
-	-  `autofocus?: boolean` -
-	-  `readonly?: boolean` -
-	-  `disabled?: boolean` -
-	-  `hidden?: boolean` -
-	-  `norender?: boolean` -
-	-  `viewer?: boolean` -
-- `_data?: any` - any additional data in [data-object](#data-object)
-- `_presets?: string`- presets for rendering components
-- `_simple?: boolean`- determine that value managed by the component itself (for objects and arrays)
-- `_enumExten?: { [key: string]: undefined | string | object }`- enum extension. Keys are taken from enum. String converts to object with property `{label}`
-- `_stateMaps?: Array<{from: string, to:string, $?:string, args?:'string'}>`- <a name='statemaps'></a> maps (and process) data within the state. An array of objects with following properties: `from` - path (can be relative) from where value is taken, `to` - path (can be relative) to where value is placed, `$` and `args` - [data processor](#data-processors) that process value when mapping.
-- `_validators?: Array<string | dataProcessor>`- [sync/async validators](#validation) as an array of  [data processor](#data-event-processors). Each data processor receives field value as the first parameter on value change. Only the last function in a [data processor](#data-event-processors) can be async.
-- `_oneOfSelector: string | DataProcessor` -  [data processor](#data-event-processors) that receive value to determine which oneOf schema should be chosen.
-- `_custom?: FFCustomizeType`- component [customization](#customization)
-- `_layout?: FFLayoutCustomizeType` - fields, objects, groups in an [object or tuple layout](#object-layout)
+#### `_placeholder?: string`
+Field's placeholder.
 
-### Validation
+#### `_params?: FFParamsType` 
+Inital values for parameters that can be futher changed in [data-object](#data-object)
+- `liveUpdate?: boolean`
+- `liveValidate?: boolean`
+- `autofocus?: boolean`
+-  `readonly?: boolean`
+-  `disabled?: boolean`
+-  `hidden?: boolean`
+-  `norender?: boolean`
+-  `viewer?: boolean`
+
+#### `_data?: any` 
+Any additional inital data in [data-object](#data-object)
+
+#### `_presets?: string`
+References (divided by `:`) that points to [elements](#elements). Merged into one object. If reference value without leading `^/` then `^/sets/` prepends to it. Used for component rendering.
+
+#### `_simple?: boolean`
+Determines that the value controlled by the component itself (actual for objects and arrays). This means that `fform` will create state without routines that are normally executed for objects/arrays.
+
+#### `_enumExten?: { [key: string]: undefined | string | object }`
+`enum` property extension. Keys are taken from enum. String converts to object with property `{label}`.
+
+#### `_stateMaps?: Array<{from: string, to:string, $?:string, args?:'string'}>` <a name='statemaps'></a> 
+Transmits (and processes) data within the state. An array of objects with following properties: `from` - path (can be relative) from where value is taken, `to` - path (can be relative) to where value is placed, `$` and `args` - [data processor](#data-processors) that process value when mapping. Data processor receives value according to `from` property as the first parameter
+During execution each function in [data processor](#data-processors) has access (thougth `this`) to special object with following properties:
+- `api` - [API](#api) functions. Supports relative path.
+- `from` - absolute path that points to value that were passed to [data processor](#data-processors)
+- `to` - absolute path that point to where result will be placed
+- `path` = absolute path points to location it is executed.
+
+After [data processor](#data-processors) executed the result will be placed according to `to` property, even if value is `undefined`. Sometimes, it is not nessesary, so to prevent this behaviour use `this.api.set(null)` construction in any function during execution. Any API call of `set` or `setValue` methods prevents from setting result that returned by [data processor](#data-processors).
+
+#### `_validators?: Array<string | dataProcessor>`
+[Sync/async validators](#validation) as an array of  [data processor](#data-event-processors). Each data processor receives field value as the first parameter on value change. Only the last function in a [data processor](#data-event-processors) can be async.
+During execution each validator has access (thougth `this`) to special object with following properties:
+- `api` - [API](#api) functions. Supports relative path.
+- `path` = absolute path points to location it is executed.
+
+#### `_oneOfSelector: string | DataProcessor`
+[Data processor](#data-event-processors) that receive value to determine which oneOf schema should be chosen. Receives form value according to schema path.
+
+#### `_custom?: FFCustomizeType`
+Component [customization](#customization).
+
+#### `_layout?: FFLayoutCustomizeType`
+Fields, objects, groups in an [object/array layout](#object-layout)
+
+
+## Validation
 #### JSON validation
 FForm uses external JSON Validators by wrapping them and converting the result to a single format. There are 2 wrappers, for now, that can be found in `addons/wrappers`, one for `is-my-json-valid`, another for `jsonschema`. Use wrapper and pass the result as `JSONValidator` property for [FFStateApi](#ffstateapi). Examle:
 ```javascript
