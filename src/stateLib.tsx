@@ -517,8 +517,12 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
 
       }
     } else if (type == 'object') {
-      defaultValues = {};
-      if (value && schemaPart.additionalProperties === false) value = removeNotAllowedProperties(schemaPart, value);
+      defaultValues = isObject(schemaPart.default) ? {...schemaPart.default} : {};
+      if (value && schemaPart.additionalProperties === false) {
+        value = removeNotAllowedProperties(schemaPart, value);
+        defaultValues = removeNotAllowedProperties(schemaPart, defaultValues);
+      }
+      if (isObject(value)) Object.assign(defaultValues, value);
       let arrayOfRequired = result[SymData].fData.required;
       arrayOfRequired = isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
       objKeys(schemaPart.properties || {}).forEach(field => {

@@ -3043,9 +3043,13 @@ function makeStateBranch(schema, getNSetOneOf, path = [], value) {
             }
         }
         else if (type == 'object') {
-            defaultValues = {};
-            if (value && schemaPart.additionalProperties === false)
+            defaultValues = commonLib_2.isObject(schemaPart.default) ? Object.assign({}, schemaPart.default) : {};
+            if (value && schemaPart.additionalProperties === false) {
                 value = removeNotAllowedProperties(schemaPart, value);
+                defaultValues = removeNotAllowedProperties(schemaPart, defaultValues);
+            }
+            if (commonLib_2.isObject(value))
+                Object.assign(defaultValues, value);
             let arrayOfRequired = result[SymData].fData.required;
             arrayOfRequired = commonLib_2.isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
             commonLib_1.objKeys(schemaPart.properties || {}).forEach(field => {
