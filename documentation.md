@@ -50,7 +50,7 @@
 - [Validation](#validation)
     + [JSON validation](#json-validation)
     + [Sync/async validation](#syncasync-validation)
-- [Field customization](#field-customization)
+- [Field structure and customization](#field-structure-and-customization)
 - [Form layout](#form-layout)
 - [Elements](#elements)
     + [Props processing](#props-processing)
@@ -72,15 +72,14 @@ Component expects following properties:
 - `fieldCache?: boolean | number` - caching delay on updating form's value. Used for optimization purposes.
 - `_$useTag?: string | Function` - html tag. Default `form`.
 - `touched` - sets `untouched` property to `false`.
-
 - `onSubmit?: (event: any) => any` - executed on form submit. Supports `event.preventDefault()`.
 - `onChange?: (event: any) => void` - executed on value change.
 - `onStateChange?: (event: any) => void` - executed on state change.
 
 For methods `onSubmit`, `onChange`, `onStateChange` event has access to additional properties:
-`value` - current form value.
-`state` - current form state.
-`fform` - link to the form.
+- `value` - current form value.
+- `state` - current form state.
+- `fform` - link to the form.
 
 After creation [FFStateApi](#ffstateapi) can accessed throught `api` property.
 
@@ -88,13 +87,13 @@ After creation [FFStateApi](#ffstateapi) can accessed throught `api` property.
 Property `core` with [FFStateApi props](#ffstateapi) processed only on creation (creating new instance of [FFStateApi](#ffstateapi)). On property update, if `core` is an object with [FFStateApi props](#ffstateapi) then `core` is ignored (new instance of [FFStateApi](#ffstateapi) is not created). Otherwise, if (on property update) `core` is instance of [FFStateApi](#ffstateapi)  `FForm` component will make full rebuild.
 
 #### Using with redux Provider
-`FForm` can take store from the context on creation if property `core` is object with [FFStateApi props](#ffstateapi). Just put `FForm` inside redux `Provider` with a properly created store and leave `store` property undefined. To prevent from taking store from context (and not using store at all) set `store` property to false or null.
+`FForm` can take store from the context on creation when property `core` is object with [FFStateApi](#ffstateapi) props (not instance). Put `FForm` inside redux `Provider` with a properly created store and leave `store` property undefined. To prevent from taking store from context (and not using store at all) set `store` property to false or null.
 
 ## FFStateApi
 On creation pass to constructor object as first argument with following props:
 -   `schema` - schema that will be used to create state
 -   `name?: string` - name that will be used to access data in redux storage and for fields naming
--   `objects?` - [elements](#elements), that contains all necessary for  components creation
+-   `elements?` - [elements](#elements), that contains all necessary for  components creation
 -   `JSONValidator?` - JSON schema validator for [JSON validation](#json-validation)
 -   `store?:any` - redux store. [FForm](#fform) can take store from context
 -   `getState?: () => any` - external state setter
@@ -104,7 +103,7 @@ After creation FFStateApi can be manipulated through [API methods](#api)
 
 ### Storages
 #### Redux storage
-Create redux store with [thunk](#https://github.com/reduxjs/redux-thunk) and with `formReducer` with "fforms" in root reducer:
+Create redux store with [thunk](#https://github.com/reduxjs/redux-thunk) and `formReducer` with "fforms" in root reducer:
 ```
 const {formReducer} = require('fform');
 const {createStore, combineReducers, applyMiddleware} = require('redux');
@@ -544,7 +543,8 @@ Here `someTestValue` property will be taken from [data object]($data-object) and
 	- `Expander` - expander to fill space
 	- `RadioSelector` - radio selector
 - `extend(objects: any[])` - merges elements with passed objects
-- `_$cx` <a name="cx"></a> - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with little modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
+- `_$cx` <a name="cx"></a> - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
+- `_$cx.bind` objects with class replacements for `_$cx` .
 
 
 
@@ -563,6 +563,20 @@ Most common classes that are used in [elements](#elements):
 
 More classNames that can be applied to [elements](#elements) can be found in `addons/styling/basic.json`
 
+Styles for the `tacit` and `bootstrap` frameworks are currently implemented. Example:
+```js
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'fform/addons/styling/fform.css'
+import 'fform/addons/styling/bootstrap.fform.css'
+
+import {elements} from 'fform';
+import * as basicStyling from 'fform/addons/styling/basic.json'
+import * as bootstrapStyling from 'fform/addons/styling/bootstrap.json'
+
+const styledElements = elements.extend([basicStyling, bootstrapStyling]);
+const core = new FFormStateAPI({name, schema, elements: styledElements});
+```
+
 ## SSR
 
 Use `addon/dehydrator.js` to convert state to string on server side and then pass it to the client. On the client side use the passed state as `state` prop of [FForm](#fform) component.
@@ -570,12 +584,12 @@ Use `addon/dehydrator.js` to convert state to string on server side and then pas
 Server side:
 ```js
 const dehydrate = require('../addons/dehydrator').default;
-const core = new FFormStateAPI({name: 'core', schema});
+const core = new FFormStateAPI({name: 'core', schema, elements});
 const state = core.getState();
 let reState = dehydrate(state); // reState now string
 ```
 Client side:
 ```js
 const reState = {reState string from server}
-const reCore = new FFormStateAPI({state: reState, name: 'core', schema});
+const reCore = new FFormStateAPI({state: reState, name: 'core', schema, elements});
 ```

@@ -132,7 +132,7 @@ How to use with different storages see in [documentation](documentation.md#redux
 - [Validation](documentation.md#validation)
     + [JSON validation](documentation.md#json-validation)
     + [Sync/async validation](documentation.md#syncasync-validation)
-- [Field customization](documentation.md#field-customization)
+- [Field structure and customization](documentation.md#field-structure-and-customization)
 - [Form layout](documentation.md#form-layout)
 - [Elements](documentation.md#elements)
     + [Props processing](documentation.md#props-processing)
