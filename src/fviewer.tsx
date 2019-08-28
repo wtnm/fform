@@ -118,7 +118,7 @@ class FViewer extends Component<FViewerProps> {
       objKeys(self._customData).forEach(key => {
         prevKeys.splice(prevKeys.indexOf(key), 1);
         let path = string2path(key);
-        let branch = getIn(self._state, path);
+        let branch = getIn(self._state, path, SymData);
         if (branch && (prevCustom[key] !== self._customData[key] || prevReplace[key] !== self._customReplace[key]))
           setUPDATABLE(dataUpdates,
             merge(FViewer._makeStateDataObj(branch.schemaPart, branch.fData.type, branch.value),
@@ -129,7 +129,7 @@ class FViewer extends Component<FViewerProps> {
       });
       prevKeys.forEach(key => { // reset keys that are not preset in new customData
         let path = string2path(key);
-        let branch = getIn(self._state, path);
+        let branch = getIn(self._state, path, SymData);
         if (branch) setUPDATABLE(dataUpdates, FViewer._makeStateDataObj(branch.schemaPart, branch.fData.type, branch.value), true, path, SymData);
       });
       self._state = mergeUPD_PROC(self._state, dataUpdates);

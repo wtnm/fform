@@ -48,6 +48,11 @@ const cssSelectSchema = {
 const viewerData = {
   '0': {value: {autowidth: 123, select: 'option 3'}},
   '1': {value: {autowidth: 243523, select: 'option 2', radioSelect: 'option 1', booleanNullLeft: null, array: ['val 1', 'val 2']}},
+  '2': {
+    value: {select: '3', booleanNullLeft: null, array: ['another', 'else', ['one', 2, false]]},
+    customData: {'select': {'fData': {'enum': ['0', '1', '2', '3'], 'enumExten': {'0': {label: 'label 0'}, '1': {label: 'label 1'}, '2': {label: 'label 2'}, '3': {label: 'label 3'}}}}}
+  },
+
 };
 
 const viewerSelectSchema = {
