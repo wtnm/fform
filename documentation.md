@@ -412,7 +412,7 @@ Default `group` for JSON validation is 0 (more details about groups [here](#_val
 Sync/async validation described [here](#_validators).
 
 
-## Field customization
+## Field structure and customization
 Each field of form is built by builder, that assembles field from the following blocks:
 - `Wrapper` - wraps all and add array item controls when the field is an array element
 - `Title` - shows title property from the schema, and provide array add/del buttons when the field is an array
@@ -422,23 +422,30 @@ Each field of form is built by builder, that assembles field from the following 
 
 In `_custom` schema property, you can add/overwrite any property of any block. It supports [the element's props processing](#props-processing). It merges with `_presets` refs on field build. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=5) for details.
 
+Field receives a set of objects (structured as it described above) that is the parts of the elements (`_presets` and `_custom` props define it) that merged then into one object. All functions that is found by field's processor in that object binds to field's instance during render. The exception is the props that have leading `_$` in their names or listed in `_$skipKeys` property.
+
 ## Form layout
-Schema property `_layout` can be object or array of strings | objects. The string is the name of the field and it determines the order in which fields will be placed. Object supports [elements props processing](#props-processing) with `$_fields` (that is an array of strings | objects) property and can be customized. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=1).
+For the `object` and` array` types, the JSON-schema's property `_layout` defines a layer that can be customized by setting the required props. It supports [elements props processing](#props-processing). 
+
+Besides, it supports the `$ _fieds` property, which sets the order in which the fields listed in the` definition` property for `object` and in the` items` property for `array` will be displayed. In addition to the fields in `$_fieds`, you can add objects that are also processed by [elements props processing](# props-processing) and support the `$_fieds` property, which allows you to create layers with the desired level of nesting. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=1) for more details.
 
 
 ## Elements
-Each field in form receives a set of objects that is parts of elements (due to '_presets' and '_custom') that merges into one object. Then all functions that field finds in merged object binds to it during render. The exception is the props that start with an underscore.
+Elements is object that contains React components, functions, frequently used parts of components and, in principle, any other js or JSON code that can be referenced both from any part of the Elements and from the extended fields of the JSONSchema.
+
+Elements can be extended, and in essence it is a repository of bricks of code from which the whole form is then assembled, and the degree of elementarity of these cypriots is determined by the developer.
 
 #### Props processing
+Properties of elements are processed as follows:
 - `^/`<a name="object-refs"></a> - string value that begins with `^/` determines that value is the reference and resolved respectively
 - `_$` - leading `_$` in property name prevent it value from deep processing, but if value is string and starts with `^/` resolving still made
 - `$_` - leading `$_` in property name means than property has special processing
+- `_$skipKeys:string[]` - props that listed in this array are prevented from deep processing, as if it name start with `_$`.
 - `_%widget: string | Function` - HTML tag or function that will we used as React-element
 - `_$cx: Function` - classnames processor, reference to '^/_$cx'
 - `$_ref: string` - reference starts with '^' path separated by `/`, multi-refs separated by `:`, <details><summary>example</summary> `{$_ref:'^/sets/base:^/sets/boolean'}`</details>
 - `$_reactRef: boolean | string` - creates reference to element with default name if true, if value is string then it is used as name
 - `$_maps` - maps data from state to element. [Functions](#functions) can be used to process data.
-- `$_fields` - layout that determines field's order and add additional elements and sub-layouts
 
 #### Data processors
 Any object in `elements` that has `$` property threaten as data processor. It has following properties:
@@ -459,9 +466,9 @@ Any object in `elements` that has `$` property threaten as data processor. It ha
 
 **As functions executed in pipe each function that used in processors should return result as _array_** (except `_oneOfSelector`).
 
-Each function (except for those ones that are used in `_oneOfSelector`) has access to [API](#api) during runtime thought `this.api`.
+Each function (except for those ones that are used in `_oneOfSelector`) has access to [API](#api) during runtime through `this.api`.
 
-Any argument of `args` can be data processor (an object with `$` property), it will be executed (_recursively as it args can be data processor too_) and its result passed as value.
+Any argument of `args` can be a data processor (an object with `$` property), it will be executed (_recursively as it args can be data processor too_) and its result will be passed as a value.
 
 #### $_maps <a name='_maps'></a>
 `$_maps: {path2property: string}: string | dataProcessor | dataProcessor[]` is the object that decribes translation data from state's [data objects]($data-object) to component properties.
@@ -558,4 +565,17 @@ More classNames that can be applied to [elements](#elements) can be found in `ad
 
 ## SSR
 
-Use `addon/dehydrator.js` to dehydrate state on server side and pass it to the client. On the client side use the passed state as `state` prop of [FForm](#fform) component.
+Use `addon/dehydrator.js` to convert state to string on server side and then pass it to the client. On the client side use the passed state as `state` prop of [FForm](#fform) component.
+
+Server side:
+```js
+const dehydrate = require('../addons/dehydrator').default;
+const core = new FFormStateAPI({name: 'core', schema});
+const state = core.getState();
+let reState = dehydrate(state); // reState now string
+```
+Client side:
+```js
+const reState = {reState string from server}
+const reCore = new FFormStateAPI({state: reState, name: 'core', schema});
+```
