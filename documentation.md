@@ -44,7 +44,7 @@
     + [`_enumExten?: { [key: string]: undefined | string | object }`](#_enumexten--key-string-undefined--string--object-)
     + [`_stateMaps?: Array`](#_statemaps-array-)
     + [`_validators?: Array`](#_validators-array)
-    + [`_oneOfSelector: string | DataProcessor`](#_oneofselector-string--dataprocessor)
+    + [`_oneOfSelector: string | dataHandler`](#_oneofselector-string--dataHandler)
     + [`_custom?: FFCustomizeType`](#_custom-ffcustomizetype)
     + [`_layout?: FFLayoutCustomizeType`](#_layout-fflayoutcustomizetype)
 - [Validation](#validation)
@@ -54,7 +54,7 @@
 - [Form layout](#form-layout)
 - [Elements](#elements)
     + [Props processing](#props-processing)
-    + [Data processors](#data-processors)
+    + [data handlers](#data-handlers)
     + [$_maps](#_maps-)
     + [Structure](#structure)
 - [Styling](#styling)
@@ -361,22 +361,22 @@ Determines that the value controlled by the component itself (actual for objects
 `enum` property extension. Keys are taken from enum. String converts to object with property `{label}`.
 
 #### `_stateMaps?: Array<{from: string, to:string, $?:string, args?:'string'}>` <a name='statemaps'></a> 
-Transmits (and processes) data within the state. An array of objects with following properties: `from` - path (can be relative) from where value is taken, `to` - path (can be relative) to where value is placed, `$` and `args` - [data processor](#data-processors) that process value when mapping. Data processor receives value according to `from` property as the first parameter
-During execution each function in [data processor](#data-processors) has access (as `this`) to special object with following properties:
+Transmits (and processes) data within the state. An array of objects with following properties: `from` - path (can be relative) from where value is taken, `to` - path (can be relative) to where value is placed, `$` and `args` - [data handler](#data-handlers) that process value when mapping. data handler receives value according to `from` property as the first parameter
+During execution each function in [data handler](#data-handlers) has access (as `this`) to special object with following properties:
 - `api` - [API](#api) functions. Supports relative path.
-- `from` - absolute path that points to value that were passed to [data processor](#data-processors)
+- `from` - absolute path that points to value that were passed to [data handler](#data-handlers)
 - `to` - absolute path that point to where result will be placed
 - `path` = absolute path points to location it is executed.
 
-After [data processor](#data-processors) executed the result will be placed according to `to` property, even if value is `undefined`. Sometimes, it is not nessesary, so to prevent this behaviour use `this.api.set(null)` construction in any function during execution. Any API call of `set` or `setValue` methods prevents from setting result that returned by [data processor](#data-processors).
+After [data handler](#data-handlers) executed the result will be placed according to `to` property, even if value is `undefined`. Sometimes, it is not nessesary, so to prevent this behaviour use `this.api.set(null)` construction in any function during execution. Any API call of `set` or `setValue` methods prevents from setting result that returned by [data handler](#data-handlers).
 
-#### `_validators?: Array<string | dataProcessor>`
-<a name='_validators'></a> [Sync/async validators](#validation) as an array of  [data processors](#data-processors). Each data processor receives form value according to path as the first parameter when value changed. 
+#### `_validators?: Array<string | dataHandler>`
+<a name='_validators'></a> [Sync/async validators](#validation) as an array of  [data handlers](#data-handlers). Each data handler receives form value according to path as the first parameter when value changed. 
 During execution each validator has access (as `this`) to special object with following properties:
 - `api` - [API](#api) functions. Supports relative path.
 - `path` = absolute path points to location it is executed.
 
-[Data processors](#data-processors) result expected to be following type:  `Array<MessageGroupType | string> | MessageGroupType | string;`, where `MessageGroupType` is object with following properties:
+[data handlers](#data-handlers) result expected to be following type:  `Array<MessageGroupType | string> | MessageGroupType | string;`, where `MessageGroupType` is object with following properties:
 -	`group?: number` -  text group, default value is: 0 - for JSON validation, 1 - for sync validation, 2 - for async validation, 3 - for submit validation.
 -	`data: string | string[]` - message data. Can be [elements](#elements) reference and supports [elements props processing](#props-processing).
 -	`priority?: number` - Defines the priority layer the message will be set. Default priority is `0`. If `0`-priority layer is not empty the validation considered failed. Any other priority values used for information purposes only.
@@ -384,10 +384,10 @@ During execution each validator has access (as `this`) to special object with fo
 - `[key: string]: any` - any props (className, style, etc.) that will be set for this priority layer.
   inputClassName?: string;  // className for input choosen from the message with lowest priority
 
-For async validation [Data processors](#data-processors) should return `Promise` that will be resolved to the result of type described above. Notice, that due to data processor's limitation, the promise should be returne by the last function in a [data processor](#data-processors).
+For async validation [data handlers](#data-handlers) should return `Promise` that will be resolved to the result of type described above. Notice, that due to data handler's limitation, the promise should be returne by the last function in a [data handler](#data-handlers).
 
-#### `_oneOfSelector: string | DataProcessor`
-[Data processor](#data-event-processors) that receive value to determine which oneOf schema should be chosen. Receives form value according to schema path. Expected result is index of `oneOf` array.
+#### `_oneOfSelector: string | dataHandler`
+[data handler](#data-handlerss) that receive value to determine which oneOf schema should be chosen. Receives form value according to schema path. Expected result is index of `oneOf` array.
 
 #### `_custom?: FFCustomizeType`
 Component [customization](#customization).
@@ -421,7 +421,7 @@ Each field of form is built by builder, that assembles field from the following 
 
 In `_custom` schema property, you can add/overwrite any property of any block. It supports [the element's props processing](#props-processing). It merges with `_presets` refs on field build. See [example](https://wtnm.github.io/fform-constructor/index.html#url=examples.json&selector=5) for details.
 
-Field receives a set of objects (structured as it described above) that is the parts of the elements (`_presets` and `_custom` props define it) that merged then into one object. All functions that is found by field's processor in that object binds to field's instance during render. The exception is the props that have leading `_$` in their names or listed in `_$skipKeys` property.
+Field receives a set of objects (structured as it described above) that is the parts of the elements (`_presets` and `_custom` props define it) that merged then into one object. All functions that is found by field's handler in that object binds to field's instance during render. The exception is the props that have leading `_$` in their names or listed in `_$skipKeys` property.
 
 ## Form layout
 For the `object` and` array` types, the JSON-schema's property `_layout` defines a layer that can be customized by setting the required props. It supports [elements props processing](#props-processing). 
@@ -441,42 +441,42 @@ Properties of elements are processed as follows:
 - `$_` - leading `$_` in property name means than property has special processing
 - `_$skipKeys:string[]` - props that listed in this array are prevented from deep processing, as if it name start with `_$`.
 - `_%widget: string | Function` - HTML tag or function that will we used as React-element
-- `_$cx: Function` - classnames processor, reference to '^/_$cx'
+- `_$cx: Function` - classnames handler, reference to '^/_$cx'
 - `$_ref: string` - reference starts with '^' path separated by `/`, multi-refs separated by `:`, <details><summary>example</summary> `{$_ref:'^/sets/base:^/sets/boolean'}`</details>
 - `$_reactRef: boolean | string` - creates reference to element with default name if true, if value is string then it is used as name
 - `$_maps` - maps data from state to element. [Functions](#functions) can be used to process data.
 
-#### Data processors
-Any object in `elements` that has `$` property threaten as data processor. It has following properties:
+#### Data handlers
+Any object in `elements` that has `$` property threaten as data handler. It has following properties:
 - `$: string` - link (with leading `^/`) to function(s). Can be used in pipes (linux style, with `|` delimiter). Example `^/fn/first | ^/fn/second`. Output from first function send to second.
-- `replace?: boolean` - if `true` the data processor's result will be replaced, otherwise merged.
+- `replace?: boolean` - if `true` the data handler's result will be replaced, otherwise merged.
 - `args?: any[]` - arguments passed to very first function in `$`. Default `['${...}']`. Has several replacements:
-	- `${<number>}` - replaced with value that data processor receive according to number. If `${...}` passed then all values sent to input. Depending on the place where data processor is used it receive different values:
+	- `${<number>}` - replaced with value that data handler receive according to number. If `${...}` passed then all values sent to input. Depending on the place where data handler is used it receive different values:
 	 	- at `schema._stateMaps` - value is taken according to `from` property
 	 	- at `schema._validators` and `schema._oneOfSelector` receive form current value according to schema path
 	 	- at `elements.$_maps` receive no values
 	 	- at `elements.<onEventMethod>` receive event
 	- Args that starts with `@` replaced with [data object](#data-object) value according to [path](#path). Example: `@/value`
 		- Args starts with `!` negated (`!!` negated twice). Example: `!@/value`
-- `update?: 'build' | 'data' | 'every'` - for `$_maps` processors. Determines when it executes.
+- `update?: 'build' | 'data' | 'every'` - for `$_maps` handlers. Determines when it executes.
 	- `build` - on component build/rebuild
 	- `data` - on [data object](data-object)
 	- `update, `every` - on each update
 
-**As functions executed in pipe each function that used in processors should return result as _array_** (except `_oneOfSelector`).
+**As functions executed in pipe each function that used in handlers should return result as _array_** (except `_oneOfSelector`).
 
 Each function (except for those ones that are used in `_oneOfSelector`) has access to [API](#api) during runtime through `this.api`.
 
-Any argument of `args` can be a data processor (an object with `$` property), it will be executed (_recursively as it args can be data processor too_) and its result will be passed as a value.
+Any argument of `args` can be a data handler (an object with `$` property), it will be executed (_recursively as it args can be data handler too_) and its result will be passed as a value.
 
 #### $_maps <a name='_maps'></a>
-`$_maps: {path2property: string}: string | dataProcessor | dataProcessor[]` is the object that decribes translation data from state's [data objects]($data-object) to component properties.
+`$_maps: {path2property: string}: string | dataHandler | dataHandler[]` is the object that decribes translation data from state's [data objects]($data-object) to component properties.
 
 Key `path2property` defines the path (with symbol `/` as delimiter) in object, where `$_maps` belongs, for example `className/hidden`. Notice: `$_maps` doesn't change the type of property if it was set before and is mergeable (i.e. array or object type), otherwise when needed object is created. For example, if you define something like this `{"children": [], $_maps{"children/0":"@/anything"}}` the type of `children` will always be array.
 
 String value should start with `@`, and defines path in [data object]($data-object) from where the value shold be taken, examle `"className/hidden": "@/params/hidden[^]"`. Also, supports leading `!` or `!!` to negate (convert to boolean) value, examle: `"className/shown": "!@/params/hidden[^]"`.
 
-[Data processor](#data-processors) (array of it) process data it receives. In `$_maps` there is no default input values, so you have to define them in `args` property. Example: 
+[data handler](#data-handlers) (array of it) process data it receives. In `$_maps` there is no default input values, so you have to define them in `args` property. Example: 
 ```js
 {
 	"className": "",
@@ -490,7 +490,7 @@ String value should start with `@`, and defines path in [data object]($data-obje
 ```
 Here `someTestValue` property will be taken from [data object]($data-object) and then passed as 1st argument with string `value2compare` as 2nd to function at `elements.fn.equal`, and the result will be set in `className.equal` with `className` converted to object.
 
-**Important notice:** during runtime functions in data processor have acces to API througth `this.api` and can use `api.get` to gain access to data in another fields. It is not recommended, cause changing data in another field won't trigger data update in current. Instead use schema's [_stateMaps](#statemaps) propery to translate data from any other field's data to the current field's [data object]($data-object), and then take it from [data object]($data-object) as it shown above.
+**Important notice:** during runtime functions in data handler have acces to API througth `this.api` and can use `api.get` to gain access to data in another fields. It is not recommended, cause changing data in another field won't trigger data update in current. Instead use schema's [_stateMaps](#statemaps) propery to translate data from any other field's data to the current field's [data object]($data-object), and then take it from [data object]($data-object) as it shown above.
 
 #### Structure
 - `widgets` - contains react components that is used in form building, some of them:
@@ -520,7 +520,7 @@ Here `someTestValue` property will be taken from [data object]($data-object) and
 	- `multiselect` - set for array of enum values
 	- `radio` - set for enum values as radio buttons
 	- `checkboxes` - set for array of enum values as checkbox buttons
-- `fn` - functions that is used in [data, event processing](#data-event-processors), some of them:
+- `fn` - functions that is used in [data, event processing](#data-handlerss), some of them:
 	- `api(fn: string, ...args: any[])` - executes `this.api[fn](...args)`
     - `format(str: string, ...args: any[])` - replaces `${<number>}` in `str` with `args[<number>]`
     - `iif(iif: any, trueVal: any, falseVaL: any, ...args: any[])` - if `iif` is trusty returns `trueVal`, otherwise `falseVaL`
@@ -543,13 +543,13 @@ Here `someTestValue` property will be taken from [data object]($data-object) and
 	- `Expander` - expander to fill space
 	- `RadioSelector` - radio selector
 - `extend(objects: any[])` - merges elements with passed objects
-- `_$cx` <a name="cx"></a> - simple classnames processor based on [classnames](https://github.com/JedWatson/classnames) with modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
+- `_$cx` <a name="cx"></a> - simple classnames handler based on [classnames](https://github.com/JedWatson/classnames) with modification <details><summary>explanation</summary> object property name added only if value is strict "true" or non-zero "number"  (trusty in classnames), otherwise if value is trusty but not true or number it processes recursively</details>
 - `_$cx.bind` objects with class replacements for `_$cx` .
 
 
 
 ## Styling
-FForm using classnames processor based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)). [Elements](#elements) property `_$cx.bind` can be used to bind objects with class replacements to `_$cx` .
+FForm using classnames handler based on [classnames/bind](https://github.com/JedWatson/classnames) ([`_$cx` property](#structure)). [Elements](#elements) property `_$cx.bind` can be used to bind objects with class replacements to `_$cx` .
 
 Most common classes that are used in [elements](#elements):
 `fform-hidden` - to hide elements
