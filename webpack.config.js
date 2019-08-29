@@ -26,7 +26,7 @@ module.exports = (env, argv) => {
     },
     watch: argv.mode !== 'production',
     output: {
-      filename: `${entryFile}${argv.mode === 'production' ? '.min' : ''}.js`,
+      filename: `${entryFile}${argv.mode === 'production' ? '.min' : '.dev'}.js`,
       path: resolve(dstDir),
       libraryTarget: 'umd',
       library: entryFile,
