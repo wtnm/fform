@@ -118,12 +118,14 @@
         "$_fields": [
           {
             "$_ref": "^/parts/Submit",
+            "id": "submit-button",
             "children": [
               "Send"
             ]
           },
           {
-            "$_ref": "^/parts/Reset"
+            "$_ref": "^/parts/Reset",
+            "id": "reset-button"
           }
         ]
       }
@@ -183,6 +185,7 @@
                 {},
                 {
                   "$_ref": "^/parts/ArrayAddButton",
+                  "data-key": "add_0",
                   "children": [
                     "+string"
                   ],
@@ -196,6 +199,7 @@
                 },
                 {
                   "$_ref": "^/parts/ArrayAddButton",
+                  "data-key": "add_1",
                   "children": [
                     "+number"
                   ],
@@ -209,6 +213,7 @@
                 },
                 {
                   "$_ref": "^/parts/ArrayAddButton",
+                  "data-key": "add_2",
                   "children": [
                     "+boolean"
                   ],
@@ -221,7 +226,8 @@
                   }
                 },
                 {
-                  "$_ref": "^/parts/ArrayDelButton"
+                  "$_ref": "^/parts/ArrayDelButton",
+                  "data-key": "del"
                 },
                 {
                   "$_ref": "^/parts/ArrayEmpty"

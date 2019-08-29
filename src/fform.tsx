@@ -657,7 +657,7 @@ class FSection extends FRefsGeneric {
   _makeFField(fieldName: string, arrayKey?: string) {
     const self = this;
     return <FField ref={self._setRef(arrayKey || fieldName)} key={arrayKey || fieldName} pFForm={self.props.$FField.pFForm} FFormApi={self.props.FFormApi}
-                   id={self.props.id ? self.props.id + (arrayKey || fieldName) : undefined}
+                   id={self.props.id ? self.props.id + '/' + (arrayKey || fieldName) : undefined}
                    name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '${idx}_' + (arrayKey || fieldName) : fieldName) + ']' : undefined}
                    getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
   }

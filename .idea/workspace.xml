@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="documentation update">
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="fviewer bugs fixes">
+      <change afterPath="$PROJECT_DIR$/__tests__/testFForm.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/addons/styling/bootstrap.fform.css" beforeDir="false" afterPath="$PROJECT_DIR$/addons/styling/bootstrap.fform.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/addons/styling/fform.css" beforeDir="false" afterPath="$PROJECT_DIR$/addons/styling/fform.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/__tests__/testForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/testState.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/fform.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/fform.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sample/sample.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sample.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fviewer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/fviewer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sample/sampleSchema.json" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sampleSchema.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fform.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/fform.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -34,11 +38,38 @@
           </provider>
         </entry>
       </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/__tests__/testFForm.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="373">
+              <caret line="163" lean-forward="true" selection-start-line="163" selection-end-line="163" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/sample/sampleSchema.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="197">
+              <caret line="187" column="36" selection-start-line="187" selection-start-column="31" selection-end-line="187" selection-end-column="36" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/__tests__/testState.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="140">
+              <caret line="28" selection-start-line="28" selection-end-line="28" selection-end-column="40" />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="312">
-              <caret line="78" column="47" selection-start-line="78" selection-start-column="47" selection-end-line="78" selection-end-column="47" />
+            <state relative-caret-position="299">
+              <caret line="115" column="77" selection-start-line="115" selection-start-column="68" selection-end-line="115" selection-end-column="77" />
             </state>
           </provider>
         </entry>
@@ -53,26 +84,21 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/addons/styling/fform.css">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="20">
-              <caret line="1" column="103" selection-start-line="1" selection-start-column="103" selection-end-line="1" selection-end-column="103" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/fviewer.tsx">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="160">
-              <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+              <caret line="8" selection-start-line="8" selection-end-line="8" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="mock://webpack://sample/node_modules/react-dom/cjs/react-dom.development.js">
-          <provider selected="true" editor-type-id="vmFileEditor" />
+        <entry file="file://$PROJECT_DIR$/src/fform.tsx">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="239">
+              <caret line="1595" column="19" selection-start-line="1595" selection-start-column="18" selection-end-line="1595" selection-end-column="19" />
+            </state>
+          </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
@@ -80,27 +106,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="260">
               <caret line="99" column="10" selection-start-line="99" selection-start-column="10" selection-end-line="99" selection-end-column="10" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/api.tsx">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="10260">
-              <caret line="515" column="52" selection-start-line="515" selection-start-column="42" selection-end-line="515" selection-end-column="52" />
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/addons/dehydrator.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="40">
-              <caret line="2" column="33" selection-start-line="2" selection-start-column="24" selection-end-line="2" selection-end-column="33" />
             </state>
           </provider>
         </entry>
@@ -126,15 +131,10 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>passCx</find>
-      <find>^/parts/Button</find>
-      <find>legend</find>
-      <find>_$useTag</find>
       <find>CssSelector</find>
       <find>className</find>
       <find>_mapChildren</find>
       <find>_newWidget</find>
-      <find>elements</find>
       <find>objectResolver</find>
       <find>_$</find>
       <find>skipKey</find>
@@ -156,6 +156,11 @@
       <find>customData</find>
       <find>viewerData</find>
       <find>viewerIdx</find>
+      <find>AdapterReact16</find>
+      <find>sampleSchema</find>
+      <find>elements</find>
+      <find>id</find>
+      <find>ArrayDelButton</find>
     </findStrings>
     <replaceStrings>
       <replace>inlineArrayControls</replace>
@@ -201,8 +206,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/tsconfig.json" />
-        <option value="$PROJECT_DIR$/sample/tacit.addon.css" />
         <option value="$PROJECT_DIR$/sample/style.json" />
         <option value="$PROJECT_DIR$/addons/imjvWrapper.ts" />
         <option value="$PROJECT_DIR$/src/output.json" />
@@ -243,15 +246,17 @@
         <option value="$PROJECT_DIR$/addons/styling/basic.json" />
         <option value="$PROJECT_DIR$/src/api.tsx" />
         <option value="$PROJECT_DIR$/src/schemaTypes.d.ts" />
-        <option value="$PROJECT_DIR$/src/fform.tsx" />
-        <option value="$PROJECT_DIR$/sample/sampleSchema.json" />
         <option value="$PROJECT_DIR$/addons/styling/tacit.fform.css" />
         <option value="$PROJECT_DIR$/src/fformTypes.d.ts" />
         <option value="$PROJECT_DIR$/src/stateLib.tsx" />
         <option value="$PROJECT_DIR$/addons/styling/bootstrap.fform.css" />
         <option value="$PROJECT_DIR$/addons/styling/fform.css" />
-        <option value="$PROJECT_DIR$/sample/sample.tsx" />
         <option value="$PROJECT_DIR$/src/fviewer.tsx" />
+        <option value="$PROJECT_DIR$/sample/sample.tsx" />
+        <option value="$PROJECT_DIR$/__tests__/testState.js" />
+        <option value="$PROJECT_DIR$/src/fform.tsx" />
+        <option value="$PROJECT_DIR$/sample/sampleSchema.json" />
+        <option value="$PROJECT_DIR$/__tests__/testFForm.js" />
       </list>
     </option>
   </component>
@@ -411,7 +416,7 @@
     <property name="javascript.nodejs.core.library.configured.version" value="10.13.0" />
     <property name="js-jscs-nodeInterpreter" value="C:\Program Files\nodejs\node.exe" />
     <property name="js.eslint.eslintPackage" value="" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../realkv_admin" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/__tests__/testFForm.js" />
     <property name="node.js.detected.package.prettier" value="true" />
     <property name="node.js.path.for.package.prettier" value="project" />
     <property name="node.js.selected.package.prettier" value="" />
@@ -556,7 +561,19 @@
       </meteor-runner-state>
       <method v="2" />
     </configuration>
-    <configuration name="testCore" type="mocha-javascript-test-runner">
+    <configuration name="testFForm" type="mocha-javascript-test-runner">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <mocha-package>$PROJECT_DIR$/node_modules/mocha</mocha-package>
+      <working-directory>$PROJECT_DIR$</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>TEST_FILE</test-kind>
+      <test-file>$PROJECT_DIR$/__tests__/testFForm.js</test-file>
+      <method v="2" />
+    </configuration>
+    <configuration name="testState" type="mocha-javascript-test-runner">
       <node-interpreter>project</node-interpreter>
       <node-options />
       <mocha-package>$PROJECT_DIR$/node_modules/mocha</mocha-package>
@@ -569,13 +586,14 @@
       <ui>bdd</ui>
       <extra-mocha-options />
       <test-kind>TEST_FILE</test-kind>
-      <test-file>$PROJECT_DIR$/__tests__/testForm.js</test-file>
+      <test-file>$PROJECT_DIR$/__tests__/testState.js</test-file>
       <method v="2" />
     </configuration>
     <list>
       <item itemvalue="JavaScript Debug.Form" />
       <item itemvalue="JavaScript Debug.Unnamed" />
-      <item itemvalue="Mocha.testCore" />
+      <item itemvalue="Mocha.testState" />
+      <item itemvalue="Mocha.testFForm" />
       <item itemvalue="Node.js.examplesLinks.js" />
       <item itemvalue="Node.js.minifyProps" />
       <item itemvalue="npm.run (1)" />
@@ -1332,14 +1350,7 @@
       <workItem from="1566857990182" duration="4600000" />
       <workItem from="1566933235889" duration="599000" />
       <workItem from="1566939991117" duration="7782000" />
-      <workItem from="1567017272246" duration="2235000" />
-    </task>
-    <task id="LOCAL-00125" summary="package fixes">
-      <created>1554778343764</created>
-      <option name="number" value="00125" />
-      <option name="presentableId" value="LOCAL-00125" />
-      <option name="project" value="LOCAL" />
-      <updated>1554778343764</updated>
+      <workItem from="1567017272246" duration="13112000" />
     </task>
     <task id="LOCAL-00126" summary="licence added">
       <created>1554778655367</created>
@@ -1677,43 +1688,50 @@
       <option name="project" value="LOCAL" />
       <updated>1566955662452</updated>
     </task>
-    <option name="localTasksCounter" value="174" />
+    <task id="LOCAL-00174" summary="fviewer bugs fixes">
+      <created>1567020375211</created>
+      <option name="number" value="00174" />
+      <option name="presentableId" value="LOCAL-00174" />
+      <option name="project" value="LOCAL" />
+      <updated>1567020375213</updated>
+    </task>
+    <option name="localTasksCounter" value="175" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="testCore - 2019.08.23 at 15h 29m 35s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    <history-entry file="testFForm - 2019.08.29 at 03h 28m 09s.xml">
+      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.08.23 at 15h 37m 21s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    <history-entry file="testFForm - 2019.08.29 at 03h 30m 56s.xml">
+      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.08.23 at 17h 51m 56s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    <history-entry file="testFForm - 2019.08.29 at 03h 32m 48s.xml">
+      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.08.28 at 01h 48m 15s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    <history-entry file="testFForm - 2019.08.29 at 03h 34m 49s.xml">
+      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.08.28 at 01h 50m 32s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    <history-entry file="testFForm - 2019.08.29 at 03h 35m 12s.xml">
+      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.08.28 at 01h 50m 54s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    <history-entry file="testFForm - 2019.08.29 at 04h 49m 06s.xml">
+      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.08.28 at 01h 51m 40s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    <history-entry file="testFForm - 2019.08.29 at 04h 49m 27s.xml">
+      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.08.28 at 01h 52m 29s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    <history-entry file="testFForm - 2019.08.29 at 04h 50m 31s.xml">
+      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.08.28 at 01h 54m 05s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    <history-entry file="testFForm - 2019.08.29 at 04h 50m 59s.xml">
+      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
-    <history-entry file="testCore - 2019.08.28 at 01h 54m 23s.xml">
-      <configuration name="testCore" configurationId="mocha-javascript-test-runner" />
+    <history-entry file="testFForm - 2019.08.29 at 04h 51m 38s.xml">
+      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3746257000" />
+    <option name="totallyTimeSpent" value="3757134000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1729,8 +1747,8 @@
     <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.58917195" weight="0.19607843" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.45295697" visible="true" weight="0.17859036" />
-      <window_info id="Structure" order="2" sideWeight="0.547043" side_tool="true" visible="true" weight="0.21515633" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.45295697" visible="true" weight="0.18157327" />
+      <window_info id="Structure" order="2" sideWeight="0.547043" side_tool="true" visible="true" weight="0.21875" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
       <window_info id="npm" order="4" sideWeight="0.34750462" side_tool="true" weight="0.0990991" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
@@ -1738,12 +1756,12 @@
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="DB Execution Console" order="3" />
       <window_info anchor="bottom" id="Terminal" order="4" sideWeight="0.4892585" weight="0.2416185" />
-      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48771676" weight="0.30982658" />
+      <window_info active="true" anchor="bottom" id="Run" order="5" sideWeight="0.48771676" visible="true" weight="0.30982658" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.3236994" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info active="true" anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" visible="true" weight="0.42196533" />
+      <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" weight="0.42196533" />
       <window_info anchor="bottom" id="Find" order="9" weight="0.34104046" />
-      <window_info anchor="right" x="0" y="0" width="434" height="856" id="Documentation" order="0" side_tool="true" weight="0.32922912" />
+      <window_info anchor="right" x="0" y="0" width="434" height="856" id="Documentation" order="0" side_tool="true" weight="0.3292026" />
     </layout>
     <layout-to-restore>
       <window_info id="DB Browser" order="0" sideWeight="0.44045174" weight="0.2260274" />
@@ -1782,7 +1800,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="docs edit" />
     <MESSAGE value="processFn reworked" />
     <MESSAGE value="added data processors to fform methods" />
     <MESSAGE value="elements.sets changes" />
@@ -1807,7 +1824,8 @@
     <MESSAGE value="tacit css improvements" />
     <MESSAGE value="Schema default process fixes" />
     <MESSAGE value="documentation update" />
-    <option name="LAST_COMMIT_MESSAGE" value="documentation update" />
+    <MESSAGE value="fviewer bugs fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="fviewer bugs fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -1862,6 +1880,10 @@
         <watch expression="state" language="JavaScript" />
         <watch expression=" branch[SymData].type" language="TypeScript JSX" />
         <watch expression="schemaPart[oneOf]._oneOfSelector" />
+        <watch expression="field.props()" language="JavaScript" />
+        <watch expression="field.html()" language="JavaScript" />
+        <watch expression="core.getState()" language="JavaScript" />
+        <watch expression="coreParams.getState()" language="TypeScript JSX" />
       </configuration>
     </watches-manager>
   </component>
@@ -1920,6 +1942,31 @@
     </expressions>
     <expressions id="watch">
       <expression>
+        <expression-string>coreParams.getState()</expression-string>
+        <language-id>TypeScript JSX</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>core.getState()</expression-string>
+        <language-id>JavaScript</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>field.html()</expression-string>
+        <language-id>JavaScript</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>field.props()</expression-string>
+        <language-id>JavaScript</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>field.text()</expression-string>
+        <language-id>JavaScript</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
         <expression-string>branch[SymData].type</expression-string>
         <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
@@ -1944,31 +1991,6 @@
         <language-id>TypeScript JSX</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
-      <expression>
-        <expression-string>this._getState()</expression-string>
-        <language-id>TypeScript JSX</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>self.api.getState()</expression-string>
-        <language-id>TypeScript JSX</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>self.getState()</expression-string>
-        <language-id>TypeScript JSX</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>this.path</expression-string>
-        <language-id>TypeScript JSX</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>self.pFForm.api.getState()</expression-string>
-        <language-id>TypeScript JSX</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
     </expressions>
     <expressions id="setValue">
       <expression>
@@ -1979,13 +2001,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/node_modules/enzyme/build/ReactWrapper.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1416">
-          <caret line="120" selection-start-line="120" selection-end-line="120" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/expect/build/jasmineUtils.d.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="96">
@@ -2145,27 +2160,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sample/sampleSchema.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2180">
-          <caret line="109" column="11" selection-start-line="109" selection-start-column="11" selection-end-line="109" selection-end-column="24" />
-          <folding>
-            <element signature="n#!!block;n#properties#0;n#!!top" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.babelrc">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="300">
           <caret line="15" column="18" selection-start-line="15" selection-start-column="18" selection-end-line="15" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/__tests__/testForm.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="600">
-          <caret line="30" selection-start-line="30" selection-end-line="30" selection-end-column="58" />
         </state>
       </provider>
     </entry>
@@ -2180,13 +2178,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="760">
           <caret line="38" column="1" selection-start-line="38" selection-start-column="1" selection-end-line="38" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/fform.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4620">
-          <caret line="231" column="37" selection-start-line="231" selection-start-column="15" selection-end-line="231" selection-end-column="37" />
         </state>
       </provider>
     </entry>
@@ -2242,17 +2233,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="78" column="47" selection-start-line="78" selection-start-column="47" selection-end-line="78" selection-end-column="47" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/fviewer.tsx">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="160">
-          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+          <caret line="8" selection-start-line="8" selection-end-line="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sample/sample.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="299">
+          <caret line="115" column="77" selection-start-line="115" selection-start-column="68" selection-end-line="115" selection-end-column="77" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__tests__/testState.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="140">
+          <caret line="28" selection-start-line="28" selection-end-line="28" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/fform.tsx">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="239">
+          <caret line="1595" column="19" selection-start-line="1595" selection-start-column="18" selection-end-line="1595" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/sample/sampleSchema.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="197">
+          <caret line="187" column="36" selection-start-line="187" selection-start-column="31" selection-end-line="187" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/__tests__/testFForm.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="373">
+          <caret line="163" lean-forward="true" selection-start-line="163" selection-end-line="163" />
         </state>
       </provider>
     </entry>

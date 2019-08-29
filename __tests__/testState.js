@@ -5,18 +5,17 @@ process.env.TS_NODE_PROJECT = './tsconfig.json';
 // Optional: set env variable to enable `tsconfig-paths` integration
 // process.env.TS_CONFIG_PATHS = true;
 
-// register mocha wrapper
-require('ts-mocha');
-
-// const expect = require('expect');
-
+require('ts-mocha'); // register mocha wrapper
 const {expect} = require('chai');
+
 const commonLib = require('../src/commonLib.tsx');
 const stateLib = require('../src/stateLib.tsx');
 const apiLib = require('../src/api.tsx');
+const fform = require('../src/fform.tsx');
+const dehydrate = require('../addons/dehydrator').default;
+
 const {createStore, combineReducers, applyMiddleware} = require('redux');
 const thunk = require('redux-thunk').default;
-//const JSONValidator = require('../addons/is-my-json-valid-lite');
 
 const imjvWrapper = require('../addons/wrappers/imjv').default;
 const imjvValidator = require('../addons/is-my-json-valid-lite');
@@ -25,73 +24,15 @@ const imjvJSONValidator = imjvWrapper(imjvValidator);
 const jsonschemaWrapper = require('../addons/wrappers/jsonschema').default;
 const JSValidator = require('jsonschema').Validator;
 const JSJSONValidator = jsonschemaWrapper(new JSValidator());
-
 const JSONValidator = JSJSONValidator;
 
-const dehydrate = require('../addons/dehydrator').default;
-
-const components = require('../src/fform.tsx');
-
-// const mock = require('mock-require');
-// mock('react', 'preact');
-// mock("react-dom/server", "preact-render-to-string");
-// mock("react-dom/test-utils", "preact-test-utils");
-// mock("react-dom", "preact-compat-enzyme");
-// mock("react-test-renderer", "preact-test-utils");
-// mock("react-test-renderer/shallow", "preact-test-utils");
-// mock("react-addons-test-utils", "preact-test-utils");
-// mock("react-addons-transition-group", "preact-transition-group",);
-
-/*
-const jsdom = require('jsdom');
-const {window} = new jsdom.JSDOM('<!doctype html><html><body></body></html>')
-
-function copyProps(src, target) {
-  Object.defineProperties(target, {
-    ...Object.getOwnPropertyDescriptors(src),
-    ...Object.getOwnPropertyDescriptors(target),
-  });
-}
-
-global.window = window;
-global.document = window.document;
-global.navigator = {userAgent: 'node.js'};
-global.requestAnimationFrame = function (callback) {
-  return setTimeout(callback, 0);
-};
-global.cancelAnimationFrame = function (id) {
-  clearTimeout(id);
-};
-copyProps(window, global);
-*/
-
-
 const SymData = Symbol.for('FFormData');
-const SymReset = Symbol.for('FFormReset'); // TODO: Reset tests
+const SymReset = Symbol.for('FFormReset');
 const SymDataMapTree = Symbol.for('FFormDataMapTree');
 const SymDataMap = Symbol.for('FFormDataMap');
 
 function sleep(time) {return new Promise((resolve) => setTimeout(() => resolve(), time))}
 
-
-/*describe('components tests', function () {
-  let usePreact = 1;
-  let React = usePreact ? require('preact') : require('react');
-  Enzyme.configure({adapter: usePreact ? new AdapterPreact() : new AdapterReact16()});
-
-  let components = require('../src/components.tsx');
-
-  //let Generic = components.elements.widgets.Generic;
-  let Generic = components.Test;
-  const wrapper = Enzyme.mount(React.createElement(Generic, null, null));
-
-  usePreact = 0;
-  React = usePreact ? require('preact') : require('react');
-  Enzyme.configure({adapter: new AdapterPreact()});
-
-  //components = mock.reRequire('../src/components.tsx');
-
-});*/
 
 describe('FForm comommon functions tests', function () {
 
@@ -251,7 +192,7 @@ describe('FForm comommon functions tests', function () {
 describe('FForm state functions tests', function () {
 
   //const arraySchema = require('./schemaArray').default;
-  const arrayCore = new components.FFormStateAPI({name: 'functionsTest', schema: require('./schemaArray').default, JSONValidator});
+  const arrayCore = new fform.FFormStateAPI({name: 'functionsTest', schema: require('./schemaArray').default, JSONValidator});
   it('test makeStateBranch, makeStateFromSchema', function () {  // stateData.state.objLevel_1.objLevel_2.array_1[0][0].bazinga[Symbol.for('FFormData')]
 
     let state = arrayCore.getState();
@@ -688,7 +629,7 @@ describe('FForm state functions tests', function () {
   });
 
   it('test oneOf', function () {
-    const oneOfCore = new components.FFormStateAPI({name: 'functionsTest', schema: require('./schemaOneOf').default, JSONValidator});
+    const oneOfCore = new fform.FFormStateAPI({name: 'functionsTest', schema: require('./schemaOneOf').default, JSONValidator});
     const schemaOneOf = oneOfCore.schema;
 
     let state = oneOfCore.getState();
@@ -1028,7 +969,7 @@ describe('test removeNotAllowedProperties', function () {
       }
     ]
   };
-  const addCore = new components.FFormStateAPI({name: 'removeNotAllowedProperties', schema, JSONValidator});
+  const addCore = new fform.FFormStateAPI({name: 'removeNotAllowedProperties', schema, JSONValidator});
 
   it('test makeStateBranch with removeNotAllowedProperties', async function () {
     await addCore.setValue({"one": "", "test": "", "_test": ""});
@@ -1075,15 +1016,15 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
       setState: (state) => extStore.state = state
     };
 
-    const formReducer = components.formReducer;
+    const formReducer = fform.formReducer;
     const rootReducer = combineReducers({fforms: formReducer()});
     const store = createStore(rootReducer, applyMiddleware(thunk));
 
-    const simpleCore = new components.FFormStateAPI({name: 'simpleCore', schema: require('./schemaArray').default, JSONValidator});
-    const externalCore = new components.FFormStateAPI({getState: extStore.getState, setState: extStore.setState, name: 'externalCore', schema: require('./schemaArray').default, JSONValidator});
+    const simpleCore = new fform.FFormStateAPI({name: 'simpleCore', schema: require('./schemaArray').default, JSONValidator});
+    const externalCore = new fform.FFormStateAPI({getState: extStore.getState, setState: extStore.setState, name: 'externalCore', schema: require('./schemaArray').default, JSONValidator});
 
-    const simpleReduxCore = new components.FFormStateAPI({name: 'simpleReduxCore', store, schema: require('./schemaArray').default, JSONValidator});
-    const externalReduxCore = new components.FFormStateAPI({getState: extStoreRedux.getState, setState: extStoreRedux.setState, name: 'externalReduxCore', store, schema: require('./schemaArray').default, JSONValidator});
+    const simpleReduxCore = new fform.FFormStateAPI({name: 'simpleReduxCore', store, schema: require('./schemaArray').default, JSONValidator});
+    const externalReduxCore = new fform.FFormStateAPI({getState: extStoreRedux.getState, setState: extStoreRedux.setState, name: 'externalReduxCore', store, schema: require('./schemaArray').default, JSONValidator});
     const notExist = {};
 
     async function testApi(core) {
