@@ -1,16 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="fviewer bugs fixes">
-      <change afterPath="$PROJECT_DIR$/__tests__/testFForm.js" afterDir="false" />
+    <list default="true" id="9e9f3562-01c0-46c8-94bb-0501984b397e" name="Default" comment="tests added">
+      <change afterPath="$PROJECT_DIR$/tutorial.ru.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/__tests__/testForm.js" beforeDir="false" afterPath="$PROJECT_DIR$/__tests__/testState.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dist/fform.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/dist/fform.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample/sample.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sample.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sample/sampleSchema.json" beforeDir="false" afterPath="$PROJECT_DIR$/sample/sampleSchema.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fform.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/fform.tsx" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -41,8 +34,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/__tests__/testFForm.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="373">
-              <caret line="163" lean-forward="true" selection-start-line="163" selection-end-line="163" />
+            <state relative-caret-position="200">
+              <caret line="10" column="43" lean-forward="true" selection-start-line="10" selection-start-column="43" selection-end-line="10" selection-end-column="43" />
             </state>
           </provider>
         </entry>
@@ -416,7 +409,7 @@
     <property name="javascript.nodejs.core.library.configured.version" value="10.13.0" />
     <property name="js-jscs-nodeInterpreter" value="C:\Program Files\nodejs\node.exe" />
     <property name="js.eslint.eslintPackage" value="" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/__tests__/testFForm.js" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/__tests__" />
     <property name="node.js.detected.package.prettier" value="true" />
     <property name="node.js.path.for.package.prettier" value="project" />
     <property name="node.js.selected.package.prettier" value="" />
@@ -451,7 +444,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="JavaScript Debug.Form">
+  <component name="RunManager" selected="Mocha.Full">
     <configuration default="true" type="NodeJSRemoteDebug" factoryName="Node.js Remote Debug">
       <node-js-remote-debug />
       <method />
@@ -460,9 +453,6 @@
       <method />
     </configuration>
     <configuration name="Form" type="JavascriptDebugType" engineId="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" uri="http://localhost:63342/FForm/sample/index.html" useFirstLineBreakpoints="true" useBuiltInWebServerPort="true">
-      <method v="2" />
-    </configuration>
-    <configuration name="Unnamed" type="JavascriptDebugType" engineId="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" uri="http://localhost:63342/FForm/src/test.html" useBuiltInWebServerPort="true">
       <method v="2" />
     </configuration>
     <configuration name="examplesLinks.js" type="NodeJSConfigurationType" nameIsGenerated="true" path-to-js-file="tools/examplesLinks.js" working-dir="$PROJECT_DIR$">
@@ -561,6 +551,18 @@
       </meteor-runner-state>
       <method v="2" />
     </configuration>
+    <configuration name="Full" type="mocha-javascript-test-runner">
+      <node-interpreter>project</node-interpreter>
+      <node-options />
+      <mocha-package>$PROJECT_DIR$/node_modules/mocha</mocha-package>
+      <working-directory>$PROJECT_DIR$</working-directory>
+      <pass-parent-env>true</pass-parent-env>
+      <ui>bdd</ui>
+      <extra-mocha-options />
+      <test-kind>PATTERN</test-kind>
+      <test-pattern>./__tests__/test*.js</test-pattern>
+      <method v="2" />
+    </configuration>
     <configuration name="testFForm" type="mocha-javascript-test-runner">
       <node-interpreter>project</node-interpreter>
       <node-options />
@@ -591,7 +593,7 @@
     </configuration>
     <list>
       <item itemvalue="JavaScript Debug.Form" />
-      <item itemvalue="JavaScript Debug.Unnamed" />
+      <item itemvalue="Mocha.Full" />
       <item itemvalue="Mocha.testState" />
       <item itemvalue="Mocha.testFForm" />
       <item itemvalue="Node.js.examplesLinks.js" />
@@ -606,9 +608,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.compile" />
         <item itemvalue="npm.compile:sample:dev" />
         <item itemvalue="npm.compile:dev" />
-        <item itemvalue="npm.compile" />
         <item itemvalue="npm.compile:js" />
       </list>
     </recent_temporary>
@@ -1350,21 +1352,7 @@
       <workItem from="1566857990182" duration="4600000" />
       <workItem from="1566933235889" duration="599000" />
       <workItem from="1566939991117" duration="7782000" />
-      <workItem from="1567017272246" duration="13112000" />
-    </task>
-    <task id="LOCAL-00126" summary="licence added">
-      <created>1554778655367</created>
-      <option name="number" value="00126" />
-      <option name="presentableId" value="LOCAL-00126" />
-      <option name="project" value="LOCAL" />
-      <updated>1554778655367</updated>
-    </task>
-    <task id="LOCAL-00127" summary="licence added">
-      <created>1554779411386</created>
-      <option name="number" value="00127" />
-      <option name="presentableId" value="LOCAL-00127" />
-      <option name="project" value="LOCAL" />
-      <updated>1554779411386</updated>
+      <workItem from="1567017272246" duration="14391000" />
     </task>
     <task id="LOCAL-00128" summary="cache processing fixes">
       <created>1554854860356</created>
@@ -1695,19 +1683,24 @@
       <option name="project" value="LOCAL" />
       <updated>1567020375213</updated>
     </task>
-    <option name="localTasksCounter" value="175" />
+    <task id="LOCAL-00175" summary="tests added">
+      <created>1567043586399</created>
+      <option name="number" value="00175" />
+      <option name="presentableId" value="LOCAL-00175" />
+      <option name="project" value="LOCAL" />
+      <updated>1567043586399</updated>
+    </task>
+    <task id="LOCAL-00176" summary="tests added">
+      <created>1567044869122</created>
+      <option name="number" value="00176" />
+      <option name="presentableId" value="LOCAL-00176" />
+      <option name="project" value="LOCAL" />
+      <updated>1567044869122</updated>
+    </task>
+    <option name="localTasksCounter" value="177" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="testFForm - 2019.08.29 at 03h 28m 09s.xml">
-      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="testFForm - 2019.08.29 at 03h 30m 56s.xml">
-      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
-    <history-entry file="testFForm - 2019.08.29 at 03h 32m 48s.xml">
-      <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
-    </history-entry>
     <history-entry file="testFForm - 2019.08.29 at 03h 34m 49s.xml">
       <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
@@ -1729,9 +1722,18 @@
     <history-entry file="testFForm - 2019.08.29 at 04h 51m 38s.xml">
       <configuration name="testFForm" configurationId="mocha-javascript-test-runner" />
     </history-entry>
+    <history-entry file="Full - 2019.08.29 at 05h 08m 21s.xml">
+      <configuration name="Full" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="Full - 2019.08.29 at 05h 09m 42s.xml">
+      <configuration name="Full" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
+    <history-entry file="Full - 2019.08.29 at 05h 10m 24s.xml">
+      <configuration name="Full" configurationId="mocha-javascript-test-runner" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3757134000" />
+    <option name="totallyTimeSpent" value="3758413000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1744,19 +1746,18 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="-9" width="1938" height="1050" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="DB Browser" order="0" sideWeight="0.58917195" weight="0.19607843" />
-      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.45295697" visible="true" weight="0.18157327" />
-      <window_info id="Structure" order="2" sideWeight="0.547043" side_tool="true" visible="true" weight="0.21875" />
+      <window_info content_ui="combo" id="Project" order="1" sideWeight="0.45192307" visible="true" weight="0.12661637" />
+      <window_info id="Structure" order="2" sideWeight="0.547043" side_tool="true" weight="0.21875" />
       <window_info id="Favorites" order="3" sideWeight="0.65796345" side_tool="true" weight="0.13217483" />
-      <window_info id="npm" order="4" sideWeight="0.34750462" side_tool="true" weight="0.0990991" />
+      <window_info id="npm" order="4" sideWeight="0.5480769" side_tool="true" visible="true" weight="0.15301724" />
       <window_info anchor="bottom" id="TODO" order="0" weight="0.32900432" />
       <window_info anchor="bottom" id="Event Log" order="1" sideWeight="0.51228327" side_tool="true" weight="0.27745664" />
       <window_info anchor="bottom" id="Version Control" order="2" sideWeight="0.4926931" weight="0.32900432" />
       <window_info anchor="bottom" id="DB Execution Console" order="3" />
-      <window_info anchor="bottom" id="Terminal" order="4" sideWeight="0.4892585" weight="0.2416185" />
-      <window_info active="true" anchor="bottom" id="Run" order="5" sideWeight="0.48771676" visible="true" weight="0.30982658" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="4" sideWeight="0.4892585" visible="true" weight="0.2416185" />
+      <window_info anchor="bottom" id="Run" order="5" sideWeight="0.48771676" weight="0.30982658" />
       <window_info anchor="bottom" id="TypeScript" order="6" weight="0.3236994" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Debug" order="8" sideWeight="0.4874477" weight="0.42196533" />
@@ -1800,7 +1801,6 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
-    <MESSAGE value="processFn reworked" />
     <MESSAGE value="added data processors to fform methods" />
     <MESSAGE value="elements.sets changes" />
     <MESSAGE value="schema extended props name changed" />
@@ -1825,7 +1825,8 @@
     <MESSAGE value="Schema default process fixes" />
     <MESSAGE value="documentation update" />
     <MESSAGE value="fviewer bugs fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="fviewer bugs fixes" />
+    <MESSAGE value="tests added" />
+    <option name="LAST_COMMIT_MESSAGE" value="tests added" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -2270,8 +2271,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/__tests__/testFForm.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="373">
-          <caret line="163" lean-forward="true" selection-start-line="163" selection-end-line="163" />
+        <state relative-caret-position="200">
+          <caret line="10" column="43" lean-forward="true" selection-start-line="10" selection-start-column="43" selection-end-line="10" selection-end-column="43" />
         </state>
       </provider>
     </entry>
