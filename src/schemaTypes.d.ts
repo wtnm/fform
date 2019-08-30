@@ -86,6 +86,7 @@ interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
 
 interface FFCommonSchemaType {
   _placeholder?: string;
+  _strictLayout?: boolean; // if true then renders only fields that listed in _layout property, otherwise they will be added to the top layer 
   _params?: FFParamsType; // editable in state params
   _data?: { [key: string]: any } | { [key: number]: any };
   _presets?: string; // presets for rendering components

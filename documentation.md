@@ -395,6 +395,8 @@ Component [customization](#customization).
 #### `_layout?: FFLayoutCustomizeType`
 Fields, objects, groups in an [object/array layout](#object-layout)
 
+#### `_strictLayout?: boolean`
+If `true`, then only the fields listed in the `_layout` property are displayed, otherwise fields that not listed in the `_layout` property will be added to the top layer.
 
 ## Validation
 #### JSON validation

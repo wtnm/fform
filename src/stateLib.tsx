@@ -419,6 +419,7 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
   fData.title = schemaPart.title;
   fData.placeholder = schemaPart._placeholder;
   fData.additionalProperties = schemaPart.additionalProperties;
+  fData.strictLayout = schemaPart._strictLayout;
   // fData.default = isUndefined(schemaPart.default) ? types.empty[type || 'any'] : schemaPart.default;
   if (schemaPart.enum) fData.enum = schemaPart.enum;
   if (schemaPart._enumExten) fData.enumExten = schemaPart._enumExten;

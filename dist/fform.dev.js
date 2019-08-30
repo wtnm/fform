@@ -1530,7 +1530,7 @@ class FSection extends FRefsGeneric {
             return { _$widget, $_fields };
         }
         const self = this;
-        const { $branch, $layout, _$cx, arrayStart, LayoutDefaultWidget = 'div', LayoutDefaultClass = {}, uniqKey, focusField } = props;
+        const { $branch, $layout, _$cx, arrayStart, strictLayout, LayoutDefaultWidget = 'div', LayoutDefaultClass = {}, uniqKey, focusField } = props;
         const mapsKeys = ['build', 'data', 'every'];
         mapsKeys.forEach(k => self._maps[k] = []);
         self.$refs = {};
@@ -1541,9 +1541,10 @@ class FSection extends FRefsGeneric {
         self._focusField = focusField || UPDATABLE.keys[0] || '';
         let { _$widget, $_fields } = normalizeLayout(0, commonLib_1.isArray($layout) ? { $_fields: $layout } : $layout);
         self._$widget = _$widget;
-        if ($_fields)
-            self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields); // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
-        UPDATABLE.keys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName))); // so here we have only keys was not used and we add them to _objectLayouts
+        if ($_fields) // we make inital _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys 
+            self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields);
+        if (strictLayout !== true) // and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
+            UPDATABLE.keys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));
         self._arrayLayouts = [];
         self._arrayKey2field = {};
         if (self.props.isArray) { // _makeArrayLayouts
@@ -2172,6 +2173,7 @@ let elementsBase = {
                     length: '@/length',
                     oneOf: '@/oneOf',
                     branchKeys: '@/branchKeys',
+                    strictLayout: '@/fData/strictLayout',
                     isArray: { $: '^/fn/equal', args: ['@/fData/type', 'array'] },
                     $branch: { $: '^/fn/getProp', args: '$branch', update: 'every' },
                     arrayStart: { $: '^/fn/getArrayStart', args: [], update: 'build' },
@@ -2936,6 +2938,7 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
     fData.title = schemaPart.title;
     fData.placeholder = schemaPart._placeholder;
     fData.additionalProperties = schemaPart.additionalProperties;
+    fData.strictLayout = schemaPart._strictLayout;
     // fData.default = isUndefined(schemaPart.default) ? types.empty[type || 'any'] : schemaPart.default;
     if (schemaPart.enum)
         fData.enum = schemaPart.enum;
