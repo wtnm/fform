@@ -97,6 +97,7 @@
         ]
       },
       "array",
+      "boolean",
       "booleanLeft",
       "booleanNullLeft",
       "select",
@@ -300,6 +301,20 @@
           }
         }
       ]
+    },
+    "boolean": {
+      "type": "boolean",
+      "title": "boolean",
+      "default": false,
+      "_presets": "boolean:$inlineTitle",
+      "_enumExten": {
+        "true": {
+          "label": "yes"
+        },
+        "false": {
+          "label": "no"
+        }
+      }
     },
     "booleanLeft": {
       "type": "boolean",

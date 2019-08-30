@@ -9,13 +9,19 @@
       "Main": {
         "className": {
           "form-control": true
+        },
+        "viewerProps": {
+          "className": {
+            "col-form-label": true
+          }
         }
       }
     },
     "boolean": {
       "Main": {
         "className": {
-          "form-control": false
+          "form-control": false,
+          "mt-3": true
         }
       }
     }
