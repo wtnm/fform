@@ -26,11 +26,12 @@ async function submit(event: any) {
     setTimeout(() => {
       const res: any = {};
       const warn: any = {};
+      const SymData = Symbol.for("FFormData");
       if (value.radioSelect !== 'option 1') res['radioSelect'] = ['value should be option 1', 'value option 1'];
       if (value.textarea !== 'textarea') warn['textarea'] = 'value should be "textarea"';
       let testMsg = ['test message', 'more test message'];
-      testMsg[Symbol.for("FFormData")] = {priority: 2};
-      resolve([testMsg, res, {[Symbol.for("FFormData")]: {priority: 1}}, {...warn, [Symbol.for("FFormData")]: {priority: 1}}]);
+      testMsg[SymData] = {priority: 2};
+      resolve([testMsg, res, {[SymData]: {priority: 1}}, {...warn, [SymData]: {priority: 1}}]);
     }, 10)
   })
 }
@@ -113,7 +114,7 @@ class CssSelector extends React.Component<any, any> {
 
       <h3>FForm sample</h3>
       <div>
-        <FForm value={{autowidth: 1, select: 'not in enum', array: ['v', 'a', ['val', false], [1, 2]]}} id="sampleForm" ref={(r) => window['main'] = r}
+        <FForm value={{autowidth: 1, select: 'not in enum', array: ['v', 'a', ['val', false], [1, 2]]}} id="sampleForm" ref={(r: any) => window['main'] = r}
                onSubmit={submit} touched core={self.cores[self.state.css]}/>
       </div>
       <br/><br/>

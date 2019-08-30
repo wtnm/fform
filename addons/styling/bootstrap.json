@@ -1,6 +1,11 @@
 {
   "sets": {
     "simple": {
+      "Title": {
+        "className": {
+          "col-form-label": true
+        }
+      },
       "Main": {
         "className": {
           "form-control": true
