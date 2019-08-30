@@ -35,6 +35,11 @@
     },
     "Autowidth": {
       "addWidth": 55
+    },
+    "RadioSelector": {
+      "className": {
+        "col-form-label": true
+      }
     }
   },
   "_$cx.bind": {

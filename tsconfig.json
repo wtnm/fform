@@ -17,7 +17,7 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true
   },
-  
+  "include": ["./src/*"],
   "exclude": [
     "node_modules",
     ".git",
