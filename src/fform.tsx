@@ -42,10 +42,6 @@ import {FFormStateAPI, fformCores, objectResolver, formReducer, skipKey} from '.
 
 const _$cxSym = Symbol('_$cx');
 
-// jsonschema Ajv = require('jsonschema');
-//
-// console.log(jsonschema)
-
 /////////////////////////////////////////////
 //  Main class
 /////////////////////////////////////////////
@@ -60,38 +56,44 @@ class FForm extends Component<FFormProps> {
   protected _methods: anyObject = {onSubmit: null, onChange: null, onStateChange: null};
 
   api: any;
-  formName: any;
-  schema: any;
-  utils: any;
   elements: any;
   parent: any;
   wrapFns = bindProcessorToThis;
 
-  constructor(props: FFormProps, context: any) {
-    super(props, context);
+  constructor(props: FFormProps, ...args: any[]) {
+    super(props, ...args);
     const self = this;
-    let {core: coreParams} = props;
-    self.api = coreParams instanceof FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
+    self.api = self._coreFromParams(props.core);
 
     Object.defineProperty(self, "elements", {get: () => self.api.props.elements});
     Object.defineProperty(self, "valid", {get: () => self.api.get('/@/status/valid')});
 
     self.parent = props.parent;
-    // self.focus = self.focus.bind(self);
-    const nextProps = {...props};
-    if (props.touched !== null) nextProps.touched = !!nextProps.touched;
-    FForm.params.forEach(k => {
-      if (!isUndefined(nextProps[k])) nextProps[k] = (v: any) => isUndefined(v) ? props[k] : v
-    });
+
     self._updateMethods(props);
-    if (isUndefined(nextProps['value'])) nextProps['value'] = nextProps['inital'];
-    self._updateValues(nextProps);
-    if (!props.noValidation) self.api.validate(true);
+    self._initState(props);
+
     self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
     self._setRootRef = self._setRootRef.bind(self);
     self._setFormRef = self._setFormRef.bind(self);
     self._submit = self._submit.bind(self);
     self.reset = self.reset.bind(self);
+  }
+
+  private _coreFromParams(coreParams: any) {
+    return coreParams instanceof FFormStateAPI ? coreParams : fformCores(coreParams.name) || new FFormStateAPI(coreParams);
+  }
+
+  private _initState(props: FFormProps) {
+    const self = this;
+    const nextProps = {...props};
+    if (props.touched !== null) nextProps.touched = !!nextProps.touched;
+    FForm.params.forEach(k => {
+      if (!isUndefined(nextProps[k])) nextProps[k] = (v: any) => isUndefined(v) ? props[k] : v
+    });
+    if (isUndefined(nextProps['value'])) nextProps['value'] = nextProps['inital'];
+    self._updateValues(nextProps);
+    if (!props.noValidation) self.api.validate(true);
   }
 
   private _updateMethods(nextProps: any, prevProps: any = {}) {
@@ -176,26 +178,24 @@ class FForm extends Component<FFormProps> {
     }
   }
 
-  private _getCoreFromParams(coreParams: any, context: any) {
-    if (isUndefined(coreParams.store) && context.store) return new FFormStateAPI(merge(coreParams, {store: context.store}));
-    else return new FFormStateAPI(coreParams);
-  }
 
   shouldComponentUpdate(nextProps: FFormProps) {
     const self = this;
     self.parent = nextProps.parent;
-    let core = nextProps.core;
-    let FFrormApiUpdate = false;
 
-    if (core instanceof FFormStateAPI && self.api !== core) {
+    let FFrormApiUpdate = false;
+    let core = self._coreFromParams(nextProps.core);
+
+    if (self.api !== core) {
       self._unsubscribe();
       self.api = core;
       self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
       FFrormApiUpdate = true;
-    }
+      self._initState(nextProps);
+    } else self._updateValues(nextProps, self.props);
 
     self._updateMethods(nextProps, self.props);
-    self._updateValues(nextProps, self.props);
+
     return FFrormApiUpdate || !isEqual(self.props, nextProps, {skipKeys: ['core', 'state', 'value', 'inital', 'extData', 'fieldCache', 'flatten', 'noValidate', 'parent', 'onSubmit', 'onChange', 'onStateChange']});
   }
 
@@ -244,7 +244,7 @@ class FForm extends Component<FFormProps> {
     objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete (rest as any)[k]); // remove props that starts with '_' or '$'
     return (
       <UseTag ref={self._setFormRef} {...rest} onSubmit={self._submit} onReset={self.reset}>
-        <FField ref={self._setRootRef} id={rest.id ? rest.id + '/#' : undefined} name={self.api.name} pFForm={self} getPath={FForm._getPath} FFormApi={self.api}/>
+        <FField ref={self._setRootRef} id={(rest.id || self.api.name) + '/#'} name={self.api.name} pFForm={self} getPath={FForm._getPath} FFormApi={self.api}/>
       </UseTag>
     )
   }

@@ -86,8 +86,7 @@ How to use with different storages see in [documentation](documentation.md#redux
 <!-- toc-docs -->
 
 - [FForm](documentation.md#fform)
-    + [Passing FFStateApi props](documentation.md#passing-ffstateapi-props)
-    + [Using with redux Provider](documentation.md#using-with-redux-provider)
+    + [FForm methods and properties](documentation.md#fform-methods-and-properties)
 - [FFStateApi](documentation.md#ffstateapi)
   * [Storages](documentation.md#storages)
     + [Redux storage](documentation.md#redux-storage)
@@ -129,6 +128,7 @@ How to use with different storages see in [documentation](documentation.md#redux
     + [`_oneOfSelector: string | dataHandler`](documentation.md#_oneofselector-string--datahandler)
     + [`_custom?: FFCustomizeType`](documentation.md#_custom-ffcustomizetype)
     + [`_layout?: FFLayoutCustomizeType`](documentation.md#_layout-fflayoutcustomizetype)
+    + [`_strictLayout?: boolean`](documentation.md#_strictlayout-boolean)
 - [Validation](documentation.md#validation)
     + [JSON validation](documentation.md#json-validation)
     + [Sync/async validation](documentation.md#syncasync-validation)

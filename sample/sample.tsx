@@ -99,10 +99,10 @@ class CssSelector extends React.Component<any, any> {
         elemExtend]);
     const sampleElements = self.elements[self.state.css];
 
-    if (!self.cores[self.state.css]) {
-      self.cores[self.state.css] = new FFormStateAPI({schema: sampleSchema as any, name: "sampleForm", elements: sampleElements, JSONValidator});
-      self.cores[self.state.css].reset({status: 'untouched', value: 0});
-    }
+    if (!self.cores[self.state.css])
+      self.cores[self.state.css] = {schema: sampleSchema as any, name: `sampleForm[${self.state.css}]`, elements: sampleElements, JSONValidator};
+    //self.cores[self.state.css].reset({status: 'untouched', value: 0});
+
     return <div><FForm value={self.state.css} id="cssSelectorForm" onChange={self._setCss.bind(self)}
                        core={{schema: cssSelectSchema, name: "cssSelectorForm", elements: sampleElements}}/>
       {self.state.css === 'bootstrap' ? [<link key="0" rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css"/>,

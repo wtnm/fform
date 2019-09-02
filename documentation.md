@@ -1,11 +1,8 @@
-
 # Documentation
-
 <!-- toc -->
 
 - [FForm](#fform)
-    + [Passing FFStateApi props](#passing-ffstateapi-props)
-    + [Using with redux Provider](#using-with-redux-provider)
+    + [FForm methods and properties](#fform-methods-and-properties)
 - [FFStateApi](#ffstateapi)
   * [Storages](#storages)
     + [Redux storage](#redux-storage)
@@ -47,6 +44,7 @@
     + [`_oneOfSelector: string | dataHandler`](#_oneofselector-string--datahandler)
     + [`_custom?: FFCustomizeType`](#_custom-ffcustomizetype)
     + [`_layout?: FFLayoutCustomizeType`](#_layout-fflayoutcustomizetype)
+    + [`_strictLayout?: boolean`](#_strictlayout-boolean)
 - [Validation](#validation)
     + [JSON validation](#json-validation)
     + [Sync/async validation](#syncasync-validation)
@@ -61,8 +59,6 @@
 - [SSR](#ssr)
 
 <!-- tocstop -->
-
-
 ## FForm
 Component expects following properties:
 - `core` - instance of [FFStateApi](#ffstateapi)  or object with [FFStateApi props](#ffstateapi)
@@ -70,32 +66,34 @@ Component expects following properties:
 - `value?: any` - form's current value.
 - `inital?: any` - form's initial value.
 - `fieldCache?: boolean | number` - caching delay on updating form's value. Used for optimization purposes.
-- `_$useTag?: string | Function` - html tag. Default `form`.
+- `_$useTag?: string | Function` - tag to render form. Default `form`.
 - `touched` - sets `untouched` property to `false`.
 - `onSubmit?: (event: any) => any` - executed on form submit. Supports `event.preventDefault()`.
 - `onChange?: (event: any) => void` - executed on value change.
 - `onStateChange?: (event: any) => void` - executed on state change.
 
-For methods `onSubmit`, `onChange`, `onStateChange` event has access to additional properties:
+For methods `onSubmit`, `onChange`, `onStateChange` passed param `event` has additional properties:
 - `value` - current form value.
 - `state` - current form state.
-- `fform` - link to the form.
+- `fform` - link to the `fform` instance.
 
-After creation [FFStateApi](#ffstateapi) can accessed throught `api` property.
+After creation [FFStateApi](#ffstateapi) can be accessed throught `api` property of `fform` instance.
 
-#### Passing FFStateApi props
-Property `core` with [FFStateApi props](#ffstateapi) processed only on creation (creating new instance of [FFStateApi](#ffstateapi)). On property update, if `core` is an object with [FFStateApi props](#ffstateapi) then `core` is ignored (new instance of [FFStateApi](#ffstateapi) is not created). Otherwise, if (on property update) `core` is instance of [FFStateApi](#ffstateapi)  `FForm` component will make full rebuild.
+#### FForm methods and properties
+- `getRef(path: string)` - returns field's input instance according to [path](#path).
+- `reset()` - resets form value to inital.
+- `submit()` - submits form.
+- `api` - [FFStateApi](#ffstateapi) to manipulate form state.
+- `valid` - valid form or not
 
-#### Using with redux Provider
-`FForm` can take store from the context on creation when property `core` is object with [FFStateApi](#ffstateapi) props (not instance). Put `FForm` inside redux `Provider` with a properly created store and leave `store` property undefined. To prevent from taking store from context (and not using store at all) set `store` property to false or null.
 
 ## FFStateApi
 On creation pass to constructor object as first argument with following props:
 -   `schema` - schema that will be used to create state
--   `name?: string` - name that will be used to access data in redux storage and for fields naming
--   `elements?` - [elements](#elements), that contains all necessary for  components creation
+-   `name: string` - name that will be used to access data in redux storage and for fields naming
+-   `elements?` - [elements](#elements), that contains everything needed for components creation
 -   `JSONValidator?` - JSON schema validator for [JSON validation](#json-validation)
--   `store?:any` - redux store. [FForm](#fform) can take store from context
+-   `store?:any` - redux store.
 -   `getState?: () => any` - external state setter
 -   `setState?: (state: any) => void` - external state getter
 
@@ -378,7 +376,7 @@ During execution each validator has access (as `this`) to special object with fo
 
 [data handlers](#data-handlers) result expected to be following type:  `Array<MessageGroupType | string> | MessageGroupType | string;`, where `MessageGroupType` is object with following properties:
 -	`group?: number` -  text group, default value is: 0 - for JSON validation, 1 - for sync validation, 2 - for async validation, 3 - for submit validation.
--	`data: string | string[]` - message data. Can be [elements](#elements) reference and supports [elements props processing](#props-processing).
+-	`data: string | string[]` - message data. Can be reference to the [elements](#elements) and supports [elements props processing](#props-processing) for `$_widget` and `$_ref` properties.
 -	`priority?: number` - Defines the priority layer the message will be set. Default priority is `0`. If `0`-priority layer is not empty the validation considered failed. Any other priority values used for information purposes only.
 -	`path?: string` - path of field where message will be placed. Default value is current schema path.
 - `[key: string]: any` - any props (className, style, etc.) that will be set for this priority layer.
@@ -442,8 +440,7 @@ Properties of elements are processed as follows:
 - `_$` - leading `_$` in property name prevent it value from deep processing, but if value is string and starts with `^/` resolving still made
 - `$_` - leading `$_` in property name means than property has special processing
 - `_$skipKeys:string[]` - props that listed in this array are prevented from deep processing, as if it name start with `_$`.
-- `_%widget: string | Function` - HTML tag or function that will we used as React-element
-- `_$cx: Function` - classnames handler, reference to '^/_$cx'
+- `_%widget: string | Function` - HTML tag or function that will we used as React-element. Can be reference to [elements](#elements)
 - `$_ref: string` - reference starts with '^' path separated by `/`, multi-refs separated by `:`, <details><summary>example</summary> `{$_ref:'^/sets/base:^/sets/boolean'}`</details>
 - `$_reactRef: boolean | string` - creates reference to element with default name if true, if value is string then it is used as name
 - `$_maps` - maps data from state to element. [Functions](#functions) can be used to process data.
@@ -465,7 +462,7 @@ Any object in `elements` that has `$` property threaten as data handler. It has 
 	- `data` - on [data object](data-object)
 	- `update, `every` - on each update
 
-**As functions executed in pipe each function that used in handlers should return result as _array_** (except `_oneOfSelector`).
+**As functions executed in pipe each function that used in handlers should return result as _array_** (except for `_oneOfSelector` and `_validators` properties).
 
 Each function (except for those ones that are used in `_oneOfSelector`) has access to [API](#api) during runtime through `this.api`.
 

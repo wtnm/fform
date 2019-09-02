@@ -84,12 +84,12 @@ type oneOfStructureType = { oneOf: number, type?: string };
 
 /** Parameters to creates a FFormCore */
 interface FFormApiProps {
+  name: string;
+  /** name that will be used to access data in redux storage */
   schema: jsJsonSchema | JsonSchema;
   /** schema that will be used to create state */
   JSONValidator?: any;
   elements?: { [key: string]: any };
-  name?: string;
-  /** name that will be used to access data in redux storage */
   store?: any,   // redux
   getState?: () => any  // external
   setState?: (state: any) => void // external
