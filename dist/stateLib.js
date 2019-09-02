@@ -441,6 +441,7 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
     fData.title = schemaPart.title;
     fData.placeholder = schemaPart._placeholder;
     fData.additionalProperties = schemaPart.additionalProperties;
+    fData.strictLayout = schemaPart._strictLayout;
     // fData.default = isUndefined(schemaPart.default) ? types.empty[type || 'any'] : schemaPart.default;
     if (schemaPart.enum)
         fData.enum = schemaPart.enum;

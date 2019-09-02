@@ -21,24 +21,32 @@ exports.FFormStateAPI = api_1.FFormStateAPI;
 exports.fformCores = api_1.fformCores;
 exports.formReducer = api_1.formReducer;
 const _$cxSym = Symbol('_$cx');
-// jsonschema Ajv = require('jsonschema');
-//
-// console.log(jsonschema)
 /////////////////////////////////////////////
 //  Main class
 /////////////////////////////////////////////
 class FForm extends react_1.Component {
-    constructor(props, context) {
-        super(props, context);
+    constructor(props, ...args) {
+        super(props, ...args);
         this._methods = { onSubmit: null, onChange: null, onStateChange: null };
         this.wrapFns = bindProcessorToThis;
         const self = this;
-        let { core: coreParams } = props;
-        self.api = coreParams instanceof api_1.FFormStateAPI ? coreParams : self._getCoreFromParams(coreParams, context);
+        self.api = self._coreFromParams(props.core);
         Object.defineProperty(self, "elements", { get: () => self.api.props.elements });
         Object.defineProperty(self, "valid", { get: () => self.api.get('/@/status/valid') });
         self.parent = props.parent;
-        // self.focus = self.focus.bind(self);
+        self._updateMethods(props);
+        self._initState(props);
+        self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
+        self._setRootRef = self._setRootRef.bind(self);
+        self._setFormRef = self._setFormRef.bind(self);
+        self._submit = self._submit.bind(self);
+        self.reset = self.reset.bind(self);
+    }
+    _coreFromParams(coreParams) {
+        return coreParams instanceof api_1.FFormStateAPI ? coreParams : api_1.fformCores(coreParams.name) || new api_1.FFormStateAPI(coreParams);
+    }
+    _initState(props) {
+        const self = this;
         const nextProps = Object.assign({}, props);
         if (props.touched !== null)
             nextProps.touched = !!nextProps.touched;
@@ -46,17 +54,11 @@ class FForm extends react_1.Component {
             if (!commonLib_1.isUndefined(nextProps[k]))
                 nextProps[k] = (v) => commonLib_1.isUndefined(v) ? props[k] : v;
         });
-        self._updateMethods(props);
         if (commonLib_1.isUndefined(nextProps['value']))
             nextProps['value'] = nextProps['inital'];
         self._updateValues(nextProps);
         if (!props.noValidation)
             self.api.validate(true);
-        self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
-        self._setRootRef = self._setRootRef.bind(self);
-        self._setFormRef = self._setFormRef.bind(self);
-        self._submit = self._submit.bind(self);
-        self.reset = self.reset.bind(self);
     }
     _updateMethods(nextProps, prevProps = {}) {
         const self = this;
@@ -140,25 +142,21 @@ class FForm extends react_1.Component {
                 setMessagesFromSubmit(result);
         }
     }
-    _getCoreFromParams(coreParams, context) {
-        if (commonLib_1.isUndefined(coreParams.store) && context.store)
-            return new api_1.FFormStateAPI(commonLib_1.merge(coreParams, { store: context.store }));
-        else
-            return new api_1.FFormStateAPI(coreParams);
-    }
     shouldComponentUpdate(nextProps) {
         const self = this;
         self.parent = nextProps.parent;
-        let core = nextProps.core;
         let FFrormApiUpdate = false;
-        if (core instanceof api_1.FFormStateAPI && self.api !== core) {
+        let core = self._coreFromParams(nextProps.core);
+        if (self.api !== core) {
             self._unsubscribe();
             self.api = core;
             self._unsubscribe = self.api.addListener(self._handleStateUpdate.bind(self));
             FFrormApiUpdate = true;
+            self._initState(nextProps);
         }
+        else
+            self._updateValues(nextProps, self.props);
         self._updateMethods(nextProps, self.props);
-        self._updateValues(nextProps, self.props);
         return FFrormApiUpdate || !commonLib_1.isEqual(self.props, nextProps, { skipKeys: ['core', 'state', 'value', 'inital', 'extData', 'fieldCache', 'flatten', 'noValidate', 'parent', 'onSubmit', 'onChange', 'onStateChange'] });
     }
     componentWillUnmount() {
@@ -200,7 +198,7 @@ class FForm extends react_1.Component {
         FForm.params.forEach(k => delete rest[k]);
         commonLib_1.objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete rest[k]); // remove props that starts with '_' or '$'
         return (react_1.createElement(UseTag, Object.assign({ ref: self._setFormRef }, rest, { onSubmit: self._submit, onReset: self.reset }),
-            react_1.createElement(FField, { ref: self._setRootRef, id: rest.id ? rest.id + '/#' : undefined, name: self.api.name, pFForm: self, getPath: FForm._getPath, FFormApi: self.api })));
+            react_1.createElement(FField, { ref: self._setRootRef, id: (rest.id || self.api.name) + '/#', name: self.api.name, pFForm: self, getPath: FForm._getPath, FFormApi: self.api })));
     }
 }
 FForm.params = ['readonly', 'disabled', 'viewer', 'liveValidate', 'liveUpdate'];
@@ -535,7 +533,7 @@ class FSection extends FRefsGeneric {
             return { _$widget, $_fields };
         }
         const self = this;
-        const { $branch, $layout, _$cx, arrayStart, LayoutDefaultWidget = 'div', LayoutDefaultClass = {}, uniqKey, focusField } = props;
+        const { $branch, $layout, _$cx, arrayStart, strictLayout, LayoutDefaultWidget = 'div', LayoutDefaultClass = {}, uniqKey, focusField } = props;
         const mapsKeys = ['build', 'data', 'every'];
         mapsKeys.forEach(k => self._maps[k] = []);
         self.$refs = {};
@@ -546,9 +544,10 @@ class FSection extends FRefsGeneric {
         self._focusField = focusField || UPDATABLE.keys[0] || '';
         let { _$widget, $_fields } = normalizeLayout(0, commonLib_1.isArray($layout) ? { $_fields: $layout } : $layout);
         self._$widget = _$widget;
-        if ($_fields)
-            self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields); // we get inital _objectLayouts and every key, that was used in makeLayouts call removed from keys 
-        UPDATABLE.keys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName))); // so here we have only keys was not used and we add them to _objectLayouts
+        if ($_fields) // we make inital _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys 
+            self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields);
+        if (strictLayout !== true) // and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
+            UPDATABLE.keys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));
         self._arrayLayouts = [];
         self._arrayKey2field = {};
         if (self.props.isArray) { // _makeArrayLayouts
@@ -1177,6 +1176,7 @@ let elementsBase = {
                     length: '@/length',
                     oneOf: '@/oneOf',
                     branchKeys: '@/branchKeys',
+                    strictLayout: '@/fData/strictLayout',
                     isArray: { $: '^/fn/equal', args: ['@/fData/type', 'array'] },
                     $branch: { $: '^/fn/getProp', args: '$branch', update: 'every' },
                     arrayStart: { $: '^/fn/getArrayStart', args: [], update: 'build' },
