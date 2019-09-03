@@ -966,7 +966,7 @@ function ItemMenu(props: any) {
           = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {});
         return (
           <ButW key={key} type={type} title={title} className={_$cx ? _$cx(ButCN) : ButCN} children={children}
-                disabled={disabled || disabledCheck && !arrayItem[disabledCheck]} {...restBut} onClick={() => onClick(key)}/>)
+                {...restBut} disabled={disabled || disabledCheck && !arrayItem[disabledCheck]}  onClick={() => onClick(key)}/>)
       })}
     </UseTag>);
 }
