@@ -13,12 +13,12 @@
 <!-- tocstop -->
 
 ## Overview
-Flexible Form (`fform`) - form builder with minimum redundancy, maximum flexibility, and extendability. It uses **JSONSchema** (draft v4) to describe forms, **React** (v16) for rendering and has native **Redux** support for state storage but can be used with any other external storage or can use only internal storage (storage agnostic).
+Flexible Form (`fform`) - form builder with minimum redundancy, maximum flexibility, and extendability. It uses **JSONSchema** to describe forms, **React** (v16) for rendering and has native **Redux** support for state storage but can be used with any other external storage or can use only internal storage (storage agnostic).
 
 See [fform-constructor](https://wtnm.github.io/fform-constructor/index.html) for live demo.
 
 #### Features
-- **90kb** minified, **26kb** gziped
+- **98kb** minified, **28kb** gziped
 - [form-constuctor](https://wtnm.github.io/fform-constructor/index.html) for quick start
 - form extension, combination and reuse with JSONSchema's `allOf`, `oneOf`, `$ref` properties
 - sync/async/JSON/submit validation
@@ -47,7 +47,7 @@ This assumes that you are using [npm](https://www.npmjs.com/) with a module bund
 import {FForm, elements} from 'fform';
 import {render} from 'react-dom';
 
-render(<FForm core={{schema: {type:"string"}, elements}}/>, document.querySelector('#root'));
+render(<FForm core={{name:"name", schema: {type:"string"}, elements}}/>, document.querySelector('#root'));
 ```
 
 #### With JSON validaton
@@ -60,7 +60,7 @@ import imjvWrapper from 'fform/addons/imjvWrapper';
 import * as imjvValidator from 'fform/addons/is-my-json-valid-lite';
 const JSONValidator = imjvWrapper(imjvValidator);
 
-render(<FForm core={{schema: {type:"string"}, elements, JSONValidator}}/>,
+render(<FForm core={{name:"name", schema: {type:"string"}, elements, JSONValidator}}/>,
 		document.querySelector('#root'));
 ```
 

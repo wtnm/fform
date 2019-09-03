@@ -24,6 +24,9 @@
     "builder"
   ],
   "dependencies": {},
+  "peerDependencies": {
+    "react": "^16.9.0"
+  },
   "devDependencies": {
     "@babel/preset-env": "^7.5.5",
     "@babel/preset-react": "^7.0.0",
