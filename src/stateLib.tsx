@@ -405,7 +405,7 @@ const basicStatus = {invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true
 const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: number, type: string, value: any = schemaPart.default) {
   // const x = schemaPart.x || ({} as FFSchemaExtensionType);
   const {_params = {}, _data = {}} = schemaPart;
-  const result: any = Object.assign({params: _params}, _data);
+  let result: any = Object.assign({params: _params}, _data);
   if (!isObject(result.messages)) result.messages = {};
 
   if (isUndefined(value)) value = types.empty[type || 'any'];
@@ -466,6 +466,14 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
     untouched = result.length;
   } else if (type == 'object') untouched = objKeys(schemaPart.properties || {}).length;
   if (untouched != 1) result.status = {...result.status, untouched};
+
+  if (schemaPart._data$) {
+    let res: any[] = [];
+    objKeys(schemaPart._data$).forEach((k: string) =>
+      push2array(res, processFn.call({}, (schemaPart._data$ as any)[k], schemaPart)));
+    result = merge(result, res)
+  }
+
   return result;
 });
 
@@ -663,7 +671,8 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
 
     if (_validators) {
       const field = makeSynthField(UPDATABLE.api, path2string(track));
-      _validators.forEach((validator: any) => {
+      objKeys(_validators).forEach((k: string) => {
+        let validator = (_validators as any)[k];
         const updates: any[] = [];
         field.updates = updates;
         let result = processFn.call(field, validator, validatedValue);
@@ -1583,7 +1592,7 @@ function processFn(map: any, ...rest: any[]) {
       if (isNPath(arg)) resArgs.push(processProp(nextData, arg));
       else if (isMapFn(arg)) resArgs.push(!arg._map ? processFn.call(this, arg, ...rest) : arg(...rest));
       else if (arg == '${...}') resArgs.push(...rest);
-      else if (arg == '${0}') resArgs.push(rest[0]);
+      else if (isString(arg) && ~arg.search(/^\${\d+}$/)) resArgs.push(rest[arg.substring(2, arg.length - 1)]);
       else resArgs.push(arg);
     }
     return resArgs;

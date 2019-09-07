@@ -76,12 +76,14 @@ interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaTy
   _validators?: JsonFunctionGeneric<Function>[]; // sync/async validators
   _stateMaps?: FFDataMapGeneric<Function | Function[]>[]; // mapping values in state
   _oneOfSelector?: number | JsonFunctionGeneric<Function | Function[]> // oneOf selector for field
+  _data$?: JsonFunctionGeneric<Function>[];
 }
 
 interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
-  _validators?: JsonFunctionGeneric<string>[]; // sync/async validators
+  _validators?: JsonFunctionGeneric<string> | JsonFunctionGeneric<string>[] | { [key: string]: JsonFunctionGeneric<string> }; // sync/async validators
   _stateMaps?: FFDataMapGeneric<string>[] | anyObject; // mapping values in state
   _oneOfSelector?: number | JsonFunctionGeneric<string> // oneOf selector for field
+  _data$?: JsonFunctionGeneric<string> | JsonFunctionGeneric<string>[] | { [key: string]: JsonFunctionGeneric<string> };
 }
 
 interface FFCommonSchemaType {

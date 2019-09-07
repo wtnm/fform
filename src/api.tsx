@@ -444,16 +444,22 @@ const compileSchema = (schema: any, elements: any) => isCompiled(schema) ? schem
 
 const getCompiledSchema = memoize((elements: elementsType, schema: JsonSchema): jsJsonSchema => schemaCompiler(elements, schema));
 
+const val2obj = (obj: any) => {
+  return isObject(obj) ? obj : toArray(obj);
+}
+
 function schemaCompiler(elements: elementsType = {}, schema: JsonSchema | JsonSchema[], track: Path = []): jsJsonSchema {
   if (isCompiled(schema)) return schema;
 
   const result: any = isArray(schema) ? [] : {_compiled: true};
 
-  let {_validators, _stateMaps, _oneOfSelector, ...rest} = schema as any;
+  let {_validators, _data$, _stateMaps, _oneOfSelector, ...rest} = schema as any;
   const nFnOpts = {noStrictArrayResult: true};
-  _validators && (result._validators = toArray(objectResolver(elements, _validators, track)).map(f => normalizeFn(f, nFnOpts)));
-  _stateMaps && (result._stateMaps = objectResolver(elements, _stateMaps, track));
-  _oneOfSelector && (result._oneOfSelector = objectResolver(elements, normalizeFn(_oneOfSelector, nFnOpts), track));
+
+  if (_validators) result._validators = objMap(val2obj(objectResolver(elements, _validators, track)), f => normalizeFn(f, nFnOpts));
+  if (_data$) result._data$ = objMap(val2obj(objectResolver(elements, _data$, track)), f => normalizeFn(f));
+  if (_stateMaps) result._stateMaps = objectResolver(elements, _stateMaps, track);
+  if (_oneOfSelector) result._oneOfSelector = objectResolver(elements, normalizeFn(_oneOfSelector, nFnOpts), track);
 
   objKeys(rest).forEach(key => {
     if (key.substr(0, 1) == '_') return result[key] = key !== '_presets' && isElemRef(rest[key]) ? convRef(elements, rest[key], track) : rest[key];
