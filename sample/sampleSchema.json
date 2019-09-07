@@ -116,19 +116,19 @@
         "className": {
           "fform-inline": true
         },
-        "$_fields": [
-          {
+        "$_fields": {
+          "1.5": {
             "$_ref": "^/parts/Submit",
             "id": "submit-button",
             "children": [
               "Send"
             ]
           },
-          {
+          "+0": {
             "$_ref": "^/parts/Reset",
             "id": "reset-button"
           }
-        ]
+        }
       }
     ]
   },
@@ -148,8 +148,8 @@
         ]
       ],
       "_layout": {
-        "$_fields": [
-          {
+        "$_fields": {
+          "1": {
             "className": {
               "fform-layout": true,
               "fform-inline": true
@@ -159,8 +159,8 @@
               "1"
             ]
           },
-          "2"
-        ]
+          "3": "2"
+        }
       },
       "items": [
         {

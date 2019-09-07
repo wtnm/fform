@@ -588,7 +588,8 @@ class FSection extends FRefsGeneric {
 
     function makeLayouts_INNER_PROCEDURE(UPDATABLE: { counter: number, keys: string[] }, fields: Array<string | FFLayoutGeneric<jsFFCustomizeType>>) {
       const layout: any[] = [];
-      fields.forEach(fieldOrLayout => {
+      objKeys(fields).forEach(key => {
+        let fieldOrLayout = fields[key];
         const {keys, counter} = UPDATABLE;
         if (isString(fieldOrLayout)) { // if field is string then _makeFField
           let idx = UPDATABLE.keys.indexOf(fieldOrLayout);
@@ -966,7 +967,7 @@ function ItemMenu(props: any) {
           = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {});
         return (
           <ButW key={key} type={type} title={title} className={_$cx ? _$cx(ButCN) : ButCN} children={children}
-                {...restBut} disabled={disabled || disabledCheck && !arrayItem[disabledCheck]}  onClick={() => onClick(key)}/>)
+                {...restBut} disabled={disabled || disabledCheck && !arrayItem[disabledCheck]} onClick={() => onClick(key)}/>)
       })}
     </UseTag>);
 }
@@ -1400,6 +1401,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     $inlineLayout: {Main: {LayoutDefaultClass: {'fform-inline': true}}},
     $inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'fform-inline': true}}}},
     $arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
+    $arrayControlsDelOnly: {Wrapper: {ArrayItemMenu: {buttons: ['del'],}}},
     $noTitle: {Title: false},
     $noMessage: {Message: false},
     $shrink: {Wrapper: {className: {'fform-shrink': true}}},
