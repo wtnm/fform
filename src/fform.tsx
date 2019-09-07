@@ -825,20 +825,25 @@ class GenericWidget extends FRefsGeneric {
 
   protected setRef2rest(rest: anyObject, $_reactRef: anyObject) {
     if (!$_reactRef) return rest;
-    objKeys($_reactRef).filter(v => isNaN(+v)).forEach(k => rest[k] = $_reactRef[k]); // assing all except numeric keys
+    objKeys($_reactRef).filter(v => isNaN(+v)).forEach(k => rest[k] = $_reactRef[k]); // assing all except numeric keys, as then assigned at _mapChildren
     return rest;
-    // if ($_reactRef['ref']) rest.ref = $_reactRef['ref'];
-    // else Object.assign(rest, $_reactRef);
-    // if ($_reactRef['tagRef'])
-    //   rest.tagRef = $_reactRef['tagRef'];
+  }
+
+  protected setElements2rest(rest: anyObject, _$elements: any) {
+    if (!_$elements) return rest;
+    let elms = {'^': _$elements};
+    objKeys(rest).forEach(k => isElemRef(rest[k]) && (rest[k] = getIn(elms, string2path(rest[k]))));
+    return rest
   }
 
   render(): any {
     const self = this;
     if (self.props.norender) return null;
-    const {_$useTag: UseTag = 'div', _$cx, className, $_reactRef, children, ...rest} = self.props;
+    let {_$useTag: UseTag = 'div', _$cx, _$elements, className, $_reactRef, children, ...rest} = self.props;
     self._mapChildren(children, $_reactRef);
     self.setRef2rest(rest, $_reactRef);
+    self.setElements2rest(rest, _$elements);
+    if (!_$cx && _$elements) _$cx = _$elements._$cx;
     return (<UseTag children={self._mapped} className={_$cx ? _$cx(className) : className} {...rest} />)
   }
 }
@@ -874,10 +879,12 @@ class UniversalInput extends GenericWidget {
       return h(_$widget, rest)
     }
 
-    let {value, _$useTag: UseTag, type, $_reactRef, _$cx, viewer, viewerProps, children, ...rest} = props;
+    let {value, _$useTag: UseTag, type, $_reactRef, _$cx, _$elements, viewer, viewerProps, children, ...rest} = props;
 
     self._mapChildren(children, $_reactRef);
     self.setRef2rest(rest, $_reactRef);
+    self.setElements2rest(rest, _$elements);
+    if (!_$cx && _$elements) _$cx = _$elements._$cx;
 
     if (type == 'textarea' || type == 'select') UseTag = UseTag || type;
     else {
