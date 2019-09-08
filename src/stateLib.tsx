@@ -1,8 +1,6 @@
 import {getCreateIn, setIn, hasIn, getIn, objKeys, moveArrayElems, makeSlice, memoize, merge, objKeysNSymb, push2array, toArray, deArray, mergeState} from "./commonLib";
 import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction} from "./commonLib";
 import {anSetState} from './api';
-import {object} from "prop-types";
-import {on} from "cluster";
 
 /////////////////////////////////////////////
 //  Symbols
