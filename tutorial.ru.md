@@ -27,7 +27,7 @@ _(подразумевается, что для сборки используе�
 
 Создадим форму для логина пользователя. Будем считать, что в качестве логина используется номер телефона.
 
-Импортируем все необходимое, а так же стили из 'fform/addon/styling', чтобы форма правильно отображалась и создадим схему в которой определим поля формы:
+Импортируем все необходимое, а так же стили из `fform/addon/styling`, чтобы форма правильно отображалась и создадим схему в которой определим поля формы:
 ```js
 import * as React from 'react';
 import {render} from 'react-dom';
@@ -51,7 +51,7 @@ let schema = {
         }
     }
 }:
-render(<FForm core={{name:"name", schema, elements: elements.extend([basicStyling])}}/>, document.querySelector('#root'));
+render(<FForm core={{name: "name", schema, elements: elements.extend([basicStyling])}}/>, document.querySelector('#root'));
 ```
 Корневое поле имеет тип `object` и задает 2 поля в свойстве `properties`.
 
@@ -522,7 +522,7 @@ elements.extend([{
     validators:{
 		testPasswords(value){
         	let result = {path: './confirm', data: ''}
-        	if (value.password !== value.confirm) result.data = 'Пароли не совпадают';
+        	if (value.password !== value.confirm) result.data = 'Passwords not match';
             return result;
         }
 	}
