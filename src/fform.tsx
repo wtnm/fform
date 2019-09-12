@@ -982,7 +982,7 @@ function ItemMenu(props: any) {
 
 function CheckboxNull(props: any) {
   const self = this;
-  let {checked, onChange, nullValue = null, dual, tagRef, type, ...rest} = props;
+  let {checked, onChange, nullValue = "", dual, tagRef, type, ...rest} = props;
   return <input type="checkbox" checked={checked === true} {...rest}
                 onChange={(event: any) => {
                   onChange(dual ? !checked : (checked === nullValue ? true : (checked === true ? false : nullValue)), event)
@@ -1299,7 +1299,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         _$useTag: '^/widgets/CheckboxNull',
         $_reactRef: {tagRef: true},
-        onChange: {$: '^/fn/setValue|liveUpdate', args: ['${0}']},
+        onChange: {$: '^/fn/parseTristate|setValue|liveUpdate', args: ['${0}']},
       },
     },
     booleanNullLeft: {
@@ -1433,6 +1433,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 
     eventValue: (event: any, ...args: any[]) => [event.target.value, ...args],
     eventChecked: (event: any, ...args: any[]) => [event.target.checked, ...args],
+    parseTristate: (value: any, ...args: any[]) => [value === "" ? null : value, ...args],
     eventMultiple: (event: any, ...args: any[]) =>
       [Array.from(event.target.options).filter((o: any) => o.selected).map((v: any) => v.value), ...args],
     parseNumber: (value: any, int: boolean = false, empty: number | null = null, ...args: any[]) =>

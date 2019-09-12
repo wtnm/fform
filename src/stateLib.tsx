@@ -1208,7 +1208,8 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
 
 
 function normalizeStateMaps(dataMap: FFDataMapGeneric<Function | Function[]>[], emitter: Path): normalizedDataMapType[] {
-  return toArray(dataMap).map((item: any) => {
+  return objKeys(dataMap).map((key: string) => {
+    let item:any = dataMap[key];
     let {from, to, ...action} = item;
     if (!action.$) action = true;
     else action = normalizeFn(action);

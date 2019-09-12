@@ -127,9 +127,9 @@ Now at the 3rd position there is an object with the property `$_fields`. `$_widg
 [Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=2).
 
 #### 04. Component extension
-Let's look at a way to extend the `elements` objects. In each object you can declare the property `$_ref`. The value of this property must be one or more references to the `elements` kind of `^/...` separated by the symbol `:`. Objects that contain `$_ref` are processed in the following way: first, all objects by reference are collected in `$_ref`, and then all collected objects and the current object without the `$_ref` property are combined into one. This mechanism is used for the entire `elements` object, as well as for the scheme properties `ff_layout`, `ff_custom`, `ff_validators`, `ff_dataMap`, `ff_oneOfSelector`. 
+Let's look at a way to expand the `elements` objects. In each object, you can declare the `$ _ref` property. The value of this property must be one or more references to `elements` of the form` ^ / ... `separated by the`: `character. The object that contains `$ _ref` is processed as follows: first, all the objects are collected by reference in` $ _ref`, and then all collected objects and the current object without the `$ _ref` property are combined into one. This mechanism is used for the entire `elements` object, as well as for the properties of the` ff_layout`, `ff_custom`,` ff_validators`, `ff_dataMap`,` ff_oneOfSelector` scheme.
 
-For example, let's say `elements = {"one":{"two":{"three":4, "more":5}}}`, then `ff_layout = {"$_ref":"^/fn/one:^/fn/one/two", "two":{"three":0}, "more":1}` will be combined into the following object: `{"three":4, "more":1 {"two":{"three":0, "more":5}}}`
+For example, let `elements = {" one ": {" two ": {" three ": 4," more ": 5}}}`, then `ff_layout = {" $ _ref ":" ^ / fn / one: ^ / fn / one / two "," two ": {" three ": 0}," more ": 1}` will be combined into the following object: `{" three ": 4," more ": 1 {" two " : {"three": 0, "more": 5}}} `
 
 The basic `elements` already contains frequently used form objects ([see documentation](https://github.com/wtnm/fform/blob/master/documentation.md#parts)). Let's rewrite `ff_layout` using them `^/parts/Submit` and `^/parts/Reset`:
 ```js
@@ -149,7 +149,7 @@ The basic `elements` already contains frequently used form objects ([see documen
 }
 ...
 ```
-When processing `{"$_ref": "^/parts/Submit", "children": ["Send"]}` will take the object by reference `elements.parts.Submit`, then it will be merged with the object `{"children": ["Send"]}}`, and then it will be processed as described in the previous step. 
+When processing `{" $ _ref ":" ^ / parts / Submit "," children ": [" Send "]}`, the object will be taken by the link `elements.parts.Submit`, then it will be merged with the object` {" children ": [" Send "]}}`, and after that it will be processed as described in the previous step.
 
 [Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=3).
 
@@ -170,9 +170,9 @@ elements.extend([{
 ...
 ```
 
-Next, we use the `_custom` property to customize the specific field to our requirements. The field is composed of several blocks (`Main`, `Title` and others, [details in the documentation](https://github.com/wtnm/fform/blob/master/documentation.md#customization)) from which we need a block `Main` rendering directly `input`. In this block we are interested in properties `onChange` and `$_maps `.
+Next, we use the `_custom` property to customize the specific field to our requirements.The field is assembled from several blocks (`Main`,` Title` and others, [details in the documentation](https://github.com/wtnm/fform/blob/master/documentation.md#customization)) of which we need a block `Main` rendering directly` input`. In this block, we are interested in the `onChange` and` $ _maps` properties.
 
-`$_maps` is an object that defines what properties to throw from state to component, and it is possible to use [data handler](https://github.com/wtnm/fform/blob/master/documentation.md#data-handlers) to change them ([see documentation](https://github.com/wtnm/fform/blob/master/documentation.md#_maps)). We use this to add a handler for the `value` property (now the value from state is simply passed to the property of the component, without processing)
+`$ _maps` is an object that determines which properties to forward from state to a component, while it is possible to use [data handler](https://github.com/wtnm/fform/blob/master/documentation.md#data- handlers) for changing them ([more in the documentation](https://github.com/wtnm/fform/blob/master/documentation.md#_maps)). We use this in order to add a handler for the `value` property (now the value from state is simply passed to the component property, without processing)
 ```js
 schema = {
 	,,,
@@ -191,7 +191,7 @@ schema = {
     }
 }:
 ```
-Let's move on to the `onChange` property. Now the following handler `{"$" is used here: "^/fn/eventValue|^/fn/setValue"}`. The handler receives an event that passes the functions `elements.fn.eventValue`. This function takes the value `event.target.value` from the event and passes it instead of the next function. All other arguments (if any) are passed without changes. `setValue` uses [API](https://github.com/wtnm/fform/blob/master/documentation.md#api) to change the state and change the field value to the passed one. 
+Let's move on to the `onChange` property. Now the following handler is used here: `{"$", "^/fn/eventValue|^/fn/setValue"}`. The handler receives an event that passes the functions `elements.fn.eventValue`. This function takes the value `event.target.value` from the event and passes it instead of the next function. All other arguments (if any) are passed without changes. `setValue` uses [API](https://github.com/wtnm/fform/blob/master/documentation.md#api) to change the state and change the field value to the passed one. 
 
 Let's change the `onChange` property by adding a `eventValue` and `setValue` parser between it.
 ```js
@@ -219,7 +219,7 @@ Now our parser receives arguments from `eventValue`, removes everything from the
 #### 06. The use of _stateMaps 
 Let's add a link to recover the password and make it illuminated when the phone number is entered in full.
 
-Specify the function to get the length of the transmitted value and the function to recover the password.
+First, specify the function to get the length of the passed value and the function to recover the password.
 ```js
 ...
 elements.extend([{
@@ -256,11 +256,11 @@ schema = {
 ```
 
 
-Let's take a closer look at `_stateMaps`. Property `from` - a way from where value is taken (the relative paths beginning with `.` and `...` [more in detail about paths in the documentation](https://github.com/wtnm/fform/blob/master/documentation.md#path)) are supported). Further this value is transferred to the handler (if it is set), and then result is transferred on a way specified in property `to `.
+Let's take a closer look at `_stateMaps`. Property `from` - path from where value is taken (the relative paths beginning with `.` and `..` [more in detail about paths in the documentation](https://github.com/wtnm/fform/blob/master/documentation.md#path)) are supported). Further this value is transferred to the handler (if it is set), and then result is transferred to the path specified in property `to `.
 
 In this example, the value of `value` is taken from the [data object](https://github.com/wtnm/fform/blob/master/documentation.md#data-object) of the current field (`login`) and transmitted to the `params.activated` [data object](https://github.com/wtnm/fform/blob/master/documentation.md#data-object) of the parent field. In this case, the data handler is preliminarily used, which passes 2 arguments to the input of the first function (`elements.fn.getLength`): `${0}` is replaced by the 0-th argument, which was received by the handler (this value is from `from`), and the number `10`. `getLength` will replace the value by its length, and number 10 will be passed on without change. The `elements.fn.equal` function compares the 0th argument with all the others and if there is even one match, it returns `true`, otherwise `false`. 
 
-As a result, in the `params.activated` [data object](https://github.com/wtnm/fform/blob/master/documentation.md#data-object) of the root field will be `true` if the length of the field `login` is 10 and `false` in any other case. Now it is necessary to add the reference and to throw in in it the data from `params.activated` [data object](https://github.com/wtnm/fform/blob/master/documentation.md#data-object). Insert it after the `password` field:
+As a result, in the `params.activated` [data object](https://github.com/wtnm/fform/blob/master/documentation.md#data-object) of the root field will be `true` if the length of the field `login` is 10 and `false` in any other case. Now it is necessary to add the link and map to it the data from `params.activated` [data object](https://github.com/wtnm/fform/blob/master/documentation.md#data-object). Insert it after the `password` field:
 ```js
 schema = {
     "type": "object",
@@ -286,7 +286,7 @@ schema = {
     }
 }:
 ```
-Don't forget to add reference classes to the css.
+Don't forget to add classes to the css for the link.
 
 ```css
 .grayed {
@@ -302,7 +302,7 @@ Don't forget to add reference classes to the css.
 
 #### 07. Expansion and combination of schemes
 Let's add the possibility of registration to the form.
-We will display the fields in a separate layer, and transfer the scheme to `definitions.login` and create a link to it in the root element:
+We will display the fields in a separate layer, transfer the scheme to `definitions.login` and create a link to it in the root element:
 ```js
 schema = {
 	"definitions": {
@@ -370,9 +370,9 @@ schema = {
     ]
 }:
 ```
-In the `oneOF` property we have set 2 schemes, the first (index `oneOf = 0`) repeats the form `definitions.login`, and the second (index `oneOf = 1`) expands it using the property `allOf`. The extended form adds 2 new properties `confirm` and `email`, changes the order of outputting fields in `_layout._fields[0]` and deletes the link of password recovery in `_layout._fields[1]`. Note that `_layout._fields` is not an array, but an object. This is done to ensure that the `definitions.login` 0 and 2 elements are replaced and the 3-rd (with submit and reset buttons) remains untouched when merged with the `definitions.login`. Merger in `fform` is implemented so that if the left object is an array, and the right object is not, then when you merge the type of the left object (array) is preserved, so this trick and is possible. The _(1st element is the `password` field, it can be left unchanged, because now this field is displayed earlier in the 0th element, and when the 1st element is displayed, the field will be skipped, because the object's fields are rendered no more than once)_
+In the `oneOF` property, we defined 2 schemes, the first (` oneOf = 0` index) repeats the `definitions.login` form, and the second (` oneOf = 1` index) extends it using the `allOf` property. 2 new properties `confirm` and` email` are added to the extended form, the order in which fields are displayed in `_layout._fields [0]` is changed, and the password recovery link in `_layout._fields [1]` is deleted. Note that `_layout._fields` is not an array, but an object. This is done so that when merging with `definitions.login`, the 0th and 2nd elements are replaced, and the 3rd (with the submit and reset buttons) remains untouched. Merging in `fform` is implemented in such a way that if the left object is an array and the right object is not, then when combining the type of the left object (array) is preserved, therefore such a trick is possible. _ (The 1st element is the `password` field, it can be left unchanged, since now this field is displayed earlier, in the 0th element, and when the 1st element is displayed, the field will be skipped, since the fields of the object are not rendered more than once) _
 
-Now that we have 2 form options for login (oneOf = 0) and registration (oneOf = 1), let's add the ability to switch between them. Remove the socket button (it is not really needed) and instead add a switch before the send button.
+Now that we have 2 form options for login (oneOf = 0) and registration (oneOf = 1), let's add the ability to switch between them. Remove the reset button (it is not really needed) and instead add a switch before the send button.
 
 ```js
 schema = {
