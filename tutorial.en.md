@@ -4,9 +4,21 @@
 
 <!-- toc -->
 
+- [01. Getting started, form fields](#01-getting-started-form-fields)
+- [02. Using layout](#02-using-layout)
+- [03. Styles and nested layout](#03-styles-and-nested-layout)
+- [04. Component extension](#04-component-extension)
+- [05: Using data handlers](#05-using-data-handlers)
+- [06. The use of _stateMaps](#06-the-use-of-_statemaps)
+- [07. Expansion and combination of schemes](#07-expansion-and-combination-of-schemes)
+- [08. Using _oneOfSelector](#08-using-_oneofselector)
+- [09. Validation](#09-validation)
+- [10. Own components](#10-own-components)
+- [Link](#link)
+
 <!-- tocstop -->
 
-####01. Getting started, form fields
+#### 01. Getting started, form fields
 First, install the package:
 ```
 npm install --save fform
@@ -58,7 +70,7 @@ Sets are conditionally divided into main (without the leading `$` in the name) a
 
 [Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=0).
 
-##### 02. Using layout
+#### 02. Using layout
 Let's add the submit button to the form. We'll use the `_layout` property for this purpose:
 ```js
 schema = {
@@ -153,7 +165,7 @@ When processing `{" $ _ref ":" ^ / parts / Submit "," children ": [" Send "]}`, 
 
 [Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=3).
 
-####05: Using data handlers
+#### 05: Using data handlers
 Let's add an input mask for the `login` field of the `XXX-XXX-XXXX` kind. To do this, let's define the functions that will format and parse the field value and add them to `elements`. Pay attention to the functions that return the obtained array of arguments, changing only the very first one. This is due to the peculiarities of using [data handlers](https://github.com/wtnm/fform/blob/master/documentation.md#data-handlers).
 ```js
 ...
@@ -418,7 +430,7 @@ The `elements.fn.iif` function takes 3 arguments if the 0th true returns the 1st
 
 [Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=6).
 
-##### 08. Using _oneOfSelector
+#### 08. Using _oneOfSelector
 So, we have a login and registration form with switching between these modes and everything seems to be fine, but there is a small problem. If you switch to the registration form and then back, then when sending data, it will be found that the data structure corresponds to the registration form, and not to the login (you can check by switching between modes and clicking submit). Why did it happen? When switching to the registration mode in the data object, the form was expanded in accordance with the registration scheme. But when the mode was switched back, the added fields were not deleted, because `fform` saves data when the` oneOf` property is switched if the type of the field does not change or if it is not in the current scheme.
 
 You can set the `additionalProperties` property of the root field to` true`. Then unnecessary properties that are not described by the circuit will be deleted. But we want the data to not be deleted when switching, so we will implement another option for determining which scheme the data refers to. Add the hidden field `oneOf` to which we will translate the value of the` oneOf` of the root field.
@@ -463,7 +475,7 @@ Everything is simple here, our object has the `oneOf` property, which correspond
 
 [Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=7).
 
-##### 09. Validation
+#### 09. Validation
 The time has come to add validation, of which there are 4 types in ffrom: JSON, sync, async, sybmit. Let's start with JSON. Connect the JSON validator and add a simple email verification pattern:
 ```js
 ...
@@ -725,7 +737,7 @@ Since we use multiselect (using `_custom` we passed the parameter` isMulti` to `
 
 [Final result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=9).
 
-##### References
+#### Link
 
 - [Github repository](https://github.com/wtnm/fform)
 - [Installation and use](https://github.com/wtnm/fform#installation--usage)
