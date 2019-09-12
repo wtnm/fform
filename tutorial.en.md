@@ -298,7 +298,7 @@ Don't forget to add classes to the css for the link.
 }
 ```
 
-[Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial_adv.json&selector=5).
+[Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=5).
 
 #### 07. Expansion and combination of schemes
 Let's add the possibility of registration to the form.
@@ -416,12 +416,12 @@ schema = {
 
 The `elements.fn.iif` function takes 3 arguments if the 0th true returns the 1st, otherwise the 2nd. In this example, the 0th argument passes the value of the index `oneOf` and if it is equal to 0 (login form), we display the text of the switch button as `Register`, and if it is equal to 1 (registration form) then `Log in`.
 
-[Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial_adv.json&selector=6).
+[Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=6).
 
 ##### 08. Using _oneOfSelector
-So, we have a form of login and registration with switching between these modes and everything seems to be fine, but there is a small problem. If you switch to the registration form and then back, when you send the data, you will find that the structure of the data corresponds to the form of registration, not the login (you can check by switching between the modes and pressing submit). Why did this happen? When switching to the registration mode, the data object of the form was extended according to the registration scheme. But when the mode was switched back added fields were not deleted, because `fform` saves data when switching the property `oneOf` if the type of field does not change or if the current scheme does not have it. 
+So, we have a login and registration form with switching between these modes and everything seems to be fine, but there is a small problem. If you switch to the registration form and then back, then when sending data, it will be found that the data structure corresponds to the registration form, and not to the login (you can check by switching between modes and clicking submit). Why did it happen? When switching to the registration mode in the data object, the form was expanded in accordance with the registration scheme. But when the mode was switched back, the added fields were not deleted, because `fform` saves data when the` oneOf` property is switched if the type of the field does not change or if it is not in the current scheme.
 
-You can set the `additionalProperties` property of the root field to `true`. Then superfluous properties which are not described by the scheme will be deleted. But we want that the data at switching did not leave, therefore we realise other variant of definition to what scheme the data concern. We will add the latent field `oneOf ` in which we will broadcast value `oneOf ` a root field.
+You can set the `additionalProperties` property of the root field to` true`. Then unnecessary properties that are not described by the circuit will be deleted. But we want the data to not be deleted when switching, so we will implement another option for determining which scheme the data refers to. Add the hidden field `oneOf` to which we will translate the value of the` oneOf` of the root field.
 ```js
 schema = {
 	"definitions": {
@@ -441,7 +441,7 @@ schema = {
 	...
 }:
 ```
-Now we have a field where you can define the current mode. And this field will be very useful for us. The matter is that at definition of what index `oneOf ` should be applied at installation of value of the form `ffom ` is guided by type of value. I.e. schemes `oneOf ` are searched, until the scheme with type corresponding to type of the transferred value will not be found. But if we have, as in this example, several schemes `oneOf ` with the same type (in this example, this type of `object `), the type with a smaller index will always be selected. It is to resolve such collisions that the `_oneOfSelector` property is added to the scheme, in which the function that receives the value and returns the `oneOf` index to which this value refers should be specified. Let's use it privately:
+Now we have a field by which you can determine the current mode. And the field is very useful to us. The fact is that when determining which `oneOf` index should be used when setting the value of the form,` ffom` focuses on the type of value. Those. `oneOf` schemes are scanned until a scheme with a type matching the type of the passed value is found. But if, as in this example, we have several `oneOf` schemes with the same type (in this example, this type is` object`), then the type with the lower index will always be selected. Namely, to resolve such collisions, the `_oneOfSelector` property was added to the scheme, in which a function should be set that receives a value and returns the` oneOf` index to which this value refers. We use this property:
 ```js
 elements.extend([{
     fn:{
@@ -459,12 +459,12 @@ schema = {
 	...
 }:
 ```
-Here all is redistributed simply, our object has property `oneOf ` which corresponds to the used scheme, it and we return. Now, when we will set value of the form (at initialisation or by means of API, it is not important), the scheme `oneOf ` at us will be chosen correctly.
+Everything is simple here, our object has the `oneOf` property, which corresponds to the scheme used, and we return it. Now, when we will set the value of the form (during initialization or using the API, it does not matter), the `oneOf` scheme will be chosen correctly.
 
-[Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial_adv.json&selector=7).
+[Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=7).
 
 ##### 09. Validation
-It's time to add validation, which in `ffrom` 4 types: JSON, sync, async, sybmit. Let's start with JSON. Let's connect JSON-validator and add a simple pattern of checking e-mail:
+The time has come to add validation, of which there are 4 types in ffrom: JSON, sync, async, sybmit. Let's start with JSON. Connect the JSON validator and add a simple email verification pattern:
 ```js
 ...
 import imjvWrapper from 'fform/addons/imjvWrapper';
@@ -501,9 +501,9 @@ schema = {
 
 render(<FForm core = {{name:"name", schema, elements, JSONValidator}}/>, document.querySelector('#root'));
 ```
-It's done. Also, the validation for the minimum and maximum value of the field `oneOf` has been added. Now JSON validation passes only if this value is 0 for login form and 1 for registration form. 
+Done. Validation was also added for the minimum and maximum values of the `oneOf` field. Now JSON validation passes only if this value is 0 for the login form and 1 for the registration form.
 
-Now let's add a password match check in the `password` and `confirm` fields. This should be done at the root level:
+Now we add the password matching check in the `password` and` confirm` fields. This should be done at the root field level:
 ```js
 ...
 elements.extend([{
@@ -533,9 +533,9 @@ schema = {
 }:
 ...
 ```
-Set the `_validators` property for the root field so that the `elements.validators.testPasswords` function gets the entire data object. The function we defined checks passwords for matches and returns the object to the `path` and `data` properties. The `path` property defines the field in which the message will be written, and `data` is the error text. More in detail about a format of returned value it is possible to learn in [documentation](https://github.com/wtnm/fform/blob/master/documentation.md#_validators).
+We set the `_validators` property for the root field so that the` elements.validators.testPasswords` function receives the entire data object. The function that we defined checks the passwords for coincidence and returns an object with the properties `path` and` data`. The `path` property determines the field in which the message will be written, and` data` is the error text. For more information about the format of the return value, see [documentation] (https://github.com/wtnm/fform/blob/master/documentation.md#_validators).
 
-Now we will make emulation of asynchronous check of phone number:
+Now let's emulate the asynchronous verification of the phone number:
 ```js
 ...
 elements.extend([{
@@ -567,9 +567,9 @@ schema = {
 }:
 ...
 ```
-Everything is very simple, instead of synchronous function, asynchronous, the field `login` is added validator. Since the validator is set in the extended scheme (index `oneOf` = 1), it will work only in the registration form mode.
+Everything is extremely simple, instead of a synchronous function, asynchronous, a validator is added to the login field. Since the validator is specified in the extended scheme (index `oneOf` = 1), then it will work only in the registration form mode.
 
-And now let's add emulation of captcha check when submitting the form:
+Now add the captcha verification emulation when submitting the form:
 ```js
 ...
 elements.extend([{
@@ -625,12 +625,12 @@ schema = {
 render(<FForm core = {{name:"name", schema, elements, JSONValidator}} onSubmit="^/submits/testCaptcha"/>,
 document.querySelector('#root'));
 ```
-The `onSubmit` function can return the object with the error text for the corresponding fields. If an empty object is returned, there are no errors.
+The `onSubmit` function can return an object with error text for the corresponding fields. If an empty object is returned, then there are no errors.
 
-[Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial_adv.json&selector=8).
+[Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=8).
 
 #### 10. Own components
-Suppose we want to select several tags from a list when registering. If data requirements to the data not too difficult it is possible to use built in input's `fform `. However, if extended functionality is required, you will most likely need to use a third-party input. Let's demonstrate how to do this by integrating the react-select component into the form. First, let's install it.
+Suppose we want to select several tags from a list during registration. If the data requirements are not too complicated, then you can use the built-in `fform` inputs. However, if advanced functionality is required, then most likely you will need to use third-party input. We demonstrate how to do this by integrating the react-select component into a form. First install.
 ```js
 npm install --save react-select
 ```
@@ -673,9 +673,9 @@ elements.extend([{
   }
 }])
 ```
-The `reactSelectParse` function converts data from the `react-select` format to the `fform` format and `reactSelectValue` function conversely. We add the `reactSelect` grid, and use the `simple` grid (the base grid for displaying inputs) as a basis. The `$_widget` react-component does not change, because the current one can work with other React-components using the `_$useTag` property, and we use it by passing `react-select` in it. Change `onChange` by setting the parser from the `react-select` format first. Then `setValue` updates the data in state. The `liveUpdate` function makes the update work as if liveUpdate were enabled without waiting for the input focus to be lost, which is what the select-component is expected to do.
+The `reactSelectParse` function converts data from the` react-select` format to the `fform` format, while` reactSelectValue` does the opposite. Add a set of `reactSelect`, as a basis it uses a set of` simple` (a basic set for displaying inputs). The React component in `$ _widget` does not change, since the current one can work with other React components using the` _ $ useTag` property, and we use it by passing in it `react-select`. Change `onChange` by setting the first parser from the` react-select` format. After that, `setValue` updates the data in state. The function `liveUpdate` makes the update work as if liveUpdate was turned on, without waiting for the input to lose focus, this is exactly the behavior that is expected from the select component.
 
-`$_maps` throws data from state to component according to `react-select` documentation and converts the data into understandable `react-select` format. In `@/fData/enum` the listed value from the scheme property `enum` is stored, and in `@/fData/enumExten` expansion for listed value from the scheme property `_enumExten`, [details in the documentation](https://github.com/wtnm/fform/blob/master/documentation.md#extended-schema-properties).
+`$ _maps` forwards the data from state to the component, in accordance with the` react-select` documentation and translates the data into an understandable `react-select` format. In `@ / fData / enum` the enumerated value from the` enum` schema property is stored, and in `@ / fData / enumExten` the extension for the enumerated value from the` _enumExten` schema property, [more in the documentation] (https: // github. com / wtnm / fform / blob / master / documentation.md # extended-schema-properties).
 
 It is time to add a new element to the scheme:
 ```js
@@ -721,9 +721,9 @@ schema = {
     ]
 }:
 ```
-Since we use a multiselect (using `_custom` passed the parameter `isMulti` to `react-select`), we set the field type `array` and set the default `_simple` to true, so that `fform` handles this field as a simple one (nested fields are not created and the data object is formed differently), i.e. all data management is given to the component, and `fform` just receives/transmits value. The `_enumExten` property specifies the listed values (features of using `enum` and `_enumExten` [described in the documentation](https://github.com/wtnm/fform/blob/master/documentation.md#extended-schema-properties)), but `_preset` indicates the grid that we defined in `elements`.
+Since we use multiselect (using `_custom` we passed the parameter` isMulti` to `react-select`), we set the field type to` array` and set the `_simple` property to true so that` fform` treats this field as simple ( nested fields are not created and the data object is formed differently), i.e. all data management is given to the component, and `fform` just receives / passes the value. The `_enumExten` property sets enumerated values ​​(specifics of using` enum` and `_enumExten` [described in the documentation] (https://github.com/wtnm/fform/blob/master/documentation.md#extended-schema-properties)) , but `_preset` points to the set that we defined in` elements`.
 
-[Final result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial_adv.json&selector=9).
+[Final result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=9).
 
 ##### References
 
