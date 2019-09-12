@@ -426,7 +426,7 @@ const basicStatus = { invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: tru
 const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, value = schemaPart.default) {
     // const x = schemaPart.x || ({} as FFSchemaExtensionType);
     const { _params = {}, _data = {} } = schemaPart;
-    const result = Object.assign({ params: _params }, _data);
+    let result = Object.assign({ params: _params }, _data);
     if (!commonLib_2.isObject(result.messages))
         result.messages = {};
     if (commonLib_2.isUndefined(value))
@@ -500,6 +500,11 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
         untouched = commonLib_1.objKeys(schemaPart.properties || {}).length;
     if (untouched != 1)
         result.status = Object.assign({}, result.status, { untouched });
+    if (schemaPart._data$) {
+        let res = [];
+        commonLib_1.objKeys(schemaPart._data$).forEach((k) => commonLib_1.push2array(res, processFn.call({}, schemaPart._data$[k], schemaPart)));
+        result = commonLib_1.merge(result, res);
+    }
     return result;
 });
 function getUniqKey() { return Date.now().toString(36) + Math.random().toString(36); }
@@ -696,7 +701,8 @@ function makeValidation(state, dispatch, action) {
         let _validators = schemaPart._validators;
         if (_validators) {
             const field = makeSynthField(UPDATABLE.api, path2string(track));
-            _validators.forEach((validator) => {
+            commonLib_1.objKeys(_validators).forEach((k) => {
+                let validator = _validators[k];
                 const updates = [];
                 field.updates = updates;
                 let result = processFn.call(field, validator, validatedValue);
@@ -1235,7 +1241,8 @@ function updatePROC(state, UPDATABLE, item) {
 }
 exports.updatePROC = updatePROC;
 function normalizeStateMaps(dataMap, emitter) {
-    return commonLib_1.toArray(dataMap).map((item) => {
+    return commonLib_1.objKeys(dataMap).map((key) => {
+        let item = dataMap[key];
         let { from, to } = item, action = __rest(item, ["from", "to"]);
         if (!action.$)
             action = true;
@@ -1632,8 +1639,8 @@ function processFn(map, ...rest) {
                 resArgs.push(!arg._map ? processFn.call(this, arg, ...rest) : arg(...rest));
             else if (arg == '${...}')
                 resArgs.push(...rest);
-            else if (arg == '${0}')
-                resArgs.push(rest[0]);
+            else if (commonLib_2.isString(arg) && ~arg.search(/^\${\d+}$/))
+                resArgs.push(rest[arg.substring(2, arg.length - 1)]);
             else
                 resArgs.push(arg);
         }

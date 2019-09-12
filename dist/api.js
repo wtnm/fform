@@ -389,15 +389,23 @@ exports.formReducer = formReducer;
 const compileSchema = (schema, elements) => isCompiled(schema) ? schema : getCompiledSchema(elements, schema);
 exports.compileSchema = compileSchema;
 const getCompiledSchema = commonLib_1.memoize((elements, schema) => schemaCompiler(elements, schema));
+const val2obj = (obj) => {
+    return commonLib_1.isObject(obj) ? obj : commonLib_1.toArray(obj);
+};
 function schemaCompiler(elements = {}, schema, track = []) {
     if (isCompiled(schema))
         return schema;
     const result = commonLib_1.isArray(schema) ? [] : { _compiled: true };
-    let _a = schema, { _validators, _stateMaps, _oneOfSelector } = _a, rest = __rest(_a, ["_validators", "_stateMaps", "_oneOfSelector"]);
+    let _a = schema, { _validators, _data$, _stateMaps, _oneOfSelector } = _a, rest = __rest(_a, ["_validators", "_data$", "_stateMaps", "_oneOfSelector"]);
     const nFnOpts = { noStrictArrayResult: true };
-    _validators && (result._validators = commonLib_1.toArray(objectResolver(elements, _validators, track)).map(f => stateLib_1.normalizeFn(f, nFnOpts)));
-    _stateMaps && (result._stateMaps = objectResolver(elements, _stateMaps, track));
-    _oneOfSelector && (result._oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(_oneOfSelector, nFnOpts), track));
+    if (_validators)
+        result._validators = stateLib_1.objMap(val2obj(objectResolver(elements, _validators, track)), f => stateLib_1.normalizeFn(f, nFnOpts));
+    if (_data$)
+        result._data$ = stateLib_1.objMap(val2obj(objectResolver(elements, _data$, track)), f => stateLib_1.normalizeFn(f));
+    if (_stateMaps)
+        result._stateMaps = objectResolver(elements, _stateMaps, track);
+    if (_oneOfSelector)
+        result._oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(_oneOfSelector, nFnOpts), track);
     commonLib_1.objKeys(rest).forEach(key => {
         if (key.substr(0, 1) == '_')
             return result[key] = key !== '_presets' && stateLib_1.isElemRef(rest[key]) ? convRef(elements, rest[key], track) : rest[key];
