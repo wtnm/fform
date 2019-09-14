@@ -1209,7 +1209,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
 
 function normalizeStateMaps(dataMap: FFDataMapGeneric<Function | Function[]>[], emitter: Path): normalizedDataMapType[] {
   return objKeys(dataMap).map((key: string) => {
-    let item:any = dataMap[key];
+    let item: any = dataMap[key];
     let {from, to, ...action} = item;
     if (!action.$) action = true;
     else action = normalizeFn(action);
@@ -1274,7 +1274,7 @@ function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
 
 function executeDataMapsPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, maps: any, item: NormalizedUpdateType) {
   const {value, path, replace} = item;
-  const keyPath = item[SymData] || [];
+  // const keyPath = item[SymData] || [];
   const from = NUpdate2string(item);
   objKeys(maps || {}).forEach((pathTo) => {
     //console.log('maps=', maps);
