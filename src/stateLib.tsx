@@ -1293,7 +1293,8 @@ function executeDataMapsPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Ty
       field.updates = null;
       field.get = null;
     }
-    if (!updates.length) updates.push({path: NpathTo, value: executedValue, replace: isUndefined(map.replace) ? replace : map.replace});
+    if (!updates.length && (!(isUndefined(executedValue) && isObject(map))))
+      updates.push({path: NpathTo, value: executedValue, replace: isUndefined(map.replace) ? replace : map.replace});
     updates.forEach((update: any) => state = updatePROC(state, UPDATABLE, update));
   });
   return state;

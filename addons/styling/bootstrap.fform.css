@@ -15,4 +15,9 @@
 
 .fform-wrapper .valid-feedback, .invalid-feedback {
     display: block;
+    margin-top: 0;
+}
+
+.fform-radio {
+    padding-bottom: 0;
 }
