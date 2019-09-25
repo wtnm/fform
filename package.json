@@ -7,7 +7,8 @@
     "clean": "rimraf dist",
     "compile": "webpack --mode=production",
     "compile:dev": "webpack --mode=development",
-    "compile:sample:dev": "webpack --mode=development --entryFile=sample"
+    "compile:sample:dev": "webpack --mode=development --entryFile=sample",
+    "transpile": "tsc -w --outDir dist"
   },
   "author": "Antonov Andrew <wtnm@rambler.ru> (https://github.com/wtnm)",
   "license": "MIT",

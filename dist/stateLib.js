@@ -508,6 +508,7 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
     return result;
 });
 function getUniqKey() { return Date.now().toString(36) + Math.random().toString(36); }
+exports.getUniqKey = getUniqKey;
 function makeStateBranch(schema, getNSetOneOf, path = [], value) {
     const result = {};
     const dataMapObjects = [];
@@ -1260,7 +1261,7 @@ function setDataMapInState(state, UPDATABLE, dataMaps, unset = false) {
     dataMaps.forEach((dataMap) => {
         const emitterPath = dataMap.emitter;
         let bindMap2emitter = false;
-        normalizeUpdate({ path: emitterPath.join('/') + '/' + dataMap.from, value: null }, state).forEach(fromItem => {
+        normalizeUpdate({ path: (dataMap.from[0] == '/' ? '' : emitterPath.join('/')) + '/' + dataMap.from, value: null }, state).forEach(fromItem => {
             let key = fromItem[SymData][0];
             if (key == 'current' || key == 'inital' || key == 'default' && fromItem.path.length)
                 fromItem = Object.assign({}, fromItem, { path: [], [SymData]: [key, ...fromItem.path, ...fromItem[SymData].slice(1)] });

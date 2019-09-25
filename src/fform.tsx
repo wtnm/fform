@@ -764,7 +764,7 @@ class FSection extends FRefsGeneric {
     let props = self.props;
     // try {
     if (props.viewer) {
-      let {_$widget = UniversalViewer, ...rest} = props.viewerProps || {};
+      let {_$widget = UniversalViewer, ...rest} = props.$_viewerProps || {};
       rest.inputProps = props;
       rest.value = props.$FField.value;
       return h(_$widget, rest)
@@ -873,13 +873,13 @@ class UniversalInput extends GenericWidget {
     const self = this;
     const props: any = self.props;
     if (props.viewer) {
-      let {_$widget = UniversalViewer, ...rest} = props.viewerProps || {};
+      let {_$widget = UniversalViewer, ...rest} = props.$_viewerProps || {};
       rest.inputProps = props;
       rest.value = props.value;
       return h(_$widget, rest)
     }
 
-    let {value, _$useTag: UseTag, type, $_reactRef, _$cx, _$elements, viewer, viewerProps, children, ...rest} = props;
+    let {value, _$useTag: UseTag, type, $_reactRef, _$cx, _$elements, viewer, $_viewerProps, children, ...rest} = props;
 
     self._mapChildren(children, $_reactRef);
     self.setRef2rest(rest, $_reactRef);
@@ -1150,7 +1150,6 @@ function classNames(...styles: any[]) {
 //  elements
 /////////////////////////////////////////////
 
-
 let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOptionsArgument) => any } = {
   extend(elements: any[], opts?: MergeStateOptionsArgument) {
     let res = merge.all(this, elements, opts);
@@ -1204,7 +1203,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         _$widget: '^/widgets/Input',
         _$cx: '^/_$cx',
         $_reactRef: {ref: true},
-        viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {'fform-viewer': true}},
+        $_viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {'fform-viewer': true}},
         onChange: {$: '^/fn/eventValue|setValue'},
         onBlur: {$: '^/fn/blur'},
         onFocus: {$: '^/fn/focus'},
@@ -1218,7 +1217,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
           placeholder: '@/fData/placeholder',
           required: '@/fData/required',
           label: '@/fData/title',
-          'viewerProps/enumExten': '@/fData/enumExten',
+          '$_viewerProps/enumExten': '@/fData/enumExten',
           id: {$: '^/fn/getProp', args: 'props/id', update: 'build'},
           name: {$: '^/fn/getProp', args: 'props/name', update: 'build'},
           'className/fform-input-priority': {$: '^/fn/setInputPriority', args: '@/status/priority'}
@@ -1244,7 +1243,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     },
     textarea: {
       $_ref: '^/sets/simple',
-      Main: {type: 'textarea', viewerProps: {className: {'fform-viewer': false, 'fform-viewer-inverted': true}}},
+      Main: {type: 'textarea', $_viewerProps: {className: {'fform-viewer': false, 'fform-viewer-inverted': true}}},
       Title: {
         $_maps: {
           'className/fform-title-viewer-inverted': '@/params/viewer'
@@ -1288,11 +1287,11 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         _$cx: '^/_$cx',
         $_reactRef: {'0': {ref: true}},
         children: [
-          {$_ref: '^/sets/simple/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: {_$useTag: 'span'}},
+          {$_ref: '^/sets/simple/Main:^/sets/boolean/Main', $_reactRef: false, $_viewerProps: {_$useTag: 'span'}},
           {$_ref: '^/sets/simple/Title', _$useTag: 'span', $_maps: {'className/fform-hidden': '@/params/viewer'}}
         ]
       },
-      Title: {$_ref: '^/sets/simple/Title', $_maps: {'className/fform-hidden': {$: '^/fn/not', args: '@/params/viewer'}}},
+      Title: {$_ref: '^/sets/simple/Title', $_maps: {'className/fform-hidden': '!@/params/viewer'}},
     },
     booleanNull: {
       $_ref: '^/sets/boolean',
@@ -1318,7 +1317,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         uniqKey: 'params/uniqKey',
         LayoutDefaultClass: 'layout',
         LayoutDefaultWidget: 'div',
-        viewerProps: {$_ref: '^/sets/simple/Main/viewerProps'},
+        $_viewerProps: {$_ref: '^/sets/simple/Main/$_viewerProps'},
         $_maps: {
           length: '@/length',
           oneOf: '@/oneOf',
@@ -1372,7 +1371,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         $_ref: '^/parts/RadioSelector',
         $_reactRef: true,
-        viewerProps: {$_ref: '^/sets/simple/Main/viewerProps'},
+        $_viewerProps: {$_ref: '^/sets/simple/Main/$_viewerProps'},
         $_maps: {
           value: '@/value',
           viewer: '@/params/viewer',
@@ -1418,7 +1417,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
   fn: {
     api(fn: string, ...args: any[]) {this.api[fn](...args)},
     format(str: string, ...args: any[]) {
-      return args.reduce((str, val, i) => str.replace('${' + i + '}', val), str)
+      return [args.reduce((str, val, i) => str.replace('{' + i + '}', val), str)]
     },
 
     iif: (iif: any, trueVal: any, falseVaL: any, ...args: any[]) => [iif ? trueVal : falseVaL, ...args],

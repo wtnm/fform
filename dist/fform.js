@@ -657,7 +657,7 @@ class FSection extends FRefsGeneric {
         let props = self.props;
         // try {
         if (props.viewer) {
-            let _a = props.viewerProps || {}, { _$widget = UniversalViewer } = _a, rest = __rest(_a, ["_$widget"]);
+            let _a = props.$_viewerProps || {}, { _$widget = UniversalViewer } = _a, rest = __rest(_a, ["_$widget"]);
             rest.inputProps = props;
             rest.value = props.$FField.value;
             return react_1.createElement(_$widget, rest);
@@ -761,12 +761,12 @@ class UniversalInput extends GenericWidget {
         const self = this;
         const props = self.props;
         if (props.viewer) {
-            let _a = props.viewerProps || {}, { _$widget = UniversalViewer } = _a, rest = __rest(_a, ["_$widget"]);
+            let _a = props.$_viewerProps || {}, { _$widget = UniversalViewer } = _a, rest = __rest(_a, ["_$widget"]);
             rest.inputProps = props;
             rest.value = props.value;
             return react_1.createElement(_$widget, rest);
         }
-        let { value, _$useTag: UseTag, type, $_reactRef, _$cx, _$elements, viewer, viewerProps, children } = props, rest = __rest(props, ["value", "_$useTag", "type", "$_reactRef", "_$cx", "_$elements", "viewer", "viewerProps", "children"]);
+        let { value, _$useTag: UseTag, type, $_reactRef, _$cx, _$elements, viewer, $_viewerProps, children } = props, rest = __rest(props, ["value", "_$useTag", "type", "$_reactRef", "_$cx", "_$elements", "viewer", "$_viewerProps", "children"]);
         self._mapChildren(children, $_reactRef);
         self.setRef2rest(rest, $_reactRef);
         self.setElements2rest(rest, _$elements);
@@ -1067,7 +1067,7 @@ let elementsBase = {
                 _$widget: '^/widgets/Input',
                 _$cx: '^/_$cx',
                 $_reactRef: { ref: true },
-                viewerProps: { _$cx: '^/_$cx', emptyMock: '(no value)', className: { 'fform-viewer': true } },
+                $_viewerProps: { _$cx: '^/_$cx', emptyMock: '(no value)', className: { 'fform-viewer': true } },
                 onChange: { $: '^/fn/eventValue|setValue' },
                 onBlur: { $: '^/fn/blur' },
                 onFocus: { $: '^/fn/focus' },
@@ -1081,7 +1081,7 @@ let elementsBase = {
                     placeholder: '@/fData/placeholder',
                     required: '@/fData/required',
                     label: '@/fData/title',
-                    'viewerProps/enumExten': '@/fData/enumExten',
+                    '$_viewerProps/enumExten': '@/fData/enumExten',
                     id: { $: '^/fn/getProp', args: 'props/id', update: 'build' },
                     name: { $: '^/fn/getProp', args: 'props/name', update: 'build' },
                     'className/fform-input-priority': { $: '^/fn/setInputPriority', args: '@/status/priority' }
@@ -1107,7 +1107,7 @@ let elementsBase = {
         },
         textarea: {
             $_ref: '^/sets/simple',
-            Main: { type: 'textarea', viewerProps: { className: { 'fform-viewer': false, 'fform-viewer-inverted': true } } },
+            Main: { type: 'textarea', $_viewerProps: { className: { 'fform-viewer': false, 'fform-viewer-inverted': true } } },
             Title: {
                 $_maps: {
                     'className/fform-title-viewer-inverted': '@/params/viewer'
@@ -1151,11 +1151,11 @@ let elementsBase = {
                 _$cx: '^/_$cx',
                 $_reactRef: { '0': { ref: true } },
                 children: [
-                    { $_ref: '^/sets/simple/Main:^/sets/boolean/Main', $_reactRef: false, viewerProps: { _$useTag: 'span' } },
+                    { $_ref: '^/sets/simple/Main:^/sets/boolean/Main', $_reactRef: false, $_viewerProps: { _$useTag: 'span' } },
                     { $_ref: '^/sets/simple/Title', _$useTag: 'span', $_maps: { 'className/fform-hidden': '@/params/viewer' } }
                 ]
             },
-            Title: { $_ref: '^/sets/simple/Title', $_maps: { 'className/fform-hidden': { $: '^/fn/not', args: '@/params/viewer' } } },
+            Title: { $_ref: '^/sets/simple/Title', $_maps: { 'className/fform-hidden': '!@/params/viewer' } },
         },
         booleanNull: {
             $_ref: '^/sets/boolean',
@@ -1181,7 +1181,7 @@ let elementsBase = {
                 uniqKey: 'params/uniqKey',
                 LayoutDefaultClass: 'layout',
                 LayoutDefaultWidget: 'div',
-                viewerProps: { $_ref: '^/sets/simple/Main/viewerProps' },
+                $_viewerProps: { $_ref: '^/sets/simple/Main/$_viewerProps' },
                 $_maps: {
                     length: '@/length',
                     oneOf: '@/oneOf',
@@ -1236,7 +1236,7 @@ let elementsBase = {
             Main: {
                 $_ref: '^/parts/RadioSelector',
                 $_reactRef: true,
-                viewerProps: { $_ref: '^/sets/simple/Main/viewerProps' },
+                $_viewerProps: { $_ref: '^/sets/simple/Main/$_viewerProps' },
                 $_maps: {
                     value: '@/value',
                     viewer: '@/params/viewer',
@@ -1281,7 +1281,7 @@ let elementsBase = {
     fn: {
         api(fn, ...args) { this.api[fn](...args); },
         format(str, ...args) {
-            return args.reduce((str, val, i) => str.replace('${' + i + '}', val), str);
+            return [args.reduce((str, val, i) => str.replace('{' + i + '}', val), str)];
         },
         iif: (iif, trueVal, falseVaL, ...args) => [iif ? trueVal : falseVaL, ...args],
         not: (v, ...args) => [!v, ...args],

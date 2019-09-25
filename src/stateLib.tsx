@@ -1226,7 +1226,7 @@ function setDataMapInState(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   dataMaps.forEach((dataMap) => {
     const emitterPath = dataMap.emitter;
     let bindMap2emitter: boolean = false;
-    normalizeUpdate({path: emitterPath.join('/') + '/' + dataMap.from, value: null}, state).forEach(fromItem => {
+    normalizeUpdate({path: (dataMap.from[0] == '/' ? '' : emitterPath.join('/')) + '/' + dataMap.from, value: null}, state).forEach(fromItem => {
         let key = fromItem[SymData][0];
         if (key == 'current' || key == 'inital' || key == 'default' && fromItem.path.length)
           fromItem = {...fromItem, path: [], [SymData]: [key, ...fromItem.path, ...fromItem[SymData].slice(1)]};
@@ -1680,4 +1680,4 @@ export {
   isElemRef
 };
 export {SymData, SymReset, SymClear, SymDelete, SymDataMap}
-export {makeNUpdate, updatePROC, string2NUpdate};
+export {makeNUpdate, updatePROC, string2NUpdate, getUniqKey};
