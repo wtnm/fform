@@ -13,7 +13,6 @@
 }
 
 
-
 .fform-title-viewer {
     margin-bottom: 0;
 }
@@ -29,11 +28,6 @@
 
 .fform-required:after {
     content: " *";
-}
-
-.fform-wrapper {
-    margin-left: 0.5em;
-    margin-right: 0.5em;
 }
 
 .fform-viewer {

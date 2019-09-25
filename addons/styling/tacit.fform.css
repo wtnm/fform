@@ -25,6 +25,10 @@
     margin-bottom: 0.9em;
 }
 
+.fform-wrapper {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
 
 .fform-message-priority-0 {
     color: #e60900;
