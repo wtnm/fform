@@ -201,8 +201,8 @@ class FForm extends react_1.Component {
             react_1.createElement(FField, { ref: self._setRootRef, id: (rest.id || self.api.name) + '/#', name: self.api.name, pFForm: self, getPath: FForm._getPath, FFormApi: self.api })));
     }
 }
-FForm.params = ['readonly', 'disabled', 'viewer', 'liveValidate', 'liveUpdate'];
 exports.FForm = FForm;
+FForm.params = ['readonly', 'disabled', 'viewer', 'liveValidate', 'liveUpdate'];
 class FRefsGeneric extends react_1.Component {
     constructor(props, context) {
         super(props, context);
@@ -450,7 +450,7 @@ class FSectionWidget extends react_1.Component {
             if (passCx(this.props._$widget))
                 return Object.assign({ _$cx: this.props._$cx }, props);
             else
-                return Object.assign({}, props, { className: this.props._$cx(props.className) });
+                return Object.assign(Object.assign({}, props), { className: this.props._$cx(props.className) });
         }
         return props;
     }
@@ -862,7 +862,7 @@ function bindProcessorToThis(val, opts = {}) {
     if (commonLib_1.isFunction(val))
         val = { $: val };
     if (stateLib_1.isMapFn(val)) {
-        const map = val.norm ? val : stateLib_1.normalizeFn(val, Object.assign({}, opts, { wrapFn: bindedFn }));
+        const map = val.norm ? val : stateLib_1.normalizeFn(val, Object.assign(Object.assign({}, opts), { wrapFn: bindedFn }));
         const fn = stateLib_1.processFn.bind(self, map);
         fn._map = map;
         return fn;
@@ -913,13 +913,13 @@ function normalizeMaps($_maps, prePath = '') {
             commonLib_1.toArray(value).forEach((fn) => {
                 const _a = fn._map, { update = 'data', replace = true } = _a, rest = __rest(_a, ["update", "replace"]);
                 //fn._map = {update, replace, to, ...rest};
-                result[update].push(Object.assign({ update, replace }, rest, { to, $: fn }));
+                result[update].push(Object.assign(Object.assign({ update, replace }, rest), { to, $: fn }));
             });
         }
         else {
             if (commonLib_1.isString(value))
                 value = { args: value };
-            value = Object.assign({}, value, stateLib_1.normalizeArgs(value.args));
+            value = Object.assign(Object.assign({}, value), stateLib_1.normalizeArgs(value.args));
             let { args, update = 'data', replace = true } = value, rest = __rest(value, ["args", "update", "replace"]);
             //if (!isString(path)) throw new Error('$_maps value is not recognized');
             //if (path[0] === '@') path = path.substr(1);
@@ -1345,22 +1345,22 @@ let elementsBase = {
                     }));
                     if (norender || !children.length)
                         return null;
-                    return Object.assign({ children }, restSP, { className: Object.assign({ ['fform-message-priority-' + priority]: true }, cnSP, className) }, rest);
+                    return Object.assign(Object.assign(Object.assign({ children }, restSP), { className: Object.assign(Object.assign({ ['fform-message-priority-' + priority]: true }, cnSP), className) }), rest);
                 })];
         },
         arrayOfEnum(enumVals = [], enumExten = {}, staticProps = {}, name) {
             return [enumVals.map(val => {
                     let extenProps = getExten(enumExten, val);
-                    return Object.assign({ key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)) }, extenProps, staticProps, { value: val });
+                    return Object.assign(Object.assign(Object.assign({ key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)) }, extenProps), staticProps), { value: val });
                 })];
         },
         enumInputs(enumVals = [], enumExten = {}, containerProps = {}, inputProps = {}, labelProps = {}, name) {
             // inputProps = this.wrapFns(inputProps);
             return [enumVals.map(val => {
                     let extenProps = getExten(enumExten, val);
-                    return Object.assign({ key: val }, containerProps, { children: [
-                            Object.assign({ name: name && (this.props.name + (name === true ? '' : name)) }, commonLib_1.merge(inputProps, extenProps), { value: val }),
-                            Object.assign({}, labelProps, { children: [extenProps.label || val] })
+                    return Object.assign(Object.assign({ key: val }, containerProps), { children: [
+                            Object.assign(Object.assign({ name: name && (this.props.name + (name === true ? '' : name)) }, commonLib_1.merge(inputProps, extenProps)), { value: val }),
+                            Object.assign(Object.assign({}, labelProps), { children: [extenProps.label || val] })
                         ] });
                 })];
         },

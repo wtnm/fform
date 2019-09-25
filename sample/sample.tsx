@@ -1,9 +1,9 @@
 import * as React from 'react';
 
 import {FForm, elements, FFormStateAPI} from '../src/fform';
-import * as sampleSchema from './sampleSchema.json'
-import * as basicStyling from '../addons/styling/basic.json'
-import * as bootstrapStyling from '../addons/styling/bootstrap.json'
+import sampleSchema from './sampleSchema.json'
+import basicStyling from '../addons/styling/basic.json'
+import bootstrapStyling from '../addons/styling/bootstrap.json'
 import {FViewer} from '../src/fviewer'
 
 const {render} = require('react-dom');
@@ -98,6 +98,8 @@ class CssSelector extends React.Component<any, any> {
 
         elemExtend]);
     const sampleElements = self.elements[self.state.css];
+
+    // console.log('sampleSchema', sampleSchema);
 
     if (!self.cores[self.state.css])
       self.cores[self.state.css] = {schema: sampleSchema as any, name: `sampleForm[${self.state.css}]`, elements: sampleElements, JSONValidator};

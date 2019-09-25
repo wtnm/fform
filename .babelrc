@@ -1,21 +1,18 @@
 {
-  "env": {
-    "production": {
-      "plugins": [
-        "transform-react-remove-prop-types"
-      ]
-    }
-  },
+
   "plugins": [
-    "transform-class-properties"
+    "transform-react-remove-prop-types",
+    "transform-class-properties",
+    "@babel/plugin-transform-typescript"
   ],
   "presets": [
     [
-      "@babel/env",
+      "@babel/preset-env",
       {
         "modules": false
       }
     ],
-    "@babel/react"
+    "@babel/preset-typescript",
+    "@babel/preset-react"
   ]
 }

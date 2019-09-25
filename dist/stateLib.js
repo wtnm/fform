@@ -466,7 +466,7 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
                 else if (commonLib_2.isObject(v)) {
                     if (!commonLib_2.isUndefined(v.value)) {
                         if (commonLib_2.isUndefined(v.label))
-                            v = Object.assign({}, v, { label: v.value });
+                            v = Object.assign(Object.assign({}, v), { label: v.value });
                         enumExten[v.value] = v;
                         _enum.push(v.value);
                     }
@@ -499,7 +499,7 @@ const makeDataStorage = commonLib_1.memoize(function (schemaPart, oneOf, type, v
     else if (type == 'object')
         untouched = commonLib_1.objKeys(schemaPart.properties || {}).length;
     if (untouched != 1)
-        result.status = Object.assign({}, result.status, { untouched });
+        result.status = Object.assign(Object.assign({}, result.status), { untouched });
     if (schemaPart._data$) {
         let res = [];
         commonLib_1.objKeys(schemaPart._data$).forEach((k) => commonLib_1.push2array(res, processFn.call({}, schemaPart._data$[k], schemaPart)));
@@ -1264,7 +1264,7 @@ function setDataMapInState(state, UPDATABLE, dataMaps, unset = false) {
         normalizeUpdate({ path: (dataMap.from[0] == '/' ? '' : emitterPath.join('/')) + '/' + dataMap.from, value: null }, state).forEach(fromItem => {
             let key = fromItem[SymData][0];
             if (key == 'current' || key == 'inital' || key == 'default' && fromItem.path.length)
-                fromItem = Object.assign({}, fromItem, { path: [], [SymData]: [key, ...fromItem.path, ...fromItem[SymData].slice(1)] });
+                fromItem = Object.assign(Object.assign({}, fromItem), { path: [], [SymData]: [key, ...fromItem.path, ...fromItem[SymData].slice(1)] });
             normalizeUpdate({ path: emitterPath.join('/') + '/' + dataMap.to, value: null }, state).forEach(toItem => {
                 let relTo = path2string(relativePath(fromItem.path, toItem.path.concat(SymData, ...toItem[SymData])));
                 //console.log(relTo);
@@ -1590,7 +1590,7 @@ function normalizeArgs(args, wrapFn) {
             let res = normalizeArgs(arg.args, wrapFn);
             if (res.dataRequest)
                 dataRequest = true;
-            res = Object.assign({}, arg, res);
+            res = Object.assign(Object.assign({}, arg), res);
             return wrapFn ? wrapFn(res) : res;
         }
         else if (wrapFn && commonLib_2.isMergeable(arg))
@@ -1602,7 +1602,7 @@ function normalizeArgs(args, wrapFn) {
 exports.normalizeArgs = normalizeArgs;
 function normalizeFn(fn, opts = {}) {
     const { wrapFn } = opts, restOpts = __rest(opts, ["wrapFn"]);
-    let nFn = !commonLib_2.isObject(fn) ? Object.assign({ $: fn }, restOpts) : Object.assign({}, fn, restOpts);
+    let nFn = !commonLib_2.isObject(fn) ? Object.assign({ $: fn }, restOpts) : Object.assign(Object.assign({}, fn), restOpts);
     if (nFn.args)
         Object.assign(nFn, normalizeArgs(nFn.args, opts.wrapFn));
     else

@@ -170,7 +170,7 @@ class FFormStateManager {
     return self.delListener.bind(self, fn);
   }
 
-  delListener(fn?: (state: StateType) => void) {
+  delListener(fn?: any) {
     const self = this;
     if (isUndefined(fn)) self._listeners = [];
     else {
@@ -313,7 +313,7 @@ class FFormStateAPI extends FFormStateManager {
     return self._setExecution(null, opts);
   };
 
-  get = (...paths: Array<string | Path>): any => getFromState(this.getState(), ...paths);
+  get = (...paths: any): any => getFromState(this.getState(), ...paths);
 
   set = (path: string | Path | null, value: any, opts: APIOptsType & { replace?: any, setOneOf?: number, macros?: string } = {}) => {
     if (path === null) return this._setExecution([null], opts);
@@ -329,7 +329,7 @@ class FFormStateAPI extends FFormStateManager {
     let {path, inital, replace, ...update} = opts;
     if (path === null) return this._setExecution([null], opts);
     path = normalizePath(path || []).slice();
-    if (~path.indexOf(SymData)) (update as StateApiUpdateType).path = path;
+    if (~path.indexOf(SymData as any)) (update as StateApiUpdateType).path = path;
     else {
       let state = this.getState();
       while (!getIn(state, path) && path.length) {
@@ -456,8 +456,8 @@ function schemaCompiler(elements: elementsType = {}, schema: JsonSchema | JsonSc
   let {_validators, _data$, _stateMaps, _oneOfSelector, ...rest} = schema as any;
   const nFnOpts = {noStrictArrayResult: true};
 
-  if (_validators) result._validators = objMap(val2obj(objectResolver(elements, _validators, track)), f => normalizeFn(f, nFnOpts));
-  if (_data$) result._data$ = objMap(val2obj(objectResolver(elements, _data$, track)), f => normalizeFn(f));
+  if (_validators) result._validators = objMap(val2obj(objectResolver(elements, _validators, track)), (f: any) => normalizeFn(f, nFnOpts));
+  if (_data$) result._data$ = objMap(val2obj(objectResolver(elements, _data$, track)), (f: any) => normalizeFn(f));
   if (_stateMaps) result._stateMaps = objectResolver(elements, _stateMaps, track);
   if (_oneOfSelector) result._oneOfSelector = objectResolver(elements, normalizeFn(_oneOfSelector, nFnOpts), track);
 

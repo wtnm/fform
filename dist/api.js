@@ -219,7 +219,7 @@ class FFormStateAPI extends FFormStateManager {
             return this._setExecution(update, opts);
         };
         this.getDefaultValue = () => this.get(stateLib_1.SymData, 'default');
-        this.switch = (path, value, opts = {}) => this.set(path, value, Object.assign({}, opts, { macros: 'switch' }));
+        this.switch = (path, value, opts = {}) => this.set(path, value, Object.assign(Object.assign({}, opts), { macros: 'switch' }));
         this.setMessages = (value, opts) => {
             let _a = opts || {}, { priority = 0, group = 3, path = [], props = undefined } = _a, rest = __rest(_a, ["priority", "group", "path", "props"]);
             const msgPath = '@/messages/' + priority + '/texts/' + group;
@@ -399,9 +399,9 @@ function schemaCompiler(elements = {}, schema, track = []) {
     let _a = schema, { _validators, _data$, _stateMaps, _oneOfSelector } = _a, rest = __rest(_a, ["_validators", "_data$", "_stateMaps", "_oneOfSelector"]);
     const nFnOpts = { noStrictArrayResult: true };
     if (_validators)
-        result._validators = stateLib_1.objMap(val2obj(objectResolver(elements, _validators, track)), f => stateLib_1.normalizeFn(f, nFnOpts));
+        result._validators = stateLib_1.objMap(val2obj(objectResolver(elements, _validators, track)), (f) => stateLib_1.normalizeFn(f, nFnOpts));
     if (_data$)
-        result._data$ = stateLib_1.objMap(val2obj(objectResolver(elements, _data$, track)), f => stateLib_1.normalizeFn(f));
+        result._data$ = stateLib_1.objMap(val2obj(objectResolver(elements, _data$, track)), (f) => stateLib_1.normalizeFn(f));
     if (_stateMaps)
         result._stateMaps = objectResolver(elements, _stateMaps, track);
     if (_oneOfSelector)

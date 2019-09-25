@@ -36,7 +36,8 @@ module.exports = (env, argv) => {
       rules: [
         {
           test: /\.(ts|tsx)$/,
-          loader: `${argv.mode === 'production' ? 'babel-loader!' : ''}ts-loader`,
+          loader: 'babel-loader'
+          //loader: `${argv.mode === 'production' ? 'babel-loader!' : ''}ts-loader`,
         },
         {
           test: /\.css$/i,

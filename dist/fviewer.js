@@ -150,6 +150,6 @@ class FViewer extends react_1.Component {
             react_1.createElement(fform_1.FField, { ref: self._setRootRef, id: rest.id ? rest.id + '/#' : undefined, name: rest.name ? rest.name + '/#' : undefined, pFForm: self, getPath: FViewer._getPath, FFormApi: self.api })));
     }
 }
-FViewer.paramsBase = { viewer: true, noEditor: true };
 exports.FViewer = FViewer;
+FViewer.paramsBase = { viewer: true, noEditor: true };
 //# sourceMappingURL=fviewer.js.map
