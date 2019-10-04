@@ -1418,6 +1418,8 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     $A: (path: Path, rPath: Path) => ({Wrapper: {ArrayItemMenu:{className: {[rPath[0]]: !rPath[1]}}}}),
     $M: (path: Path, rPath: Path) => ({Main: {className: {[rPath[0]]: !rPath[1]}}}),
     $T: (path: Path, rPath: Path) => ({Title: {className: {[rPath[0]]: !rPath[1]}}}),
+    $B: (path: Path, rPath: Path) => ({Body: {className: {[rPath[0]]: !rPath[1]}}}),
+    $MSG: (path: Path, rPath: Path) => ({Message: {className: {[rPath[0]]: !rPath[1]}}}),    
   },
   fn: {
     api(fn: string, ...args: any[]) {this.api[fn](...args)},
