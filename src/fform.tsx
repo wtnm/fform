@@ -141,8 +141,8 @@ class FForm extends Component<FFormProps> {
 
   private _extendEvent(event: any) {
     const self = this;
-    event.value = self._savedValue;
-    event.state = self._savedState;
+    event.value = self.api.getValue();
+    event.state = self.api.getState();
     event.fform = self;
     return event;
   }
@@ -293,7 +293,7 @@ class FField extends FRefsGeneric {
   private _cached?: { value: any, opts: any };
   private _cachedTimeout?: any;
   // private _enumOptions: any;
-  private _isNotSelfManaged: boolean | undefined;
+  // private _isNotSelfManaged: boolean | undefined;
   private _blocks: string[] = [];
   private _widgets: object;
   private _components: object;
@@ -430,7 +430,7 @@ class FField extends FRefsGeneric {
     const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
     self.schemaPart = schemaPart;
 
-    self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
+    // self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
     if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart._presets)
       throw new Error('schema._presets should be defined explicitly for multi type');
 
@@ -1412,7 +1412,12 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     $noMessage: {Message: false},
     $shrink: {Wrapper: {className: {'fform-shrink': true}}},
     $expand: {Wrapper: {className: {'fform-expand': true}}},
-    $password: {Main: {type: 'password'}}
+    $password: {Main: {type: 'password'}},
+    $WA: (path: Path, restPath: Path) => ({Wrapper: {className: {[restPath[0]]: true}, ArrayItemMenu: {className: {[restPath[0]]: true}}}}),
+    $W: (path: Path, restPath: Path) => ({Wrapper: {className: {[restPath[0]]: true}}}),
+    $A: (path: Path, restPath: Path) => ({Wrapper: {ArrayItemMenu:{className: {[restPath[0]]: true}}}}),
+    $M: (path: Path, restPath: Path) => ({Main: {className: {[restPath[0]]: true}}}),
+    $T: (path: Path, restPath: Path) => ({Title: {className: {[restPath[0]]: true}}}),
   },
   fn: {
     api(fn: string, ...args: any[]) {this.api[fn](...args)},

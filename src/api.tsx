@@ -493,8 +493,21 @@ function isCompiled(schema: any): schema is jsJsonSchema {
 }
 
 function testRef(refRes: any, $_ref: string, track: string[]) {
-  if (isUndefined(refRes)) throw new Error('Reference "' + $_ref + '" leads to undefined object\'s property in path: ' + path2string(track));
+  if (isUndefined(refRes))
+    throw new Error('Reference "' + $_ref + '" leads to undefined object\'s property in path: ' + path2string(track));
   return true;
+}
+
+function getInWithCheck(refRes: any, path: Path) {
+  for (let j = 0; j < path.length; j++) {
+    refRes = getIn(refRes, path[j]);
+    if (isFunction(refRes) && j + 1 !== path.length) { // check if there is a function
+      refRes = refRes(path.slice(0, j + 1), path.slice(j + 1));
+      break;
+    }
+    if (isUndefined(refRes)) break;
+  }
+  return refRes
 }
 
 function objectDerefer(_elements: any, obj2deref: any, track: string[] = []) { // todo: test
@@ -506,7 +519,7 @@ function objectDerefer(_elements: any, obj2deref: any, track: string[] = []) { /
     if (!$_ref[i]) continue;
     let path = string2path($_ref[i]);
     if (path[0] !== '^') throw new Error('Can reffer only to ^');
-    let refRes = getIn({'^': _elements}, path);
+    let refRes = getInWithCheck({'^': _elements}, path);
     testRef(refRes, $_ref[i], track.concat('@' + i));
     if (isMergeable(refRes)) refRes = objectDerefer(_elements, refRes, track.concat('@' + i));
     objs2merge.push(refRes);
@@ -534,7 +547,7 @@ const convRef = (_elements: any, refs: string, track: Path = [], prefix = '') =>
       let r = ref[i];
       if (!r) continue;
       if (!isElemRef(r)) r = prefix + r;
-      let refRes = getIn(_objs, string2path(r));
+      let refRes = getInWithCheck(_objs,string2path(r));
       testRef(refRes, r, track.concat('@' + i));
       result = result ? merge(result, refRes) : refRes;
     }

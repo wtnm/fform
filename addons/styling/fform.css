@@ -8,40 +8,6 @@
 }
 
 
-.fform-title, .fform-radio-label {
-    margin-right: 1em;
-}
-
-
-.fform-title-viewer {
-    margin-bottom: 0;
-}
-
-.fform-title-viewer:after {
-    content: "";
-}
-
-.fform-title-viewer-inverted {
-    font-weight: bold;
-    margin-bottom: 0;
-}
-
-.fform-required:after {
-    content: " *";
-}
-
-.fform-viewer {
-    margin-right: 1em;
-    font-weight: bold;
-    margin-bottom: 1em;
-}
-
-.fform-viewer-inverted {
-    margin-right: 1em;
-    font-weight: normal;
-    margin-bottom: 1.5em;
-}
-
 .fform-hidden {
     display: none !important;;
 }

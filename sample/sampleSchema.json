@@ -320,7 +320,7 @@
       "type": "boolean",
       "title": "boolean left",
       "default": false,
-      "_presets": "booleanLeft:$inlineTitle",
+      "_presets": "booleanLeft:$W/fform-inline",
       "_enumExten": {
         "true": {
           "label": "yes"
@@ -337,7 +337,7 @@
       ],
       "title": "booleanNull left",
       "default": false,
-      "_presets": "booleanNullLeft:$inlineTitle",
+      "_presets": "booleanNullLeft:$W/fform-inline",
       "_stateMaps": [
         {
           "from": "./@/value",
@@ -350,7 +350,7 @@
       "type": "string",
       "title": "Select",
       "default": "option 2",
-      "_presets": "select:$inlineTitle",
+      "_presets": "select:$W/fform-inline",
       "enum": [
         "option 1",
         "option 2",

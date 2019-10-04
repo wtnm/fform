@@ -10,7 +10,7 @@
         "className": {
           "form-control": true
         },
-        "viewerProps": {
+        "$_viewerProps": {
           "className": {
             "col-form-label": true
           }

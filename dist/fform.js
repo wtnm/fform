@@ -108,8 +108,8 @@ class FForm extends react_1.Component {
     }
     _extendEvent(event) {
         const self = this;
-        event.value = self._savedValue;
-        event.state = self._savedState;
+        event.value = self.api.getValue();
+        event.state = self.api.getState();
         event.fform = self;
         return event;
     }
@@ -243,6 +243,8 @@ class FField extends FRefsGeneric {
         this._mappedData = {};
         this._builderData = {};
         this._rebuild = true;
+        // private _enumOptions: any;
+        // private _isNotSelfManaged: boolean | undefined;
         this._blocks = [];
         this._maps = {};
         this._forceUpd = false;
@@ -355,7 +357,7 @@ class FField extends FRefsGeneric {
         self.$branch = self.state.branch;
         const schemaPart = self.api.getSchemaPart(self.path);
         self.schemaPart = schemaPart;
-        self._isNotSelfManaged = !stateLib_1.isSelfManaged(self.state.branch) || undefined;
+        // self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
         if ((commonLib_1.isArray(schemaPart.type) || commonLib_1.isUndefined(schemaPart.type)) && !schemaPart._presets)
             throw new Error('schema._presets should be defined explicitly for multi type');
         self._layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart._layout));
@@ -1276,7 +1278,12 @@ let elementsBase = {
         $noMessage: { Message: false },
         $shrink: { Wrapper: { className: { 'fform-shrink': true } } },
         $expand: { Wrapper: { className: { 'fform-expand': true } } },
-        $password: { Main: { type: 'password' } }
+        $password: { Main: { type: 'password' } },
+        $WA: (path, restPath) => ({ Wrapper: { className: { [restPath[0]]: true }, ArrayItemMenu: { className: { [restPath[0]]: true } } } }),
+        $W: (path, restPath) => ({ Wrapper: { className: { [restPath[0]]: true } } }),
+        $A: (path, restPath) => ({ Wrapper: { ArrayItemMenu: { className: { [restPath[0]]: true } } } }),
+        $M: (path, restPath) => ({ Main: { className: { [restPath[0]]: true } } }),
+        $T: (path, restPath) => ({ Title: { className: { [restPath[0]]: true } } }),
     },
     fn: {
         api(fn, ...args) { this.api[fn](...args); },

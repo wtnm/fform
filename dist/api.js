@@ -445,6 +445,18 @@ function testRef(refRes, $_ref, track) {
         throw new Error('Reference "' + $_ref + '" leads to undefined object\'s property in path: ' + stateLib_1.path2string(track));
     return true;
 }
+function getInWithCheck(refRes, path) {
+    for (let j = 0; j < path.length; j++) {
+        refRes = commonLib_1.getIn(refRes, path[j]);
+        if (commonLib_1.isFunction(refRes) && j + 1 !== path.length) { // check if there is a function
+            refRes = refRes(path.slice(0, j + 1), path.slice(j + 1));
+            break;
+        }
+        if (commonLib_1.isUndefined(refRes))
+            break;
+    }
+    return refRes;
+}
 function objectDerefer(_elements, obj2deref, track = []) {
     if (!commonLib_1.isMergeable(obj2deref))
         return obj2deref;
@@ -457,7 +469,7 @@ function objectDerefer(_elements, obj2deref, track = []) {
         let path = stateLib_1.string2path($_ref[i]);
         if (path[0] !== '^')
             throw new Error('Can reffer only to ^');
-        let refRes = commonLib_1.getIn({ '^': _elements }, path);
+        let refRes = getInWithCheck({ '^': _elements }, path);
         testRef(refRes, $_ref[i], track.concat('@' + i));
         if (commonLib_1.isMergeable(refRes))
             refRes = objectDerefer(_elements, refRes, track.concat('@' + i));
@@ -490,7 +502,7 @@ const convRef = (_elements, refs, track = [], prefix = '') => {
                 continue;
             if (!stateLib_1.isElemRef(r))
                 r = prefix + r;
-            let refRes = commonLib_1.getIn(_objs, stateLib_1.string2path(r));
+            let refRes = getInWithCheck(_objs, stateLib_1.string2path(r));
             testRef(refRes, r, track.concat('@' + i));
             result = result ? commonLib_1.merge(result, refRes) : refRes;
         }
