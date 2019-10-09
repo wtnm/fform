@@ -57,3 +57,11 @@
 .fform-radio {
     padding-bottom: 0;
 }
+
+.fform-boolean > input, .fform-radio-input > input {
+    margin-right: 0.5em;
+}
+
+.fform-radio-input {
+    margin-right: 1em;
+}

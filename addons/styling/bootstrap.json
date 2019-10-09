@@ -21,7 +21,7 @@
       "Main": {
         "className": {
           "form-control": false,
-          "mt-3": true
+          "mt-2": true
         }
       }
     }

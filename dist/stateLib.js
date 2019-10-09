@@ -166,7 +166,7 @@ Macros.arrayItem = (state, schema, UPDATABLE, item) => {
 Macros.switch = (state, schema, UPDATABLE, item) => {
     let keyPath = item[SymData] || [];
     let switches = commonLib_1.makeSlice(keyPath, item.value);
-    object2PathValues(switches).forEach(pathValue => state = recursivelyUpdate(state, schema, UPDATABLE, makeNUpdate(item.path, pathValue, pathValue.pop())));
+    object2PathValues(switches, { arrayAsValue: true }).forEach(pathValue => state = recursivelyUpdate(state, schema, UPDATABLE, makeNUpdate(item.path, pathValue, pathValue.pop())));
     return state;
 };
 Macros.setExtraStatus = (state, schema, UPDATABLE, item) => {

@@ -117,16 +117,24 @@
           "fform-inline": true
         },
         "$_fields": {
-          "1.5": {
+          "0": {
             "$_ref": "^/parts/Submit",
             "id": "submit-button",
             "children": [
               "Send"
             ]
           },
-          "+0": {
+          "1": {
             "$_ref": "^/parts/Reset",
             "id": "reset-button"
+          },
+          "2": {
+            "$_ref": "^/parts/Button",
+            "id": "clear-button",
+            "children": [
+              "Clear submit errors"
+            ],
+            "onClick": "^/user/clearMessages"
           }
         }
       }
@@ -318,7 +326,7 @@
     },
     "booleanLeft": {
       "type": "boolean",
-      "title": "boolean left",
+      "_placeholder": "boolean left",
       "default": false,
       "_presets": "booleanLeft:$W/fform-inline",
       "_enumExten": {
@@ -335,7 +343,7 @@
         "boolean",
         "null"
       ],
-      "title": "booleanNull left",
+      "_placeholder": "booleanNull left",
       "default": false,
       "_presets": "booleanNullLeft:$W/fform-inline",
       "_stateMaps": [

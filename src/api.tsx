@@ -225,7 +225,7 @@ class FFormStateAPI extends FFormStateManager {
       validate: (path: boolean | string | Path = './', ...args: any[]) => wrapApi('validate')(typeof path == 'boolean' ? path : wrapPath(path), ...args),
       get: (...path: any[]) => wrapApi('get')(wrapPath(path)),
       // set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => wrapThis('set')(wrapPath(path), value, wrapOpts(opts)),
-      setValue: (value: any, opts: any = {}, ...args: any[]) => wrapApi('setValue')(value, wrapOpts(opts)),
+      //  setValue: (value: any, opts: any = {}, ...args: any[]) => wrapApi('setValue')(value, wrapOpts(opts)),
       bind: (object: any) => {
         self = object;
         return wrapped
@@ -233,13 +233,15 @@ class FFormStateAPI extends FFormStateManager {
       getValue: (opts: any = {}) => wrapped.get(SymData, opts.inital ? 'inital' : 'current', wrapPath(opts.path)),
       getApi: () => api,
     };
+    ['setValue', 'setMessages'].forEach(fn =>
+      wrapped[fn] = (value: any, opts: any = {}, ...args: any[]) => wrapApi(fn)(value, wrapOpts(opts), ...args));
     ['noExec', 'setState', 'getActive', 'getDefaultValue']
       .forEach(fn => wrapped[fn] = (...args: any[]) => wrapApi(fn)(...args));
     ['reset', 'clear', 'execute']
       .forEach(fn => wrapped[fn] = (opts: any, ...args: any[]) => wrapApi(fn)(wrapOpts(opts, true), ...args));
     ['showOnly', 'getSchemaPart']
       .forEach(fn => wrapped[fn] = (path: string | Path = [], opts: any = {}, ...args: any[]) => wrapApi(fn)(wrapPath(path), wrapOpts(opts), ...args));
-    ['set', 'switch', 'arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly']
+    ['set', 'switch', 'arrayAdd', 'arrayItemOps', 'setHidden']
       .forEach(fn => wrapped[fn] = (path: string | Path = [], value: any, opts: any = {}, ...args: any[]) => wrapApi(fn)(wrapPath(path), value, wrapOpts(opts), ...args));
     return wrapped;
   }
@@ -547,7 +549,7 @@ const convRef = (_elements: any, refs: string, track: Path = [], prefix = '') =>
       let r = ref[i];
       if (!r) continue;
       if (!isElemRef(r)) r = prefix + r;
-      let refRes = getInWithCheck(_objs,string2path(r));
+      let refRes = getInWithCheck(_objs, string2path(r));
       testRef(refRes, r, track.concat('@' + i));
       result = result ? merge(result, refRes) : refRes;
     }

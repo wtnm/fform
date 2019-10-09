@@ -279,7 +279,7 @@ class FFormStateAPI extends FFormStateManager {
             validate: (path = './', ...args) => wrapApi('validate')(typeof path == 'boolean' ? path : wrapPath(path), ...args),
             get: (...path) => wrapApi('get')(wrapPath(path)),
             // set: (path: string | Path = [], value: any, opts?: any, ...args: any[]) => wrapThis('set')(wrapPath(path), value, wrapOpts(opts)),
-            setValue: (value, opts = {}, ...args) => wrapApi('setValue')(value, wrapOpts(opts)),
+            //  setValue: (value: any, opts: any = {}, ...args: any[]) => wrapApi('setValue')(value, wrapOpts(opts)),
             bind: (object) => {
                 self = object;
                 return wrapped;
@@ -287,13 +287,14 @@ class FFormStateAPI extends FFormStateManager {
             getValue: (opts = {}) => wrapped.get(stateLib_1.SymData, opts.inital ? 'inital' : 'current', wrapPath(opts.path)),
             getApi: () => api,
         };
+        ['setValue', 'setMessages'].forEach(fn => wrapped[fn] = (value, opts = {}, ...args) => wrapApi(fn)(value, wrapOpts(opts), ...args));
         ['noExec', 'setState', 'getActive', 'getDefaultValue']
             .forEach(fn => wrapped[fn] = (...args) => wrapApi(fn)(...args));
         ['reset', 'clear', 'execute']
             .forEach(fn => wrapped[fn] = (opts, ...args) => wrapApi(fn)(wrapOpts(opts, true), ...args));
         ['showOnly', 'getSchemaPart']
             .forEach(fn => wrapped[fn] = (path = [], opts = {}, ...args) => wrapApi(fn)(wrapPath(path), wrapOpts(opts), ...args));
-        ['set', 'switch', 'arrayAdd', 'arrayItemOps', 'setHidden', 'showOnly']
+        ['set', 'switch', 'arrayAdd', 'arrayItemOps', 'setHidden']
             .forEach(fn => wrapped[fn] = (path = [], value, opts = {}, ...args) => wrapApi(fn)(wrapPath(path), value, wrapOpts(opts), ...args));
         return wrapped;
     }

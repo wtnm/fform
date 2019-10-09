@@ -71,17 +71,10 @@
         }
       }
     },
-    "booleanLeft": {
+    "boolean": {
       "Main": {
         "className": {
-          "fform-boolean-left-container": true
-        },
-        "children": {
-          "0": {
-            "className": {
-              "fform-boolean-left": true
-            }
-          }
+          "fform-boolean": true
         }
       }
     }
@@ -102,17 +95,7 @@
             "args": {
               "2": {
                 "className": {
-                  "fform-radio-container": true
-                }
-              },
-              "3": {
-                "className": {
                   "fform-radio-input": true
-                }
-              },
-              "4": {
-                "className": {
-                  "fform-radio-label": true
                 }
               }
             }

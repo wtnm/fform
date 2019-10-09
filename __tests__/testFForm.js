@@ -62,13 +62,16 @@ const SymData = Symbol.for('FFormData');
 
 const elemExtend = {
   'user': {
-    focusInput: function () {
+    focusInput() {
       let focusInput = this.getRef('!focusInput');
       focusInput = focusInput.value;
       let target = this.pFForm.getRef(focusInput);
       if (!target) return alert('No target field');
       if (!target.focus) return alert('Target field has no focus');
       target.focus();
+    },
+    clearMessages() {
+      this.api.setMessages(null);
     }
   }
 };
@@ -168,7 +171,7 @@ describe('FForm tests', function () {
     expect(core.getState()['array']['2'][SymData].length).to.be.equal(3);
     button = wrapper.find(`button[data-key="add_0"]`);
     expect(button.props().disabled).not.to.be.ok;
-    
+
   })
 
 

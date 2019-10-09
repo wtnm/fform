@@ -147,7 +147,7 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
 Macros.switch = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE_UPDATABLE_Type, item: NormalizedUpdateType) => {
   let keyPath = item[SymData] || [];
   let switches = makeSlice(keyPath, item.value);
-  object2PathValues(switches).forEach(pathValue => state = recursivelyUpdate(state, schema, UPDATABLE, makeNUpdate(item.path, pathValue, pathValue.pop())));
+  object2PathValues(switches, {arrayAsValue: true}).forEach(pathValue => state = recursivelyUpdate(state, schema, UPDATABLE, makeNUpdate(item.path, pathValue, pathValue.pop())));
   return state
 };
 

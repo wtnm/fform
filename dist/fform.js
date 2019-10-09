@@ -117,6 +117,8 @@ class FForm extends react_1.Component {
         const self = this;
         const setPending = (val) => self.api.set([], val, { [stateLib_1.SymData]: ['status', 'pending'] });
         const setMessagesFromSubmit = (messages = []) => {
+            if (commonLib_1.isUndefined(messages))
+                return;
             commonLib_1.toArray(messages).forEach(value => {
                 if (!value)
                     return;
@@ -845,16 +847,28 @@ function ItemMenu(props) {
         return (react_1.createElement(ButW, Object.assign({ key: key, type: type, title: title, className: _$cx ? _$cx(ButCN) : ButCN, children: children }, restBut, { disabled: disabled || disabledCheck && !arrayItem[disabledCheck], onClick: () => onClick(key) })));
     })));
 }
-function CheckboxNull(props) {
+const Checkbox = react_1.forwardRef((_a, ref) => {
+    var { $_tags = {}, $props = {}, children, placeholder, type = "checkbox", className = "" } = _a, rest = __rest(_a, ["$_tags", "$props", "children", "placeholder", "type", "className"]);
+    rest.ref = ref;
+    rest.type = type;
+    rest.key = "input";
+    if ($props[0])
+        Object.assign(rest, $props[0]);
+    return (react_1.createElement($_tags['parent'] || 'label', Object.assign({ className }, $props['parent'] || {}), [
+        react_1.createElement($_tags[0] || 'input', rest),
+        react_1.createElement($_tags[1] || 'span', Object.assign({ key: "label" }, $props[1] || {}), placeholder)
+    ]));
+});
+const CheckboxNull = react_1.forwardRef((props, ref) => {
     const self = this;
-    let { checked, onChange, nullValue = "", dual, tagRef, type } = props, rest = __rest(props, ["checked", "onChange", "nullValue", "dual", "tagRef", "type"]);
+    let { checked, onChange, nullValue = "", type } = props, rest = __rest(props, ["checked", "onChange", "nullValue", "type"]);
     return react_1.createElement("input", Object.assign({ type: "checkbox", checked: checked === true }, rest, { onChange: (event) => {
-            onChange(dual ? !checked : (checked === nullValue ? true : (checked === true ? false : nullValue)), event);
+            onChange((checked === nullValue ? true : (checked === true ? false : nullValue)), event);
         }, ref: elem => {
-            tagRef && tagRef(elem);
+            ref && ref(elem);
             elem && (elem.indeterminate = (checked === nullValue));
         } }));
-}
+});
 ///////////////////////////////
 //     Functions
 ///////////////////////////////
@@ -1032,6 +1046,7 @@ let elementsBase = {
         Builder: FBuilder,
         Wrapper: Wrapper,
         ItemMenu: ItemMenu,
+        Checkbox: Checkbox,
         CheckboxNull: CheckboxNull,
     },
     sets: {
@@ -1142,38 +1157,19 @@ let elementsBase = {
             $_ref: '^/sets/simple',
             Main: {
                 type: 'checkbox',
+                _$useTag: "^/widgets/Checkbox",
                 onChange: { $: '^/fn/eventChecked|setValue|liveUpdate' }
             },
-        },
-        booleanLeft: {
-            $_ref: '^/sets/base',
-            Main: {
-                _$widget: '^/widgets/Generic',
-                _$useTag: 'label',
-                _$cx: '^/_$cx',
-                $_reactRef: { '0': { ref: true } },
-                children: [
-                    { $_ref: '^/sets/simple/Main:^/sets/boolean/Main', $_reactRef: false, $_viewerProps: { _$useTag: 'span' } },
-                    { $_ref: '^/sets/simple/Title', _$useTag: 'span', $_maps: { 'className/fform-hidden': '@/params/viewer' } }
-                ]
-            },
-            Title: { $_ref: '^/sets/simple/Title', $_maps: { 'className/fform-hidden': '!@/params/viewer' } },
         },
         booleanNull: {
             $_ref: '^/sets/boolean',
             Main: {
-                _$useTag: '^/widgets/CheckboxNull',
-                $_reactRef: { tagRef: true },
+                $_tags: { '0': '^/widgets/CheckboxNull', _$skipKeys: ['0'] },
                 onChange: { $: '^/fn/parseTristate|setValue|liveUpdate', args: ['${0}'] },
             },
         },
-        booleanNullLeft: {
-            $_ref: '^/sets/booleanLeft',
-            Main: {
-                $_reactRef: { '0': { ref: null, tagRef: true } },
-                children: [{ $_ref: '^/sets/booleanNull/Main' }, {}]
-            }
-        },
+        booleanLeft: { $_ref: '^/sets/boolean' },
+        booleanNullLeft: { $_ref: '^/sets/booleanNull' },
         object: {
             $_ref: '^/sets/base',
             Main: {
@@ -1247,9 +1243,7 @@ let elementsBase = {
                             args: [
                                 '@/fData/enum',
                                 '@/fData/enumExten',
-                                { $_reactRef: { '$_reactRef': { '0': { 'ref': true } } } },
                                 { onChange: { args: ['${0}'] } },
-                                {},
                                 true
                             ],
                         },
@@ -1259,7 +1253,7 @@ let elementsBase = {
                 }
             }
         },
-        checkboxes: { $_ref: '^/sets/radio', Main: { $_maps: { children: { '0': { args: { '3': { type: 'checkbox', onChange: { $: '^/fn/eventCheckboxes|setValue|liveUpdate' } }, '5': '[]' } } } } } },
+        checkboxes: { $_ref: '^/sets/radio', Main: { $_maps: { children: { '0': { args: { '2': { type: 'checkbox', onChange: { $: '^/fn/eventCheckboxes|setValue|liveUpdate' } }, '5': '[]' } } } } } },
         $radioNull: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: '^/fn/eventValue|radioClear|liveUpdate' } } } } } } },
         $radioEmpty: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: { $: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', ''] } } } } } } } },
         $autowidth: {
@@ -1284,6 +1278,8 @@ let elementsBase = {
         $A: (path, rPath) => ({ Wrapper: { ArrayItemMenu: { className: { [rPath[0]]: !rPath[1] } } } }),
         $M: (path, rPath) => ({ Main: { className: { [rPath[0]]: !rPath[1] } } }),
         $T: (path, rPath) => ({ Title: { className: { [rPath[0]]: !rPath[1] } } }),
+        $B: (path, rPath) => ({ Body: { className: { [rPath[0]]: !rPath[1] } } }),
+        $MSG: (path, rPath) => ({ Message: { className: { [rPath[0]]: !rPath[1] } } }),
     },
     fn: {
         api(fn, ...args) { this.api[fn](...args); },
@@ -1298,7 +1294,9 @@ let elementsBase = {
         and: (...args) => [args.every(Boolean)],
         getArrayStart(...args) { return [stateLib_1.arrayStart(this.schemaPart), ...args]; },
         getProp(key, ...args) { return [commonLib_1.getIn(this, stateLib_1.normalizePath(key)), ...args]; },
-        eventValue: (event, ...args) => [event.target.value, ...args],
+        eventValue: (event, ...args) => [
+            event.target.value, ...args
+        ],
         eventChecked: (event, ...args) => [event.target.checked, ...args],
         parseTristate: (value, ...args) => [value === "" ? null : value, ...args],
         eventMultiple: (event, ...args) => [Array.from(event.target.options).filter((o) => o.selected).map((v) => v.value), ...args],
@@ -1361,25 +1359,21 @@ let elementsBase = {
                     return Object.assign(Object.assign(Object.assign({ key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)) }, extenProps), staticProps), { value: val });
                 })];
         },
-        enumInputs(enumVals = [], enumExten = {}, containerProps = {}, inputProps = {}, labelProps = {}, name) {
-            // inputProps = this.wrapFns(inputProps);
+        enumInputs(enumVals = [], enumExten = {}, inputProps = {}, opts = {}) {
             return [enumVals.map(val => {
-                    let extenProps = getExten(enumExten, val);
-                    return Object.assign(Object.assign({ key: val }, containerProps), { children: [
-                            Object.assign(Object.assign({ name: name && (this.props.name + (name === true ? '' : name)) }, commonLib_1.merge(inputProps, extenProps)), { value: val }),
-                            Object.assign(Object.assign({}, labelProps), { children: [extenProps.label || val] })
-                        ] });
+                    let _a = getExten(enumExten, val), { label } = _a, extenProps = __rest(_a, ["label"]);
+                    return Object.assign(Object.assign({ key: val, name: name && (this.props.name + (opts.name === true ? '' : opts.name)) }, commonLib_1.merge(inputProps, extenProps)), { placeholder: label || val, value: val });
                 })];
         },
         enumInputProps(enumVals = [], ...rest) {
             let props = {};
             for (let i = 0; i < rest.length; i += 2)
                 props[rest[i]] = rest[i + 1];
-            return [enumVals.map(val => { return { 'children': { '0': props } }; })];
+            return [enumVals.map(val => props)];
         },
         enumInputValue(enumVals = [], value, property = 'checked') {
             value = commonLib_1.toArray(value);
-            return [enumVals.map(val => { return { 'children': { '0': { [property]: !!~value.indexOf(val) } } }; })];
+            return [enumVals.map(val => { return { [property]: !!~value.indexOf(val) }; })];
         },
         setInputPriority(priority) {
             if (typeof priority == 'number')
@@ -1412,16 +1406,14 @@ let elementsBase = {
                         args: [
                             '@/selector/enum',
                             '@/selector/enumExten',
-                            { _$useTag: 'label', _$cx: '^/_$cx' },
                             {
-                                _$widget: 'input',
+                                _$widget: '^/widgets/Checkbox',
                                 type: 'radio',
                                 onChange: { $: '^/fn/eventValue|setValue|liveUpdate', args: ['${0}', { path: './@/selector/value' }] },
                                 onBlur: '^/sets/simple/Main/onBlur',
                                 onFocus: '^/sets/simple/Main/onFocus',
                             },
-                            { _$useTag: 'span', _$cx: '^/_$cx', },
-                            true
+                            { name: true }
                         ],
                         replace: false,
                     },

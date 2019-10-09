@@ -172,7 +172,7 @@ class FViewer extends Component<FViewerProps> {
 
   render() {
     const self = this;
-    let {value, parent, _$useTag: UseTag = self.props.elements.widgets.Viewer || 'div', ...rest} = self.props;
+    let {value, parent, _$useTag: UseTag = self.props.elements.widgets.Viewer || 'div', customData, ...rest} = self.props;
     objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete (rest as any)[k]); // remove props that starts with '_' or '$'
     return (
       <UseTag ref={self._setFormRef} {...rest} >

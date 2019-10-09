@@ -1,6 +1,6 @@
 /** @jsx h */
 
-import {createElement as h, Component} from 'react';
+import {createElement as h, Component, forwardRef} from 'react';
 //const React = require('preact');
 
 import {
@@ -152,6 +152,7 @@ class FForm extends Component<FFormProps> {
     const setPending = (val: any) => self.api.set([], val, {[SymData]: ['status', 'pending']});
 
     const setMessagesFromSubmit = (messages: any = []) => {
+      if (isUndefined(messages)) return;
       toArray(messages).forEach(value => {
         if (!value) return;
         let opts = value[SymData];
@@ -980,18 +981,34 @@ function ItemMenu(props: any) {
 }
 
 
-function CheckboxNull(props: any) {
-  const self = this;
-  let {checked, onChange, nullValue = "", dual, tagRef, type, ...rest} = props;
-  return <input type="checkbox" checked={checked === true} {...rest}
-                onChange={(event: any) => {
-                  onChange(dual ? !checked : (checked === nullValue ? true : (checked === true ? false : nullValue)), event)
-                }}
-                ref={elem => {
-                  tagRef && tagRef(elem);
-                  elem && (elem.indeterminate = (checked === nullValue))
-                }}/>
-}
+const Checkbox = forwardRef(({$_tags = {}, $props = {}, children, placeholder, type = "checkbox", className = "", ...rest}: any, ref) => {
+  rest.ref = ref;
+  rest.type = type;
+  rest.key = "input";
+  if ($props[0]) Object.assign(rest, $props[0]);
+  return (
+    h($_tags['parent'] || 'label', Object.assign({className}, $props['parent'] || {}),
+      [
+        h($_tags[0] || 'input', rest),
+        h($_tags[1] || 'span', {key: "label", ...$props[1] || {}}, placeholder)
+      ]
+    )
+  )
+});
+
+const CheckboxNull = forwardRef((props: any, ref: any) => {
+    const self = this;
+    let {checked, onChange, nullValue = "", type, ...rest} = props;
+    return <input type="checkbox" checked={checked === true} {...rest}
+                  onChange={(event: any) => {
+                    onChange((checked === nullValue ? true : (checked === true ? false : nullValue)), event)
+                  }}
+                  ref={elem => {
+                    ref && ref(elem);
+                    elem && (elem.indeterminate = (checked === nullValue))
+                  }}/>
+  }
+)
 
 
 ///////////////////////////////
@@ -1166,6 +1183,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     Builder: FBuilder,
     Wrapper: Wrapper,
     ItemMenu: ItemMenu,
+    Checkbox: Checkbox,
     CheckboxNull: CheckboxNull,
   },
   sets: {
@@ -1276,38 +1294,19 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_ref: '^/sets/simple',
       Main: {
         type: 'checkbox',
+        _$useTag: "^/widgets/Checkbox",
         onChange: {$: '^/fn/eventChecked|setValue|liveUpdate'}
       },
-    },
-    booleanLeft: {
-      $_ref: '^/sets/base',
-      Main: {
-        _$widget: '^/widgets/Generic',
-        _$useTag: 'label',
-        _$cx: '^/_$cx',
-        $_reactRef: {'0': {ref: true}},
-        children: [
-          {$_ref: '^/sets/simple/Main:^/sets/boolean/Main', $_reactRef: false, $_viewerProps: {_$useTag: 'span'}},
-          {$_ref: '^/sets/simple/Title', _$useTag: 'span', $_maps: {'className/fform-hidden': '@/params/viewer'}}
-        ]
-      },
-      Title: {$_ref: '^/sets/simple/Title', $_maps: {'className/fform-hidden': '!@/params/viewer'}},
     },
     booleanNull: {
       $_ref: '^/sets/boolean',
       Main: {
-        _$useTag: '^/widgets/CheckboxNull',
-        $_reactRef: {tagRef: true},
+        $_tags: {'0': '^/widgets/CheckboxNull', _$skipKeys: ['0']},
         onChange: {$: '^/fn/parseTristate|setValue|liveUpdate', args: ['${0}']},
       },
     },
-    booleanNullLeft: {
-      $_ref: '^/sets/booleanLeft',
-      Main: {
-        $_reactRef: {'0': {ref: null, tagRef: true}},
-        children: [{$_ref: '^/sets/booleanNull/Main'}, {}]
-      }
-    },
+    booleanLeft: {$_ref: '^/sets/boolean'},
+    booleanNullLeft: {$_ref: '^/sets/booleanNull'},
     object: {
       $_ref: '^/sets/base',
       Main: {
@@ -1380,9 +1379,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
               args: [
                 '@/fData/enum',
                 '@/fData/enumExten',
-                {$_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
-                {onChange: {args: ['${0}']}},
-                {},
+                {onChange: {args: ['${0}']}}, //{$_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
                 true
               ],
             },
@@ -1392,7 +1389,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         }
       }
     },
-    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'3': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue|liveUpdate'}}, '5': '[]'}}}}}},
+    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'2': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue|liveUpdate'}}, '5': '[]'}}}}}},
 
     $radioNull: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: '^/fn/eventValue|radioClear|liveUpdate'}}}}}}},
     $radioEmpty: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: {$: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', '']}}}}}}}},
@@ -1415,11 +1412,11 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     $password: {Main: {type: 'password'}},
     $WA: (path: Path, rPath: Path) => ({Wrapper: {className: {[rPath[0]]: !rPath[1]}, ArrayItemMenu: {className: {[rPath[0]]: !rPath[1]}}}}),
     $W: (path: Path, rPath: Path) => ({Wrapper: {className: {[rPath[0]]: !rPath[1]}}}),
-    $A: (path: Path, rPath: Path) => ({Wrapper: {ArrayItemMenu:{className: {[rPath[0]]: !rPath[1]}}}}),
+    $A: (path: Path, rPath: Path) => ({Wrapper: {ArrayItemMenu: {className: {[rPath[0]]: !rPath[1]}}}}),
     $M: (path: Path, rPath: Path) => ({Main: {className: {[rPath[0]]: !rPath[1]}}}),
     $T: (path: Path, rPath: Path) => ({Title: {className: {[rPath[0]]: !rPath[1]}}}),
     $B: (path: Path, rPath: Path) => ({Body: {className: {[rPath[0]]: !rPath[1]}}}),
-    $MSG: (path: Path, rPath: Path) => ({Message: {className: {[rPath[0]]: !rPath[1]}}}),    
+    $MSG: (path: Path, rPath: Path) => ({Message: {className: {[rPath[0]]: !rPath[1]}}}),
   },
   fn: {
     api(fn: string, ...args: any[]) {this.api[fn](...args)},
@@ -1437,7 +1434,8 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     getArrayStart(...args: any[]) {return [arrayStart(this.schemaPart), ...args]},
     getProp(key: string, ...args: any[]) {return [getIn(this, normalizePath(key)), ...args]},
 
-    eventValue: (event: any, ...args: any[]) => [event.target.value, ...args],
+    eventValue: (event: any, ...args: any[]) => [
+      event.target.value, ...args],
     eventChecked: (event: any, ...args: any[]) => [event.target.checked, ...args],
     parseTristate: (value: any, ...args: any[]) => [value === "" ? null : value, ...args],
     eventMultiple: (event: any, ...args: any[]) =>
@@ -1499,28 +1497,26 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         return {key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)), ...extenProps, ...staticProps, value: val}
       })]
     },
-    enumInputs(enumVals: any[] = [], enumExten: any = {}, containerProps: any = {}, inputProps: any = {}, labelProps: any = {}, name?: true | string) {
-      // inputProps = this.wrapFns(inputProps);
+    enumInputs(enumVals: any[] = [], enumExten: any = {}, inputProps: any = {}, opts: any = {}) {
       return [enumVals.map(val => {
-        let extenProps = getExten(enumExten, val);
+        let {label, ...extenProps} = getExten(enumExten, val);
         return {
           key: val,
-          ...containerProps,
-          children: [
-            {name: name && (this.props.name + (name === true ? '' : name)), ...merge(inputProps, extenProps), value: val},
-            {...labelProps, children: [extenProps.label || val]}
-          ]
+          name: name && (this.props.name + (opts.name === true ? '' : opts.name)),
+          ...merge(inputProps, extenProps),
+          placeholder: label || val,
+          value: val
         }
       })]
     },
     enumInputProps(enumVals: any[] = [], ...rest: any[]) {
       let props: any = {};
       for (let i = 0; i < rest.length; i += 2) props[rest[i]] = rest[i + 1];
-      return [enumVals.map(val => {return {'children': {'0': props}}})]
+      return [enumVals.map(val => props)]
     },
     enumInputValue(enumVals: any[] = [], value: any, property = 'checked') {
       value = toArray(value);
-      return [enumVals.map(val => {return {'children': {'0': {[property]: !!~value.indexOf(val)}}}})]
+      return [enumVals.map(val => {return {[property]: !!~value.indexOf(val)}})]
     },
     setInputPriority(priority?: number) {
       if (typeof priority == 'number') return ['fform-input-priority-' + priority];
@@ -1551,16 +1547,14 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
             args: [
               '@/selector/enum',
               '@/selector/enumExten',
-              {_$useTag: 'label', _$cx: '^/_$cx'},
               {
-                _$widget: 'input',
+                _$widget: '^/widgets/Checkbox',
                 type: 'radio',
                 onChange: {$: '^/fn/eventValue|setValue|liveUpdate', args: ['${0}', {path: './@/selector/value'}]},
                 onBlur: '^/sets/simple/Main/onBlur',
                 onFocus: '^/sets/simple/Main/onFocus',
               },
-              {_$useTag: 'span', _$cx: '^/_$cx',},
-              true
+              {name: true}
             ],
             replace: false,
           },

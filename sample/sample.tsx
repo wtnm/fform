@@ -65,13 +65,16 @@ const viewerSelectSchema = {
 
 const elemExtend = {
   'user': {
-    focusInput: function () {
+    focusInput() {
       let focusInput = this.getRef('!focusInput');
       focusInput = focusInput.value;
       let target = this.pFForm.getRef(focusInput);
       if (!target) return alert('No target field');
       if (!target.focus) return alert('Target field has no focus');
       target.focus();
+    },
+    clearMessages() {
+      this.api.setMessages(null);
     }
   }
 };

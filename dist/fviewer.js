@@ -144,7 +144,7 @@ class FViewer extends react_1.Component {
     }
     render() {
         const self = this;
-        let _a = self.props, { value, parent, _$useTag: UseTag = self.props.elements.widgets.Viewer || 'div' } = _a, rest = __rest(_a, ["value", "parent", "_$useTag"]);
+        let _a = self.props, { value, parent, _$useTag: UseTag = self.props.elements.widgets.Viewer || 'div', customData } = _a, rest = __rest(_a, ["value", "parent", "_$useTag", "customData"]);
         commonLib_1.objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete rest[k]); // remove props that starts with '_' or '$'
         return (react_1.createElement(UseTag, Object.assign({ ref: self._setFormRef }, rest),
             react_1.createElement(fform_1.FField, { ref: self._setRootRef, id: rest.id ? rest.id + '/#' : undefined, name: rest.name ? rest.name + '/#' : undefined, pFForm: self, getPath: FViewer._getPath, FFormApi: self.api })));
