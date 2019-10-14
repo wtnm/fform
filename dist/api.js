@@ -447,14 +447,25 @@ function testRef(refRes, $_ref, track) {
     return true;
 }
 function getInWithCheck(refRes, path) {
-    for (let j = 0; j < path.length; j++) {
-        refRes = commonLib_1.getIn(refRes, path[j]);
-        if (commonLib_1.isFunction(refRes) && j + 1 !== path.length) { // check if there is a function
-            refRes = refRes(path.slice(0, j + 1), path.slice(j + 1));
-            break;
+    let elems = refRes['^'];
+    let whileBreak = false;
+    while (!whileBreak) {
+        whileBreak = true;
+        for (let j = 0; j < path.length; j++) {
+            refRes = commonLib_1.getIn(refRes, path[j]);
+            if (stateLib_1.isElemRef(refRes)) {
+                path = stateLib_1.string2path(refRes).concat(path.slice(j + 1));
+                refRes = { '^': elems };
+                whileBreak = false;
+                break;
+            }
+            if (commonLib_1.isFunction(refRes) && j + 1 !== path.length) { // check if there is a function
+                refRes = refRes(elems, path.slice(j + 1));
+                break;
+            }
+            if (commonLib_1.isUndefined(refRes))
+                break;
         }
-        if (commonLib_1.isUndefined(refRes))
-            break;
     }
     return refRes;
 }

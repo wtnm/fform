@@ -14,6 +14,8 @@ const isObject = (value) => isMergeable(value) && !isArray(value);
 exports.isObject = isObject;
 const isFunction = (value) => typeof value === 'function';
 exports.isFunction = isFunction;
+const isPromise = (value) => isFunction(getIn(value, 'then'));
+exports.isPromise = isPromise;
 const toArray = (value) => isArray(value) ? value : [value];
 exports.toArray = toArray;
 const deArray = (value, keepArray) => !keepArray && isArray(value) && value.length == 1 ? value[0] : value;

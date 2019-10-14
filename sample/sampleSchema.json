@@ -84,7 +84,7 @@
             }
           },
           {
-            "$_ref": "^/parts/Button",
+            "$_ref": "^/parts/Button:^/$S/mx/5em",
             "children": "focus",
             "className": {
               "fform-shrink": true
@@ -104,6 +104,7 @@
       "radioSelect",
       "checkboxSelect",
       "autowidth",
+      "password",
       "multiselect",
       "textarea",
       {
@@ -328,7 +329,7 @@
       "type": "boolean",
       "_placeholder": "boolean left",
       "default": false,
-      "_presets": "booleanLeft:$W/fform-inline",
+      "_presets": "booleanLeft:$C/W/fform-inline",
       "_enumExten": {
         "true": {
           "label": "yes"
@@ -345,7 +346,7 @@
       ],
       "_placeholder": "booleanNull left",
       "default": false,
-      "_presets": "booleanNullLeft:$W/fform-inline",
+      "_presets": "booleanNullLeft:$C/W/fform-inline",
       "_stateMaps": [
         {
           "from": "./@/value",
@@ -358,7 +359,7 @@
       "type": "string",
       "title": "Select",
       "default": "option 2",
-      "_presets": "select:$W/fform-inline",
+      "_presets": "select:$C/W/fform-inline",
       "enum": [
         "option 1",
         "option 2",
@@ -369,7 +370,7 @@
       "type": "string",
       "title": "Radio select",
       "default": "option 2",
-      "_presets": "radio:$inlineItems:$inlineTitle",
+      "_presets": "radio:$inlineItems:$inlineTitle:$S/W/mx/5em",
       "_enumExten": [
         "option 2",
         {
@@ -386,7 +387,7 @@
         "option 2",
         "option 3"
       ],
-      "_presets": "checkboxes:$inlineItems:$inlineTitle",
+      "_presets": "checkboxes:$inlineItems:$inlineTitle:$S/W/mx/5em",
       "_simple": true,
       "_enumExten": {
         "option 1": true,
@@ -405,6 +406,11 @@
     "autowidth": {
       "type": "number",
       "_presets": "number:$autowidth"
+    },
+    "password": {
+      "type": "string",
+      "title": "password",
+      "_presets": "string:$/M/type/password"
     },
     "multiselect": {
       "type": "array",

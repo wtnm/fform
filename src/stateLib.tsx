@@ -665,7 +665,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
     if (!selfManaged)
       modifiedValues && objKeys(modifiedValues).forEach(key => state = recurseValidationInnerPROCEDURE(state, validatedValue[key], modifiedValues[key], track.concat(key)));
 
-    let _validators = schemaPart._validators;
+    let _validators = getIn(schemaPart, '_validators');
 
     if (_validators) {
       const field = makeSynthField(UPDATABLE.api, path2string(track));

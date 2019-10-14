@@ -699,7 +699,7 @@ function makeValidation(state, dispatch, action) {
         const selfManaged = isSelfManaged(state, track);
         if (!selfManaged)
             modifiedValues && commonLib_1.objKeys(modifiedValues).forEach(key => state = recurseValidationInnerPROCEDURE(state, validatedValue[key], modifiedValues[key], track.concat(key)));
-        let _validators = schemaPart._validators;
+        let _validators = commonLib_1.getIn(schemaPart, '_validators');
         if (_validators) {
             const field = makeSynthField(UPDATABLE.api, path2string(track));
             commonLib_1.objKeys(_validators).forEach((k) => {

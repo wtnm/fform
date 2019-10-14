@@ -501,13 +501,25 @@ function testRef(refRes: any, $_ref: string, track: string[]) {
 }
 
 function getInWithCheck(refRes: any, path: Path) {
-  for (let j = 0; j < path.length; j++) {
-    refRes = getIn(refRes, path[j]);
-    if (isFunction(refRes) && j + 1 !== path.length) { // check if there is a function
-      refRes = refRes(path.slice(0, j + 1), path.slice(j + 1));
-      break;
+  let elems = refRes['^'];
+  let whileBreak = false;
+  while (!whileBreak) {
+    whileBreak = true;
+
+    for (let j = 0; j < path.length; j++) {
+      refRes = getIn(refRes, path[j]);
+      if (isElemRef(refRes)) {
+        path = string2path(refRes).concat(path.slice(j + 1));
+        refRes = {'^': elems};
+        whileBreak = false;
+        break;
+      }
+      if (isFunction(refRes) && j + 1 !== path.length) { // check if there is a function
+        refRes = refRes(elems, path.slice(j + 1));
+        break;
+      }
+      if (isUndefined(refRes)) break;
     }
-    if (isUndefined(refRes)) break;
   }
   return refRes
 }

@@ -5,6 +5,7 @@ const isString = (value: any): value is string => typeof value === 'string';
 const isArray = Array.isArray;
 const isObject = (value: any): value is anyObject => isMergeable(value) && !isArray(value);
 const isFunction = (value: any): value is Function => typeof value === 'function';
+const isPromise = (value: any): value is Promise<any> => isFunction(getIn(value, 'then'));
 
 const toArray = (value: any) => isArray(value) ? value : [value];
 const deArray = (value: any, keepArray?: boolean) => !keepArray && isArray(value) && value.length == 1 ? value[0] : value;
@@ -316,5 +317,5 @@ merge.all = function (state: any, obj2merge: any[], options: MergeStateOptionsAr
 
 
 export {mergeState, merge, push2array, asNumber, isEqual, objKeys, objKeysNSymb, moveArrayElems, delIn, setIn, hasIn, getIn, getCreateIn, makeSlice, memoize, toArray, deArray};
-export {isMergeable, isUndefined, isNumber, isInteger, isString, isObject, isArray, isFunction}
+export {isMergeable, isUndefined, isNumber, isInteger, isString, isObject, isArray, isFunction, isPromise}
 

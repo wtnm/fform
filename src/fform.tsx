@@ -16,7 +16,7 @@ import {
   isFunction,
   merge,
   objKeys,
-  memoize, isNumber,
+  memoize, isNumber, setIn, push2array,
 } from "./commonLib";
 import {
   arrayStart,
@@ -560,24 +560,8 @@ class FSection extends FRefsGeneric {
   constructor(props: any, context: any) {
     super(props, context);
     const self = this;
-    //self._setRef = (name: number | string) => (item: any) => self.$refs[name] = item;
     self._setWidRef = (key: number | string) => (item: any) => self._widgets[key] = item;
-    // self._build(self.props);
   }
-
-  // focus(path: Path) {
-  //   const self = this;
-  //   let field;
-  //   if (!path.length) {
-  //     field = self.props.focusField;
-  //     if (isUndefined(field)) field = self.props.isArray ? '0' : (branchKeys(self.props.$branch)[0] || '');
-  //   } else {
-  //     field = path[0].toString();
-  //     path = path.slice(1);
-  //   }
-  //   if (self.props.isArray && field >= self.props.arrayStart) field = self._arrayIndex2key(self.props.$branch[field]) || field;
-  //   if (self.$refs[field] && self.$refs[field].focus) self.$refs[field].focus(path)
-  // }
 
   _getMappedData(key: number) {
     const self = this;
@@ -948,10 +932,13 @@ function FBuilder(props: any) {
 
 
 function Wrapper(props: any) {
-  let {_$useTag: WrapperW = 'div', _$cx = classNames, className, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
-  const {_$widget: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
-  const {_$widget: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
-  const result = <WrapperW className={_$cx ? _$cx(className) : className} {...rest} />;
+  let {_$useTag: WrapperW = 'div', _$cx = classNames, className, wrapperClassName = {}, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
+  let {_$widget: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
+  let {_$widget: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
+  if (!arrayItem) wrapperClassName = [wrapperClassName, className];
+  else IBodyCN = [IBodyCN, className];
+
+  const result = <WrapperW className={_$cx ? _$cx(wrapperClassName) : wrapperClassName} {...rest} />;
   if (arrayItem) {
     return (
       <IBodyW className={_$cx ? _$cx(IBodyCN) : IBodyCN} {...IBodyRest}>
@@ -981,16 +968,17 @@ function ItemMenu(props: any) {
 }
 
 
-const Checkbox = forwardRef(({$_tags = {}, $props = {}, children, placeholder, type = "checkbox", className = "", ...rest}: any, ref) => {
+const Checkbox = forwardRef(({$tags = {}, $props = {}, children, placeholder, role = 'checkbox', type = "checkbox", className = "", ...rest}: any, ref) => {
   rest.ref = ref;
   rest.type = type;
   rest.key = "input";
-  if ($props[0]) Object.assign(rest, $props[0]);
+  rest.role = "input";
+  if ($props['input']) Object.assign(rest, $props['input']);
   return (
-    h($_tags['parent'] || 'label', Object.assign({className}, $props['parent'] || {}),
+    h($tags['parent'] || 'label', Object.assign({className, role}, $props['parent'] || {}),
       [
-        h($_tags[0] || 'input', rest),
-        h($_tags[1] || 'span', {key: "label", ...$props[1] || {}}, placeholder)
+        h($tags['input'] || 'input', rest),
+        h($tags['label'] || 'span', {key: "label", role: "label", ...$props['label'] || {}}, placeholder)
       ]
     )
   )
@@ -1301,7 +1289,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     booleanNull: {
       $_ref: '^/sets/boolean',
       Main: {
-        $_tags: {'0': '^/widgets/CheckboxNull', _$skipKeys: ['0']},
+        $tags: {'input': '^/widgets/CheckboxNull', _$skipKeys: ['input']},
         onChange: {$: '^/fn/parseTristate|setValue|liveUpdate', args: ['${0}']},
       },
     },
@@ -1400,7 +1388,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     $noArrayControls: {Wrapper: {$_maps: {'arrayItem': false}}},
     $noArrayButtons: {Title: {$_ref: '^/sets/simple/Title'}},
     $inlineItems: {Main: {className: {'fform-inline': true}}},
-    $inlineTitle: {Wrapper: {className: {'fform-inline': true}}},
+    $inlineTitle: {Wrapper: {wrapperClassName: {'fform-inline': true}}},
     $inlineLayout: {Main: {LayoutDefaultClass: {'fform-inline': true}}},
     $inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'fform-inline': true}}}},
     $arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
@@ -1410,13 +1398,15 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     $shrink: {Wrapper: {className: {'fform-shrink': true}}},
     $expand: {Wrapper: {className: {'fform-expand': true}}},
     $password: {Main: {type: 'password'}},
-    $WA: (path: Path, rPath: Path) => ({Wrapper: {className: {[rPath[0]]: !rPath[1]}, ArrayItemMenu: {className: {[rPath[0]]: !rPath[1]}}}}),
-    $W: (path: Path, rPath: Path) => ({Wrapper: {className: {[rPath[0]]: !rPath[1]}}}),
-    $A: (path: Path, rPath: Path) => ({Wrapper: {ArrayItemMenu: {className: {[rPath[0]]: !rPath[1]}}}}),
-    $M: (path: Path, rPath: Path) => ({Main: {className: {[rPath[0]]: !rPath[1]}}}),
-    $T: (path: Path, rPath: Path) => ({Title: {className: {[rPath[0]]: !rPath[1]}}}),
-    $B: (path: Path, rPath: Path) => ({Body: {className: {[rPath[0]]: !rPath[1]}}}),
-    $MSG: (path: Path, rPath: Path) => ({Message: {className: {[rPath[0]]: !rPath[1]}}}),
+    // $W: (path: Path, rPath: Path) => ({Wrapper: {className: {[rPath[0]]: !rPath[1]}}}),
+    // $A: (path: Path, rPath: Path) => ({Wrapper: {ArrayItemMenu: {className: {[rPath[0]]: !rPath[1]}}}}),
+    // $M: (path: Path, rPath: Path) => ({Main: {className: {[rPath[0]]: !rPath[1]}}}),
+    // $T: (path: Path, rPath: Path) => ({Title: {className: {[rPath[0]]: !rPath[1]}}}),
+    // $B: (path: Path, rPath: Path) => ({Body: {className: {[rPath[0]]: !rPath[1]}}}),
+    // $MSG: (path: Path, rPath: Path) => ({Message: {className: {[rPath[0]]: !rPath[1]}}}),
+    $: '^/$',
+    $C: '^/$C',
+    $S: '^/$S',
   },
   fn: {
     api(fn: string, ...args: any[]) {this.api[fn](...args)},
@@ -1635,7 +1625,69 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     Expander: {_$widget: 'div', className: {'fform-expand': true}}
   },
   _$cx: classNames,
-  [_$cxSym]: classNames
+  [_$cxSym]: classNames,
+  $: (elems: any, path: Path) => {
+    let pathVal = path.map((v) => {
+      v = elems['_$shorts'][v] || v;
+      if (isString(v) && v.length == 2) {
+        let el0 = elems['_$shorts'][v[0]];
+        let el1 = elems['_$shorts'][v[1]];
+        if (el0 && el1) {
+          if (isArray(el1)) v = el1.map((k: string) => el0 + k);
+          else v = el0 + el1;
+        }
+        return toArray(v).join(',');
+      }
+      return v;
+    });
+    let pathes = multiplePath(pathVal);
+    let res = {};
+    objKeys(pathes).forEach(key => setIn(res, pathes[key].pop(), pathes[key]));
+    return res;
+  },
+  $C: (elems: any, path: Path) => {
+    path = path.slice();
+    let className = path.pop();
+    let value = !(className[0] === '!');
+    if (!value) className = className.substr(1);
+    push2array(path, 'className', className, value);
+    return elems.$(elems, path)
+  },
+  $S: (elems: any, path: Path) => {
+    path = path.slice();
+    let style: Path = [];
+    style.unshift(path.pop());
+    style.unshift(path.pop());
+    push2array(path, 'style', style);
+    return elems.$(elems, path)
+  },
+  _$shorts: {
+    'W': 'Wrapper',
+    'M': 'Main',
+    'B': 'Body',
+    'T': 'Title',
+    'MSG': 'Message',
+    'm': 'margin',
+    'p': 'padding',
+    't': 'Top',
+    'b': 'Bottom',
+    'l': 'Left',
+    'r': 'Right',
+    'x': ['Left', 'Right'],
+    'y': ['Top', 'Bottom'],
+    'fg': 'flexGrow',
+    'fs': 'flexShirnk',
+    'fd': 'flexDirection',
+    'fw': 'flexWrap',
+    'fb': 'flexBasis',
+    'minW': 'minWidth',
+    'minH': 'minHeight',
+    'maxW': 'maxWidth',
+    'maxH': 'maxHeight',
+    'as': 'alignSelf',
+    'ai': 'alignItems',
+    'jc': 'justifyContent'
+  }
 };
 
 

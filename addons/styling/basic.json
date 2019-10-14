@@ -2,7 +2,7 @@
   "sets": {
     "base": {
       "Wrapper": {
-        "className": {
+        "wrapperClassName": {
           "fform-wrapper": true
         },
         "ArrayItemBody": {
