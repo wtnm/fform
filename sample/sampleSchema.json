@@ -434,7 +434,7 @@
     "textarea": {
       "type": "string",
       "title": "Textarea",
-      "_presets": "textarea"
+      "_presets": "textarea:$C/W/mr-2:$C/W/mb-2:$C/W/fb-3"
     }
   }
 }

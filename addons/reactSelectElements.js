@@ -4,7 +4,7 @@ const stateLib_1 = require("../src/stateLib");
 const commonLib_1 = require("../src/commonLib");
 const fform_1 = require("../src/fform");
 const styles = {
-    container: (base) => (Object.assign({}, base, { flex: 1 }))
+    container: (base) => (Object.assign(Object.assign({}, base), { flex: 1 }))
 };
 function default_1(Select, Creatable) {
     return {
