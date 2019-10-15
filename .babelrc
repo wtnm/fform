@@ -6,6 +6,7 @@
     "@babel/plugin-transform-typescript"
   ],
   "presets": [
+    "minify",
     [
       "@babel/preset-env",
       {

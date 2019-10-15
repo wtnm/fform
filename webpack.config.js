@@ -50,20 +50,7 @@ module.exports = (env, argv) => {
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     plugins: removeEmpty([
-      ifProduction(new webpack.optimize.OccurrenceOrderPlugin(true)),
-      ifProduction(new UglifyJsPlugin(
-        {
-          cache: true,
-          parallel: true,
-          uglifyOptions: {
-            toplevel: true,
-            // nameCache: true,
-            ecma: 6,
-            mangle: true
-          },
-          sourceMap: false
-        }
-      )),
+      ifProduction(new webpack.optimize.OccurrenceOrderPlugin(true))
     ])
   };
 };
