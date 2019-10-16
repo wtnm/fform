@@ -832,8 +832,10 @@ function ItemMenu(props) {
     // console.log(arrayItem)
     buttons.forEach((key) => delete rest[key]);
     return (react_1.createElement(UseTag, Object.assign({ className: _$cx(className) }, rest), buttons.map((key) => {
-        const _a = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {}), { _$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key } = _a, restBut = __rest(_a, ["_$widget", "type", "disabledCheck", "className", "onClick", "title", "children"]);
-        return (react_1.createElement(ButW, Object.assign({ key: key, type: type, title: title, className: _$cx ? _$cx(ButCN) : ButCN, children: children }, restBut, { disabled: disabled || disabledCheck && !arrayItem[disabledCheck], onClick: () => onClick(key) })));
+        let _a = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {}), { _$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key } = _a, restBut = __rest(_a, ["_$widget", "type", "disabledCheck", "className", "onClick", "title", "children"]);
+        if (!restBut.dangerouslySetInnerHTML)
+            restBut.children = children;
+        return (react_1.createElement(ButW, Object.assign({ key: key, type: type, title: title, className: _$cx ? _$cx(ButCN) : ButCN }, restBut, { disabled: disabled || disabledCheck && !arrayItem[disabledCheck], onClick: () => onClick(key) })));
     })));
 }
 const Checkbox = react_1.forwardRef((_a, ref) => {

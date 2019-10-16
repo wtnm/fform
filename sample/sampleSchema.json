@@ -7,6 +7,13 @@
   "_layout": {
     "$_fields": [
       {
+        "$_ref": "^/parts/RadioSelector",
+        "className": {
+          "fform-inline": true,
+          "fform-wrap": true
+        }
+      },
+      {
         "className": {
           "fform-layout": true,
           "fform-inline": true,

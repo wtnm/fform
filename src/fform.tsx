@@ -440,6 +440,7 @@ class FField extends FRefsGeneric {
     let resolvedComponents = resolveComponents(self.pFForm.elements, schemaPart._custom, schemaPart._presets || schemaPart.type);
     resolvedComponents = self.wrapFns(resolvedComponents);
     let {$_maps, rest: components} = extractMaps(resolvedComponents);
+    
     self._maps = normalizeMaps($_maps);
     self._widgets = {};
     self._components = components;
@@ -958,10 +959,11 @@ function ItemMenu(props: any) {
   return (
     <UseTag className={_$cx(className)} {...rest}>
       {buttons.map((key: string) => {
-        const {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key, ...restBut}
+        let {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key, ...restBut}
           = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {});
+        if (!restBut.dangerouslySetInnerHTML) restBut.children = children;
         return (
-          <ButW key={key} type={type} title={title} className={_$cx ? _$cx(ButCN) : ButCN} children={children}
+          <ButW key={key} type={type} title={title} className={_$cx ? _$cx(ButCN) : ButCN}
                 {...restBut} disabled={disabled || disabledCheck && !arrayItem[disabledCheck]} onClick={() => onClick(key)}/>)
       })}
     </UseTag>);
