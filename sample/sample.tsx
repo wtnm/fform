@@ -79,6 +79,8 @@ const elemExtend = {
   }
 };
 
+let formRef: any;
+
 class CssSelector extends React.Component<any, any> {
   state: any = {css: 'bootstrap', viewerIdx: '1'};
   cores: any = {};
@@ -125,9 +127,10 @@ class CssSelector extends React.Component<any, any> {
       <br/><br/>
       <h3>FViewer sample</h3>
       <div>
-        <FForm value={self.state.viewerIdx} id="viewerDataSelectorForm" onChange={self._setViewerData.bind(self)}
+        <FForm ref={(r: any) => formRef = r} value={self.state.viewerIdx} id="viewerDataSelectorForm" onChange={self._setViewerData.bind(self)}
                core={{schema: viewerSelectSchema, name: "viewerDataSelectorForm", elements: sampleElements}}/>
         <FViewer {...viewerData[self.state.viewerIdx]} schema={sampleSchema} elements={sampleElements}/>
+        <button onClick={() => formRef.submit()}>Submit</button>
       </div>
     </div>
 

@@ -149,6 +149,13 @@ class FForm extends Component<FFormProps> {
 
   private _submit(event: any) {
     const self = this;
+    let active = self.api.get('/@active');
+    if (active) {
+      let activeField = self.getRef(active + '@');
+      activeField._updateCachedValue(true);
+      self.api.execute();
+    }
+
     const setPending = (val: any) => self.api.set([], val, {[SymData]: ['status', 'pending']});
 
     const setMessagesFromSubmit = (messages: any = []) => {
@@ -300,6 +307,7 @@ class FField extends FRefsGeneric {
   private _components: object;
   private _maps: NPM4WidgetsType = {};
   private _$_parse: any;
+  _forceLiveUpd: boolean = false;
   _forceUpd: boolean = false;
 
   get: Function | null = null;
@@ -376,12 +384,12 @@ class FField extends FRefsGeneric {
     }
   }
 
-  _updateCachedValue(update = this.liveUpdate || this._forceUpd) {
+  _updateCachedValue(update = this.liveUpdate || this._forceLiveUpd) {
     const self = this;
     self._cachedTimeout = undefined;
     if (update && self._cached) {
-      self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate && !self._forceUpd, path: self.path, ...self._cached.opts});
-      self._forceUpd = false;
+      self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate && !self._forceLiveUpd, path: self.path, ...self._cached.opts});
+      self._forceLiveUpd = false;
       self._cached = undefined;
     }
   }
@@ -390,7 +398,7 @@ class FField extends FRefsGeneric {
     //if (path === null) return;
     const self = this;
     let fieldCache = self.pFForm.props.fieldCache;
-    if (isUndefined(fieldCache) || fieldCache === true) fieldCache = 40;
+    if (isUndefined(fieldCache) || fieldCache === true) fieldCache = isNumber(this.liveUpdate) ? this.liveUpdate : 40;
 
     let valueSet = fn === 'setValue' && (!path || path == './' || path == '.');
     if (!valueSet) {
@@ -402,7 +410,7 @@ class FField extends FRefsGeneric {
     if (valueSet) {
       let prevData = self.getData();
       self._cached = {value, opts};
-      if (fieldCache) {
+      if (fieldCache && !self._forceUpd) {
         if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
         const data = self.getData();
@@ -416,7 +424,10 @@ class FField extends FRefsGeneric {
         self._setMappedData(prevData, data, true);
         self.get = null;
         if (mappedData != self._mappedData) self.forceUpdate();
-      } else self._updateCachedValue();
+      } else {
+        self._forceUpd = false;
+        self._updateCachedValue();
+      }
       return true;
     }
     return;
@@ -440,7 +451,7 @@ class FField extends FRefsGeneric {
     let resolvedComponents = resolveComponents(self.pFForm.elements, schemaPart._custom, schemaPart._presets || schemaPart.type);
     resolvedComponents = self.wrapFns(resolvedComponents);
     let {$_maps, rest: components} = extractMaps(resolvedComponents);
-    
+
     self._maps = normalizeMaps($_maps);
     self._widgets = {};
     self._components = components;
@@ -1340,7 +1351,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         type: 'select',
         children: [],
-        onChange: {$: '^/fn/eventValue|liveUpdate|setValue'},
+        onChange: {$: '^/fn/eventValue|setValue|liveUpdate'},
         $_maps: {
           'children': {$: '^/fn/arrayOfEnum', args: ['@/fData/enum', '@/fData/enumExten', {_$widget: 'option'}], replace: false},
           'label': false
@@ -1451,6 +1462,10 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       return args;
     },
     liveUpdate(...args: any[]) {
+      this._forceLiveUpd = true;
+      return args;
+    },
+    forceUpdate(...args: any[]) {
       this._forceUpd = true;
       return args;
     },

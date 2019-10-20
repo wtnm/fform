@@ -33,8 +33,10 @@
           "fform-title": true
         }
       },
-      "Main": {
-        "className": {}
+      "Wrapper": {
+        "className": {
+          "fform-wrapper-simple": true
+        }
       }
     },
     "object": {
@@ -69,12 +71,67 @@
         "LayoutDefaultClass": {
           "fform-layout": true
         }
+      },
+      "Wrapper": {
+        "className": {
+          "fform-wrapper-complex": true,
+          "fform-wrapper-object": true
+        }
+      }
+    },
+    "array": {
+      "Wrapper": {
+        "className": {
+          "fform-wrapper-object": false,
+          "fform-wrapper-array": true
+        }
       }
     },
     "boolean": {
+      "Wrapper": {
+        "className": {
+          "fform-wrapper-boolean": true
+        }
+      },
       "Main": {
         "className": {
           "fform-boolean": true
+        }
+      }
+    },
+    "string": {
+      "Wrapper": {
+        "className": {
+          "fform-wrapper-string": true
+        }
+      },
+      "Main": {
+        "className": {
+          "fform-string": true
+        }
+      }
+    },
+    "integer": {
+      "Wrapper": {
+        "className": {
+          "fform-wrapper-integer": true
+        }
+      },
+      "Main": {
+        "className": {
+          "fform-integer": true
+        }
+      }
+    },
+    "select": {
+      "Wrapper": {
+        "className": {
+          "fform-wrapper-select": true
+        }
+      },
+      "Main": {
+        "className": {
+          "fform-select": true
         }
       }
     }

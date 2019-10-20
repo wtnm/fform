@@ -115,6 +115,12 @@ class FForm extends react_1.Component {
     }
     _submit(event) {
         const self = this;
+        let active = self.api.get('/@active');
+        if (active) {
+            let activeField = self.getRef(active + '@');
+            activeField._updateCachedValue(true);
+            self.api.execute();
+        }
         const setPending = (val) => self.api.set([], val, { [stateLib_1.SymData]: ['status', 'pending'] });
         const setMessagesFromSubmit = (messages = []) => {
             if (commonLib_1.isUndefined(messages))
@@ -249,6 +255,7 @@ class FField extends FRefsGeneric {
         // private _isNotSelfManaged: boolean | undefined;
         this._blocks = [];
         this._maps = {};
+        this._forceLiveUpd = false;
         this._forceUpd = false;
         this.get = null;
         this.wrapFns = bindProcessorToThis;
@@ -305,12 +312,12 @@ class FField extends FRefsGeneric {
             self.api = api;
         }
     }
-    _updateCachedValue(update = this.liveUpdate || this._forceUpd) {
+    _updateCachedValue(update = this.liveUpdate || this._forceLiveUpd) {
         const self = this;
         self._cachedTimeout = undefined;
         if (update && self._cached) {
-            self.stateApi.setValue(self._cached.value, Object.assign({ noValidation: !self.liveValidate && !self._forceUpd, path: self.path }, self._cached.opts));
-            self._forceUpd = false;
+            self.stateApi.setValue(self._cached.value, Object.assign({ noValidation: !self.liveValidate && !self._forceLiveUpd, path: self.path }, self._cached.opts));
+            self._forceLiveUpd = false;
             self._cached = undefined;
         }
     }
@@ -319,7 +326,7 @@ class FField extends FRefsGeneric {
         const self = this;
         let fieldCache = self.pFForm.props.fieldCache;
         if (commonLib_1.isUndefined(fieldCache) || fieldCache === true)
-            fieldCache = 40;
+            fieldCache = commonLib_1.isNumber(this.liveUpdate) ? this.liveUpdate : 40;
         let valueSet = fn === 'setValue' && (!path || path == './' || path == '.');
         if (!valueSet) {
             let fPath = self.path;
@@ -330,7 +337,7 @@ class FField extends FRefsGeneric {
         if (valueSet) {
             let prevData = self.getData();
             self._cached = { value, opts };
-            if (fieldCache) {
+            if (fieldCache && !self._forceUpd) {
                 if (self._cachedTimeout)
                     clearTimeout(self._cachedTimeout);
                 self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
@@ -347,8 +354,10 @@ class FField extends FRefsGeneric {
                 if (mappedData != self._mappedData)
                     self.forceUpdate();
             }
-            else
+            else {
+                self._forceUpd = false;
                 self._updateCachedValue();
+            }
             return true;
         }
         return;
@@ -1206,7 +1215,7 @@ let elementsBase = {
             Main: {
                 type: 'select',
                 children: [],
-                onChange: { $: '^/fn/eventValue|liveUpdate|setValue' },
+                onChange: { $: '^/fn/eventValue|setValue|liveUpdate' },
                 $_maps: {
                     'children': { $: '^/fn/arrayOfEnum', args: ['@/fData/enum', '@/fData/enumExten', { _$widget: 'option' }], replace: false },
                     'label': false
@@ -1311,6 +1320,10 @@ let elementsBase = {
             return args;
         },
         liveUpdate(...args) {
+            this._forceLiveUpd = true;
+            return args;
+        },
+        forceUpdate(...args) {
             this._forceUpd = true;
             return args;
         },

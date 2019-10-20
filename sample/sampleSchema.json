@@ -113,6 +113,7 @@
       "autowidth",
       "password",
       "multiselect",
+      "string",
       "textarea",
       {
         "className": {
@@ -367,6 +368,9 @@
       "title": "Select",
       "default": "option 2",
       "_presets": "select:$C/W/fform-inline",
+      "_params": {
+        "liveUpdate": 1000
+      },
       "enum": [
         "option 1",
         "option 2",
@@ -442,6 +446,17 @@
       "type": "string",
       "title": "Textarea",
       "_presets": "textarea:$C/W/mr-2:$C/W/mb-2:$C/W/fb-3"
+    },
+    "string": {
+      "type": "string",
+      "title": "Textarea",
+      "_presets": "string:$C/W/mr-2:$C/W/mb-2:$C/W/fb-3",
+      "_stateMaps": [
+        {
+          "from": "@value",
+          "to": "../textarea@value"
+        }
+      ]
     }
   }
 }
