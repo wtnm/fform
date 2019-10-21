@@ -121,16 +121,16 @@ class CssSelector extends React.Component<any, any> {
 
       <h3>FForm sample</h3>
       <div>
-        <FForm value={{autowidth: 1, select: 'not in enum', array: ['v', 'a', ['val', false], [1, 2]]}} id="sampleForm" ref={(r: any) => window['main'] = r}
+        <FForm  value={{autowidth: 1, select: 'not in enum', array: ['v', 'a', ['val', false], [1, 2]]}} id="sampleForm" ref={(r: any) => window['main'] = r}
                onSubmit={submit} touched core={self.cores[self.state.css]}/>
       </div>
       <br/><br/>
       <h3>FViewer sample</h3>
       <div>
-        <FForm ref={(r: any) => formRef = r} value={self.state.viewerIdx} id="viewerDataSelectorForm" onChange={self._setViewerData.bind(self)}
+        <FForm value={self.state.viewerIdx} id="viewerDataSelectorForm" onChange={self._setViewerData.bind(self)}
                core={{schema: viewerSelectSchema, name: "viewerDataSelectorForm", elements: sampleElements}}/>
         <FViewer {...viewerData[self.state.viewerIdx]} schema={sampleSchema} elements={sampleElements}/>
-        <button onClick={() => formRef.submit()}>Submit</button>
+        <button onClick={() => window['main'].submit()}>Submit</button>
       </div>
     </div>
 

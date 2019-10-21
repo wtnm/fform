@@ -21,6 +21,18 @@ exports.FFormStateAPI = api_1.FFormStateAPI;
 exports.fformCores = api_1.fformCores;
 exports.formReducer = api_1.formReducer;
 const _$cxSym = Symbol('_$cx');
+class FFormEvent {
+    constructor(event, params = {}) {
+        const self = this;
+        self.event = event;
+        self.bubbles = !!params.bubbles;
+        self.cancelable = !!params.cancelable;
+        self.detail = !!params.detail;
+    }
+    preventDefault() {
+        this.defaultPrevented = true;
+    }
+}
 /////////////////////////////////////////////
 //  Main class
 /////////////////////////////////////////////
@@ -97,11 +109,11 @@ class FForm extends react_1.Component {
             return;
         self._savedState = state;
         if (self._methods.onStateChange)
-            self._methods.onStateChange(self._extendEvent(new Event('stateChanged')));
+            self._methods.onStateChange(self._extendEvent(new FFormEvent('stateChanged')));
         if (state[stateLib_1.SymData].current !== self._savedValue) {
             self._savedValue = state[stateLib_1.SymData].current;
             if (self._methods.onChange)
-                self._methods.onChange(self._extendEvent(new Event('valueChanged')));
+                self._methods.onChange(self._extendEvent(new FFormEvent('valueChanged')));
         }
         if (self._root)
             self._root.setState({ branch: state });
@@ -198,7 +210,11 @@ class FForm extends react_1.Component {
         this.api.reset();
     }
     submit() {
-        this._form.dispatchEvent(new Event('submit'));
+        let event = new FFormEvent('submit', { cancelable: true });
+        // this._form.dispatchEvent(new FFormEvent('submit'));
+        this._submit(event);
+        if (!event.defaultPrevented)
+            this._form.submit();
     }
     render() {
         const self = this;
