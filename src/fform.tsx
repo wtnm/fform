@@ -43,7 +43,7 @@ import {FFormStateAPI, fformCores, objectResolver, formReducer, skipKey} from '.
 const _$cxSym = Symbol('_$cx');
 
 class FFormEvent {
-  event: string;
+  type: string;
   bubbles: boolean;
   cancelable: boolean;
   detail: any;
@@ -51,7 +51,7 @@ class FFormEvent {
 
   constructor(event: string, params: any = {}) {
     const self = this;
-    self.event = event;
+    self.type = event;
     self.bubbles = !!params.bubbles;
     self.cancelable = !!params.cancelable;
     self.detail = !!params.detail;
@@ -263,7 +263,8 @@ class FForm extends Component<FFormProps> {
 
   submit() {
     let event = new FFormEvent('submit', {cancelable: true});
-    // this._form.dispatchEvent(new FFormEvent('submit'));
+    // let e = new Event('submit');
+    // this._form.dispatchEvent(e);
     this._submit(event);
     if (!event.defaultPrevented) this._form.submit();
   }
