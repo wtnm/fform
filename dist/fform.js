@@ -787,16 +787,18 @@ class UniversalInput extends GenericWidget {
         self.setElements2rest(rest, _$elements);
         if (!_$cx && _$elements)
             _$cx = _$elements._$cx;
-        if (type == 'textarea' || type == 'select')
-            UseTag = UseTag || type;
-        else {
-            UseTag = UseTag || 'input';
-            if (type !== 'notInput')
-                rest.type = type;
+        if (UseTag) {
+            rest.type = type;
         }
-        if (type !== 'notInput')
-            rest[type === 'checkbox' ? 'checked' : 'value'] = value;
-        // if (rest.value === null) rest.value = '';
+        else {
+            if (type == 'textarea' || type == 'select')
+                UseTag = type;
+            else {
+                UseTag = 'input';
+                rest.type = type;
+            }
+        }
+        rest[type === 'checkbox' ? 'checked' : 'value'] = value;
         if (rest.className && _$cx)
             rest.className = _$cx(rest.className);
         //console.log(rest.value);
@@ -1420,7 +1422,7 @@ let elementsBase = {
             _$widget: '^/widgets/Input',
             _$cx: '^/_$cx',
             _$useTag: 'div',
-            type: 'notInput',
+            //type: 'notInput',
             children: [],
             $_maps: {
                 value: '@/selector/value',
