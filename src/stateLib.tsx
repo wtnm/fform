@@ -109,6 +109,8 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
   updObj[2] = getIn(UPDATABLE.replace, path);
   updObj[3] = getIn(UPDATABLE.replace, SymData, 'current', path);
 
+  let keys = [...getFromUPD(state, UPDATABLE)(path, SymData, 'keys')];
+
 
   for (let i = Math.min(from, to); i <= Math.max(from, to); i++) {
     stateObject[i] = getIn(state, path, i);
@@ -119,6 +121,7 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
   }
   stateObject = moveArrayElems(stateObject, from, to);
   currentObject = moveArrayElems(currentObject, from, to);
+  keys = moveArrayElems(keys, from, to);
   const {maps2disable, maps2enable, clearBinded} = getBindedMaps2update(stateObject, path);
   if (clearBinded) stateObject = merge(stateObject, clearBinded);
   updObj.forEach(obj => {
@@ -137,6 +140,7 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
   // const length2test = 1 + item.path.length - (item.path[0] == '#' ? 1 : 0);  // length2test can be smaller because of leading '#' in item.path (replace function receives path without leading '#')
   state = merge(state, makeSlice(path, stateObject), {replace: trueIfLength(item.path.length + 1)}); //(path: Path) => path.length === length2test});
   state = merge(state, makeSlice(SymData, 'current', path, currentObject), {replace: trueIfLength(item.path.length + 3)});//(path: Path) => path.length === length2test + 2});
+  state = merge(state, makeSlice(path, SymData, 'keys', keys), makeSlice(path, SymData, 'keys', true));
   if (op == 'del') state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['length'], max));
   state = mergeUPD_PROC(state, UPDATABLE);
   state = setDataMapInState(state, UPDATABLE, maps2disable, true);
@@ -514,6 +518,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
     if (type == 'array') {
       defaultValues = [];
       defaultValues.length = result[SymData].length;
+      let keys = [];
       for (let i = 0; i < defaultValues.length; i++) {
         let {state: branch, dataMap, defaultValues: dValue} = makeStateBranch(schema, getNSetOneOf, path.concat(i), getIn(isUndefined(value) ? schemaPart.default : value, i));
         defaultValues[i] = dValue;
@@ -521,8 +526,9 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
         branch = merge(branch, {[SymData]: {arrayItem: getArrayItemData(schemaPart, i, defaultValues.length)}}, {replace: {[SymData]: {ArrayItem: true}}});
         branch = merge(branch, {[SymData]: {params: {uniqKey: getUniqKey()}}});
         result[i] = branch;
-
+        keys[i] = branch[SymData].params.uniqKey
       }
+      result[SymData] = merge(result[SymData], {keys});
     } else if (type == 'object') {
       defaultValues = isObject(schemaPart.default) ? {...schemaPart.default} : {};
       if (value && schemaPart.additionalProperties === false) {
@@ -1098,12 +1104,15 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
       const oneOfStateFn = oneOfStructure(state, path);
       const maps2enable: any[] = [];
       const maps2disable: any[] = [];
+      let keys = [...getFromUPD(state, UPDATABLE)(path, SymData, 'keys')];
+      keys.length = end;
       for (let i = start; i < end; i++) {
         let elemPath = path.concat(i);
         if (!isUndefined(item.setOneOf)) oneOfStateFn(elemPath, {oneOf: item.setOneOf});
         let {state: branch, dataMap = [], defaultValues} = makeStateBranch(schema, oneOfStateFn, elemPath);
         const untouched = getUpdValue([state, UPDATABLE.update], path, SymData, 'status', 'untouched');
         const mergeBranch: any = {[SymData]: {params: {uniqKey: getUniqKey()}}};
+        keys[i] = mergeBranch[SymData].params.uniqKey;
         if (!untouched) setIn(mergeBranch[SymData], {untouched: 0, touched: true}, 'status');
         branch = merge(branch, mergeBranch);
         state = merge(state, setIn({}, branch, elemPath), {replace: setIn({}, true, elemPath)});
@@ -1122,7 +1131,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
         // setIn(update, SymDelete, elemPath);
         // setIn(replace_UPDATABLE, SymDelete, elemPath);
       }
-
+      setUPDATABLE(UPDATABLE, keys, true, path, SymData, 'keys');
       let schemaPart = getSchemaPart(schema, path, oneOfFromState(state));
       setIn(update, isArrayCanAdd(schemaPart, end), path, SymData, 'fData', 'canAdd');
       for (let i = Math.max(Math.min(start, end) - 1, 0); i < end; i++)

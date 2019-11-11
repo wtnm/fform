@@ -1386,6 +1386,8 @@ let elementsBase = {
                 })];
         },
         enumInputs(enumVals = [], enumExten = {}, inputProps = {}, opts = {}) {
+            inputProps = Object.assign({}, inputProps);
+            delete inputProps._$skipKeys;
             return [enumVals.map(val => {
                     let _a = getExten(enumExten, val), { label } = _a, extenProps = __rest(_a, ["label"]);
                     return Object.assign(Object.assign({ key: val, name: name && (this.props.name + (opts.name === true ? '' : opts.name)) }, commonLib_1.merge(inputProps, extenProps)), { placeholder: label || val, value: val });

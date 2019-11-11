@@ -1531,6 +1531,8 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       })]
     },
     enumInputs(enumVals: any[] = [], enumExten: any = {}, inputProps: any = {}, opts: any = {}) {
+      inputProps = {...inputProps};
+      delete inputProps._$skipKeys;
       return [enumVals.map(val => {
         let {label, ...extenProps} = getExten(enumExten, val);
         return {

@@ -327,18 +327,24 @@ describe('FForm state functions tests', function () {
     let UPDATABLE_object = arrayCore.UPDATABLE;
     let arraySchema = arrayCore.schema;
     expect(state[2][SymData].arrayItem.canDown).to.be.equal(false);
+    expect(state[SymData].keys.length).to.be.equal(3);
     state = stateLib.updatePROC(state, UPDATABLE_object, {path: [], value: 1, macros: 'array'});
     state = stateLib.updatePROC(state, UPDATABLE_object, {path: [], value: 2, macros: 'array'});
     state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
+    expect(state[SymData].keys.length).to.be.equal(6);
     expect(state[SymData].current.length).to.be.equal(6);
     expect(state[2][SymData].arrayItem.canDown).to.be.equal(true);
     expect(state[5][SymData].arrayItem.canDown).to.be.equal(false);
     expect(state[SymData].fData.canAdd).to.be.equal(false);
 
-
+    let keys = [...state[SymData].keys];
+    keys.length = keys.length - 1;
+    keys.splice(2, 1);
     state = stateLib.updatePROC(state, UPDATABLE_object, {path: [], value: -1, macros: 'array'});
     state = stateLib.updatePROC(state, UPDATABLE_object, {path: ['2'], op: 'del', macros: 'arrayItem'});
     state = stateLib.mergeUPD_PROC(state, UPDATABLE_object);
+    expect(state[SymData].keys.length).to.be.equal(4);
+    expect(state[SymData].keys).to.be.eql(keys).and.not.to.be.equal(keys);
     expect(state[SymData].current.length).to.be.equal(4);
     expect(state[4]).to.be.equal(undefined);
     expect(state[5]).to.be.equal(undefined);

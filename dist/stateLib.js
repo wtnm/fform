@@ -128,6 +128,7 @@ Macros.arrayItem = (state, schema, UPDATABLE, item) => {
     updObj[1] = commonLib_1.getIn(UPDATABLE.update, SymData, 'current', path);
     updObj[2] = commonLib_1.getIn(UPDATABLE.replace, path);
     updObj[3] = commonLib_1.getIn(UPDATABLE.replace, SymData, 'current', path);
+    let keys = [...getFromUPD(state, UPDATABLE)(path, SymData, 'keys')];
     for (let i = Math.min(from, to); i <= Math.max(from, to); i++) {
         stateObject[i] = commonLib_1.getIn(state, path, i);
         arrayItems[i] = stateObject[i][SymData].arrayItem; //delIn(stateObject[i][SymData].arrayItem, ['uniqId']); // save arrayItem values, except "uniqId"
@@ -137,6 +138,7 @@ Macros.arrayItem = (state, schema, UPDATABLE, item) => {
     }
     stateObject = commonLib_1.moveArrayElems(stateObject, from, to);
     currentObject = commonLib_1.moveArrayElems(currentObject, from, to);
+    keys = commonLib_1.moveArrayElems(keys, from, to);
     const { maps2disable, maps2enable, clearBinded } = getBindedMaps2update(stateObject, path);
     if (clearBinded)
         stateObject = commonLib_1.merge(stateObject, clearBinded);
@@ -156,6 +158,7 @@ Macros.arrayItem = (state, schema, UPDATABLE, item) => {
     // const length2test = 1 + item.path.length - (item.path[0] == '#' ? 1 : 0);  // length2test can be smaller because of leading '#' in item.path (replace function receives path without leading '#')
     state = commonLib_1.merge(state, commonLib_1.makeSlice(path, stateObject), { replace: trueIfLength(item.path.length + 1) }); //(path: Path) => path.length === length2test});
     state = commonLib_1.merge(state, commonLib_1.makeSlice(SymData, 'current', path, currentObject), { replace: trueIfLength(item.path.length + 3) }); //(path: Path) => path.length === length2test + 2});
+    state = commonLib_1.merge(state, commonLib_1.makeSlice(path, SymData, 'keys', keys), commonLib_1.makeSlice(path, SymData, 'keys', true));
     if (op == 'del')
         state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['length'], max));
     state = mergeUPD_PROC(state, UPDATABLE);
@@ -545,6 +548,7 @@ function makeStateBranch(schema, getNSetOneOf, path = [], value) {
         if (type == 'array') {
             defaultValues = [];
             defaultValues.length = result[SymData].length;
+            let keys = [];
             for (let i = 0; i < defaultValues.length; i++) {
                 let { state: branch, dataMap, defaultValues: dValue } = makeStateBranch(schema, getNSetOneOf, path.concat(i), commonLib_1.getIn(commonLib_2.isUndefined(value) ? schemaPart.default : value, i));
                 defaultValues[i] = dValue;
@@ -552,7 +556,9 @@ function makeStateBranch(schema, getNSetOneOf, path = [], value) {
                 branch = commonLib_1.merge(branch, { [SymData]: { arrayItem: getArrayItemData(schemaPart, i, defaultValues.length) } }, { replace: { [SymData]: { ArrayItem: true } } });
                 branch = commonLib_1.merge(branch, { [SymData]: { params: { uniqKey: getUniqKey() } } });
                 result[i] = branch;
+                keys[i] = branch[SymData].params.uniqKey;
             }
+            result[SymData] = commonLib_1.merge(result[SymData], { keys });
         }
         else if (type == 'object') {
             defaultValues = commonLib_2.isObject(schemaPart.default) ? Object.assign({}, schemaPart.default) : {};
@@ -1134,6 +1140,8 @@ function updatePROC(state, UPDATABLE, item) {
             const oneOfStateFn = oneOfStructure(state, path);
             const maps2enable = [];
             const maps2disable = [];
+            let keys = [...getFromUPD(state, UPDATABLE)(path, SymData, 'keys')];
+            keys.length = end;
             for (let i = start; i < end; i++) {
                 let elemPath = path.concat(i);
                 if (!commonLib_2.isUndefined(item.setOneOf))
@@ -1141,6 +1149,7 @@ function updatePROC(state, UPDATABLE, item) {
                 let { state: branch, dataMap = [], defaultValues } = makeStateBranch(schema, oneOfStateFn, elemPath);
                 const untouched = getUpdValue([state, UPDATABLE.update], path, SymData, 'status', 'untouched');
                 const mergeBranch = { [SymData]: { params: { uniqKey: getUniqKey() } } };
+                keys[i] = mergeBranch[SymData].params.uniqKey;
                 if (!untouched)
                     commonLib_1.setIn(mergeBranch[SymData], { untouched: 0, touched: true }, 'status');
                 branch = commonLib_1.merge(branch, mergeBranch);
@@ -1162,6 +1171,7 @@ function updatePROC(state, UPDATABLE, item) {
                 // setIn(update, SymDelete, elemPath);
                 // setIn(replace_UPDATABLE, SymDelete, elemPath);
             }
+            setUPDATABLE(UPDATABLE, keys, true, path, SymData, 'keys');
             let schemaPart = getSchemaPart(schema, path, oneOfFromState(state));
             commonLib_1.setIn(update, isArrayCanAdd(schemaPart, end), path, SymData, 'fData', 'canAdd');
             for (let i = Math.max(Math.min(start, end) - 1, 0); i < end; i++)
