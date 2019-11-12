@@ -140,7 +140,7 @@ Macros.arrayItem = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
   // const length2test = 1 + item.path.length - (item.path[0] == '#' ? 1 : 0);  // length2test can be smaller because of leading '#' in item.path (replace function receives path without leading '#')
   state = merge(state, makeSlice(path, stateObject), {replace: trueIfLength(item.path.length + 1)}); //(path: Path) => path.length === length2test});
   state = merge(state, makeSlice(SymData, 'current', path, currentObject), {replace: trueIfLength(item.path.length + 3)});//(path: Path) => path.length === length2test + 2});
-  state = merge(state, makeSlice(path, SymData, 'keys', keys), makeSlice(path, SymData, 'keys', true));
+  state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['keys'], keys));
   if (op == 'del') state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['length'], max));
   state = mergeUPD_PROC(state, UPDATABLE);
   state = setDataMapInState(state, UPDATABLE, maps2disable, true);
@@ -1131,7 +1131,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
         // setIn(update, SymDelete, elemPath);
         // setIn(replace_UPDATABLE, SymDelete, elemPath);
       }
-      setUPDATABLE(UPDATABLE, keys, true, path, SymData, 'keys');
+      //setUPDATABLE(UPDATABLE, keys, true, path, SymData, 'keys');
       let schemaPart = getSchemaPart(schema, path, oneOfFromState(state));
       setIn(update, isArrayCanAdd(schemaPart, end), path, SymData, 'fData', 'canAdd');
       for (let i = Math.max(Math.min(start, end) - 1, 0); i < end; i++)
@@ -1140,7 +1140,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
       state = mergeUPD_PROC(state, UPDATABLE);
       state = setDataMapInState(state, UPDATABLE, maps2disable, true);
       state = setDataMapInState(state, UPDATABLE, maps2enable);
-
+      state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['keys'], keys));
 
     } else if (keyPath[0] == 'status') { // properly set status change
       let keyStatus = keyPath[1];
