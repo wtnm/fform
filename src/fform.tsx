@@ -790,7 +790,7 @@ class FSection extends FRefsGeneric {
       rest.value = props.$FField.value;
       return h(_$widget, rest)
     }
-    if (isSelfManaged(props.$branch)) return null;
+    // if (isSelfManaged(props.$branch)) return null;
     if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
     return <FSectionWidget _$widget={self._$widget} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
                            getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
