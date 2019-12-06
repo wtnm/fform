@@ -1263,7 +1263,7 @@ let elementsBase = {
                                 '@/fData/enum',
                                 '@/fData/enumExten',
                                 { onChange: { args: ['${0}'] } },
-                                true
+                                { name: true }
                             ],
                         },
                         { args: ['@/fData/enum', '@/value'] },
@@ -1272,9 +1272,40 @@ let elementsBase = {
                 }
             }
         },
-        checkboxes: { $_ref: '^/sets/radio', Main: { $_maps: { children: { '0': { args: { '2': { type: 'checkbox', onChange: { $: '^/fn/eventCheckboxes|setValue|liveUpdate' } }, '5': '[]' } } } } } },
-        $radioNull: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: '^/fn/eventValue|radioClear|liveUpdate' } } } } } } },
-        $radioEmpty: { Main: { $_maps: { children: { '0': { args: { '3': { onClick: { $: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', ''] } } } } } } } },
+        checkboxes: {
+            $_ref: '^/sets/radio', Main: {
+                $_maps: {
+                    children: {
+                        '0': {
+                            args: {
+                                '2': { type: 'checkbox', onChange: { $: '^/fn/eventCheckboxes|setValue|liveUpdate' } },
+                                '3': { name: '[]' }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        $radioInteger: {
+            Main: {
+                $_maps: {
+                    children: {
+                        '0': {
+                            args: {
+                                '2': {
+                                    onChange: {
+                                        $: '^/fn/eventValue|parseNumber|setValue|liveUpdate',
+                                        args: ['${0}', true, 0]
+                                    },
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        $radioNull: { Main: { $_maps: { children: { '0': { args: { '2': { onClick: '^/fn/eventValue|radioClear|liveUpdate' } } } } } } },
+        $radioEmpty: { Main: { $_maps: { children: { '0': { args: { '2': { onClick: { $: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', ''] } } } } } } } },
         $autowidth: {
             Autowidth: { $_ref: '^/parts/Autowidth' },
             Wrapper: { className: { 'fform-shrink': true } },
@@ -1322,6 +1353,11 @@ let elementsBase = {
         parseTristate: (value, ...args) => [value === "" ? null : value, ...args],
         eventMultiple: (event, ...args) => [Array.from(event.target.options).filter((o) => o.selected).map((v) => v.value), ...args],
         parseNumber: (value, int = false, empty = null, ...args) => [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...args],
+        stringify(value, ...args) {
+            if (!commonLib_1.isString(value))
+                value = JSON.stringify(value);
+            return [value, ...args];
+        },
         setValue(value, opts = {}, ...args) {
             this.api.setValue(value, opts);
             return args;
@@ -1389,7 +1425,7 @@ let elementsBase = {
             delete inputProps._$skipKeys;
             return [enumVals.map(val => {
                     let _a = getExten(enumExten, val), { label } = _a, extenProps = __rest(_a, ["label"]);
-                    return Object.assign(Object.assign({ key: val, name: name && (this.props.name + (opts.name === true ? '' : opts.name)) }, commonLib_1.merge(inputProps, extenProps)), { placeholder: label || val, value: val });
+                    return Object.assign(Object.assign({ key: val, name: opts.name && (this.props.name + (opts.name === true ? '' : opts.name)) }, commonLib_1.merge(inputProps, extenProps)), { placeholder: label || val, value: val });
                 })];
         },
         enumInputProps(enumVals = [], ...rest) {

@@ -1407,7 +1407,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
                 '@/fData/enum',
                 '@/fData/enumExten',
                 {onChange: {args: ['${0}']}}, //{$_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
-                true
+                {name: true}
               ],
             },
             {args: ['@/fData/enum', '@/value']},
@@ -1416,10 +1416,41 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         }
       }
     },
-    checkboxes: {$_ref: '^/sets/radio', Main: {$_maps: {children: {'0': {args: {'2': {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue|liveUpdate'}}, '5': '[]'}}}}}},
-
-    $radioNull: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: '^/fn/eventValue|radioClear|liveUpdate'}}}}}}},
-    $radioEmpty: {Main: {$_maps: {children: {'0': {args: {'3': {onClick: {$: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', '']}}}}}}}},
+    checkboxes: {
+      $_ref: '^/sets/radio', Main: {
+        $_maps: {
+          children: {
+            '0': {
+              args: {
+                '2':
+                  {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue|liveUpdate'}},
+                '3': {name: '[]'}
+              }
+            }
+          }
+        }
+      }
+    },
+    $radioInteger: {
+      Main: {
+        $_maps: {
+          children: {
+            '0': {
+              args: {
+                '2': {
+                  onChange: {
+                    $: '^/fn/eventValue|parseNumber|setValue|liveUpdate',
+                    args: ['${0}', true, 0]
+                  },
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    $radioNull: {Main: {$_maps: {children: {'0': {args: {'2': {onClick: '^/fn/eventValue|radioClear|liveUpdate'}}}}}}},
+    $radioEmpty: {Main: {$_maps: {children: {'0': {args: {'2': {onClick: {$: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', '']}}}}}}}},
     $autowidth: {
       Autowidth: {$_ref: '^/parts/Autowidth'},
       Wrapper: {className: {'fform-shrink': true}},
@@ -1471,7 +1502,10 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       [Array.from(event.target.options).filter((o: any) => o.selected).map((v: any) => v.value), ...args],
     parseNumber: (value: any, int: boolean = false, empty: number | null = null, ...args: any[]) =>
       [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...args],
-
+    stringify(value: any, ...args: any[]) {
+      if (!isString(value)) value = JSON.stringify(value);
+      return [value, ...args];
+    },
     setValue(value: any, opts: any = {}, ...args: any[]) {
       this.api.setValue(value, opts);
       return args;
@@ -1537,7 +1571,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         let {label, ...extenProps} = getExten(enumExten, val);
         return {
           key: val,
-          name: name && (this.props.name + (opts.name === true ? '' : opts.name)),
+          name: opts.name && (this.props.name + (opts.name === true ? '' : opts.name)),
           ...merge(inputProps, extenProps),
           placeholder: label || val,
           value: val
