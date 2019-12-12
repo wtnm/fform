@@ -1225,12 +1225,14 @@ function updatePROC(state, UPDATABLE, item) {
                         branch = commonLib_1.merge(branch, { [SymData]: { fData: { required: true } } });
                 }
                 if (commonLib_1.getIn(oldBranch, SymData, 'status', 'untouched') == 0)
-                    branch = commonLib_1.merge(branch, { [SymData]: { status: { untouched: 0 } } }); // stick untouched to zero
+                    branch = commonLib_1.merge(branch, { [SymData]: { status: { untouched: 0, touched: true } } }); // stick untouched to zero
                 state = commonLib_1.merge(state, commonLib_1.setIn({}, branch, path), { replace: commonLib_1.setIn({}, true, path) });
                 state = updatePROC(state, UPDATABLE, makeNUpdate([], commonLib_1.push2array(['current'], path), defaultValues, true));
                 state = setDataMapInState(state, UPDATABLE, maps2enable);
-                if (commonLib_1.getIn(branch, SymData, 'status', 'untouched') == 0)
+                if (commonLib_1.getIn(branch, SymData, 'status', 'untouched') == 0) {
                     state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 0));
+                    state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'touched'], true));
+                }
             }
         }
     }

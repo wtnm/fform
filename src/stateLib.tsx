@@ -1184,11 +1184,14 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
           if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {[SymData]: {fData: {required: true}}});
         }
 
-        if (getIn(oldBranch, SymData, 'status', 'untouched') == 0) branch = merge(branch, {[SymData]: {status: {untouched: 0}}});// stick untouched to zero
+        if (getIn(oldBranch, SymData, 'status', 'untouched') == 0) branch = merge(branch, {[SymData]: {status: {untouched: 0, touched: true}}});// stick untouched to zero
         state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});
         state = updatePROC(state, UPDATABLE, makeNUpdate([], push2array(['current'], path), defaultValues, true));
         state = setDataMapInState(state, UPDATABLE, maps2enable);
-        if (getIn(branch, SymData, 'status', 'untouched') == 0) state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 0));
+        if (getIn(branch, SymData, 'status', 'untouched') == 0) {
+          state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 0));
+          state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'touched'], true));
+        }
       }
     }
   }

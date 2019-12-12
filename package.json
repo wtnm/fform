@@ -1,6 +1,6 @@
 {
   "name": "fform",
-  "version": "1.0.0-beta.17",
+  "version": "1.0.0-beta.18",
   "description": "Flexibile Form",
   "main": "dist/fform.js",
   "scripts": {
@@ -91,6 +91,7 @@
     "ts-loader": "^6.1.2",
     "ts-mocha": "^6.0.0",
     "ts-node": "^8.4.1",
+    "typescript": "^3.7.3",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.41.0",
     "webpack-cli": "^3.3.9",
