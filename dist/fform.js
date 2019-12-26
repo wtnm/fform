@@ -130,8 +130,10 @@ class FForm extends react_1.Component {
         let active = self.api.get('/@active');
         if (active) {
             let activeField = self.getRef(active + '@');
-            activeField._updateCachedValue(true);
-            self.api.execute();
+            if (activeField) {
+                activeField._updateCachedValue(true);
+                self.api.execute();
+            }
         }
         const setPending = (val) => self.api.set([], val, { [stateLib_1.SymData]: ['status', 'pending'] });
         const setMessagesFromSubmit = (messages = []) => {

@@ -1104,6 +1104,7 @@ function updatePROC(state, UPDATABLE, item) {
     if (commonLib_2.isFunction(value))
         value = value(getFromUPD(state, UPDATABLE)(path, SymData, keyPath));
     if (path.length == 0 && (keyPath[0] == 'inital' || keyPath[0] == 'default')) {
+        // if (keyPath[0] == 'inital')  value = merge(getIn(state, SymData, 'default', keyPath.slice(1)), value);
         state = commonLib_1.merge(state, commonLib_1.makeSlice(SymData, keyPath, value), { replace: commonLib_1.makeSlice(SymData, keyPath, replace) });
     }
     else {

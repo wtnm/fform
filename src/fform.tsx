@@ -172,8 +172,10 @@ class FForm extends Component<FFormProps> {
     let active = self.api.get('/@active');
     if (active) {
       let activeField = self.getRef(active + '@');
-      activeField._updateCachedValue(true);
-      self.api.execute();
+      if (activeField) {
+        activeField._updateCachedValue(true);
+        self.api.execute();
+      }
     }
 
     const setPending = (val: any) => self.api.set([], val, {[SymData]: ['status', 'pending']});

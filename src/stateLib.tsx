@@ -1069,6 +1069,7 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
   if (isFunction(value)) value = value(getFromUPD(state, UPDATABLE)(path, SymData, keyPath));
 
   if (path.length == 0 && (keyPath[0] == 'inital' || keyPath[0] == 'default')) {
+    // if (keyPath[0] == 'inital')  value = merge(getIn(state, SymData, 'default', keyPath.slice(1)), value);
     state = merge(state, makeSlice(SymData, keyPath, value), {replace: makeSlice(SymData, keyPath, replace)})
   } else {
     // split object for proper state update (for dataMap correct execution)

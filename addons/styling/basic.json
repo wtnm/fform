@@ -39,6 +39,14 @@
         }
       }
     },
+    "radio": {
+      "Wrapper": {
+        "className": {
+          "fform-wrapper-simple": true,
+          "fform-wrapper-radio": true
+        }
+      }
+    },
     "object": {
       "Title": {
         "className": {
