@@ -1,5 +1,5 @@
-import {getCreateIn, setIn, hasIn, getIn, objKeys, moveArrayElems, makeSlice, memoize, merge, objKeysNSymb, push2array, toArray, deArray, mergeState} from "./commonLib";
-import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction} from "./commonLib";
+import {getSetIn, setIn, hasIn, getIn, objKeys, moveArrayElems, memoize, merge, objKeysNSymb, push2array, toArray, deArray, mergeState} from "react-ts-utils";
+import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction} from "react-ts-utils";
 import {anSetState} from './api';
 
 /////////////////////////////////////////////
@@ -11,7 +11,7 @@ const SymDataMapTree: any = Symbol.for('FFormDataMapTree');
 const SymDataMap: any = Symbol.for('FFormDataMap');
 const SymReset: any = Symbol.for('FFormReset');
 const SymClear: any = Symbol.for('FFormClear');
-const SymDelete = undefined; // Symbol.for('FFormDelete'); // 
+const SymDelete = undefined; // Symbol.for('FFormDelete'); //
 // const SymBranch: any = Symbol.for('FFormBranch');
 
 
@@ -181,7 +181,7 @@ Macros.setStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
   if (selfManaged && value > 1) value = 1;
   if (value < 0) value = 0;
   state = updatePROC(state, UPDATABLE, makeNUpdate(item.path, ['status', op], value));
-  if (!isTopPath(item.path) && (!prevVal != !value)) //(prevVal && !value || !prevVal && value)) 
+  if (!isTopPath(item.path) && (!prevVal != !value)) //(prevVal && !value || !prevVal && value))
     state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(item.path.slice(0, -1), keyPath, value > 0 ? 1 : -1));
 
   return state
@@ -238,7 +238,7 @@ function branchKeys(branch: StateType) {
 //      Schema processing functions
 /////////////////////////////////////////////
 
-const schemaStorage = memoize(function (schema: jsJsonSchema) { // object that used to store and cache data for schema without modifying schema itself  
+const schemaStorage = memoize(function (schema: jsJsonSchema) { // object that used to store and cache data for schema without modifying schema itself
   return {};
 });
 
@@ -363,7 +363,7 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, value_or_getOneOf: ((pa
   const value = !isFunction(value_or_getOneOf) ? value_or_getOneOf : undefined;
   const errorText = 'Schema path not found: ';
   let schemaPart: jsJsonSchema | jsJsonSchema[] = schema;
-  const combinedSchemas = getCreateIn(schemaStorage(schema), new Map(), 'combinedSchemas');
+  const combinedSchemas = getSetIn(schemaStorage(schema), new Map(), 'combinedSchemas');
   //let type;
   for (let i = path[0] == '#' ? 1 : 0; i < path.length; i++) {
     if (!schemaPart) throw new Error(errorText + path.join('/'));
@@ -499,7 +499,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   }
   let {schemaPart, oneOf, type} = findOneOf(schemaPartsOneOf, value, currentOneOf);
 
-  if (isUndefined(schemaPart) || !isUndefined(currentOneOf) && currentOneOf != oneOf) { // value type is not that currentOneOf supports 
+  if (isUndefined(schemaPart) || !isUndefined(currentOneOf) && currentOneOf != oneOf) { // value type is not that currentOneOf supports
     console.info('Passed value: "' + value + '" is not supported by schema.type in path "' + path.join('/') + '" and oneOfIndex "' + currentOneOf + '". Reset value to default.\n');
     value = (schemaPartsOneOf)[currentOneOf || 0].default; // so, reset value to default, cause keeping oneOf is in prior (if currentOneOf exists, otherwise oneOf is changed)
     const tmp = findOneOf(schemaPartsOneOf, value, currentOneOf);
@@ -565,8 +565,8 @@ function getArrayItemData(schemaPart: jsJsonSchema, index: number, length: numbe
   // if (index >= arrayStartIndex) {
   result.canUp = arrayStartIndex < index;
   result.canDown = (arrayStartIndex <= index) && (index < length - 1);
-  // } 
-  // if (index >= minItems) 
+  // }
+  // if (index >= minItems)
   result.canDel = index >= Math.min(arrayStartIndex, length - 1);
   return result
 }
@@ -621,7 +621,7 @@ function updateMessagesPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Typ
       state = updateMessagesPROC(state, UPDATABLE, path, itemNoPath, defaultGroup)
     } else {
       let {group = defaultGroup, data, priority = 0, ...rest} = itemNoPath;
-      const messageData = getCreateIn(UPDATABLE.update, {}, track, SymData, 'messages', priority);
+      const messageData = getSetIn(UPDATABLE.update, {}, track, SymData, 'messages', priority);
       Object.assign(messageData, rest);
       if (!isObject(messageData.texts)) messageData.texts = {};
       if (!isArray(messageData.texts[group])) messageData.texts[group] = [];
@@ -923,7 +923,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   //   if (isUndefined(value)) value = branch[SymData].fData.default;
   // }
   if (!isUndefined(setOneOf) || oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
-    // setOneOf = 
+    // setOneOf =
     const parts = getSchemaPart(schema, track, oneOfFromState(state), true);
     let currentOneOf = branch[SymData].oneOf;
     if (oneOfSelector) {
@@ -1620,6 +1620,14 @@ function processFn(map: any, ...rest: any[]) {
 }
 
 
+function makeSlice(...pathValues: any[]): StateType {
+  let path: any[] = [];
+  for (let i = 0; i < pathValues.length - 1; i++) push2array(path, pathValues[i]);
+  const value = pathValues[pathValues.length - 1];
+  if (!path.length) return value;
+  return setIn({}, value, path);
+}
+
 // function objKeysMap(obj: any, fn: Function, symbol = false) {
 //   if (!isMergeable(obj)) return obj;
 //   const result = _isArray(obj) ? [] : {};
@@ -1693,4 +1701,4 @@ export {
   isElemRef
 };
 export {SymData, SymReset, SymClear, SymDelete, SymDataMap}
-export {makeNUpdate, updatePROC, string2NUpdate, getUniqKey};
+export {makeNUpdate, updatePROC, string2NUpdate, getUniqKey, makeSlice};

@@ -12,7 +12,7 @@ import {
   isUndefined,
   isString,
   deArray, toArray, isFunction, isObject
-} from "./commonLib";
+} from "react-ts-utils";
 
 import {
   objMap,
@@ -209,7 +209,7 @@ class FFormStateAPI extends FFormStateManager {
       self._setState(rehydrateState(state, self.UPDATABLE));
   }
 
-  wrapper(self: any = {}) {
+  wrapper(self: any = {}): any {
     const api = this;
     const wrapApi = (fn: string) => self[fn] || api[fn];
     const wrapPath = (path: null | string | Path = './') => path && normalizePath(path, self.path);

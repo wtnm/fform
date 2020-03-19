@@ -14,7 +14,7 @@ var __rest = (this && this.__rest) || function (s, e) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = require("react");
 const fform_1 = require("./fform");
-const commonLib_1 = require("./commonLib");
+const react_ts_utils_1 = require("react-ts-utils");
 const api_1 = require("./api");
 const stateLib_1 = require("./stateLib");
 class FViewer extends react_1.Component {
@@ -37,9 +37,9 @@ class FViewer extends react_1.Component {
     _normalizeCustom(customData = {}) {
         const self = this;
         const _customData = {};
-        commonLib_1.objKeys(customData).forEach(key => {
+        react_ts_utils_1.objKeys(customData).forEach(key => {
             let pathes = stateLib_1.multiplePath(stateLib_1.normalizePath(key));
-            commonLib_1.objKeys(pathes).forEach((keyPath) => _customData[stateLib_1.path2string(pathes[keyPath])] = customData[key]);
+            react_ts_utils_1.objKeys(pathes).forEach((keyPath) => _customData[stateLib_1.path2string(pathes[keyPath])] = customData[key]);
         });
         return _customData;
     }
@@ -61,9 +61,9 @@ class FViewer extends react_1.Component {
         if (isSelf)
             dataObj.value = newVal;
         else {
-            if (commonLib_1.isArray(newVal))
+            if (react_ts_utils_1.isArray(newVal))
                 dataObj.length = newVal.length;
-            dataObj.branchKeys = commonLib_1.objKeys(newVal).sort().join(',');
+            dataObj.branchKeys = react_ts_utils_1.objKeys(newVal).sort().join(',');
         }
         return dataObj;
     }
@@ -77,9 +77,9 @@ class FViewer extends react_1.Component {
             let dataObj = FViewer._makeStateDataObj(schemaPart, type, newValPart);
             let pathKey = stateLib_1.path2string(track);
             let mergeCustom = self._customData[pathKey];
-            let state = { [stateLib_1.SymData]: mergeCustom ? commonLib_1.merge(dataObj, mergeCustom, { replace: commonLib_1.getIn(self._customReplace, pathKey) }) : dataObj };
+            let state = { [stateLib_1.SymData]: mergeCustom ? react_ts_utils_1.merge(dataObj, mergeCustom, { replace: react_ts_utils_1.getIn(self._customReplace, pathKey) }) : dataObj };
             if (!stateLib_1.isSelfManaged(state))
-                commonLib_1.objKeys(newValPart).forEach(k => state[k] = recurse(newValPart[k], commonLib_1.getIn(prevValPart, k), commonLib_1.getIn(prevStatePart, k), track.concat(k)));
+                react_ts_utils_1.objKeys(newValPart).forEach(k => state[k] = recurse(newValPart[k], react_ts_utils_1.getIn(prevValPart, k), react_ts_utils_1.getIn(prevStatePart, k), track.concat(k)));
             return state;
         }
         return recurse(newVal, prevVal, prevState);
@@ -97,17 +97,17 @@ class FViewer extends react_1.Component {
             self._customData = self._normalizeCustom(nextProps.customData);
             self._customReplace = self._normalizeCustom(nextProps.customReplace);
             const dataUpdates = { update: {}, replace: {}, api: {} };
-            const prevKeys = commonLib_1.objKeys(prevCustom);
-            commonLib_1.objKeys(self._customData).forEach(key => {
+            const prevKeys = react_ts_utils_1.objKeys(prevCustom);
+            react_ts_utils_1.objKeys(self._customData).forEach(key => {
                 prevKeys.splice(prevKeys.indexOf(key), 1);
                 let path = stateLib_1.string2path(key);
-                let branch = commonLib_1.getIn(self._state, path, stateLib_1.SymData);
+                let branch = react_ts_utils_1.getIn(self._state, path, stateLib_1.SymData);
                 if (branch && (prevCustom[key] !== self._customData[key] || prevReplace[key] !== self._customReplace[key]))
-                    stateLib_1.setUPDATABLE(dataUpdates, commonLib_1.merge(FViewer._makeStateDataObj(branch.schemaPart, branch.fData.type, branch.value), self._customData[key], { replace: commonLib_1.getIn(self._customReplace, key) }), true, path, stateLib_1.SymData);
+                    stateLib_1.setUPDATABLE(dataUpdates, react_ts_utils_1.merge(FViewer._makeStateDataObj(branch.schemaPart, branch.fData.type, branch.value), self._customData[key], { replace: react_ts_utils_1.getIn(self._customReplace, key) }), true, path, stateLib_1.SymData);
             });
             prevKeys.forEach(key => {
                 let path = stateLib_1.string2path(key);
-                let branch = commonLib_1.getIn(self._state, path, stateLib_1.SymData);
+                let branch = react_ts_utils_1.getIn(self._state, path, stateLib_1.SymData);
                 if (branch)
                     stateLib_1.setUPDATABLE(dataUpdates, FViewer._makeStateDataObj(branch.schemaPart, branch.fData.type, branch.value), true, path, stateLib_1.SymData);
             });
@@ -119,7 +119,7 @@ class FViewer extends react_1.Component {
             self._root.setState({ branch: self._state });
         if (['schema', 'elements'].some(propsNotEqual))
             self._setApi(nextProps);
-        return !commonLib_1.isEqual(self.props, nextProps, { skipKeys: ['parent', 'value', 'customData', 'customReplace'] });
+        return !react_ts_utils_1.isEqual(self.props, nextProps, { skipKeys: ['parent', 'value', 'customData', 'customReplace'] });
     }
     getRef(path) {
         return this._root && this._root.getRef(path);
@@ -128,24 +128,24 @@ class FViewer extends react_1.Component {
         return '#';
     }
     getDataObject(branch, ffield) {
-        return commonLib_1.getIn(branch, stateLib_1.SymData);
+        return react_ts_utils_1.getIn(branch, stateLib_1.SymData);
     }
     getValue(branch, ffield) {
         if (stateLib_1.isSelfManaged(branch))
-            return commonLib_1.getIn(branch, stateLib_1.SymData, 'value');
+            return react_ts_utils_1.getIn(branch, stateLib_1.SymData, 'value');
         else
-            return commonLib_1.getIn(this.props.value, stateLib_1.normalizePath(ffield.path));
+            return react_ts_utils_1.getIn(this.props.value, stateLib_1.normalizePath(ffield.path));
     }
     getBranch(path) {
-        return commonLib_1.getIn(this._state, stateLib_1.normalizePath(path));
+        return react_ts_utils_1.getIn(this._state, stateLib_1.normalizePath(path));
     }
     getSchemaPart(path) {
-        return commonLib_1.getIn(this._state, stateLib_1.normalizePath(path), stateLib_1.SymData, 'schemaPart');
+        return react_ts_utils_1.getIn(this._state, stateLib_1.normalizePath(path), stateLib_1.SymData, 'schemaPart');
     }
     render() {
         const self = this;
         let _a = self.props, { value, parent, _$useTag: UseTag = self.props.elements.widgets.Viewer || 'div', customData } = _a, rest = __rest(_a, ["value", "parent", "_$useTag", "customData"]);
-        commonLib_1.objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete rest[k]); // remove props that starts with '_' or '$'
+        react_ts_utils_1.objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete rest[k]); // remove props that starts with '_' or '$'
         return (react_1.createElement(UseTag, Object.assign({ ref: self._setFormRef }, rest),
             react_1.createElement(fform_1.FField, { ref: self._setRootRef, id: rest.id ? rest.id + '/#' : undefined, name: rest.name ? rest.name + '/#' : undefined, pFForm: self, getPath: FViewer._getPath, FFormApi: self.api })));
     }

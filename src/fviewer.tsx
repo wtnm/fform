@@ -2,7 +2,7 @@
 
 import {createElement as h, Component} from 'react';
 import {FField, comparePropsFn} from "./fform";
-import {getIn, isArray, isEqual, merge, objKeys} from "./commonLib";
+import {getIn, isArray, isEqual, merge, objKeys} from "react-ts-utils";
 import {compileSchema} from "./api";
 import {getSchemaPart, types, normalizePath, SymData, isSchemaSelfManaged, isSelfManaged, multiplePath, path2string, setUPDATABLE, string2path, mergeUPD_PROC} from "./stateLib";
 

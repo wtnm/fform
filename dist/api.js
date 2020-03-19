@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /////////////////////////////////////////////
 //  Actions function
 /////////////////////////////////////////////
-const commonLib_1 = require("./commonLib");
+const react_ts_utils_1 = require("react-ts-utils");
 const stateLib_1 = require("./stateLib");
 class exoPromise {
     constructor() {
@@ -143,7 +143,7 @@ class FFormStateManager {
     }
     delListener(fn) {
         const self = this;
-        if (commonLib_1.isUndefined(fn))
+        if (react_ts_utils_1.isUndefined(fn))
             self._listeners = [];
         else {
             let idx = self._listeners.indexOf(fn);
@@ -171,7 +171,7 @@ class FFormStateAPI extends FFormStateManager {
         //setState = (state: StateType) => this._setState(state);
         this.noExec = () => { this._noExec++; };
         this.execute = (opts = {}) => {
-            return this._setExecution(null, commonLib_1.merge(opts, { execute: true }));
+            return this._setExecution(null, react_ts_utils_1.merge(opts, { execute: true }));
         };
         this.setState = (state, opts = {}) => {
             const self = this;
@@ -207,7 +207,7 @@ class FFormStateAPI extends FFormStateManager {
                 update.path = path;
             else {
                 let state = this.getState();
-                while (!commonLib_1.getIn(state, path) && path.length) {
+                while (!react_ts_utils_1.getIn(state, path) && path.length) {
                     let nm = path.pop();
                     value = { [nm]: value };
                     replace = { [nm]: replace };
@@ -225,19 +225,19 @@ class FFormStateAPI extends FFormStateManager {
             const msgPath = '@/messages/' + priority + '/texts/' + group;
             if (value === null) {
                 this.switch([path, msgPath], [], rest);
-                if (commonLib_1.isObject(props))
+                if (react_ts_utils_1.isObject(props))
                     this.switch([path, '@/messages/' + priority], props, rest);
             }
             else {
                 let r = stateLib_1.object2PathValues(value, { arrayAsValue: true });
                 r.forEach(p => {
                     this.set([path, p, msgPath], p.pop(), Object.assign({ replace: true }, rest));
-                    if (commonLib_1.isObject(props))
+                    if (react_ts_utils_1.isObject(props))
                         this.set([path, p, '@/messages/' + priority], props, rest);
                 });
             }
         };
-        this.reset = (opts = {}) => opts.status ? this.set(stateLib_1.normalizePath(opts.path || '/'), commonLib_1.isUndefined(opts.value) ? stateLib_1.SymReset : opts.value, { [stateLib_1.SymData]: ['status', opts.status], macros: 'switch' }) : this.setValue(stateLib_1.SymReset, opts);
+        this.reset = (opts = {}) => opts.status ? this.set(stateLib_1.normalizePath(opts.path || '/'), react_ts_utils_1.isUndefined(opts.value) ? stateLib_1.SymReset : opts.value, { [stateLib_1.SymData]: ['status', opts.status], macros: 'switch' }) : this.setValue(stateLib_1.SymReset, opts);
         this.clear = (opts = {}) => this.setValue(stateLib_1.SymClear, opts);
         this.arrayAdd = (path, value = 1, opts = {}) => this._setExecution(Object.assign({ path, value: value, macros: 'array' }, opts), opts);
         this.arrayItemOps = (path, value, opts = {}) => this._setExecution(Object.assign({ path, op: value, macros: 'arrayItem' }, opts), opts);
@@ -270,7 +270,7 @@ class FFormStateAPI extends FFormStateManager {
             const { path } = opts, rest = __rest(opts, ["path"]);
             if (path === null)
                 rest.path = null;
-            else if (!commonLib_1.isUndefined(path) || forcePath)
+            else if (!react_ts_utils_1.isUndefined(path) || forcePath)
                 rest.path = wrapPath(path || './');
             return self.wrapOpts ? self.wrapOpts(rest) : rest;
             //rest.noValidation = isUndefined(noValidation) ? !self.liveValidate : noValidation;
@@ -319,7 +319,7 @@ class FFormStateAPI extends FFormStateManager {
             return opts.setExecution(addUpdates, opts);
         const self = this;
         if (addUpdates)
-            commonLib_1.push2array(self._updates, addUpdates);
+            react_ts_utils_1.push2array(self._updates, addUpdates);
         // console.log('---------------- added updates', updates);
         if (opts.force === true && self._noExec > 0)
             self._noExec--;
@@ -389,14 +389,14 @@ exports.formReducer = formReducer;
 /////////////////////////////////////////////
 const compileSchema = (schema, elements) => isCompiled(schema) ? schema : getCompiledSchema(elements, schema);
 exports.compileSchema = compileSchema;
-const getCompiledSchema = commonLib_1.memoize((elements, schema) => schemaCompiler(elements, schema));
+const getCompiledSchema = react_ts_utils_1.memoize((elements, schema) => schemaCompiler(elements, schema));
 const val2obj = (obj) => {
-    return commonLib_1.isObject(obj) ? obj : commonLib_1.toArray(obj);
+    return react_ts_utils_1.isObject(obj) ? obj : react_ts_utils_1.toArray(obj);
 };
 function schemaCompiler(elements = {}, schema, track = []) {
     if (isCompiled(schema))
         return schema;
-    const result = commonLib_1.isArray(schema) ? [] : { _compiled: true };
+    const result = react_ts_utils_1.isArray(schema) ? [] : { _compiled: true };
     let _a = schema, { _validators, _data$, _stateMaps, _oneOfSelector } = _a, rest = __rest(_a, ["_validators", "_data$", "_stateMaps", "_oneOfSelector"]);
     const nFnOpts = { noStrictArrayResult: true };
     if (_validators)
@@ -407,7 +407,7 @@ function schemaCompiler(elements = {}, schema, track = []) {
         result._stateMaps = objectResolver(elements, _stateMaps, track);
     if (_oneOfSelector)
         result._oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(_oneOfSelector, nFnOpts), track);
-    commonLib_1.objKeys(rest).forEach(key => {
+    react_ts_utils_1.objKeys(rest).forEach(key => {
         if (key.substr(0, 1) == '_')
             return result[key] = key !== '_presets' && stateLib_1.isElemRef(rest[key]) ? convRef(elements, rest[key], track) : rest[key];
         switch (key) {
@@ -421,15 +421,15 @@ function schemaCompiler(elements = {}, schema, track = []) {
             case 'dependencies':
                 let res = {};
                 let obj = rest[key] || {};
-                if (commonLib_1.isArray(obj))
+                if (react_ts_utils_1.isArray(obj))
                     res = obj; // "dependencies" may be of string[] type
                 else
-                    commonLib_1.objKeys(obj).forEach((k) => (res[k] = schemaCompiler(elements, obj[k], track.concat(key, k))));
+                    react_ts_utils_1.objKeys(obj).forEach((k) => (res[k] = schemaCompiler(elements, obj[k], track.concat(key, k))));
                 result[key] = res;
                 //result[key] = objMap(rest[key], schemaCompiler.bind(null, elements));
                 break;
             default:
-                if (commonLib_1.isMergeable(rest[key]))
+                if (react_ts_utils_1.isMergeable(rest[key]))
                     result[key] = schemaCompiler(elements, rest[key], track.concat(key));
                 else
                     result[key] = rest[key];
@@ -439,10 +439,10 @@ function schemaCompiler(elements = {}, schema, track = []) {
     return result;
 }
 function isCompiled(schema) {
-    return commonLib_1.getIn(schema, '_compiled');
+    return react_ts_utils_1.getIn(schema, '_compiled');
 }
 function testRef(refRes, $_ref, track) {
-    if (commonLib_1.isUndefined(refRes))
+    if (react_ts_utils_1.isUndefined(refRes))
         throw new Error('Reference "' + $_ref + '" leads to undefined object\'s property in path: ' + stateLib_1.path2string(track));
     return true;
 }
@@ -452,25 +452,25 @@ function getInWithCheck(refRes, path) {
     while (!whileBreak) {
         whileBreak = true;
         for (let j = 0; j < path.length; j++) {
-            refRes = commonLib_1.getIn(refRes, path[j]);
+            refRes = react_ts_utils_1.getIn(refRes, path[j]);
             if (stateLib_1.isElemRef(refRes)) {
                 path = stateLib_1.string2path(refRes).concat(path.slice(j + 1));
                 refRes = { '^': elems };
                 whileBreak = false;
                 break;
             }
-            if (commonLib_1.isFunction(refRes) && j + 1 !== path.length) { // check if there is a function
+            if (react_ts_utils_1.isFunction(refRes) && j + 1 !== path.length) { // check if there is a function
                 refRes = refRes(elems, path.slice(j + 1));
                 break;
             }
-            if (commonLib_1.isUndefined(refRes))
+            if (react_ts_utils_1.isUndefined(refRes))
                 break;
         }
     }
     return refRes;
 }
 function objectDerefer(_elements, obj2deref, track = []) {
-    if (!commonLib_1.isMergeable(obj2deref))
+    if (!react_ts_utils_1.isMergeable(obj2deref))
         return obj2deref;
     let { $_ref = '' } = obj2deref, restObj = __rest(obj2deref, ["$_ref"]);
     $_ref = $_ref.split(':');
@@ -483,14 +483,14 @@ function objectDerefer(_elements, obj2deref, track = []) {
             throw new Error('Can reffer only to ^');
         let refRes = getInWithCheck({ '^': _elements }, path);
         testRef(refRes, $_ref[i], track.concat('@' + i));
-        if (commonLib_1.isMergeable(refRes))
+        if (react_ts_utils_1.isMergeable(refRes))
             refRes = objectDerefer(_elements, refRes, track.concat('@' + i));
         objs2merge.push(refRes);
     }
-    let result = commonLib_1.isArray(obj2deref) ? [] : {};
+    let result = react_ts_utils_1.isArray(obj2deref) ? [] : {};
     for (let i = 0; i < objs2merge.length; i++)
-        result = commonLib_1.merge(result, objs2merge[i]);
-    return commonLib_1.merge(result, stateLib_1.objMap(restObj, objectDerefer.bind(null, _elements), track));
+        result = react_ts_utils_1.merge(result, objs2merge[i]);
+    return react_ts_utils_1.merge(result, stateLib_1.objMap(restObj, objectDerefer.bind(null, _elements), track));
     //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
 }
 exports.objectDerefer = objectDerefer;
@@ -500,7 +500,7 @@ function skipKey(key, obj) {
 exports.skipKey = skipKey;
 const convRef = (_elements, refs, track = [], prefix = '') => {
     const _objs = { '^': _elements };
-    return commonLib_1.deArray(refs.split('|').map((ref, i) => {
+    return react_ts_utils_1.deArray(refs.split('|').map((ref, i) => {
         ref = ref.trim();
         if (stateLib_1.isElemRef(ref))
             prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
@@ -516,7 +516,7 @@ const convRef = (_elements, refs, track = [], prefix = '') => {
                 r = prefix + r;
             let refRes = getInWithCheck(_objs, stateLib_1.string2path(r));
             testRef(refRes, r, track.concat('@' + i));
-            result = result ? commonLib_1.merge(result, refRes) : refRes;
+            result = result ? react_ts_utils_1.merge(result, refRes) : refRes;
         }
         return result;
     }));
@@ -524,16 +524,16 @@ const convRef = (_elements, refs, track = [], prefix = '') => {
 function objectResolver(_elements, obj2resolve, track = []) {
     if (stateLib_1.isElemRef(obj2resolve))
         return convRef(_elements, obj2resolve, track);
-    if (!commonLib_1.isMergeable(obj2resolve))
+    if (!react_ts_utils_1.isMergeable(obj2resolve))
         return obj2resolve;
     const _objs = { '^': _elements };
     const result = objectDerefer(_elements, obj2resolve);
-    const retResult = commonLib_1.isArray(result) ? [] : {};
-    commonLib_1.objKeys(result).forEach((key) => {
+    const retResult = react_ts_utils_1.isArray(result) ? [] : {};
+    react_ts_utils_1.objKeys(result).forEach((key) => {
         let value = result[key];
         if (stateLib_1.isElemRef(value)) {
             value = convRef(_elements, value, track);
-            if (key !== '$' && !skipKey(key, result) && (commonLib_1.isFunction(value) || commonLib_1.isArray(value) && value.every(commonLib_1.isFunction)))
+            if (key !== '$' && !skipKey(key, result) && (react_ts_utils_1.isFunction(value) || react_ts_utils_1.isArray(value) && value.every(react_ts_utils_1.isFunction)))
                 value = { $: value };
         }
         if (!skipKey(key, result))

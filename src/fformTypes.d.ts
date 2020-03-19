@@ -9,7 +9,7 @@ declare type MessageData = Array<MessageGroupType | string> | MessageGroupType |
 type MessageGroupType = {
   group?: number;
   data: any;
-  priority?: number;  // 0 and below means validation failed, else if priority > 0 message considered valid 
+  priority?: number;  // 0 and below means validation failed, else if priority > 0 message considered valid
   path?: Path | string;
   [key: string]: any;
 }
@@ -31,7 +31,7 @@ interface FFieldDataType extends anyObject {
   fData: {
     title: string;  //
     type: string; //
-    required: boolean; // 
+    required: boolean; //
     canAdd?: boolean;
     placeholder?: string;
   };
@@ -134,25 +134,6 @@ interface FFormProps {
 }
 
 
-interface MergeStateOptionsArgument {
-  noSymbol?: boolean;
-  del?: boolean;  // remove props with SymDelete
-  diff?: boolean;
-  arrays?: Function; // 'mergeWithoutLength'
-  replace?: replaceType; // force replace for mergeable object instead of merge, should be and object with true value for the keys that must be replaced, can be recursive for deep elements
-  SymbolDelete?: any;
-}
-
-type replaceType = { [key: string]: boolean | replaceType } | boolean | ((path: Path) => boolean);
-
-interface IsEqualOptions {
-  deep?: boolean;
-  symbol?: boolean;
-  skipKeys?: string[];
-  deepKeys?: string[];
-  onlyKeysB?: boolean;
-}
-
 interface ActionType {
   type: string;
   core: any,
@@ -169,11 +150,6 @@ type APIOptsType = {
 
 interface apiPromises extends Promise<any> {
   vAsync: Promise<any>;
-}
-
-interface MergeStateResult {
-  state: any,
-  changes?: any,
 }
 
 type PathValueType = Array<any>;

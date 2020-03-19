@@ -8,7 +8,7 @@ process.env.TS_NODE_PROJECT = './tsconfig.json';
 require('ts-mocha'); // register mocha wrapper
 const {expect} = require('chai');
 
-const commonLib = require('../src/commonLib.tsx');
+const commonLib = require('react-ts-utils');
 const stateLib = require('../src/stateLib.tsx');
 const apiLib = require('../src/api.tsx');
 const fform = require('../src/fform.tsx');
@@ -75,17 +75,6 @@ describe('FForm comommon functions tests', function () {
     expect(state === result).to.be.equal(true);
     result = commonLib.setIn(state, 1, []);
     expect(result).to.be.equal(1);
-  });
-
-  it('test makeSlice', function () {
-    let result = commonLib.makeSlice(1);
-    expect(result).to.be.equal(1);
-    result = commonLib.makeSlice(1, 2);
-    expect(result[1]).to.be.equal(2);
-    result = commonLib.makeSlice(1, 2, [3]);
-    expect(result[1][2][0]).to.be.equal(3);
-    result = commonLib.makeSlice(1, 2, [3], 4);
-    expect(result[1][2][3]).to.be.equal(4);
   });
 
   it('test mergeState', function () {
@@ -193,6 +182,18 @@ describe('FForm state functions tests', function () {
 
   //const arraySchema = require('./schemaArray').default;
   const arrayCore = new fform.FFormStateAPI({name: 'functionsTest', schema: require('./schemaArray').default, JSONValidator});
+
+  it('test makeSlice', function () {
+    let result = stateLib.makeSlice(1);
+    expect(result).to.be.equal(1);
+    result = stateLib.makeSlice(1, 2);
+    expect(result[1]).to.be.equal(2);
+    result = stateLib.makeSlice(1, 2, [3]);
+    expect(result[1][2][0]).to.be.equal(3);
+    result = stateLib.makeSlice(1, 2, [3], 4);
+    expect(result[1][2][3]).to.be.equal(4);
+  });
+
   it('test makeStateBranch, makeStateFromSchema', function () {  // stateData.state.objLevel_1.objLevel_2.array_1[0][0].bazinga[Symbol.for('FFormData')]
 
     let state = arrayCore.getState();
@@ -594,7 +595,7 @@ describe('FForm state functions tests', function () {
 
 
   it('test object2PathValues', function () {
-    let res = commonLib.makeSlice(1, 2, [3]);
+    let res = stateLib.makeSlice(1, 2, [3]);
 
     let flatDataObj = {
       "array_1": [

@@ -14,7 +14,7 @@ var __rest = (this && this.__rest) || function (s, e) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = require("react");
 //const React = require('preact');
-const commonLib_1 = require("./commonLib");
+const react_ts_utils_1 = require("react-ts-utils");
 const stateLib_1 = require("./stateLib");
 const api_1 = require("./api");
 exports.FFormStateAPI = api_1.FFormStateAPI;
@@ -63,10 +63,10 @@ class FForm extends react_1.Component {
         if (props.touched !== null)
             nextProps.touched = !!nextProps.touched;
         FForm.params.forEach(k => {
-            if (!commonLib_1.isUndefined(nextProps[k]))
-                nextProps[k] = (v) => commonLib_1.isUndefined(v) ? props[k] : v;
+            if (!react_ts_utils_1.isUndefined(nextProps[k]))
+                nextProps[k] = (v) => react_ts_utils_1.isUndefined(v) ? props[k] : v;
         });
-        if (commonLib_1.isUndefined(nextProps['value']))
+        if (react_ts_utils_1.isUndefined(nextProps['value']))
             nextProps['value'] = nextProps['inital'];
         self._updateValues(nextProps);
         if (!props.noValidation)
@@ -75,7 +75,7 @@ class FForm extends react_1.Component {
     _updateMethods(nextProps, prevProps = {}) {
         const self = this;
         const newMethods = {};
-        commonLib_1.objKeys(self._methods).forEach(key => {
+        react_ts_utils_1.objKeys(self._methods).forEach(key => {
             if (prevProps[key] !== nextProps[key])
                 newMethods[key] = nextProps[key];
         });
@@ -97,10 +97,10 @@ class FForm extends react_1.Component {
         if (value && value !== prevProps.value)
             self.api.setValue(value, { replace: true, noValidation });
         if (extData && extData !== prevProps.extData)
-            commonLib_1.objKeys(extData).forEach(key => (self.api.set(key, extData[key], { replace: true })));
-        if (!commonLib_1.isUndefined(touched) && touched !== null && touched !== prevProps.touched)
+            react_ts_utils_1.objKeys(extData).forEach(key => (self.api.set(key, extData[key], { replace: true })));
+        if (!react_ts_utils_1.isUndefined(touched) && touched !== null && touched !== prevProps.touched)
             self.api.reset({ status: 'untouched', value: touched ? 0 : undefined });
-        FForm.params.forEach(k => (!commonLib_1.isUndefined(nextProps[k]) && nextProps[k] !== prevProps[k] &&
+        FForm.params.forEach(k => (!react_ts_utils_1.isUndefined(nextProps[k]) && nextProps[k] !== prevProps[k] &&
             self.api.switch('/@/params/' + k, nextProps[k])));
     }
     _handleStateUpdate(state) {
@@ -137,13 +137,13 @@ class FForm extends react_1.Component {
         }
         const setPending = (val) => self.api.set([], val, { [stateLib_1.SymData]: ['status', 'pending'] });
         const setMessagesFromSubmit = (messages = []) => {
-            if (commonLib_1.isUndefined(messages))
+            if (react_ts_utils_1.isUndefined(messages))
                 return;
-            commonLib_1.toArray(messages).forEach(value => {
+            react_ts_utils_1.toArray(messages).forEach(value => {
                 if (!value)
                     return;
                 let opts = value[stateLib_1.SymData];
-                self.api.setMessages(commonLib_1.objKeys(value).length ? value : null, opts);
+                self.api.setMessages(react_ts_utils_1.objKeys(value).length ? value : null, opts);
             });
         };
         self.api.set([], 0, { [stateLib_1.SymData]: ['status', 'untouched'], execute: true, macros: 'switch' });
@@ -179,7 +179,7 @@ class FForm extends react_1.Component {
         else
             self._updateValues(nextProps, self.props);
         self._updateMethods(nextProps, self.props);
-        return FFrormApiUpdate || !commonLib_1.isEqual(self.props, nextProps, { skipKeys: ['core', 'state', 'value', 'inital', 'extData', 'fieldCache', 'flatten', 'noValidate', 'parent', 'onSubmit', 'onChange', 'onStateChange'] });
+        return FFrormApiUpdate || !react_ts_utils_1.isEqual(self.props, nextProps, { skipKeys: ['core', 'state', 'value', 'inital', 'extData', 'fieldCache', 'flatten', 'noValidate', 'parent', 'onSubmit', 'onChange', 'onStateChange'] });
     }
     componentWillUnmount() {
         if (this._unsubscribe)
@@ -195,11 +195,11 @@ class FForm extends react_1.Component {
         return '#';
     }
     getDataObject(branch, ffield) {
-        return commonLib_1.getIn(branch, stateLib_1.SymData);
+        return react_ts_utils_1.getIn(branch, stateLib_1.SymData);
     }
     getValue(branch, ffield) {
         if (stateLib_1.isSelfManaged(branch))
-            return commonLib_1.getIn(branch, stateLib_1.SymData, 'value');
+            return react_ts_utils_1.getIn(branch, stateLib_1.SymData, 'value');
         else
             return this.api.getValue({ path: ffield.path });
     }
@@ -223,7 +223,7 @@ class FForm extends react_1.Component {
         const self = this;
         let _a = self.props, { core, state, value, inital, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = self.elements.widgets.Form || 'form' } = _a, rest = __rest(_a, ["core", "state", "value", "inital", "extData", "fieldCache", "touched", "parent", "onSubmit", "onChange", "onStateChange", "_$useTag"]);
         FForm.params.forEach(k => delete rest[k]);
-        commonLib_1.objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete rest[k]); // remove props that starts with '_' or '$'
+        react_ts_utils_1.objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete rest[k]); // remove props that starts with '_' or '$'
         return (react_1.createElement(UseTag, Object.assign({ ref: self._setFormRef }, rest, { onSubmit: self._submit, onReset: self.reset }),
             react_1.createElement(FField, { ref: self._setRootRef, id: (rest.id || self.api.name) + '/#', name: self.api.name, pFForm: self, getPath: FForm._getPath, FFormApi: self.api })));
     }
@@ -254,9 +254,9 @@ class FRefsGeneric extends react_1.Component {
         const self = this;
         if ($reactRef === true)
             return self._setRef(defaultName);
-        else if (commonLib_1.isString($reactRef))
+        else if (react_ts_utils_1.isString($reactRef))
             return self._setRef($reactRef);
-        else if (commonLib_1.isMergeable($reactRef))
+        else if (react_ts_utils_1.isMergeable($reactRef))
             return stateLib_1.objMap($reactRef, self._refProcess.bind(self, defaultName));
         return $reactRef;
     }
@@ -281,8 +281,8 @@ class FField extends FRefsGeneric {
         const self = this;
         Object.defineProperty(self, "path", { get: () => self.props.getPath() });
         Object.defineProperty(self, "pFForm", { get: () => self.props.pFForm });
-        Object.defineProperty(self, "liveValidate", { get: () => commonLib_1.getIn(self.getData(), 'params', 'liveValidate') });
-        Object.defineProperty(self, "liveUpdate", { get: () => commonLib_1.getIn(self.getData(), 'params', 'liveUpdate') });
+        Object.defineProperty(self, "liveValidate", { get: () => react_ts_utils_1.getIn(self.getData(), 'params', 'liveValidate') });
+        Object.defineProperty(self, "liveUpdate", { get: () => react_ts_utils_1.getIn(self.getData(), 'params', 'liveUpdate') });
         Object.defineProperty(self, "value", { get: () => self.props.pFForm.getValue(self.state.branch, self) });
         Object.defineProperty(self, "stateApi", { get: () => self.props.pFForm.api });
         self.state = { branch: self.pFForm.getBranch(self.path) };
@@ -344,8 +344,8 @@ class FField extends FRefsGeneric {
         //if (path === null) return;
         const self = this;
         let fieldCache = self.pFForm.props.fieldCache;
-        if (commonLib_1.isUndefined(fieldCache) || fieldCache === true)
-            fieldCache = commonLib_1.isNumber(this.liveUpdate) ? this.liveUpdate : 40;
+        if (react_ts_utils_1.isUndefined(fieldCache) || fieldCache === true)
+            fieldCache = react_ts_utils_1.isNumber(this.liveUpdate) ? this.liveUpdate : 40;
         let valueSet = fn === 'setValue' && (!path || path == './' || path == '.');
         if (!valueSet) {
             let fPath = self.path;
@@ -364,7 +364,7 @@ class FField extends FRefsGeneric {
                 const mappedData = self._mappedData;
                 self.get = (...paths) => {
                     let path = stateLib_1.normalizePath(paths, self.path);
-                    if (commonLib_1.isEqual(path, stateLib_1.normalizePath('./@value', self.path)))
+                    if (react_ts_utils_1.isEqual(path, stateLib_1.normalizePath('./@value', self.path)))
                         return data.value;
                     return self.stateApi.get(path);
                 };
@@ -388,7 +388,7 @@ class FField extends FRefsGeneric {
         const schemaPart = self.api.getSchemaPart(self.path);
         self.schemaPart = schemaPart;
         // self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
-        if ((commonLib_1.isArray(schemaPart.type) || commonLib_1.isUndefined(schemaPart.type)) && !schemaPart._presets)
+        if ((react_ts_utils_1.isArray(schemaPart.type) || react_ts_utils_1.isUndefined(schemaPart.type)) && !schemaPart._presets)
             throw new Error('schema._presets should be defined explicitly for multi type');
         self._layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart._layout));
         let resolvedComponents = resolveComponents(self.pFForm.elements, schemaPart._custom, schemaPart._presets || schemaPart.type);
@@ -397,7 +397,7 @@ class FField extends FRefsGeneric {
         self._maps = normalizeMaps($_maps);
         self._widgets = {};
         self._components = components;
-        self._blocks = commonLib_1.objKeys(components).filter(key => components[key]);
+        self._blocks = react_ts_utils_1.objKeys(components).filter(key => components[key]);
         self._blocks.forEach((block) => {
             const _a = components[block], { _$widget, $_reactRef, _$skipKeys } = _a, staticProps = __rest(_a, ["_$widget", "$_reactRef", "_$skipKeys"]);
             if (!_$widget)
@@ -405,9 +405,9 @@ class FField extends FRefsGeneric {
             self._widgets[block] = _$widget;
             if ($_reactRef) { // $_reactRef - prop for react ref-function
                 const $ref = self._refProcess('@' + block, $_reactRef);
-                staticProps[commonLib_1.isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
+                staticProps[react_ts_utils_1.isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
             }
-            self._mappedData[block] = staticProps; // properties, without reserved names      
+            self._mappedData[block] = staticProps; // properties, without reserved names
         });
         self._setMappedData(undefined, self.getData(), 'build');
         self._rebuild = false;
@@ -426,8 +426,8 @@ class FField extends FRefsGeneric {
     }
     getData(branch) {
         const self = this;
-        const data = self.pFForm.getDataObject(branch || commonLib_1.getIn(self, 'state', 'branch'), self);
-        return self._cached ? commonLib_1.merge(data, { value: self._cached.value }, { replace: { value: self._cached.opts.replace } }) : data;
+        const data = self.pFForm.getDataObject(branch || react_ts_utils_1.getIn(self, 'state', 'branch'), self);
+        return self._cached ? react_ts_utils_1.merge(data, { value: self._cached.value }, { replace: { value: self._cached.opts.replace } }) : data;
     }
     shouldComponentUpdate(nextProps, nextState) {
         const self = this;
@@ -435,19 +435,19 @@ class FField extends FRefsGeneric {
             self._updateStateApi(nextProps.FFormApi);
             return (self._rebuild = true);
         }
-        if (!commonLib_1.isEqual(nextProps, self.props))
+        if (!react_ts_utils_1.isEqual(nextProps, self.props))
             return (self._rebuild = true);
-        if (commonLib_1.isUndefined(nextState.branch))
+        if (react_ts_utils_1.isUndefined(nextState.branch))
             return true;
         self.$branch = nextState.branch;
         let updateComponent = false;
         const prevData = self.getData();
-        const nextData = self.getData(commonLib_1.getIn(nextState, 'branch'));
-        if (commonLib_1.getIn(nextData, 'oneOf') !== commonLib_1.getIn(prevData, 'oneOf'))
+        const nextData = self.getData(react_ts_utils_1.getIn(nextState, 'branch'));
+        if (react_ts_utils_1.getIn(nextData, 'oneOf') !== react_ts_utils_1.getIn(prevData, 'oneOf'))
             return (self._rebuild = true);
         try {
             updateComponent = self._setMappedData(prevData, nextData, nextData !== prevData) || updateComponent;
-            updateComponent = updateComponent || commonLib_1.getIn(nextData, 'params', 'norender') !== commonLib_1.getIn(prevData, 'params', 'norender');
+            updateComponent = updateComponent || react_ts_utils_1.getIn(nextData, 'params', 'norender') !== react_ts_utils_1.getIn(prevData, 'params', 'norender');
         }
         catch (e) {
             throw self._addErrPath(e);
@@ -457,9 +457,9 @@ class FField extends FRefsGeneric {
     render() {
         const self = this;
         //try {
-        if (commonLib_1.isUndefined(self.state.branch))
+        if (react_ts_utils_1.isUndefined(self.state.branch))
             return null;
-        if (commonLib_1.getIn(self.getData(), 'params', 'norender'))
+        if (react_ts_utils_1.getIn(self.getData(), 'params', 'norender'))
             return false;
         if (self._rebuild)
             this._build();
@@ -478,7 +478,7 @@ class FSectionWidget extends react_1.Component {
     _cn(props) {
         if (!props)
             return props;
-        if (this.props._$cx && props.className && !commonLib_1.isString(props.className)) {
+        if (this.props._$cx && props.className && !react_ts_utils_1.isString(props.className)) {
             if (passCx(this.props._$widget))
                 return Object.assign({ _$cx: this.props._$cx }, props);
             else
@@ -516,17 +516,17 @@ class FSection extends FRefsGeneric {
     _build(props) {
         function makeLayouts_INNER_PROCEDURE(UPDATABLE, fields) {
             const layout = [];
-            commonLib_1.objKeys(fields).forEach(key => {
+            react_ts_utils_1.objKeys(fields).forEach(key => {
                 let fieldOrLayout = fields[key];
                 const { keys, counter } = UPDATABLE;
-                if (commonLib_1.isString(fieldOrLayout)) { // if field is string then _makeFField
+                if (react_ts_utils_1.isString(fieldOrLayout)) { // if field is string then _makeFField
                     let idx = UPDATABLE.keys.indexOf(fieldOrLayout);
                     if (~idx) {
                         layout.push(self._makeFField(fieldOrLayout));
                         UPDATABLE.keys.splice(idx, 1);
                     }
                 }
-                else if (commonLib_1.isObject(fieldOrLayout)) { // layout
+                else if (react_ts_utils_1.isObject(fieldOrLayout)) { // layout
                     const counter = UPDATABLE.counter++;
                     let { _$widget, $_fields } = normalizeLayout(counter, fieldOrLayout);
                     layout.push(react_1.createElement(FSectionWidget, { "_$widget": _$widget, "_$cx": _$cx, key: 'widget_' + counter, ref: self._setWidRef((counter)), getMappedData: self._getMappedData(counter) }, $_fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields)));
@@ -539,10 +539,10 @@ class FSection extends FRefsGeneric {
             // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
             let { $_fields, $_reactRef, _$skipKeys, _$widget = LayoutDefaultWidget, className } = rest, staticProps = __rest(rest, ["$_fields", "$_reactRef", "_$skipKeys", "_$widget", "className"]);
             if ($_fields || !counter)
-                className = commonLib_1.merge(LayoutDefaultClass, className);
+                className = react_ts_utils_1.merge(LayoutDefaultClass, className);
             staticProps.className = className;
             let refObject = self._refProcess('@widget_' + counter, $_reactRef) || {};
-            if (commonLib_1.isFunction(refObject))
+            if (react_ts_utils_1.isFunction(refObject))
                 refObject = { 'ref': refObject };
             Object.assign(staticProps, refObject);
             let maps = normalizeMaps($_maps, counter.toString());
@@ -560,9 +560,9 @@ class FSection extends FRefsGeneric {
         self._objectLayouts = [];
         const UPDATABLE = { keys: self._getObjectKeys($branch), counter: 1 };
         self._focusField = focusField || UPDATABLE.keys[0] || '';
-        let { _$widget, $_fields } = normalizeLayout(0, commonLib_1.isArray($layout) ? { $_fields: $layout } : $layout);
+        let { _$widget, $_fields } = normalizeLayout(0, react_ts_utils_1.isArray($layout) ? { $_fields: $layout } : $layout);
         self._$widget = _$widget;
-        if ($_fields) // we make inital _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys 
+        if ($_fields) // we make inital _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys
             self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields);
         if (strictLayout !== true) // and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
             UPDATABLE.keys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));
@@ -583,7 +583,7 @@ class FSection extends FRefsGeneric {
         return react_1.createElement(FField, { ref: self._setRef(arrayKey || fieldName), key: arrayKey || fieldName, pFForm: self.props.$FField.pFForm, FFormApi: self.props.FFormApi, id: self.props.id ? self.props.id + '/' + (arrayKey || fieldName) : undefined, name: self.props.name ? self.props.name + '[' + (self.props.isArray ? '${idx}_' + (arrayKey || fieldName) : fieldName) + ']' : undefined, getPath: arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName) });
     }
     _arrayIndex2key($branch) {
-        return this.props.uniqKey ? commonLib_1.getIn(this._getData($branch), stateLib_1.string2path(this.props.uniqKey)) : undefined;
+        return this.props.uniqKey ? react_ts_utils_1.getIn(this._getData($branch), stateLib_1.string2path(this.props.uniqKey)) : undefined;
     }
     _getObjectKeys($branch) {
         const self = this;
@@ -611,7 +611,7 @@ class FSection extends FRefsGeneric {
         let doUpdate = false;
         for (let i = props.arrayStart; i < props.length; i++) {
             let arrayKey = self._arrayIndex2key(nextBranch[i]);
-            if (commonLib_1.isUndefined(arrayKey))
+            if (react_ts_utils_1.isUndefined(arrayKey))
                 throw new Error('no unique key provided for array item');
             if (self.$refs[arrayKey])
                 self.$refs[arrayKey].setState({ branch: nextBranch[i] });
@@ -620,7 +620,7 @@ class FSection extends FRefsGeneric {
                 self._arrayKey2field[arrayKey] = i;
                 doUpdate = true;
             }
-            updatedArray.push(!commonLib_1.isUndefined(prevIndex) ? self._getArrayField(prevIndex) : self._makeFField(i.toString(), arrayKey));
+            updatedArray.push(!react_ts_utils_1.isUndefined(prevIndex) ? self._getArrayField(prevIndex) : self._makeFField(i.toString(), arrayKey));
         }
         if (self._arrayLayouts.length !== updatedArray.length)
             doUpdate = true;
@@ -639,7 +639,7 @@ class FSection extends FRefsGeneric {
         const self = this;
         if (['FFormApi', 'oneOf', 'branchKeys'].some(comparePropsFn(self.props, nextProps)))
             return self._rebuild = true;
-        let doUpdate = !commonLib_1.isEqual(nextProps, self.props, { skipKeys: ['$branch'] });
+        let doUpdate = !react_ts_utils_1.isEqual(nextProps, self.props, { skipKeys: ['$branch'] });
         let prevBranch = self.props.$branch;
         let nextBranch = nextProps.$branch;
         if (prevBranch != nextBranch) {
@@ -653,7 +653,7 @@ class FSection extends FRefsGeneric {
             if (newMapped != self._mappedData) { // update self._widgets
                 const oldMapped = self._mappedData;
                 self._mappedData = newMapped;
-                commonLib_1.objKeys(newMapped).forEach(key => self._widgets[key] && newMapped[key] != oldMapped[key] && self._widgets[key]['forceUpdate']());
+                react_ts_utils_1.objKeys(newMapped).forEach(key => self._widgets[key] && newMapped[key] != oldMapped[key] && self._widgets[key]['forceUpdate']());
             }
             // update object elements or if it _isArray elements that lower than self.props.arrayStart
             self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self.$refs[field] && self.$refs[field].setState({ branch: nextBranch[field] }));
@@ -701,9 +701,9 @@ class GenericWidget extends FRefsGeneric {
         const { _$widget: Widget = GenericWidget, className, $_reactRef } = obj, rest = __rest(obj, ["_$widget", "className", "$_reactRef"]);
         const self = this;
         let refObject = self._refProcess(key, $_reactRef) || {};
-        if (commonLib_1.isFunction(refObject))
+        if (react_ts_utils_1.isFunction(refObject))
             refObject = { ref: refObject };
-        if (commonLib_1.isFunction(passedReactRef))
+        if (react_ts_utils_1.isFunction(passedReactRef))
             refObject.ref = passedReactRef;
         else
             Object.assign(refObject, passedReactRef);
@@ -715,13 +715,13 @@ class GenericWidget extends FRefsGeneric {
     _mapChildren(children, $_reactRef) {
         const self = this;
         if (children !== self._children || self._reactRef !== $_reactRef) {
-            const prev = self._children && commonLib_1.toArray(self._children);
-            const next = children && commonLib_1.toArray(children);
-            self._mapped = next && next.map((ch, i) => (!commonLib_1.isObject(ch) || ch.$$typeof) ? ch :
+            const prev = self._children && react_ts_utils_1.toArray(self._children);
+            const next = children && react_ts_utils_1.toArray(children);
+            self._mapped = next && next.map((ch, i) => (!react_ts_utils_1.isObject(ch) || ch.$$typeof) ? ch :
                 ((!self._mapped ||
-                    !commonLib_1.getIn(self._mapped, i) ||
+                    !react_ts_utils_1.getIn(self._mapped, i) ||
                     prev[i] !== next[i] ||
-                    commonLib_1.getIn(self._reactRef, i) !== commonLib_1.getIn($_reactRef, i)) ? self._newWidget(i, ch, commonLib_1.getIn($_reactRef, i)) :
+                    react_ts_utils_1.getIn(self._reactRef, i) !== react_ts_utils_1.getIn($_reactRef, i)) ? self._newWidget(i, ch, react_ts_utils_1.getIn($_reactRef, i)) :
                     self._mapped[i]));
             self._children = children;
             self._reactRef = $_reactRef;
@@ -730,14 +730,14 @@ class GenericWidget extends FRefsGeneric {
     setRef2rest(rest, $_reactRef) {
         if (!$_reactRef)
             return rest;
-        commonLib_1.objKeys($_reactRef).filter(v => isNaN(+v)).forEach(k => rest[k] = $_reactRef[k]); // assing all except numeric keys, as then assigned at _mapChildren
+        react_ts_utils_1.objKeys($_reactRef).filter(v => isNaN(+v)).forEach(k => rest[k] = $_reactRef[k]); // assing all except numeric keys, as then assigned at _mapChildren
         return rest;
     }
     setElements2rest(rest, _$elements) {
         if (!_$elements)
             return rest;
         let elms = { '^': _$elements };
-        commonLib_1.objKeys(rest).forEach(k => stateLib_1.isElemRef(rest[k]) && (rest[k] = commonLib_1.getIn(elms, stateLib_1.string2path(rest[k]))));
+        react_ts_utils_1.objKeys(rest).forEach(k => stateLib_1.isElemRef(rest[k]) && (rest[k] = react_ts_utils_1.getIn(elms, stateLib_1.string2path(rest[k]))));
         return rest;
     }
     render() {
@@ -754,15 +754,15 @@ class GenericWidget extends FRefsGeneric {
     }
 }
 function isEmpty(value) {
-    return commonLib_1.isMergeable(value) ? commonLib_1.objKeys(value).length === 0 : value === undefined || value === null || value === "";
+    return react_ts_utils_1.isMergeable(value) ? react_ts_utils_1.objKeys(value).length === 0 : value === undefined || value === null || value === "";
 }
 function toString(emptyMock, enumExten = {}, value) {
     if (isEmpty(value))
         return emptyMock;
-    if (commonLib_1.isArray(value))
+    if (react_ts_utils_1.isArray(value))
         return value.map(toString.bind(null, emptyMock, enumExten)).join(', ');
     value = getExten(enumExten, value).label || value;
-    if (!commonLib_1.isString(value))
+    if (!react_ts_utils_1.isString(value))
         return JSON.stringify(value);
     return value;
 }
@@ -821,7 +821,7 @@ class Autowidth extends react_1.Component {
     render() {
         const self = this;
         const props = self.props;
-        const value = (commonLib_1.isUndefined(props.value) || props.value === null ? '' : props.value.toString()) || props.placeholder || '';
+        const value = (react_ts_utils_1.isUndefined(props.value) || props.value === null ? '' : props.value.toString()) || props.placeholder || '';
         return (react_1.createElement("div", { style: Autowidth.sizerStyle, ref: (elem) => {
                 (self._elem = elem) &&
                     props.$FField.$refs['@Main'] &&
@@ -834,7 +834,7 @@ Autowidth.sizerStyle = { position: 'absolute', top: 0, left: 0, visibility: 'hid
 function FBuilder(props) {
     let { children: mapped, widgets } = props;
     const { Title, Body, Main, Message, Wrapper, Autowidth } = widgets;
-    mapped = commonLib_1.deArray(mapped);
+    mapped = react_ts_utils_1.deArray(mapped);
     return Wrapper ? react_1.createElement(Wrapper, mapped['Wrapper'], Title ? react_1.createElement(Title, mapped['Title']) : '', Body ? react_1.createElement(Body, mapped['Body'], Main ? react_1.createElement(Main, mapped['Main']) : '', Message ? react_1.createElement(Message, mapped['Message']) : '', Autowidth ? react_1.createElement(Autowidth, mapped['Autowidth']) : '') : '') : '';
 }
 function Wrapper(props) {
@@ -896,7 +896,7 @@ const CheckboxNull = react_1.forwardRef((props, ref) => {
 function bindProcessorToThis(val, opts = {}) {
     const self = this;
     const bindedFn = bindProcessorToThis.bind(self);
-    if (commonLib_1.isFunction(val))
+    if (react_ts_utils_1.isFunction(val))
         val = { $: val };
     if (stateLib_1.isMapFn(val)) {
         const map = val.norm ? val : stateLib_1.normalizeFn(val, Object.assign(Object.assign({}, opts), { wrapFn: bindedFn }));
@@ -904,9 +904,9 @@ function bindProcessorToThis(val, opts = {}) {
         fn._map = map;
         return fn;
     }
-    else if (commonLib_1.isMergeable(val)) {
-        const result = commonLib_1.isArray(val) ? [] : {};
-        commonLib_1.objKeys(val).forEach(key => result[key] = !api_1.skipKey(key, val) ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
+    else if (react_ts_utils_1.isMergeable(val)) {
+        const result = react_ts_utils_1.isArray(val) ? [] : {};
+        react_ts_utils_1.objKeys(val).forEach(key => result[key] = !api_1.skipKey(key, val) ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
         return result;
     }
     return val;
@@ -914,24 +914,24 @@ function bindProcessorToThis(val, opts = {}) {
 function passCx(Widget) {
     return Widget instanceof GenericWidget;
 }
-const resolveComponents = commonLib_1.memoize((elements, customizeFields = {}, sets) => {
+const resolveComponents = react_ts_utils_1.memoize((elements, customizeFields = {}, sets) => {
     if (sets) {
         let $_ref = sets.split(':')
             .map(v => (v = v.trim()) && (v[0] != '^' ? '^/sets/' + v : v))
             .join(':') + ':' + (customizeFields.$_ref || '');
-        customizeFields = commonLib_1.merge(customizeFields, { $_ref });
+        customizeFields = react_ts_utils_1.merge(customizeFields, { $_ref });
     }
     return api_1.objectResolver(elements, customizeFields);
 });
 function extractMaps(obj, skip = []) {
     let { $_maps } = obj, rest2extract = __rest(obj, ["$_maps"]);
     $_maps = Object.assign({}, $_maps);
-    const rest = commonLib_1.isArray(obj) ? [] : {};
-    commonLib_1.objKeys(rest2extract).forEach(key => {
-        if (commonLib_1.isMergeable(rest2extract[key]) && !~skip.indexOf(key)) {
+    const rest = react_ts_utils_1.isArray(obj) ? [] : {};
+    react_ts_utils_1.objKeys(rest2extract).forEach(key => {
+        if (react_ts_utils_1.isMergeable(rest2extract[key]) && !~skip.indexOf(key)) {
             let res = extractMaps(rest2extract[key], skip);
             rest[key] = res.rest;
-            commonLib_1.objKeys(res.$_maps).forEach((nk) => $_maps[key + '/' + nk] = res.$_maps[nk]);
+            react_ts_utils_1.objKeys(res.$_maps).forEach((nk) => $_maps[key + '/' + nk] = res.$_maps[nk]);
         }
         else
             rest[key] = rest2extract[key];
@@ -941,20 +941,20 @@ function extractMaps(obj, skip = []) {
 exports.extractMaps = extractMaps;
 function normalizeMaps($_maps, prePath = '') {
     const result = { data: [], every: [], build: [] };
-    commonLib_1.objKeys($_maps).forEach(key => {
+    react_ts_utils_1.objKeys($_maps).forEach(key => {
         let value = $_maps[key];
         if (!value)
             return;
         const to = stateLib_1.multiplePath(stateLib_1.normalizePath((prePath ? prePath + '/' : '') + key));
-        if (commonLib_1.isFunction(value) || commonLib_1.isArray(value)) {
-            commonLib_1.toArray(value).forEach((fn) => {
+        if (react_ts_utils_1.isFunction(value) || react_ts_utils_1.isArray(value)) {
+            react_ts_utils_1.toArray(value).forEach((fn) => {
                 const _a = fn._map, { update = 'data', replace = true } = _a, rest = __rest(_a, ["update", "replace"]);
                 //fn._map = {update, replace, to, ...rest};
                 result[update].push(Object.assign(Object.assign({ update, replace }, rest), { to, $: fn }));
             });
         }
         else {
-            if (commonLib_1.isString(value))
+            if (react_ts_utils_1.isString(value))
                 value = { args: value };
             value = Object.assign(Object.assign({}, value), stateLib_1.normalizeArgs(value.args));
             let { args, update = 'data', replace = true } = value, rest = __rest(value, ["args", "update", "replace"]);
@@ -970,10 +970,10 @@ exports.normalizeMaps = normalizeMaps;
 //!map.$ && map.args[0] == 'selectorValue' && args[0]
 function updateProps(mappedData, prevData, nextData, ...iterMaps) {
     // const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
-    const needUpdate = (map) => commonLib_1.isUndefined(prevData) || !map.$ ||
+    const needUpdate = (map) => react_ts_utils_1.isUndefined(prevData) || !map.$ ||
         (map.dataRequest && map.args.some(arg => {
             if (stateLib_1.isNPath(arg))
-                return commonLib_1.getIn(prevData, arg) !== commonLib_1.getIn(nextData, arg);
+                return react_ts_utils_1.getIn(prevData, arg) !== react_ts_utils_1.getIn(nextData, arg);
             if (stateLib_1.isMapFn(arg))
                 return needUpdate(arg._map || arg);
             return false;
@@ -983,7 +983,7 @@ function updateProps(mappedData, prevData, nextData, ...iterMaps) {
         if (map.update == 'data' && !needUpdate(map))
             return;
         const value = map.$ ? map.$() : stateLib_1.processProp(nextData, map.args);
-        commonLib_1.objKeys(map.to).forEach(k => stateLib_1.setUPDATABLE(dataUpdates, value, map.replace, map.to[k]));
+        react_ts_utils_1.objKeys(map.to).forEach(k => stateLib_1.setUPDATABLE(dataUpdates, value, map.replace, map.to[k]));
         if (!map.replace)
             mappedData = stateLib_1.mergeUPD_PROC(mappedData, dataUpdates);
     }));
@@ -991,10 +991,10 @@ function updateProps(mappedData, prevData, nextData, ...iterMaps) {
 }
 exports.updateProps = updateProps;
 const getExten = (enumExten, value) => {
-    let res = commonLib_1.isFunction(enumExten) ? enumExten(value) : commonLib_1.getIn(enumExten, value);
-    if (res && commonLib_1.isString(res))
+    let res = react_ts_utils_1.isFunction(enumExten) ? enumExten(value) : react_ts_utils_1.getIn(enumExten, value);
+    if (res && react_ts_utils_1.isString(res))
         res = { label: res };
-    return commonLib_1.isObject(res) ? res : {};
+    return react_ts_utils_1.isObject(res) ? res : {};
 };
 exports.getExten = getExten;
 function comparePropsFn(prevProps, nextProps, opts = {}) {
@@ -1014,11 +1014,11 @@ function classNames(...styles) {
         if (argType === 'string' || argType === 'number') {
             classes.push(this && this[arg] || arg);
         }
-        else if (commonLib_1.isArray(arg)) {
+        else if (react_ts_utils_1.isArray(arg)) {
             classes.push(classNames.apply(this, arg));
         }
         else if (argType === 'object') {
-            commonLib_1.objKeys(arg).forEach(key => {
+            react_ts_utils_1.objKeys(arg).forEach(key => {
                 if (!arg[key])
                     return;
                 if (typeof arg[key] == 'number' || arg[key] === true)
@@ -1053,9 +1053,9 @@ exports.classNames = classNames;
 /////////////////////////////////////////////
 let elementsBase = {
     extend(elements, opts) {
-        let res = commonLib_1.merge.all(this, elements, opts);
+        let res = react_ts_utils_1.merge.all(this, elements, opts);
         if (this['_$cx.bind'] !== res['_$cx.bind'])
-            res = commonLib_1.merge(res, { '_$cx': res['_$cx.bind'] ? this[_$cxSym].bind(res['_$cx.bind']) : this[_$cxSym] });
+            res = react_ts_utils_1.merge(res, { '_$cx': res['_$cx.bind'] ? this[_$cxSym].bind(res['_$cx.bind']) : this[_$cxSym] });
         return res;
     },
     // types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
@@ -1347,7 +1347,7 @@ let elementsBase = {
         or: (...args) => [args.some(Boolean)],
         and: (...args) => [args.every(Boolean)],
         getArrayStart(...args) { return [stateLib_1.arrayStart(this.schemaPart), ...args]; },
-        getProp(key, ...args) { return [commonLib_1.getIn(this, stateLib_1.normalizePath(key)), ...args]; },
+        getProp(key, ...args) { return [react_ts_utils_1.getIn(this, stateLib_1.normalizePath(key)), ...args]; },
         eventValue: (event, ...args) => [
             event.target.value, ...args
         ],
@@ -1356,7 +1356,7 @@ let elementsBase = {
         eventMultiple: (event, ...args) => [Array.from(event.target.options).filter((o) => o.selected).map((v) => v.value), ...args],
         parseNumber: (value, int = false, empty = null, ...args) => [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...args],
         stringify(value, ...args) {
-            if (!commonLib_1.isString(value))
+            if (!react_ts_utils_1.isString(value))
                 value = JSON.stringify(value);
             return [value, ...args];
         },
@@ -1403,13 +1403,13 @@ let elementsBase = {
         },
         messages(messages, staticProps = {}) {
             const { className: cnSP = {} } = staticProps, restSP = __rest(staticProps, ["className"]);
-            return [commonLib_1.objKeys(messages || []).map(priority => {
+            return [react_ts_utils_1.objKeys(messages || []).map(priority => {
                     const _a = messages[priority], { norender, texts, className = {} } = _a, rest = __rest(_a, ["norender", "texts", "className"]);
                     const children = [];
-                    commonLib_1.objKeys(texts).forEach((key) => commonLib_1.toArray(texts[key]).forEach((v, i, arr) => {
+                    react_ts_utils_1.objKeys(texts).forEach((key) => react_ts_utils_1.toArray(texts[key]).forEach((v, i, arr) => {
                         if (stateLib_1.isElemRef(v))
                             v = this._resolver(v);
-                        (commonLib_1.isString(v) && commonLib_1.isString(children[children.length - 1])) ? children.push({ _$widget: 'br' }, v) : children.push(v);
+                        (react_ts_utils_1.isString(v) && react_ts_utils_1.isString(children[children.length - 1])) ? children.push({ _$widget: 'br' }, v) : children.push(v);
                     }));
                     if (norender || !children.length)
                         return null;
@@ -1427,7 +1427,7 @@ let elementsBase = {
             delete inputProps._$skipKeys;
             return [enumVals.map(val => {
                     let _a = getExten(enumExten, val), { label } = _a, extenProps = __rest(_a, ["label"]);
-                    return Object.assign(Object.assign({ key: val, name: opts.name && (this.props.name + (opts.name === true ? '' : opts.name)) }, commonLib_1.merge(inputProps, extenProps)), { placeholder: label || val, value: val });
+                    return Object.assign(Object.assign({ key: val, name: opts.name && (this.props.name + (opts.name === true ? '' : opts.name)) }, react_ts_utils_1.merge(inputProps, extenProps)), { placeholder: label || val, value: val });
                 })];
         },
         enumInputProps(enumVals = [], ...rest) {
@@ -1437,7 +1437,7 @@ let elementsBase = {
             return [enumVals.map(val => props)];
         },
         enumInputValue(enumVals = [], value, property = 'checked') {
-            value = commonLib_1.toArray(value);
+            value = react_ts_utils_1.toArray(value);
             return [enumVals.map(val => { return { [property]: !!~value.indexOf(val) }; })];
         },
         setInputPriority(priority) {
@@ -1563,22 +1563,22 @@ let elementsBase = {
     $: (elems, path) => {
         let pathVal = path.map((v) => {
             v = elems['_$shorts'][v] || v;
-            if (commonLib_1.isString(v) && v.length == 2) {
+            if (react_ts_utils_1.isString(v) && v.length == 2) {
                 let el0 = elems['_$shorts'][v[0]];
                 let el1 = elems['_$shorts'][v[1]];
                 if (el0 && el1) {
-                    if (commonLib_1.isArray(el1))
+                    if (react_ts_utils_1.isArray(el1))
                         v = el1.map((k) => el0 + k);
                     else
                         v = el0 + el1;
                 }
-                return commonLib_1.toArray(v).join(',');
+                return react_ts_utils_1.toArray(v).join(',');
             }
             return v;
         });
         let pathes = stateLib_1.multiplePath(pathVal);
         let res = {};
-        commonLib_1.objKeys(pathes).forEach(key => commonLib_1.setIn(res, pathes[key].pop(), pathes[key]));
+        react_ts_utils_1.objKeys(pathes).forEach(key => react_ts_utils_1.setIn(res, pathes[key].pop(), pathes[key]));
         return res;
     },
     $C: (elems, path) => {
@@ -1587,7 +1587,7 @@ let elementsBase = {
         let value = !(className[0] === '!');
         if (!value)
             className = className.substr(1);
-        commonLib_1.push2array(path, 'className', className, value);
+        react_ts_utils_1.push2array(path, 'className', className, value);
         return elems.$(elems, path);
     },
     $S: (elems, path) => {
@@ -1595,7 +1595,7 @@ let elementsBase = {
         let style = [];
         style.unshift(path.pop());
         style.unshift(path.pop());
-        commonLib_1.push2array(path, 'style', style);
+        react_ts_utils_1.push2array(path, 'style', style);
         return elems.$(elems, path);
     },
     _$shorts: {

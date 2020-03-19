@@ -17,7 +17,8 @@ import {
   merge,
   objKeys,
   memoize, isNumber, setIn, push2array,
-} from "./commonLib";
+  MergeStateOptionsArgument
+} from "react-ts-utils";
 import {
   arrayStart,
   isSelfManaged,
@@ -491,7 +492,7 @@ class FField extends FRefsGeneric {
         staticProps[isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
       }
 
-      self._mappedData[block] = staticProps;  // properties, without reserved names      
+      self._mappedData[block] = staticProps;  // properties, without reserved names
     });
     self._setMappedData(undefined, self.getData(), 'build');
     self._rebuild = false;
@@ -662,7 +663,7 @@ class FSection extends FRefsGeneric {
     let {_$widget, $_fields} = normalizeLayout(0, isArray($layout) ? {$_fields: $layout} : $layout);
     self._$widget = _$widget;
 
-    if ($_fields)// we make inital _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys 
+    if ($_fields)// we make inital _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys
       self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields);
     if (strictLayout !== true)// and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
       UPDATABLE.keys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));
