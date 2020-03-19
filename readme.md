@@ -88,7 +88,7 @@ How to use with different storages see in [documentation](documentation.md#redux
 
 - [FForm](documentation.md#fform)
     + [FForm methods and properties](documentation.md#fform-methods-and-properties)
-- [FFStateApi](documentation.md#ffstateapi)
+- [fformCores](documentation.md#fformcores)
   * [Storages](documentation.md#storages)
     + [Redux storage](documentation.md#redux-storage)
     + [External storage](documentation.md#external-storage)

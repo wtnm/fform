@@ -3,7 +3,7 @@
 
 - [FForm](#fform)
     + [FForm methods and properties](#fform-methods-and-properties)
-- [FFStateApi](#ffstateapi)
+- [fformCores](#fformcores)
   * [Storages](#storages)
     + [Redux storage](#redux-storage)
     + [External storage](#external-storage)
@@ -61,8 +61,8 @@
 <!-- tocstop -->
 ## FForm
 Component expects following properties:
-- `core` - instance of [FFStateApi](#ffstateapi)  or object with [FFStateApi props](#ffstateapi)
-- `state?: any` - state of FFStateApi.
+- `core` - core created by [fformCores](#fformcores)  or object with [fformCores props](#fformcores)
+- `state?: any` - form's state.
 - `value?: any` - form's current value.
 - `inital?: any` - form's initial value.
 - `fieldCache?: boolean | number` - caching delay on updating form's value. Used for optimization purposes.
@@ -77,18 +77,18 @@ For methods `onSubmit`, `onChange`, `onStateChange` passed param `event` has add
 - `state` - current form state.
 - `fform` - link to the `fform` instance.
 
-After creation [FFStateApi](#ffstateapi) can be accessed throught `api` property of `fform` instance.
+After creation [fformCores](#fformcores) can be accessed throught `api` property of `fform` instance.
 
 #### FForm methods and properties
 - `getRef(path: string)` - returns field's input instance according to [path](#path).
 - `reset()` - resets form value to inital.
 - `submit()` - submits form.
-- `api` - [FFStateApi](#ffstateapi) to manipulate form state.
+- `api` - [fformCores](#fformcores) to manipulate form state.
 - `valid` - valid form or not
 
 
-## FFStateApi
-On creation pass to constructor object as first argument with following props:
+## fformCores
+To create new core pass to constructor object as first argument with following props:
 -   `schema` - schema that will be used to create state
 -   `name: string` - name that will be used to access data in redux storage and for fields naming
 -   `elements?` - [elements](#elements), that contains everything needed for components creation
@@ -97,7 +97,15 @@ On creation pass to constructor object as first argument with following props:
 -   `getState?: () => any` - external state setter
 -   `setState?: (state: any) => void` - external state getter
 
-After creation FFStateApi can be manipulated through [API methods](#api)
+After creation core can be manipulated through [API methods](#api)
+```
+const {fformCores} = require('fform');
+core = fformCores({name, schema})
+core.setValue(value)
+```
+Only one core created for each name property. If passed props with name that core already exists,  props will be checked for equality (shallow) and if they are equal, the existed core will be returned without creation, otherwise, new core will be created and replace previous.
+
+Also, [fformCores](#fformcores) accept `string` value as first argument. In this case core with passed name will be returned (if exists).
 
 ### Storages
 #### Redux storage
@@ -108,17 +116,17 @@ const {createStore, combineReducers, applyMiddleware} = require('redux');
 const thunk = require('redux-thunk').default;
 store = createStore(combineReducers({fforms: formReducer()}), applyMiddleware(thunk))
 ```
-Then pass redux store in `store` property on [FFStateApi](#ffstateapi) creation:
+Then pass redux store in `store` property on [fformCores](#fformcores) creation:
 ```
 const {FFormStateAPI} = require('fform');
 stateApi = new FFormStateAPI({store, schema})
 ```
 
 #### External storage
-Pass `setState/getState` function  from any storage on [FFStateApi](#ffstateapi) creation and it will use them for setting and getting fform state.
+Pass `setState/getState` function  from any storage on [fformCores](#fformcores) creation and it will use them for setting and getting fform state.
 
 #### Internal storage
-if no `setState/getState` or `store` are passed on creation then [FFStateApi](#ffstateapi) will use own internal storage for fform state.
+if no `setState/getState` or `store` are passed on creation then [fformCores](#fformcores) will use own internal storage for fform state.
 
 
 ### Path<a name="path"></a>
@@ -330,7 +338,7 @@ Multiple asynchronous commands are stacking in batch and executes together.
 -  `not?: JSONschema` - Must not be valid against the given schema.
 
 ## Extended schema properties
-As JSON format doesn't support js-code all function moved to [elements](#elements). So in the schema you should specify a [reference to elements](#object-refs) as a string value that starts with "^/". It will be resolved at [FFStateApi](#ffstateapi) creating.
+As JSON format doesn't support js-code all function moved to [elements](#elements). So in the schema you should specify a [reference to elements](#object-refs) as a string value that starts with "^/". It will be resolved at [fformCores](#fformcores) creating.
 
 #### `_placeholder?: string`
 Field's placeholder.
@@ -398,7 +406,7 @@ If `true`, then only the fields listed in the `_layout` property are displayed, 
 
 ## Validation
 #### JSON validation
-FForm uses external JSON Validators by wrapping them and converting the result to a single format. There are 2 wrappers, for now, that can be found in `addons/wrappers`, one for `is-my-json-valid`, another for `jsonschema`. Use wrapper and pass the result as `JSONValidator` property for [FFStateApi](#ffstateapi). Examle:
+FForm uses external JSON Validators by wrapping them and converting the result to a single format. There are 2 wrappers, for now, that can be found in `addons/wrappers`, one for `is-my-json-valid`, another for `jsonschema`. Use wrapper and pass the result as `JSONValidator` property for [fformCores](#fformcores). Examle:
 ```javascript
 const jsonschemaWrapper = require('fform/addons/wrappers/jsonschema').default;
 const Validator = require('jsonschema').Validator;
