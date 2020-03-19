@@ -16,6 +16,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /////////////////////////////////////////////
 const react_ts_utils_1 = require("react-ts-utils");
 const stateLib_1 = require("./stateLib");
+const fform_1 = require("./fform");
+const dist_1 = require("react-ts-utils/dist");
 class exoPromise {
     constructor() {
         this.done = false;
@@ -54,19 +56,19 @@ class exoPromise {
 /////////////////////////////////////////////
 //  FFormCore class
 /////////////////////////////////////////////
-const _CORES = new WeakMap();
-function fformCores(name) { return _CORES[name]; }
-exports.fformCores = fformCores;
 /** Creates a api that contains data and api for changing it */
 class FFormStateManager {
     constructor(props) {
         this._listeners = [];
-        // if ((props.getState || props.setState) && props.store) throw new Error('Expected either "store" or "getState & setState" but not all of them.');
+        if (fform_1._CORES[props.name]) {
+            let core = fform_1._CORES[props.name];
+            if (dist_1.isEqual(core.props, props))
+                return core;
+        }
         if (((props.getState ? 1 : 0) + (props.setState ? 1 : 0)) == 1)
             new Error('Expected both "getState" and "setState" or none but not only one of them.');
-        if (props.store && !props.name)
-            throw new Error('Expected "name" to be passed together with "store".');
         const self = this;
+        fform_1._CORES[props.name] = self;
         self.props = props;
         self.schema = compileSchema(props.schema, props.elements);
         self.name = props.name || '';
@@ -74,14 +76,10 @@ class FFormStateManager {
         self._reducer = formReducer();
         if (props.JSONValidator)
             self.JSONValidator = props.JSONValidator(self.schema);
-        //self._validator = props.JSONValidator && props.JSONValidator(self.schema, {greedy: true});
-        //self.JSONValidator = self._validator && self.JSONValidator.bind(self);
         self._getState = self._getState.bind(self);
         self._setState = self._setState.bind(self);
         if (props.setState && props.store)
             self._unsubscribe = self.props.store.subscribe(self._handleChange.bind(self));
-        if (props.name)
-            _CORES[props.name] = self;
         self.UPDATABLE = { update: {}, replace: {}, api: self };
     }
     _dispatch(action) {
@@ -120,13 +118,6 @@ class FFormStateManager {
     _getStoreState() {
         return this.props.name && this.props.store.getState()[getFRVal()][this.props.name];
     }
-    // private JSONValidator(data: any) {
-    //   this._validator(data);
-    //   let result = this._validator.errors;
-    //   if (!result) return [];
-    //   if (!isArray(result)) result = [result];
-    //   return result.map((item: any) => [item.field.replace('["', '.').replace('"]', '').split('.').slice(1), item.message])
-    // }
     _handleChange() {
         const self = this;
         let nextState = self._getStoreState();

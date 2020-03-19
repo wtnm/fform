@@ -39,9 +39,16 @@ import {
   processProp,
   isElemRef
 } from './stateLib'
-import {FFormStateAPI, fformCores, objectResolver, formReducer, skipKey} from './api'
+import {FFormStateAPI, objectResolver, formReducer, skipKey} from './api'
 
 const _$cxSym = Symbol('_$cx');
+
+export const _CORES = new WeakMap();
+
+function fformCores(nameOrProps: string | FFormApiProps) {
+  return isString(nameOrProps) ? _CORES[name] : new FFormStateAPI(nameOrProps);
+}
+
 
 class FFormEvent {
   type: string;
@@ -102,7 +109,7 @@ class FForm extends Component<FFormProps> {
   }
 
   private _coreFromParams(coreParams: any) {
-    return coreParams instanceof FFormStateAPI ? coreParams : fformCores(coreParams.name) || new FFormStateAPI(coreParams);
+    return coreParams instanceof FFormStateAPI ? coreParams : new FFormStateAPI(coreParams);
   }
 
   private _initState(props: FFormProps) {
@@ -1773,6 +1780,6 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 };
 
 
-export {elementsBase as elements, formReducer, FForm, FField, FFormStateAPI, fformCores};
+export {elementsBase as elements, formReducer, FForm, FField, fformCores};
 
 export {extractMaps, normalizeMaps, updateProps, classNames, comparePropsFn, getExten}

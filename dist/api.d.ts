@@ -1,4 +1,3 @@
-declare function fformCores(name: string): any;
 /** Creates a api that contains data and api for changing it */
 declare class FFormStateManager {
     private _isDispatching;
@@ -79,7 +78,7 @@ declare class FFormStateAPI extends FFormStateManager {
         path?: string | Path | undefined;
     }) => any;
     arrayAdd: (path: string | Path, value?: number | any[], opts?: APIOptsType) => any;
-    arrayItemOps: (path: string | Path, value: "up" | "down" | "first" | "last" | "del" | "move" | "shift", opts?: APIOptsType & {
+    arrayItemOps: (path: string | Path, value: "del" | "up" | "down" | "first" | "last" | "move" | "shift", opts?: APIOptsType & {
         value?: number | undefined;
     }) => any;
     setHidden: (path: string | Path, value?: boolean, opts?: APIOptsType) => any;
@@ -93,4 +92,4 @@ declare const compileSchema: (schema: any, elements: any) => any;
 declare function objectDerefer(_elements: any, obj2deref: any, track?: string[]): any;
 declare function skipKey(key: string, obj?: any): number | true;
 declare function objectResolver(_elements: any, obj2resolve: any, track?: string[]): any;
-export { anSetState, getFRVal, FFormStateAPI, compileSchema, formReducer, fformCores, objectDerefer, objectResolver, skipKey };
+export { anSetState, getFRVal, FFormStateAPI, compileSchema, formReducer, objectDerefer, objectResolver, skipKey };

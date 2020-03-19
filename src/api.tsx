@@ -32,6 +32,8 @@ import {
   SymData, SymReset, SymClear, SymDataMap, rehydrateState
 } from "./stateLib";
 
+import {_CORES} from "./fform";
+import {isEqual} from "react-ts-utils/dist";
 
 class exoPromise {
   done: boolean = false;
@@ -74,9 +76,6 @@ class exoPromise {
 //  FFormCore class
 /////////////////////////////////////////////
 
-const _CORES = new WeakMap();
-
-function fformCores(name: string) {return _CORES[name]}
 
 /** Creates a api that contains data and api for changing it */
 class FFormStateManager {
@@ -96,23 +95,25 @@ class FFormStateManager {
   name?: string;
 
   constructor(props: FFormApiProps) {
-    // if ((props.getState || props.setState) && props.store) throw new Error('Expected either "store" or "getState & setState" but not all of them.');
+    if (_CORES[props.name]) {
+      let core = _CORES[props.name];
+      if (isEqual(core.props, props))
+        return core;
+    }
+
     if (((props.getState ? 1 : 0) + (props.setState ? 1 : 0)) == 1) new Error('Expected both "getState" and "setState" or none but not only one of them.');
-    if (props.store && !props.name) throw new Error('Expected "name" to be passed together with "store".');
 
     const self = this;
+    _CORES[props.name] = self;
     self.props = props;
     self.schema = compileSchema(props.schema, props.elements);
     self.name = props.name || '';
     self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
     self._reducer = formReducer();
     if (props.JSONValidator) self.JSONValidator = props.JSONValidator(self.schema);
-    //self._validator = props.JSONValidator && props.JSONValidator(self.schema, {greedy: true});
-    //self.JSONValidator = self._validator && self.JSONValidator.bind(self);
     self._getState = self._getState.bind(self);
     self._setState = self._setState.bind(self);
     if (props.setState && props.store) self._unsubscribe = self.props.store.subscribe(self._handleChange.bind(self));
-    if (props.name) _CORES[props.name] = self;
     self.UPDATABLE = {update: {}, replace: {}, api: self};
   }
 
@@ -146,14 +147,6 @@ class FFormStateManager {
   private _getStoreState() {
     return this.props.name && this.props.store.getState()[getFRVal()][this.props.name];
   }
-
-  // private JSONValidator(data: any) {
-  //   this._validator(data);
-  //   let result = this._validator.errors;
-  //   if (!result) return [];
-  //   if (!isArray(result)) result = [result];
-  //   return result.map((item: any) => [item.field.replace('["', '.').replace('"]', '').split('.').slice(1), item.message])
-  // }
 
   private _handleChange() {
     const self = this;
@@ -590,4 +583,4 @@ function objectResolver(_elements: any, obj2resolve: any, track: string[] = []):
 }
 
 
-export {anSetState, getFRVal, FFormStateAPI, compileSchema, formReducer, fformCores, objectDerefer, objectResolver, skipKey}
+export {anSetState, getFRVal, FFormStateAPI, compileSchema, formReducer, objectDerefer, objectResolver, skipKey}

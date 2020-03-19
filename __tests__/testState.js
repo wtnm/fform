@@ -1,5 +1,7 @@
 // set env variable to the `tsconfig.json` path before loading mocha (default: './tsconfig.json')
 
+import {FFormStateAPI} from '../src/api';
+
 process.env.TS_NODE_PROJECT = './tsconfig.json';
 
 // Optional: set env variable to enable `tsconfig-paths` integration
@@ -34,154 +36,10 @@ const SymDataMap = Symbol.for('FFormDataMap');
 function sleep(time) {return new Promise((resolve) => setTimeout(() => resolve(), time))}
 
 
-describe('FForm comommon functions tests', function () {
-
-  it('test delIn', function () {
-    let state = {vr: {t1: 1, t2: 2, t3: {r1: 5, r2: undefined}}, vr_1: 1};
-    let result = commonLib.delIn(state, ['vr', 't3', 'r4']);
-    expect(result).to.be.equal(state);
-    result = commonLib.delIn(state, ['vr', 't3', 'r2']);
-    expect(result !== state).to.be.equal(true);
-    expect(commonLib.isEqual(result, {"vr": {"t1": 1, "t2": 2, "t3": {"r1": 5}}, "vr_1": 1}, {deep: true})).to.be.equal(true);
-    result = commonLib.delIn(state, ['vr', 't3', 'r1,r2,r6']);
-    expect(result !== state).to.be.equal(true);
-    expect(commonLib.isEqual(result, {"vr": {"t1": 1, "t2": 2, "t3": {}}, "vr_1": 1}, {deep: true})).to.be.equal(true);
-    result = commonLib.delIn(state, ['vr', 't2,t3']);
-    expect(result !== state).to.be.equal(true);
-    expect(commonLib.isEqual(result, {"vr": {"t1": 1}, "vr_1": 1}, {deep: true})).to.be.equal(true);
-  });
-
-  it('test hasIn', function () {
-    let state = {vr: {t1: undefined, t2: 2, t3: {r1: 5, r2: undefined}}, vr_1: 1};
-    let result = commonLib.hasIn(state, ['vr', 't3', 'r2']);
-    expect(result).to.be.equal(true);
-    result = commonLib.hasIn(state, ['vr', 't3', 'r3']);
-    expect(result).to.be.equal(false);
-    result = commonLib.hasIn(state, ['vr', 't3']);
-    expect(result).to.be.equal(true);
-    result = commonLib.hasIn(state, ['t1', 't3']);
-    expect(result).to.be.equal(false);
-  });
-
-  it('test setIn', function () {
-    let state = {vr: 1};
-    let result = commonLib.setIn(state, 1, ['vr', 't3', 'r2']);
-    expect(commonLib.hasIn(result, ['vr', 't3', 'r2'])).to.be.equal(true);
-    expect(state === result).to.be.equal(true);
-    expect(commonLib.getIn(state, ['vr', 't3', 'r2'])).to.be.equal(1);
-    result = commonLib.setIn(state, 2, 'vr', 't2');
-    expect(commonLib.getIn(state, ['vr', 't3', 'r2'])).to.be.equal(1);
-    expect(commonLib.getIn(state, ['vr', 't2'])).to.be.equal(2);
-    expect(state === result).to.be.equal(true);
-    result = commonLib.setIn(state, 1, []);
-    expect(result).to.be.equal(1);
-  });
-
-  it('test mergeState', function () {
-
-    let obj = {sm: 3, val: {a: 1, b: {c: 1}}};
-    // this.object.test.Undefined = Symbol.for('FFormDelete');
-    // this.object.test.EmptyObject = {};
-    // this.object.test.EmptyArray = [];
-
-    let result = commonLib.mergeState({val: [1, 2, 3, 4]}, {val: {1: 5}}, {replace: (p, a) => Array.isArray(a)});
-    expect(result.state.val).to.be.eql({1: 5});
-
-    result = commonLib.merge({a: [[1]]}, {a: [[2, 3]]});
-    expect(result).to.be.eql({a: [[2, 3]]});
-
-    result = commonLib.mergeState({val: [1, 2, 3, 4]}, {val: {1: 5}}, {});
-    expect(result.state.val).to.be.eql([1, 5, 3, 4]);
-
-    result = commonLib.mergeState({val: [1, 2, 3, 4]}, {val: {length: 1}});
-    expect(result.state.val).to.be.eql([1]);
-
-    let replaceObj = {a: {b: {c: 1}}, d: 5};
-    let obj2replace = {d: 2};
-    result = commonLib.mergeState(replaceObj, {a: {b: obj2replace}}, {replace: {a: {b: true}}});
-    // console.log(result.state.a.b)
-    expect(result.state.a.b).to.be.equal(obj2replace);
-    expect(result.state.d).to.be.equal(5);
-    expect(result.state.a.b.c).to.be.equal(undefined);
-
-    result = commonLib.mergeState(replaceObj, obj2replace, {replace: true});
-    expect(result.state).to.be.equal(obj2replace);
-
-    result = commonLib.mergeState(replaceObj, {a: {}});
-    expect(result.state).to.be.equal(replaceObj);
-
-    result = commonLib.mergeState(obj, {val: undefined}, {del: true});
-    expect(result.changes).to.be.ok;
-    expect(result.state).not.to.be.equal(obj);
-    expect(result.state.hasOwnProperty('val')).to.be.false;
-    expect(result.changes.val).to.be.equal(undefined);
-
-    result = commonLib.merge(obj, {val: undefined});
-    expect(result.val).to.be.equal(undefined);
-
-    result = commonLib.mergeState({val: [1, 2, 3, 4]}, {val: [3, 4, 5]});
-    expect(result.state.val).to.be.eql([3, 4, 5]);
-
-    result = commonLib.merge.all(obj, [{val: undefined}, {val: {b: {c: 1}}}], {del: true});
-    expect(obj.val.b.c).to.be.equal(result.val.b.c);
-    expect(result.val.hasOwnProperty('a')).to.be.false;
-
-    result = commonLib.mergeState(obj, result, {diff: true, del: true});
-    expect(obj.val.b).to.be.equal(result.state.val.b);
-    expect(result.state.val.hasOwnProperty('a')).to.be.false;
-    expect(result.changes.val.a).to.be.equal(undefined);
-
-    result = commonLib.mergeState({a: 1}, {b: 2}, {diff: true});
-    expect(result.state).to.be.eql({b: 2});
-    expect(result.changes).to.be.eql({a: undefined, b: 2});
-
-    result = commonLib.mergeState([1, 2, 3, 4], [3, 4, 5], {});
-    expect(result.state).to.be.eql([3, 4, 5]);
-
-    result = commonLib.mergeState([1, 2, 3, 4], {0: 3, 1: 4, 2: 5});
-    expect(result.state).to.be.eql([3, 4, 5, 4]);
-
-    result = commonLib.mergeState({val: [1, 2, 3, 4]}, {val: []});
-    expect(result.state.val).to.be.eql([]);
-
-    let arr = [1, 2, 3, 4];
-    result = commonLib.mergeState({val: arr}, {val: [3, 4, 5]}, {arrays: (a, b) => a.concat(b)});
-    expect(result.state.val).to.be.eql([1, 2, 3, 4, 3, 4, 5]);
-    expect(result.state.val).not.to.be.equal(arr);
-
-    let newArr = {val: []};
-    newArr.val.length = 3;
-    newArr.val[1] = 8;
-    result = commonLib.mergeState({val: arr}, newArr, {});
-    expect(result.state.val).to.be.eql([1, 8, 3]);
-    expect(result.state.val).not.to.be.equal(arr);
-
-    obj = {
-      "array_1": [],
-      "array_2": [[{"v1": 1, "v2": 2}, {"t1": 4, "t2": 5}]]
-    };
-    result = commonLib.mergeState(undefined, obj, {del: true,});
-    expect(result.state).to.be.eql(obj);
-
-    let arr2 = [];
-    result = commonLib.mergeState(obj, {array_1: arr2}, {replace: (p, a) => Array.isArray(a)});
-    expect(result.state).not.to.be.equal(obj);
-    expect(result.state.array_1).to.be.equal(arr2);
-
-    result = commonLib.mergeState(obj, {array_1: []}, {});
-    expect(result.state).to.be.equal(obj);
-
-    result = commonLib.mergeState(obj, {array_1: []}, {arrays: (a, b) => a.concat(b)});
-    expect(result.state).to.be.equal(obj);
-  });
-
-
-});
-
 describe('FForm state functions tests', function () {
 
   //const arraySchema = require('./schemaArray').default;
-  const arrayCore = new fform.FFormStateAPI({name: 'functionsTest', schema: require('./schemaArray').default, JSONValidator});
+  const arrayCore = new fform.fformCores({name: 'functionsTest', schema: require('./schemaArray').default, JSONValidator});
 
   it('test makeSlice', function () {
     let result = stateLib.makeSlice(1);
@@ -636,7 +494,7 @@ describe('FForm state functions tests', function () {
   });
 
   it('test oneOf', function () {
-    const oneOfCore = new fform.FFormStateAPI({name: 'functionsTest', schema: require('./schemaOneOf').default, JSONValidator});
+    const oneOfCore = new fform.fformCores({name: 'functionsTest', schema: require('./schemaOneOf').default, JSONValidator});
     const schemaOneOf = oneOfCore.schema;
 
     let state = oneOfCore.getState();
@@ -856,6 +714,15 @@ describe('FForm api tests', function () {
 
   let obj2SymData, $_maps, NMaps;
 
+  it('test api.FFormStateAPI', function () {
+    let schema = {"type": "string"};
+    let res = new apiLib.FFormStateAPI({name: 'testFFormStateAPI', schema});
+    let res2 = new apiLib.FFormStateAPI({name: 'testFFormStateAPI', schema});
+    expect(res).to.be.equal(res2);
+    let res3 = new apiLib.FFormStateAPI({name: 'testFFormStateAPI', schema: {...schema}});
+    expect(res).not.to.be.equal(res3);
+  });
+
   it('test api.objectDerefer', function () {
     let obj = apiLib.objectDerefer(objects, exampleObj);
     expect(obj.func).to.be.equal('^/funcs/two');
@@ -869,11 +736,11 @@ describe('FForm api tests', function () {
 
   it('test SRR dehydrate stateRehydrate', async function () {
 
-    const core = new components.FFormStateAPI({name: 'core', schema: require('./schemaArray').default, JSONValidator});
+    const core = components.fformCores({name: 'core', schema: require('./schemaArray').default, JSONValidator});
     const state = core.getState();
     let reState = dehydrate(state);
     eval('reState=' + reState);
-    const reCore = new components.FFormStateAPI({state: reState, name: 'reCore', schema: require('./schemaArray').default, JSONValidator});
+    const reCore = components.fformCores({state: reState, name: 'reCore', schema: require('./schemaArray').default, JSONValidator});
     const reCoreState = reCore.getState();
     expect(state).to.be.eql(reCoreState);
   })
@@ -976,7 +843,7 @@ describe('test removeNotAllowedProperties', function () {
       }
     ]
   };
-  const addCore = new fform.FFormStateAPI({name: 'removeNotAllowedProperties', schema, JSONValidator});
+  const addCore = new fform.fformCores({name: 'removeNotAllowedProperties', schema, JSONValidator});
 
   it('test makeStateBranch with removeNotAllowedProperties', async function () {
     await addCore.setValue({"one": "", "test": "", "_test": ""});
@@ -1027,11 +894,11 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
     const rootReducer = combineReducers({fforms: formReducer()});
     const store = createStore(rootReducer, applyMiddleware(thunk));
 
-    const simpleCore = new fform.FFormStateAPI({name: 'simpleCore', schema: require('./schemaArray').default, JSONValidator});
-    const externalCore = new fform.FFormStateAPI({getState: extStore.getState, setState: extStore.setState, name: 'externalCore', schema: require('./schemaArray').default, JSONValidator});
+    const simpleCore = new fform.fformCores({name: 'simpleCore', schema: require('./schemaArray').default, JSONValidator});
+    const externalCore = new fform.fformCores({getState: extStore.getState, setState: extStore.setState, name: 'externalCore', schema: require('./schemaArray').default, JSONValidator});
 
-    const simpleReduxCore = new fform.FFormStateAPI({name: 'simpleReduxCore', store, schema: require('./schemaArray').default, JSONValidator});
-    const externalReduxCore = new fform.FFormStateAPI({getState: extStoreRedux.getState, setState: extStoreRedux.setState, name: 'externalReduxCore', store, schema: require('./schemaArray').default, JSONValidator});
+    const simpleReduxCore = new fform.fformCores({name: 'simpleReduxCore', store, schema: require('./schemaArray').default, JSONValidator});
+    const externalReduxCore = new fform.fformCores({getState: extStoreRedux.getState, setState: extStoreRedux.setState, name: 'externalReduxCore', store, schema: require('./schemaArray').default, JSONValidator});
     const notExist = {};
 
     async function testApi(core) {

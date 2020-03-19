@@ -17,10 +17,13 @@ const react_1 = require("react");
 const react_ts_utils_1 = require("react-ts-utils");
 const stateLib_1 = require("./stateLib");
 const api_1 = require("./api");
-exports.FFormStateAPI = api_1.FFormStateAPI;
-exports.fformCores = api_1.fformCores;
 exports.formReducer = api_1.formReducer;
 const _$cxSym = Symbol('_$cx');
+exports._CORES = new WeakMap();
+function fformCores(nameOrProps) {
+    return react_ts_utils_1.isString(nameOrProps) ? exports._CORES[name] : new api_1.FFormStateAPI(nameOrProps);
+}
+exports.fformCores = fformCores;
 class FFormEvent {
     constructor(event, params = {}) {
         const self = this;
@@ -55,7 +58,7 @@ class FForm extends react_1.Component {
         self.reset = self.reset.bind(self);
     }
     _coreFromParams(coreParams) {
-        return coreParams instanceof api_1.FFormStateAPI ? coreParams : api_1.fformCores(coreParams.name) || new api_1.FFormStateAPI(coreParams);
+        return coreParams instanceof api_1.FFormStateAPI ? coreParams : new api_1.FFormStateAPI(coreParams);
     }
     _initState(props) {
         const self = this;

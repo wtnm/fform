@@ -1,6 +1,6 @@
 {
   "name": "fform",
-  "version": "1.0.0-beta.19",
+  "version": "1.0.0-beta.20",
   "description": "Flexibile Form",
   "main": "dist/fform.js",
   "scripts": {

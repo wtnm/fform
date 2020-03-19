@@ -49,7 +49,7 @@ async function submit(event) {
   })
 }
 
-const {FForm, elements, FFormStateAPI} = require('../src/fform.tsx');
+const {FForm, elements, fformCores} = require('../src/fform.tsx');
 const sampleSchema = require('../sample/sampleSchema');
 const basicStyling = require('../addons/styling/basic.json');
 
@@ -80,7 +80,7 @@ const sampleElements = elements.extend([basicStyling, elemExtend]);
 
 describe('FForm tests', function () {
 
-  const core = new FFormStateAPI({schema: sampleSchema, name: "sampleForm", elements: sampleElements, JSONValidator});
+  const core = fformCores({schema: sampleSchema, name: "sampleForm", elements: sampleElements, JSONValidator});
   const wrapper = Enzyme.mount(React.createElement(FForm, {
     value: {autowidth: 12, select: 'not in enum', array: ['v', 'a', ['val', false], [1, 2]]},
     id: "sampleForm",
