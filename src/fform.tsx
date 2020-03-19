@@ -46,7 +46,7 @@ const _$cxSym = Symbol('_$cx');
 export const _CORES = new WeakMap();
 
 function fformCores(nameOrProps: string | FFormApiProps) {
-  return isString(nameOrProps) ? _CORES[name] : new FFormStateAPI(nameOrProps);
+  return isString(nameOrProps) ? _CORES[nameOrProps] : new FFormStateAPI(nameOrProps);
 }
 
 

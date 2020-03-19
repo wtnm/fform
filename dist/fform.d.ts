@@ -1,9 +1,9 @@
 /** @jsx h */
 import { Component } from 'react';
 import { MergeStateOptionsArgument } from "react-ts-utils";
-import { FFormStateAPI, formReducer } from './api';
+import { formReducer } from './api';
 export declare const _CORES: WeakMap<object, any>;
-declare function fformCores(nameOrProps: string | FFormApiProps): FFormStateAPI;
+declare function fformCores(nameOrProps: string | FFormApiProps): any;
 declare class FForm extends Component<FFormProps> {
     static params: string[];
     private _unsubscribe;

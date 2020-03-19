@@ -21,7 +21,7 @@ exports.formReducer = api_1.formReducer;
 const _$cxSym = Symbol('_$cx');
 exports._CORES = new WeakMap();
 function fformCores(nameOrProps) {
-    return react_ts_utils_1.isString(nameOrProps) ? exports._CORES[name] : new api_1.FFormStateAPI(nameOrProps);
+    return react_ts_utils_1.isString(nameOrProps) ? exports._CORES[nameOrProps] : new api_1.FFormStateAPI(nameOrProps);
 }
 exports.fformCores = fformCores;
 class FFormEvent {
