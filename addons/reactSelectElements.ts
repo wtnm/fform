@@ -1,5 +1,5 @@
 import {SymData} from "../src/stateLib";
-import {isArray, toArray} from "../src/commonLib";
+import {isArray, toArray} from "react-ts-utils";
 import {getExten} from "../src/fform";
 
 const styles = {

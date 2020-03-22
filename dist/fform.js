@@ -756,6 +756,39 @@ class GenericWidget extends FRefsGeneric {
         return (react_1.createElement(UseTag, Object.assign({ children: self._mapped, className: _$cx ? _$cx(className) : className }, rest)));
     }
 }
+function extendSingleProps(key, base, extend = {}, args = [], opts = {}) {
+    if (react_1.isValidElement(extend))
+        return extend;
+    if (react_ts_utils_1.isFunction(extend))
+        return extend(...react_ts_utils_1.toArray(args));
+    let { tagName = '_$tag', defaultTag: Tag = 'div', } = opts;
+    let rest = base ? Object.assign(Object.assign({ key, role: key }, base), extend) : Object.assign({ key, role: key }, extend);
+    if (rest[tagName]) {
+        Tag = rest[tagName];
+        delete rest[tagName];
+    }
+    return react_1.createElement(Tag, rest);
+}
+function propsExtender(base, extend, args, opts = {}) {
+    let { onlyKeys, skipKeys } = opts, rest = __rest(opts, ["onlyKeys", "skipKeys"]);
+    let keys, baseKeys, res = {};
+    if (onlyKeys)
+        baseKeys = keys = onlyKeys;
+    else {
+        keys = react_ts_utils_1.objKeys(extend || {});
+        baseKeys = react_ts_utils_1.objKeys(base || {});
+    }
+    keys.forEach((k) => {
+        if (!skipKeys || !~skipKeys.indexOf(k))
+            res[k] = extendSingleProps(k, base[k], extend[k], args, rest);
+        baseKeys.splice(baseKeys.indexOf(k), 1);
+    });
+    baseKeys.forEach((k) => {
+        if (!skipKeys || !~skipKeys.indexOf(k))
+            res[k] = extendSingleProps(k, base[k], extend[k], args, rest);
+    });
+    return res;
+}
 function isEmpty(value) {
     return react_ts_utils_1.isMergeable(value) ? react_ts_utils_1.objKeys(value).length === 0 : value === undefined || value === null || value === "";
 }
@@ -871,17 +904,22 @@ function ItemMenu(props) {
     })));
 }
 const Checkbox = react_1.forwardRef((_a, ref) => {
-    var { $tags = {}, $props = {}, children, placeholder, role = 'checkbox', type = "checkbox", className = "" } = _a, rest = __rest(_a, ["$tags", "$props", "children", "placeholder", "role", "type", "className"]);
-    rest.ref = ref;
-    rest.type = type;
-    rest.key = "input";
-    rest.role = "input";
-    if ($props['input'])
-        Object.assign(rest, $props['input']);
-    return (react_1.createElement($tags['parent'] || 'label', Object.assign({ className, role }, $props['parent'] || {}), [
-        react_1.createElement($tags['input'] || 'input', rest),
-        react_1.createElement($tags['label'] || 'span', Object.assign({ key: "label", role: "label" }, $props['label'] || {}), placeholder)
-    ]));
+    var { $extend = {}, children = [], placeholder, role = 'checkbox', type = "checkbox", className = "" } = _a, rest = __rest(_a, ["$extend", "children", "placeholder", "role", "type", "className"]);
+    const baseProps = {
+        'input': Object.assign({ _$tag: 'input', ref, type }, rest),
+        'label': { _$tag: 'span', children: [placeholder] }
+    };
+    let args = [];
+    let childrenRes = propsExtender(baseProps, $extend, args, { skipKeys: ['checkbox'] });
+    let { input, label } = childrenRes, restChildren = __rest(childrenRes, ["input", "label"]);
+    const rootProps = {
+        'checkbox': {
+            _$tag: 'label',
+            className,
+            children: [input, label, ...(react_ts_utils_1.objKeys(restChildren).map(k => restChildren[k])), ...react_ts_utils_1.toArray(children)]
+        }
+    };
+    return propsExtender(rootProps, $extend, args, { onlyKeys: ['checkbox'] }).checkbox;
 });
 const CheckboxNull = react_1.forwardRef((props, ref) => {
     const self = this;
@@ -1188,7 +1226,7 @@ let elementsBase = {
         booleanNull: {
             $_ref: '^/sets/boolean',
             Main: {
-                $tags: { 'input': '^/widgets/CheckboxNull', _$skipKeys: ['input'] },
+                $extend: { 'input': { "_$tag": '^/widgets/CheckboxNull' } },
                 onChange: { $: '^/fn/parseTristate|setValue|liveUpdate', args: ['${0}'] },
             },
         },

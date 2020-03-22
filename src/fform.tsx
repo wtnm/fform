@@ -1,6 +1,6 @@
 /** @jsx h */
 
-import {createElement as h, Component, forwardRef} from 'react';
+import {createElement as h, Component, forwardRef, isValidElement} from 'react';
 //const React = require('preact');
 
 import {
@@ -879,6 +879,38 @@ class GenericWidget extends FRefsGeneric {
   }
 }
 
+function extendSingleProps(key: string, base: any, extend: any = {}, args: any = [], opts: any = {}) {
+  if (isValidElement(extend)) return extend;
+  if (isFunction(extend)) return extend(...toArray(args));
+  let {tagName = '_$tag', defaultTag: Tag = 'div',} = opts;
+  let rest = base ? {key, role: key, ...base, ...extend} : {key, role: key, ...extend};
+  if (rest[tagName]) {
+    Tag = rest[tagName];
+    delete rest[tagName];
+  }
+  return h(Tag, rest);
+}
+
+function propsExtender(base: anyObject, extend: anyObject, args: any, opts: any = {}) {
+  let {onlyKeys, skipKeys, ...rest} = opts;
+  let keys: string[], baseKeys: string[], res: anyObject = {};
+  if (onlyKeys) baseKeys = keys = onlyKeys;
+  else {
+    keys = objKeys(extend || {});
+    baseKeys = objKeys(base || {});
+  }
+  keys.forEach((k: string) => {
+    if (!skipKeys || !~skipKeys.indexOf(k))
+      res[k] = extendSingleProps(k, base[k], extend[k], args, rest);
+    baseKeys.splice(baseKeys.indexOf(k), 1);
+  });
+  baseKeys.forEach((k: string) => {
+    if (!skipKeys || !~skipKeys.indexOf(k))
+      res[k] = extendSingleProps(k, base[k], extend[k], args, rest);
+  });
+  return res;
+}
+
 function isEmpty(value: any) {
   return isMergeable(value) ? objKeys(value).length === 0 : value === undefined || value === null || value === "";
 }
@@ -1017,20 +1049,22 @@ function ItemMenu(props: any) {
 }
 
 
-const Checkbox = forwardRef(({$tags = {}, $props = {}, children, placeholder, role = 'checkbox', type = "checkbox", className = "", ...rest}: any, ref) => {
-  rest.ref = ref;
-  rest.type = type;
-  rest.key = "input";
-  rest.role = "input";
-  if ($props['input']) Object.assign(rest, $props['input']);
-  return (
-    h($tags['parent'] || 'label', Object.assign({className, role}, $props['parent'] || {}),
-      [
-        h($tags['input'] || 'input', rest),
-        h($tags['label'] || 'span', {key: "label", role: "label", ...$props['label'] || {}}, placeholder)
-      ]
-    )
-  )
+const Checkbox = forwardRef(({$extend = {}, children = [], placeholder, role = 'checkbox', type = "checkbox", className = "", ...rest}: any, ref) => {
+  const baseProps = {
+    'input': {_$tag: 'input', ref, type, ...rest},
+    'label': {_$tag: 'span', children: [placeholder]}
+  };
+  let args: any[] = [];
+  let childrenRes = propsExtender(baseProps, $extend, args, {skipKeys: ['checkbox']});
+  let {input, label, ...restChildren} = childrenRes;
+  const rootProps = {
+    'checkbox': {
+      _$tag: 'label',
+      className,
+      children: [input, label, ...(objKeys(restChildren).map(k => restChildren[k])), ...toArray(children)]
+    }
+  };
+  return propsExtender(rootProps, $extend, args, {onlyKeys: ['checkbox']}).checkbox;
 });
 
 const CheckboxNull = forwardRef((props: any, ref: any) => {
@@ -1338,7 +1372,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     booleanNull: {
       $_ref: '^/sets/boolean',
       Main: {
-        $tags: {'input': '^/widgets/CheckboxNull', _$skipKeys: ['input']},
+        $extend: {'input': {"_$tag": '^/widgets/CheckboxNull'}},
         onChange: {$: '^/fn/parseTristate|setValue|liveUpdate', args: ['${0}']},
       },
     },

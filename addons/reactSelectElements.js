@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const stateLib_1 = require("../src/stateLib");
-const commonLib_1 = require("../src/commonLib");
+const react_ts_utils_1 = require("react-ts-utils");
 const fform_1 = require("../src/fform");
 const styles = {
     container: (base) => (Object.assign(Object.assign({}, base), { flex: 1 }))
@@ -54,11 +54,11 @@ function default_1(Select, Creatable) {
             reactSelectValue: function (values = [], enumExten = {}) {
                 if (values === null || values === '')
                     return [];
-                let res = commonLib_1.toArray(values).map((value) => {
+                let res = react_ts_utils_1.toArray(values).map((value) => {
                     let extenProps = fform_1.getExten(enumExten, value);
                     return Object.assign({ value, label: value }, extenProps);
                 });
-                return (commonLib_1.isArray(values)) ? [res] : res;
+                return (react_ts_utils_1.isArray(values)) ? [res] : res;
             }
         }
     };
