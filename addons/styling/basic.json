@@ -153,19 +153,6 @@
     "RadioSelector": {
       "className": {
         "fform-radio": true
-      },
-      "$_maps": {
-        "children": {
-          "0": {
-            "args": {
-              "2": {
-                "className": {
-                  "fform-radio-input": true
-                }
-              }
-            }
-          }
-        }
       }
     },
     "ArrayItemMenu": {

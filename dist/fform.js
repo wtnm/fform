@@ -757,19 +757,22 @@ class GenericWidget extends FRefsGeneric {
     }
 }
 function extendSingleProps(key, base, extend = {}, args = [], opts = {}) {
+    let { _$cx } = opts;
     if (react_1.isValidElement(extend))
         return extend;
     if (react_ts_utils_1.isFunction(extend))
-        return extend(...react_ts_utils_1.toArray(args));
+        return extend(base, key, ...react_ts_utils_1.toArray(args));
     let { tagName = '_$tag', defaultTag: Tag = 'div', } = opts;
     let rest = base ? Object.assign(Object.assign({ key, role: key }, base), extend) : Object.assign({ key, role: key }, extend);
     if (rest[tagName]) {
         Tag = rest[tagName];
         delete rest[tagName];
     }
+    if (_$cx && rest.className)
+        rest.className = _$cx(rest.className);
     return react_1.createElement(Tag, rest);
 }
-function propsExtender(base, extend, args, opts = {}) {
+function propsExtender(base = {}, extend = {}, args, opts = {}) {
     let { onlyKeys, skipKeys } = opts, rest = __rest(opts, ["onlyKeys", "skipKeys"]);
     let keys, baseKeys, res = {};
     if (onlyKeys)
@@ -904,25 +907,24 @@ function ItemMenu(props) {
     })));
 }
 const Checkbox = react_1.forwardRef((_a, ref) => {
-    var { $extend = {}, children = [], placeholder, role = 'checkbox', type = "checkbox", className = "" } = _a, rest = __rest(_a, ["$extend", "children", "placeholder", "role", "type", "className"]);
+    var { $extend = {}, children = [], label, type = "checkbox", _$cx, className = "" } = _a, rest = __rest(_a, ["$extend", "children", "label", "type", "_$cx", "className"]);
     const baseProps = {
         'input': Object.assign({ _$tag: 'input', ref, type }, rest),
-        'label': { _$tag: 'span', children: [placeholder] }
+        'label': { _$tag: 'span', children: [label] }
     };
-    let args = [];
-    let childrenRes = propsExtender(baseProps, $extend, args, { skipKeys: ['checkbox'] });
-    let { input, label } = childrenRes, restChildren = __rest(childrenRes, ["input", "label"]);
+    let args = [this];
+    let childrenRes = propsExtender(baseProps, $extend, args, { skipKeys: ['checkbox'], _$cx });
+    let { input: inputTag, label: labelTag } = childrenRes, restChildren = __rest(childrenRes, ["input", "label"]);
     const rootProps = {
         'checkbox': {
             _$tag: 'label',
             className,
-            children: [input, label, ...(react_ts_utils_1.objKeys(restChildren).map(k => restChildren[k])), ...react_ts_utils_1.toArray(children)]
+            children: [inputTag, labelTag, ...(react_ts_utils_1.objKeys(restChildren).map(k => restChildren[k])), ...react_ts_utils_1.toArray(children)]
         }
     };
-    return propsExtender(rootProps, $extend, args, { onlyKeys: ['checkbox'] }).checkbox;
+    return propsExtender(rootProps, $extend, args, { onlyKeys: ['checkbox'], _$cx }).checkbox;
 });
 const CheckboxNull = react_1.forwardRef((props, ref) => {
-    const self = this;
     let { checked, onChange, nullValue = "", type } = props, rest = __rest(props, ["checked", "onChange", "nullValue", "type"]);
     return react_1.createElement("input", Object.assign({ type: "checkbox", checked: checked === true }, rest, { onChange: (event) => {
             onChange((checked === nullValue ? true : (checked === true ? false : nullValue)), event);
@@ -931,6 +933,23 @@ const CheckboxNull = react_1.forwardRef((props, ref) => {
             elem && (elem.indeterminate = (checked === nullValue));
         } }));
 });
+const Checkboxes = function (props) {
+    let { enum: _enum = [], enumExten = {}, type = "radio", className = "", value = [], name, _$cx } = props, staticProps = __rest(props, ["enum", "enumExten", "type", "className", "value", "name", "_$cx"]);
+    value = react_ts_utils_1.toArray(value);
+    if (name)
+        name = type === 'radio' ? name : name + '[]';
+    let children = _enum.map((val) => {
+        let baseProps = Object.assign({}, staticProps);
+        if (~value.indexOf(val))
+            baseProps.checked = true;
+        baseProps.type = type;
+        baseProps.name = name;
+        baseProps.value = val;
+        baseProps.label = val;
+        return extendSingleProps(val, baseProps, enumExten[val], [], { _$cx });
+    });
+    return react_1.createElement("div", { className: _$cx ? _$cx(className) : className }, children);
+};
 ///////////////////////////////
 //     Functions
 ///////////////////////////////
@@ -999,18 +1018,13 @@ function normalizeMaps($_maps, prePath = '') {
                 value = { args: value };
             value = Object.assign(Object.assign({}, value), stateLib_1.normalizeArgs(value.args));
             let { args, update = 'data', replace = true } = value, rest = __rest(value, ["args", "update", "replace"]);
-            //if (!isString(path)) throw new Error('$_maps value is not recognized');
-            //if (path[0] === '@') path = path.substr(1);
-            // lse console.warn('Expected "@" at the begining of string');
             result.data.push(Object.assign({ args: args[0], update, replace, to, dataRequest: true }, rest));
         }
     });
     return result;
 }
 exports.normalizeMaps = normalizeMaps;
-//!map.$ && map.args[0] == 'selectorValue' && args[0]
 function updateProps(mappedData, prevData, nextData, ...iterMaps) {
-    // const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
     const needUpdate = (map) => react_ts_utils_1.isUndefined(prevData) || !map.$ ||
         (map.dataRequest && map.args.some(arg => {
             if (stateLib_1.isNPath(arg))
@@ -1072,23 +1086,6 @@ function classNames(...styles) {
     return classes.join(' ');
 }
 exports.classNames = classNames;
-//
-// function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: string]: string } } = {}) { //skipFields: string[] = [], replaceFields: { [key: string]: string } = {}) {
-//   const skipFields = opts.skipFields || [];
-//   const replaceFields = opts.replaceFields || {};
-//   return function (value: any, props: any) {
-//     const {path, getFromState, schema} = props;
-//     let vals = (isArray(value) ? value : [value]).map(key => (replaceFields[key]) ? replaceFields[key] : key);
-//     let tmpPath: any = normalizePath(path.split('@')[0]);
-//     const selectorField = tmpPath.pop();
-//     let stringPath = path2string(tmpPath);
-//     vals = vals.filter(key => getFromState(stringPath + '/' + key));
-//     vals.push(selectorField);
-//     stringPath = stringPath + '/' + vals.join(',') + '/@/params/hidden';
-//     return new stateUpdates([
-//       {skipFields, path: stringPath, value: false, macros: 'setMultiply'}, {skipFields, path: stringPath, value: true, macros: 'setAllBut'}]);
-//   }
-// }
 /////////////////////////////////////////////
 //  elements
 /////////////////////////////////////////////
@@ -1104,12 +1101,13 @@ let elementsBase = {
         Section: FSection,
         Generic: GenericWidget,
         Input: UniversalInput,
-        Autowidth: Autowidth,
         Builder: FBuilder,
-        Wrapper: Wrapper,
-        ItemMenu: ItemMenu,
-        Checkbox: Checkbox,
-        CheckboxNull: CheckboxNull,
+        Autowidth,
+        Wrapper,
+        ItemMenu,
+        Checkbox,
+        CheckboxNull,
+        Checkboxes
     },
     sets: {
         'base': {
@@ -1220,7 +1218,11 @@ let elementsBase = {
             Main: {
                 type: 'checkbox',
                 _$useTag: "^/widgets/Checkbox",
-                onChange: { $: '^/fn/eventChecked|setValue|liveUpdate' }
+                onChange: { $: '^/fn/eventChecked|setValue|liveUpdate' },
+                $_maps: {
+                    placeholder: false,
+                    label: '@/fData/placeholder',
+                }
             },
         },
         booleanNull: {
@@ -1297,55 +1299,27 @@ let elementsBase = {
                 $_ref: '^/parts/RadioSelector',
                 $_reactRef: true,
                 $_viewerProps: { $_ref: '^/sets/simple/Main/$_viewerProps' },
+                onChange: { args: ['${0}'] },
                 $_maps: {
                     value: '@/value',
                     viewer: '@/params/viewer',
-                    children: [
-                        {
-                            args: [
-                                '@/fData/enum',
-                                '@/fData/enumExten',
-                                { onChange: { args: ['${0}'] } },
-                                { name: true }
-                            ],
-                        },
-                        { args: ['@/fData/enum', '@/value'] },
-                        { args: { 0: '@/fData/enum' } },
-                    ]
+                    enum: '@/fData/enum',
+                    enumExten: '@/fData/enumExten',
                 }
             }
         },
         checkboxes: {
-            $_ref: '^/sets/radio', Main: {
-                $_maps: {
-                    children: {
-                        '0': {
-                            args: {
-                                '2': { type: 'checkbox', onChange: { $: '^/fn/eventCheckboxes|setValue|liveUpdate' } },
-                                '3': { name: '[]' }
-                            }
-                        }
-                    }
-                }
+            $_ref: '^/sets/radio',
+            Main: {
+                type: 'checkbox',
+                onChange: { $: '^/fn/eventCheckboxes|setValue|liveUpdate' }
             }
         },
-        $radioInteger: {
-            Main: {
-                $_maps: {
-                    children: {
-                        '0': {
-                            args: {
-                                '2': {
-                                    onChange: {
-                                        $: '^/fn/eventValue|parseNumber|setValue|liveUpdate',
-                                        args: ['${0}', true, 0]
-                                    },
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+        $radioParse: {
+            Main: { onChange: { $: '^/fn/eventValue|parse|setValue|liveUpdate' } }
+        },
+        $checkboxesParse: {
+            Main: { onChange: { $: '^/fn/eventCheckboxes|parse|setValue|liveUpdate' } }
         },
         $radioNull: { Main: { $_maps: { children: { '0': { args: { '2': { onClick: '^/fn/eventValue|radioClear|liveUpdate' } } } } } } },
         $radioEmpty: { Main: { $_maps: { children: { '0': { args: { '2': { onClick: { $: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', ''] } } } } } } } },
@@ -1394,6 +1368,14 @@ let elementsBase = {
         ],
         eventChecked: (event, ...args) => [event.target.checked, ...args],
         parseTristate: (value, ...args) => [value === "" ? null : value, ...args],
+        parse(value, ...args) {
+            try {
+                value = react_ts_utils_1.isArray(value) ? value.map(v => JSON.parse(v)) : JSON.parse(value);
+            }
+            catch (e) {
+            }
+            return [value, ...args];
+        },
         eventMultiple: (event, ...args) => [Array.from(event.target.options).filter((o) => o.selected).map((v) => v.value), ...args],
         parseNumber: (value, int = false, empty = null, ...args) => [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...args],
         stringify(value, ...args) {
@@ -1501,31 +1483,20 @@ let elementsBase = {
         RadioSelector: {
             _$widget: '^/widgets/Input',
             _$cx: '^/_$cx',
-            _$useTag: 'div',
-            //type: 'notInput',
+            _$useTag: '^/widgets/Checkboxes',
             children: [],
+            type: 'radio',
+            onChange: { $: '^/fn/eventValue|setValue|liveUpdate', args: ['${0}', { path: './@/selector/value' }] },
+            onBlur: '^/sets/simple/Main/onBlur',
+            onFocus: '^/sets/simple/Main/onFocus',
+            _$tag: '^/widgets/Checkbox',
             $_maps: {
                 value: '@/selector/value',
-                children: [
-                    {
-                        $: '^/fn/enumInputs',
-                        args: [
-                            '@/selector/enum',
-                            '@/selector/enumExten',
-                            {
-                                _$widget: '^/widgets/Checkbox',
-                                type: 'radio',
-                                onChange: { $: '^/fn/eventValue|setValue|liveUpdate', args: ['${0}', { path: './@/selector/value' }] },
-                                onBlur: '^/sets/simple/Main/onBlur',
-                                onFocus: '^/sets/simple/Main/onFocus',
-                            },
-                            { name: true }
-                        ],
-                        replace: false,
-                    },
-                    { $: '^/fn/enumInputValue', args: ['@/selector/enum', '@/selector/value'], replace: false },
-                    { $: '^/fn/enumInputProps', args: ['@/selector/enum', 'readOnly', '@/params/readonly', 'disabled', '@/params/disabled'], replace: false }
-                ]
+                enum: '@/selector/enum',
+                enumExten: '@/selector/enumExten',
+                readOnly: '@/params/readonly',
+                disabled: '@/params/disabled',
+                name: { $: '^/fn/getProp', args: 'props/name', update: 'build' },
             }
         },
         Autowidth: {

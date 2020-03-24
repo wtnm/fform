@@ -880,18 +880,21 @@ class GenericWidget extends FRefsGeneric {
 }
 
 function extendSingleProps(key: string, base: any, extend: any = {}, args: any = [], opts: any = {}) {
+  let {_$cx} = opts;
   if (isValidElement(extend)) return extend;
-  if (isFunction(extend)) return extend(...toArray(args));
+  if (isFunction(extend)) return extend(base, key, ...toArray(args));
   let {tagName = '_$tag', defaultTag: Tag = 'div',} = opts;
   let rest = base ? {key, role: key, ...base, ...extend} : {key, role: key, ...extend};
   if (rest[tagName]) {
     Tag = rest[tagName];
     delete rest[tagName];
   }
+  if (_$cx && rest.className)
+    rest.className = _$cx(rest.className);
   return h(Tag, rest);
 }
 
-function propsExtender(base: anyObject, extend: anyObject, args: any, opts: any = {}) {
+function propsExtender(base: anyObject = {}, extend: anyObject = {}, args: any, opts: any = {}) {
   let {onlyKeys, skipKeys, ...rest} = opts;
   let keys: string[], baseKeys: string[], res: anyObject = {};
   if (onlyKeys) baseKeys = keys = onlyKeys;
@@ -958,7 +961,7 @@ class UniversalInput extends GenericWidget {
         rest.type = type;
       }
     }
-    rest[type === 'checkbox' ? 'checked' : 'value'] = value;
+    rest[type === 'checkbox' || type === 'radio' ? 'checked' : 'value'] = value;
     if (rest.className && _$cx) rest.className = _$cx(rest.className);
     //console.log(rest.value);
     return h(UseTag, rest, self._mapped)
@@ -1049,26 +1052,28 @@ function ItemMenu(props: any) {
 }
 
 
-const Checkbox = forwardRef(({$extend = {}, children = [], placeholder, role = 'checkbox', type = "checkbox", className = "", ...rest}: any, ref) => {
+const Checkbox = forwardRef(({
+                               $extend = {}, children = [], label,
+                               type = "checkbox", _$cx, className = "", ...rest
+                             }: any, ref) => {
   const baseProps = {
     'input': {_$tag: 'input', ref, type, ...rest},
-    'label': {_$tag: 'span', children: [placeholder]}
+    'label': {_$tag: 'span', children: [label]}
   };
-  let args: any[] = [];
-  let childrenRes = propsExtender(baseProps, $extend, args, {skipKeys: ['checkbox']});
-  let {input, label, ...restChildren} = childrenRes;
+  let args: any[] = [this];
+  let childrenRes = propsExtender(baseProps, $extend, args, {skipKeys: ['checkbox'], _$cx});
+  let {input: inputTag, label: labelTag, ...restChildren} = childrenRes;
   const rootProps = {
     'checkbox': {
       _$tag: 'label',
       className,
-      children: [input, label, ...(objKeys(restChildren).map(k => restChildren[k])), ...toArray(children)]
+      children: [inputTag, labelTag, ...(objKeys(restChildren).map(k => restChildren[k])), ...toArray(children)]
     }
   };
-  return propsExtender(rootProps, $extend, args, {onlyKeys: ['checkbox']}).checkbox;
+  return propsExtender(rootProps, $extend, args, {onlyKeys: ['checkbox'], _$cx}).checkbox;
 });
 
 const CheckboxNull = forwardRef((props: any, ref: any) => {
-    const self = this;
     let {checked, onChange, nullValue = "", type, ...rest} = props;
     return <input type="checkbox" checked={checked === true} {...rest}
                   onChange={(event: any) => {
@@ -1079,7 +1084,23 @@ const CheckboxNull = forwardRef((props: any, ref: any) => {
                     elem && (elem.indeterminate = (checked === nullValue))
                   }}/>
   }
-)
+);
+
+const Checkboxes = function (props: any) {
+  let {enum: _enum = [], enumExten = {}, type = "radio", className = "", checked = [], name, _$cx, ...staticProps} = props;
+  checked = toArray(checked);
+  if (name) name = type === 'radio' ? name : name + '[]';
+  let children = _enum.map((val: any) => {
+    let baseProps = {...staticProps};
+    baseProps.checked = !!~checked.indexOf(val);
+    baseProps.type = type;
+    baseProps.name = name;
+    baseProps.value = val;
+    baseProps.label = val;
+    return extendSingleProps(val, baseProps, enumExten[val], [], {_$cx})
+  });
+  return <div className={_$cx ? _$cx(className) : className}>{children}</div>
+};
 
 
 ///////////////////////////////
@@ -1149,18 +1170,13 @@ function normalizeMaps($_maps: any, prePath = '') {
       if (isString(value)) value = {args: value};
       value = {...value, ...normalizeArgs(value.args)};
       let {args, update = 'data', replace = true, ...rest} = value;
-      //if (!isString(path)) throw new Error('$_maps value is not recognized');
-      //if (path[0] === '@') path = path.substr(1);
-      // lse console.warn('Expected "@" at the begining of string');
       result.data.push({args: args[0], update, replace, to, dataRequest: true, ...rest})
     }
   });
   return result
 }
 
-//!map.$ && map.args[0] == 'selectorValue' && args[0]
 function updateProps(mappedData: any, prevData: any, nextData: any, ...iterMaps: Array<NormalizedDataProcessor[] | false>) {
-  // const getFromData = (arg: any) => isNPath(arg) ? getIn(nextData, arg) : arg;
   const needUpdate = (map: NormalizedDataProcessor): boolean => isUndefined(prevData) || !map.$ ||
     (map.dataRequest && map.args.some(arg => {
       if (isNPath(arg)) return getIn(prevData, arg) !== getIn(nextData, arg);
@@ -1215,24 +1231,6 @@ function classNames(...styles: any[]) {
   return classes.join(' ');
 }
 
-//
-// function selectorMap(opts: { skipFields?: string[], replaceFields?: { [key: string]: string } } = {}) { //skipFields: string[] = [], replaceFields: { [key: string]: string } = {}) {
-//   const skipFields = opts.skipFields || [];
-//   const replaceFields = opts.replaceFields || {};
-//   return function (value: any, props: any) {
-//     const {path, getFromState, schema} = props;
-//     let vals = (isArray(value) ? value : [value]).map(key => (replaceFields[key]) ? replaceFields[key] : key);
-//     let tmpPath: any = normalizePath(path.split('@')[0]);
-//     const selectorField = tmpPath.pop();
-//     let stringPath = path2string(tmpPath);
-//     vals = vals.filter(key => getFromState(stringPath + '/' + key));
-//     vals.push(selectorField);
-//     stringPath = stringPath + '/' + vals.join(',') + '/@/params/hidden';
-//     return new stateUpdates([
-//       {skipFields, path: stringPath, value: false, macros: 'setMultiply'}, {skipFields, path: stringPath, value: true, macros: 'setAllBut'}]);
-//   }
-// }
-
 
 /////////////////////////////////////////////
 //  elements
@@ -1250,12 +1248,13 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     Section: FSection,
     Generic: GenericWidget,
     Input: UniversalInput,
-    Autowidth: Autowidth,
     Builder: FBuilder,
-    Wrapper: Wrapper,
-    ItemMenu: ItemMenu,
-    Checkbox: Checkbox,
-    CheckboxNull: CheckboxNull,
+    Autowidth,
+    Wrapper,
+    ItemMenu,
+    Checkbox,
+    CheckboxNull,
+    Checkboxes
   },
   sets: {
     'base': {
@@ -1366,7 +1365,11 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         type: 'checkbox',
         _$useTag: "^/widgets/Checkbox",
-        onChange: {$: '^/fn/eventChecked|setValue|liveUpdate'}
+        onChange: {$: '^/fn/eventChecked|setValue|liveUpdate'},
+        $_maps: {
+          placeholder: false,
+          label: '@/fData/placeholder',
+        }
       },
     },
     booleanNull: {
@@ -1442,56 +1445,27 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         $_ref: '^/parts/RadioSelector',
         $_reactRef: true,
         $_viewerProps: {$_ref: '^/sets/simple/Main/$_viewerProps'},
+        onChange: {args: ['${0}']},
         $_maps: {
           value: '@/value',
           viewer: '@/params/viewer',
-          children: [
-            {
-              args: [
-                '@/fData/enum',
-                '@/fData/enumExten',
-                {onChange: {args: ['${0}']}}, //{$_reactRef: {'$_reactRef': {'0': {'ref': true}}}},
-                {name: true}
-              ],
-            },
-            {args: ['@/fData/enum', '@/value']},
-            {args: {0: '@/fData/enum'}},
-          ]
+          enum: '@/fData/enum',
+          enumExten: '@/fData/enumExten',
         }
       }
     },
     checkboxes: {
-      $_ref: '^/sets/radio', Main: {
-        $_maps: {
-          children: {
-            '0': {
-              args: {
-                '2':
-                  {type: 'checkbox', onChange: {$: '^/fn/eventCheckboxes|setValue|liveUpdate'}},
-                '3': {name: '[]'}
-              }
-            }
-          }
-        }
+      $_ref: '^/sets/radio',
+      Main: {
+        type: 'checkbox',
+        onChange: {$: '^/fn/eventCheckboxes|setValue|liveUpdate'}
       }
     },
-    $radioInteger: {
-      Main: {
-        $_maps: {
-          children: {
-            '0': {
-              args: {
-                '2': {
-                  onChange: {
-                    $: '^/fn/eventValue|parseNumber|setValue|liveUpdate',
-                    args: ['${0}', true, 0]
-                  },
-                }
-              }
-            }
-          }
-        }
-      }
+    $radioParse: {
+      Main: {onChange: {$: '^/fn/eventValue|parse|setValue|liveUpdate'}}
+    },
+    $checkboxesParse: {
+      Main: {onChange: {$: '^/fn/eventCheckboxes|parse|setValue|liveUpdate'}}
     },
     $radioNull: {Main: {$_maps: {children: {'0': {args: {'2': {onClick: '^/fn/eventValue|radioClear|liveUpdate'}}}}}}},
     $radioEmpty: {Main: {$_maps: {children: {'0': {args: {'2': {onClick: {$: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', '']}}}}}}}},
@@ -1542,6 +1516,14 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       event.target.value, ...args],
     eventChecked: (event: any, ...args: any[]) => [event.target.checked, ...args],
     parseTristate: (value: any, ...args: any[]) => [value === "" ? null : value, ...args],
+    parse(value: string | string[], ...args: any[]) {
+      try {
+        value = isArray(value) ? value.map(v => JSON.parse(v)) : JSON.parse(value)
+      } catch (e) {
+
+      }
+      return [value, ...args]
+    },
     eventMultiple: (event: any, ...args: any[]) =>
       [Array.from(event.target.options).filter((o: any) => o.selected).map((v: any) => v.value), ...args],
     parseNumber: (value: any, int: boolean = false, empty: number | null = null, ...args: any[]) =>
@@ -1608,29 +1590,6 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         return {key: val, children: [extenProps.label || val], name: name && (this.name + (name === true ? '' : name)), ...extenProps, ...staticProps, value: val}
       })]
     },
-    enumInputs(enumVals: any[] = [], enumExten: any = {}, inputProps: any = {}, opts: any = {}) {
-      inputProps = {...inputProps};
-      delete inputProps._$skipKeys;
-      return [enumVals.map(val => {
-        let {label, ...extenProps} = getExten(enumExten, val);
-        return {
-          key: val,
-          name: opts.name && (this.props.name + (opts.name === true ? '' : opts.name)),
-          ...merge(inputProps, extenProps),
-          placeholder: label || val,
-          value: val
-        }
-      })]
-    },
-    enumInputProps(enumVals: any[] = [], ...rest: any[]) {
-      let props: any = {};
-      for (let i = 0; i < rest.length; i += 2) props[rest[i]] = rest[i + 1];
-      return [enumVals.map(val => props)]
-    },
-    enumInputValue(enumVals: any[] = [], value: any, property = 'checked') {
-      value = toArray(value);
-      return [enumVals.map(val => {return {[property]: !!~value.indexOf(val)}})]
-    },
     setInputPriority(priority?: number) {
       if (typeof priority == 'number') return ['fform-input-priority-' + priority];
       else return [false]
@@ -1649,31 +1608,20 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     RadioSelector: {
       _$widget: '^/widgets/Input',
       _$cx: '^/_$cx',
-      _$useTag: 'div',
-      //type: 'notInput',
+      _$useTag: '^/widgets/Checkboxes',
       children: [],
+      type: 'radio',
+      onChange: {$: '^/fn/eventValue|setValue|liveUpdate', args: ['${0}', {path: './@/selector/value'}]},
+      onBlur: '^/sets/simple/Main/onBlur',
+      onFocus: '^/sets/simple/Main/onFocus',
+      _$tag: '^/widgets/Checkbox',
       $_maps: {
         value: '@/selector/value',
-        children: [
-          {
-            $: '^/fn/enumInputs',
-            args: [
-              '@/selector/enum',
-              '@/selector/enumExten',
-              {
-                _$widget: '^/widgets/Checkbox',
-                type: 'radio',
-                onChange: {$: '^/fn/eventValue|setValue|liveUpdate', args: ['${0}', {path: './@/selector/value'}]},
-                onBlur: '^/sets/simple/Main/onBlur',
-                onFocus: '^/sets/simple/Main/onFocus',
-              },
-              {name: true}
-            ],
-            replace: false,
-          },
-          {$: '^/fn/enumInputValue', args: ['@/selector/enum', '@/selector/value'], replace: false},
-          {$: '^/fn/enumInputProps', args: ['@/selector/enum', 'readOnly', '@/params/readonly', 'disabled', '@/params/disabled'], replace: false}
-        ]
+        enum: '@/selector/enum',
+        enumExten: '@/selector/enumExten',
+        readOnly: '@/params/readonly',
+        disabled: '@/params/disabled',
+        name: {$: '^/fn/getProp', args: 'props/name', update: 'build'},
       }
     },
     Autowidth: {
