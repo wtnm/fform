@@ -153,6 +153,15 @@
     "RadioSelector": {
       "className": {
         "fform-radio": true
+      },
+      "staticProps": {
+        "$extend": {
+          "input": {
+            "className": {
+              "fform-radio-input": true
+            }
+          }
+        }
       }
     },
     "ArrayItemMenu": {

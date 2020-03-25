@@ -56,6 +56,7 @@ declare class FField extends FRefsGeneric {
     private _maps;
     private _$_parse;
     _forceLiveUpd: boolean;
+    _preventLiveUpd: boolean;
     _forceUpd: boolean;
     get: Function | null;
     _layout: FFLayoutGeneric<jsFFCustomizeType>;
