@@ -1,5 +1,5 @@
 /** @jsx h */
-import { Component } from 'react';
+import { Component, PureComponent } from 'react';
 import { MergeStateOptionsArgument } from "react-ts-utils";
 import { formReducer } from './api';
 export declare const _CORES: WeakMap<object, any>;
@@ -82,6 +82,10 @@ declare class FField extends FRefsGeneric {
     shouldComponentUpdate(nextProps: any, nextState: any): boolean;
     render(): false | import("react").DetailedReactHTMLElement<import("react").InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> | null;
 }
+declare const Checkbox: import("react").ForwardRefExoticComponent<Pick<any, string | number | symbol> & import("react").RefAttributes<unknown>>;
+declare class Checkboxes extends PureComponent<any, any> {
+    render(): JSX.Element;
+}
 declare function bindProcessorToThis(val: any, opts?: anyObject): any;
 declare function extractMaps(obj: any, skip?: string[]): {
     $_maps: any;
@@ -103,3 +107,4 @@ declare let elementsBase: elementsType & {
 };
 export { elementsBase as elements, formReducer, FForm, FField, fformCores };
 export { extractMaps, normalizeMaps, updateProps, classNames, comparePropsFn, getExten };
+export { Checkboxes, Checkbox };

@@ -881,17 +881,19 @@ class GenericWidget extends FRefsGeneric {
 }
 
 function extendSingleProps(key: string, base: any, extend: any = {}, args: any = [], opts: any = {}) {
-  let {_$cx} = opts;
+  let {_$cx, $baseClass, $rootKey} = opts;
   if (isValidElement(extend)) return extend;
   if (isFunction(extend)) return extend(base, key, ...toArray(args));
   let {tagName = '_$tag', defaultTag: Tag = 'div',} = opts;
-  let rest = base ? {key, role: key, ...base, ...extend} : {key, role: key, ...extend};
+  let rest = base ? {key, 'data-key': key, ...base, ...extend} : {key, 'data-key': key, ...extend};
   if (rest[tagName]) {
     Tag = rest[tagName];
     delete rest[tagName];
   }
-  if (_$cx && rest.className)
+  if (rest.className)
     rest.className = _$cx(rest.className);
+  if ($baseClass)
+    rest.className = _$cx(rest.className || '', `${$baseClass}${key !== $rootKey ? '__' + key : ''}`);
   return h(Tag, rest);
 }
 
@@ -946,7 +948,7 @@ class UniversalInput extends GenericWidget {
       return h(_$widget, rest)
     }
 
-    let {_$useTag: UseTag, type, $_reactRef, _$cx, _$passCx,  _$elements, viewer, $_viewerProps, children, ...rest} = props;
+    let {_$useTag: UseTag, type, $_reactRef, _$cx, _$passCx, _$elements, viewer, $_viewerProps, children, ...rest} = props;
 
     self._mapChildren(children, $_reactRef);
     self.setRef2rest(rest, $_reactRef);
@@ -962,7 +964,7 @@ class UniversalInput extends GenericWidget {
         rest.type = type;
       }
     }
-    if(_$passCx) rest._$cx = _$cx;
+    if (_$passCx) rest._$cx = _$cx;
     if (rest.className && _$cx) rest.className = _$cx(rest.className);
     return h(UseTag, rest, self._mapped)
   }
@@ -1053,16 +1055,18 @@ function ItemMenu(props: any) {
 
 
 const Checkbox = forwardRef(({
-                               $extend = {}, children = [], label,
-                               type = "checkbox", _$cx, className = "", ...rest
+                               $extend = {}, $baseClass, children = [], label,
+                               type = "checkbox", _$cx, className = "", ['data-key']: dataKey, ...rest
                              }: any, ref) => {
   const baseProps = {
     'input': {_$tag: 'input', ref, type, ...rest},
     'label': {_$tag: 'span', children: [label]}
   };
   let args: any[] = [this];
-  let childrenRes = propsExtender(baseProps, $extend, args, {skipKeys: ['checkbox'], _$cx});
+  let childrenRes = propsExtender(baseProps, $extend, args, {skipKeys: ['checkbox'], _$cx, $baseClass});
   let {input: inputTag, label: labelTag, ...restChildren} = childrenRes;
+  className = _$cx(className);
+  if (rest.checked) className = _$cx(className || '', '_checked');
   const rootProps = {
     'checkbox': {
       _$tag: 'label',
@@ -1070,7 +1074,7 @@ const Checkbox = forwardRef(({
       children: [inputTag, labelTag, ...(objKeys(restChildren).map(k => restChildren[k])), ...toArray(children)]
     }
   };
-  return propsExtender(rootProps, $extend, args, {onlyKeys: ['checkbox'], _$cx}).checkbox;
+  return propsExtender(rootProps, $extend, args, {onlyKeys: ['checkbox'], _$cx, $baseClass, $rootKey: 'checkbox'}).checkbox;
 });
 
 const CheckboxNull = forwardRef((props: any, ref: any) => {
@@ -1089,7 +1093,7 @@ const CheckboxNull = forwardRef((props: any, ref: any) => {
 
 class Checkboxes extends PureComponent<any, any> {
   render() {
-    let {$enum = [], $enumExten = {}, $extend = {}, type = "radio", className = "", value = [], name, _$cx, staticProps} = this.props;
+    let {$enum = [], $enumExten = {}, $baseClass, $extend = {}, type = "radio", className = "", value = [], name, _$cx, staticProps, ...rest} = this.props;
     value = toArray(value);
     if (name) name = type === 'radio' ? name : name + '[]';
     let children = $enum.map((val: any) => {
@@ -1099,11 +1103,15 @@ class Checkboxes extends PureComponent<any, any> {
       baseProps.name = name;
       baseProps.value = val;
       baseProps.label = val;
+      baseProps._$tag = baseProps._$tag || Checkbox;
       baseProps._$cx = baseProps._$cx || _$cx;
+      if ($baseClass) baseProps.$baseClass = $baseClass + '-item';
       if ($enumExten[val]) Object.assign(baseProps, $enumExten[val]);
       return extendSingleProps(val, baseProps, $extend[val], [this], {_$cx})
     });
-    return <div className={_$cx ? _$cx(className) : className}>{children}</div>
+    className = _$cx ? _$cx(className) : className;
+    if ($baseClass) className = ((className || '') + ' ' + $baseClass).trim();
+    return <div className={className} {...rest}>{children}</div>
   }
 };
 
@@ -1375,6 +1383,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         type: 'checkbox',
         _$useTag: "^/widgets/Checkbox",
+        _$passCx: true,
         onChange: {$: '^/fn/eventChecked|setValue|liveUpdate'},
         $_maps: {
           placeholder: false,
@@ -1781,3 +1790,5 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 export {elementsBase as elements, formReducer, FForm, FField, fformCores};
 
 export {extractMaps, normalizeMaps, updateProps, classNames, comparePropsFn, getExten}
+
+export {Checkboxes, Checkbox}

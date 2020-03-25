@@ -758,19 +758,21 @@ class GenericWidget extends FRefsGeneric {
     }
 }
 function extendSingleProps(key, base, extend = {}, args = [], opts = {}) {
-    let { _$cx } = opts;
+    let { _$cx, $baseClass, $rootKey } = opts;
     if (react_1.isValidElement(extend))
         return extend;
     if (react_ts_utils_1.isFunction(extend))
         return extend(base, key, ...react_ts_utils_1.toArray(args));
     let { tagName = '_$tag', defaultTag: Tag = 'div', } = opts;
-    let rest = base ? Object.assign(Object.assign({ key, role: key }, base), extend) : Object.assign({ key, role: key }, extend);
+    let rest = base ? Object.assign(Object.assign({ key, 'data-key': key }, base), extend) : Object.assign({ key, 'data-key': key }, extend);
     if (rest[tagName]) {
         Tag = rest[tagName];
         delete rest[tagName];
     }
-    if (_$cx && rest.className)
+    if (rest.className)
         rest.className = _$cx(rest.className);
+    if ($baseClass)
+        rest.className = _$cx(rest.className || '', `${$baseClass}${key !== $rootKey ? '__' + key : ''}`);
     return react_1.createElement(Tag, rest);
 }
 function propsExtender(base = {}, extend = {}, args, opts = {}) {
@@ -908,14 +910,17 @@ function ItemMenu(props) {
     })));
 }
 const Checkbox = react_1.forwardRef((_a, ref) => {
-    var { $extend = {}, children = [], label, type = "checkbox", _$cx, className = "" } = _a, rest = __rest(_a, ["$extend", "children", "label", "type", "_$cx", "className"]);
+    var { $extend = {}, $baseClass, children = [], label, type = "checkbox", _$cx, className = "", ['data-key']: dataKey } = _a, rest = __rest(_a, ["$extend", "$baseClass", "children", "label", "type", "_$cx", "className", 'data-key']);
     const baseProps = {
         'input': Object.assign({ _$tag: 'input', ref, type }, rest),
         'label': { _$tag: 'span', children: [label] }
     };
     let args = [this];
-    let childrenRes = propsExtender(baseProps, $extend, args, { skipKeys: ['checkbox'], _$cx });
+    let childrenRes = propsExtender(baseProps, $extend, args, { skipKeys: ['checkbox'], _$cx, $baseClass });
     let { input: inputTag, label: labelTag } = childrenRes, restChildren = __rest(childrenRes, ["input", "label"]);
+    className = _$cx(className);
+    if (rest.checked)
+        className = _$cx(className || '', '_checked');
     const rootProps = {
         'checkbox': {
             _$tag: 'label',
@@ -923,8 +928,9 @@ const Checkbox = react_1.forwardRef((_a, ref) => {
             children: [inputTag, labelTag, ...(react_ts_utils_1.objKeys(restChildren).map(k => restChildren[k])), ...react_ts_utils_1.toArray(children)]
         }
     };
-    return propsExtender(rootProps, $extend, args, { onlyKeys: ['checkbox'], _$cx }).checkbox;
+    return propsExtender(rootProps, $extend, args, { onlyKeys: ['checkbox'], _$cx, $baseClass, $rootKey: 'checkbox' }).checkbox;
 });
+exports.Checkbox = Checkbox;
 const CheckboxNull = react_1.forwardRef((props, ref) => {
     let { checked, onChange, nullValue = null, type } = props, rest = __rest(props, ["checked", "onChange", "nullValue", "type"]);
     return react_1.createElement("input", Object.assign({ type: "checkbox", checked: checked === true }, rest, { onChange: (event) => {
@@ -936,7 +942,7 @@ const CheckboxNull = react_1.forwardRef((props, ref) => {
 });
 class Checkboxes extends react_1.PureComponent {
     render() {
-        let { $enum = [], $enumExten = {}, $extend = {}, type = "radio", className = "", value = [], name, _$cx, staticProps } = this.props;
+        let _a = this.props, { $enum = [], $enumExten = {}, $baseClass, $extend = {}, type = "radio", className = "", value = [], name, _$cx, staticProps } = _a, rest = __rest(_a, ["$enum", "$enumExten", "$baseClass", "$extend", "type", "className", "value", "name", "_$cx", "staticProps"]);
         value = react_ts_utils_1.toArray(value);
         if (name)
             name = type === 'radio' ? name : name + '[]';
@@ -947,14 +953,21 @@ class Checkboxes extends react_1.PureComponent {
             baseProps.name = name;
             baseProps.value = val;
             baseProps.label = val;
+            baseProps._$tag = baseProps._$tag || Checkbox;
             baseProps._$cx = baseProps._$cx || _$cx;
+            if ($baseClass)
+                baseProps.$baseClass = $baseClass + '-item';
             if ($enumExten[val])
                 Object.assign(baseProps, $enumExten[val]);
             return extendSingleProps(val, baseProps, $extend[val], [this], { _$cx });
         });
-        return react_1.createElement("div", { className: _$cx ? _$cx(className) : className }, children);
+        className = _$cx ? _$cx(className) : className;
+        if ($baseClass)
+            className = ((className || '') + ' ' + $baseClass).trim();
+        return react_1.createElement("div", Object.assign({ className: className }, rest), children);
     }
 }
+exports.Checkboxes = Checkboxes;
 ;
 ///////////////////////////////
 //     Functions
@@ -1229,6 +1242,7 @@ let elementsBase = {
             Main: {
                 type: 'checkbox',
                 _$useTag: "^/widgets/Checkbox",
+                _$passCx: true,
                 onChange: { $: '^/fn/eventChecked|setValue|liveUpdate' },
                 $_maps: {
                     placeholder: false,
