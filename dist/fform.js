@@ -958,7 +958,7 @@ class Checkboxes extends react_1.PureComponent {
             if ($baseClass)
                 baseProps.$baseClass = $baseClass + '-item';
             if ($enumExten[val])
-                Object.assign(baseProps, $enumExten[val]);
+                Object.assign(baseProps, react_ts_utils_1.isString($enumExten[val]) ? { label: $enumExten[val] } : $enumExten[val]);
             return extendSingleProps(val, baseProps, $extend[val], [this], { _$cx });
         });
         className = _$cx ? _$cx(className) : className;

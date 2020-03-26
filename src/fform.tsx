@@ -1106,7 +1106,7 @@ class Checkboxes extends PureComponent<any, any> {
       baseProps._$tag = baseProps._$tag || Checkbox;
       baseProps._$cx = baseProps._$cx || _$cx;
       if ($baseClass) baseProps.$baseClass = $baseClass + '-item';
-      if ($enumExten[val]) Object.assign(baseProps, $enumExten[val]);
+      if ($enumExten[val]) Object.assign(baseProps, isString($enumExten[val]) ? {label: $enumExten[val]} : $enumExten[val]);
       return extendSingleProps(val, baseProps, $extend[val], [this], {_$cx})
     });
     className = _$cx ? _$cx(className) : className;
