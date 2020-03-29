@@ -1,7 +1,6 @@
 /** @jsx h */
 
 import {createElement as h, Component, forwardRef, isValidElement, PureComponent} from 'react';
-//const React = require('preact');
 
 import {
   toArray,
@@ -19,6 +18,7 @@ import {
   memoize, isNumber, setIn, push2array,
   MergeStateOptionsArgument
 } from "react-ts-utils";
+
 import {
   arrayStart,
   isSelfManaged,
@@ -37,18 +37,61 @@ import {
   normalizeFn,
   normalizeArgs,
   processProp,
-  isElemRef, SymReset
+  isElemRef, SymReset, getUniqKey
 } from './stateLib'
-import {FFormStateAPI, objectResolver, formReducer, skipKey} from './api'
+
+import {FFormStateAPI, objectResolver, skipKey, anSetState} from './api'
+
 
 const _$cxSym = Symbol('_$cx');
 
 export const _CORES = new WeakMap();
+export const _SCHEMAS = new WeakMap();
+const _schemasId = new WeakMap();
 
 function fformCores(nameOrProps: string | FFormApiProps) {
   return isString(nameOrProps) ? _CORES[nameOrProps] : new FFormStateAPI(nameOrProps);
 }
 
+function schemaRegister(schema: JsonSchema | jsJsonSchema) {
+  let $id = schema.$id || _schemasId.get(schema);
+  if (!$id) {
+    _schemasId.set(schema, getUniqKey());
+    $id = _schemasId.get(schema)
+  }
+  _SCHEMAS[$id] = (schema as jsJsonSchema)._schema || schema;
+  return $id
+}
+
+let formReducerValue = 'fforms';
+
+function getFRVal() {
+  return formReducerValue
+}
+
+function formReducer(name?: string): any {
+  if (name) formReducerValue = name;
+  const reducersFunction = {};
+
+  function replaceFormState(storageState: any, name: string, formState: any) {
+    if (storageState[name] !== formState) {
+      let resultState = {...storageState};
+      resultState[name] = formState;
+      return resultState;
+    }
+    return storageState
+  }
+
+  reducersFunction[anSetState] = (state: any, action: any): any => {
+    if (action.api.props.store) return replaceFormState(state, action.api.name, action.state);
+    return action.state
+  };
+
+  return (state: any = {}, action: ActionType) => {
+    let reduce = reducersFunction[action.type];
+    return reduce ? reduce(state, action) : state;
+  }
+}
 
 class FFormEvent {
   type: string;
@@ -1787,7 +1830,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 };
 
 
-export {elementsBase as elements, formReducer, FForm, FField, fformCores};
+export {elementsBase as elements, formReducer, getFRVal, FForm, FField, fformCores, schemaRegister};
 
 export {extractMaps, normalizeMaps, updateProps, classNames, comparePropsFn, getExten}
 

@@ -6,7 +6,7 @@ interface JsonSchemaGeneric<T> {
   $ref?: string;
   // Schema Metadata
   /* This is important because it tells refs where the root of the document is located*/
-  id?: string;
+  $id?: string;
   /* It is recommended that the meta-schema is included in the root of any JSON Schema*/
   $schema?: T;
   /* Title of the schema*/
@@ -50,7 +50,7 @@ interface JsonSchemaGeneric<T> {
   properties?: { [property: string]: T };
   /* The key of this object is a regex for which properties the schema applies to*/
   patternProperties?: { [pattern: string]: T };
-  /* If the key is present as a property then the string of properties must also be present. If the value is a JSON Schema then it must 
+  /* If the key is present as a property then the string of properties must also be present. If the value is a JSON Schema then it must
    * also be valid for the object if the key is  present.*/
   dependencies?: { [key: string]: T | string[] };
 
@@ -72,6 +72,8 @@ type JsonAny = anyObject | string | object | undefined | boolean | number | null
 
 interface jsJsonSchema extends JsonSchemaGeneric<jsJsonSchema>, FFCommonSchemaType {
   _compiled: boolean;
+  _elements?: any;
+  _schema?: JsonSchema;
   _oneOfIndex?: number;
   _validators?: JsonFunctionGeneric<Function>[]; // sync/async validators
   _stateMaps?: FFDataMapGeneric<Function | Function[]>[]; // mapping values in state
@@ -88,7 +90,7 @@ interface JsonSchema extends JsonSchemaGeneric<JsonSchema>, FFCommonSchemaType {
 
 interface FFCommonSchemaType {
   _placeholder?: string;
-  _strictLayout?: boolean; // if true then renders only fields that listed in _layout property, otherwise they will be added to the top layer 
+  _strictLayout?: boolean; // if true then renders only fields that listed in _layout property, otherwise they will be added to the top layer
   _params?: FFParamsType; // editable in state params
   _data?: { [key: string]: any } | { [key: number]: any };
   _presets?: string; // presets for rendering components

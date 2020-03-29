@@ -1,6 +1,7 @@
 import {getSetIn, setIn, hasIn, getIn, objKeys, moveArrayElems, memoize, merge, objKeysNSymb, push2array, toArray, deArray, mergeState} from "react-ts-utils";
 import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction} from "react-ts-utils";
-import {anSetState} from './api';
+import {anSetState, compileSchema} from './api';
+import {_SCHEMAS} from './fform'
 
 /////////////////////////////////////////////
 //  Symbols
@@ -280,7 +281,8 @@ const additionalItemsSchema = memoize(function (items: jsJsonSchema[]): jsJsonSc
   }
 });
 
-function getSchemaPart(schema: jsJsonSchema, path: Path, value_or_getOneOf: ((path: Path) => oneOfStructureType) | any, fullOneOf?: boolean): jsJsonSchema {
+function getSchemaPart(schema: jsJsonSchema, path: Path, value_or_getOneOf: ((path: Path) => oneOfStructureType) | any, opts: any = {}): jsJsonSchema {
+  let {fullOneOf} = opts;
 
   function getArrayItemSchemaPart(index: number, schemaPart: jsJsonSchema): jsJsonSchema {
     let items: jsJsonSchema[] = [];
@@ -300,9 +302,12 @@ function getSchemaPart(schema: jsJsonSchema, path: Path, value_or_getOneOf: ((pa
   }
 
   function getSchemaByRef(schema: jsJsonSchema, $ref: string) {
-    const path = string2path($ref);
-    if ($ref[0] == '#') return getIn(schema, path); // Extract and use the referenced definition if we have it.
-    throw new Error(`Can only ref to #`);// No matching definition found, that's an error (bogus schema?)
+
+    let [$id, path] = $ref.split('#');
+    if (_SCHEMAS[$id]) {
+      let refSchema = compileSchema(_SCHEMAS[$id], schema._elements);
+      return getIn(refSchema, string2path(path))
+    } else throw new Error(`Schema with ${$id} not registered.`);// No matching definition found, that's an error (bogus schema?)
   }
 
   function deref(schema: jsJsonSchema, schemaPart: jsJsonSchema) {
@@ -487,7 +492,7 @@ function makeStateBranch(schema: jsJsonSchema, getNSetOneOf: (path: Path, upd?: 
   const dataMapObjects: normalizedDataMapType[] = [];
   let defaultValues: any;
   let currentOneOf = (getNSetOneOf(path) || {}).oneOf;
-  const schemaPartsOneOf = toArray(getSchemaPart(schema, path, getNSetOneOf, true));
+  const schemaPartsOneOf = toArray(getSchemaPart(schema, path, getNSetOneOf, {fullOneOf: true}));
   if (isUndefined(currentOneOf)) {
     const _oneOfSelector = schemaPartsOneOf[currentOneOf || 0]._oneOfSelector;
     if (_oneOfSelector) {
@@ -924,7 +929,7 @@ function updateCurrentPROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type
   // }
   if (!isUndefined(setOneOf) || oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
     // setOneOf =
-    const parts = getSchemaPart(schema, track, oneOfFromState(state), true);
+    const parts = getSchemaPart(schema, track, oneOfFromState(state), {fullOneOf: true});
     let currentOneOf = branch[SymData].oneOf;
     if (oneOfSelector) {
       //const field = makeSynthField(UPDATABLE.api, path2string(track));

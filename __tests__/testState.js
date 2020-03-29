@@ -1,7 +1,5 @@
 // set env variable to the `tsconfig.json` path before loading mocha (default: './tsconfig.json')
 
-import {FFormStateAPI} from '../src/api';
-
 process.env.TS_NODE_PROJECT = './tsconfig.json';
 
 // Optional: set env variable to enable `tsconfig-paths` integration
@@ -859,6 +857,8 @@ describe('test removeNotAllowedProperties', function () {
 
   it('test getSchemaPart with value', async function () {
     let schemaPart = stateLib.getSchemaPart(addCore.schema, ["two"], {"two": 2, "three": 3});
+    delete schemaPart._elements;
+    delete schemaPart._schema;
     expect(schemaPart).to.be.eql({
       "_compiled": true,
       "type": "integer",
@@ -867,6 +867,8 @@ describe('test removeNotAllowedProperties', function () {
     schemaPart = stateLib.getSchemaPart(addCore.schema, [], {"two": 2, "three": 3});
     expect(schemaPart._oneOfIndex).to.be.equal(1);
     schemaPart = stateLib.getSchemaPart(addCore.schema, ["one"], {"one": "", "_test": ""});
+    delete schemaPart._elements;
+    delete schemaPart._schema;
     expect(schemaPart).to.be.eql({
       "_compiled": true,
       "type": "string",

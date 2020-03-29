@@ -32,7 +32,7 @@ import {
   SymData, SymReset, SymClear, SymDataMap, rehydrateState
 } from "./stateLib";
 
-import {_CORES} from "./fform";
+import {_CORES, schemaRegister, formReducer, getFRVal} from "./fform";
 import {isEqual} from "react-ts-utils/dist";
 
 class exoPromise {
@@ -408,48 +408,28 @@ const anUpdateState = 'FFROM_UPDATE_STATE';
 /////////////////////////////////////////////
 
 
-let formReducerValue = 'fforms';
 
-function getFRVal() {
-  return formReducerValue
-}
 
-function formReducer(name?: string): any {
-  if (name) formReducerValue = name;
-  const reducersFunction = {};
 
-  function replaceFormState(storageState: any, name: string, formState: any) {
-    if (storageState[name] !== formState) {
-      let resultState = {...storageState};
-      resultState[name] = formState;
-      return resultState;
-    }
-    return storageState
-  }
-
-  reducersFunction[anSetState] = (state: any, action: any): any => {
-    if (action.api.props.store) return replaceFormState(state, action.api.name, action.state);
-    return action.state
-  };
-
-  return (state: any = {}, action: ActionType) => {
-    let reduce = reducersFunction[action.type];
-    return reduce ? reduce(state, action) : state;
-  }
-}
 
 /////////////////////////////////////////////
 //  Schema compile functions
 /////////////////////////////////////////////
 const compileSchema = (schema: any, elements: any) => isCompiled(schema) ? schema : getCompiledSchema(elements, schema);
 
-const getCompiledSchema = memoize((elements: elementsType, schema: JsonSchema): jsJsonSchema => schemaCompiler(elements, schema));
+const getCompiledSchema = memoize((elements: elementsType, schema: JsonSchema): jsJsonSchema => {
+  let $id = schemaRegister(schema);
+  let res = schemaCompiler($id, elements, schema);
+  res._elements = elements;
+  res._schema = schema;
+  return res
+});
 
 const val2obj = (obj: any) => {
   return isObject(obj) ? obj : toArray(obj);
-}
+};
 
-function schemaCompiler(elements: elementsType = {}, schema: JsonSchema | JsonSchema[], track: Path = []): jsJsonSchema {
+function schemaCompiler($id: string, elements: elementsType = {}, schema: JsonSchema | JsonSchema[], track: Path = []): jsJsonSchema {
   if (isCompiled(schema)) return schema;
 
   const result: any = isArray(schema) ? [] : {_compiled: true};
@@ -465,6 +445,10 @@ function schemaCompiler(elements: elementsType = {}, schema: JsonSchema | JsonSc
   objKeys(rest).forEach(key => {
     if (key.substr(0, 1) == '_') return result[key] = key !== '_presets' && isElemRef(rest[key]) ? convRef(elements, rest[key], track) : rest[key];
     switch (key) {
+      case '$ref':
+        if (rest[key][0] === '#') result[key] = $id + rest[key];
+        else result[key] = rest[key];
+        break;
       case 'default':
       case 'enum':
         result[key] = rest[key];
@@ -476,12 +460,12 @@ function schemaCompiler(elements: elementsType = {}, schema: JsonSchema | JsonSc
         let res = {};
         let obj = rest[key] || {};
         if (isArray(obj)) res = obj; // "dependencies" may be of string[] type
-        else objKeys(obj).forEach((k) => (res[k] = schemaCompiler(elements, obj[k] as any, track.concat(key, k))));
+        else objKeys(obj).forEach((k) => (res[k] = schemaCompiler($id, elements, obj[k] as any, track.concat(key, k))));
         result[key] = res;
         //result[key] = objMap(rest[key], schemaCompiler.bind(null, elements));
         break;
       default:
-        if (isMergeable(rest[key])) result[key] = schemaCompiler(elements, rest[key], track.concat(key));
+        if (isMergeable(rest[key])) result[key] = schemaCompiler($id, elements, rest[key], track.concat(key));
         else result[key] = rest[key];
         break;
     }
@@ -589,4 +573,4 @@ function objectResolver(_elements: any, obj2resolve: any, track: string[] = []):
 }
 
 
-export {anSetState, getFRVal, FFormStateAPI, compileSchema, formReducer, objectDerefer, objectResolver, skipKey}
+export {anSetState, FFormStateAPI, compileSchema, objectDerefer, objectResolver, skipKey}
