@@ -73,7 +73,7 @@ class FFormStateManager {
         self.schema = compileSchema(props.schema, props.elements);
         self.name = props.name || '';
         self.dispatch = props.store ? props.store.dispatch : self._dispatch.bind(self);
-        self._reducer = formReducer();
+        self._reducer = fform_1.formReducer();
         if (props.JSONValidator)
             self.JSONValidator = props.JSONValidator(self.schema);
         self._getState = self._getState.bind(self);
@@ -116,7 +116,7 @@ class FFormStateManager {
         return this.props.store.dispatch({ type: anSetState, state, api: this });
     }
     _getStoreState() {
-        return this.props.name && this.props.store.getState()[getFRVal()][this.props.name];
+        return this.props.name && this.props.store.getState()[fform_1.getFRVal()][this.props.name];
     }
     _handleChange() {
         const self = this;
@@ -211,8 +211,8 @@ class FFormStateAPI extends FFormStateManager {
         };
         this.getDefaultValue = () => this.get(stateLib_1.SymData, 'default');
         this.switch = (path, value, opts = {}) => this.set(path, value, Object.assign(Object.assign({}, opts), { macros: 'switch' }));
-        this.setMessages = (value, opts) => {
-            let _a = opts || {}, { priority = 0, group = 3, path = [], props = undefined } = _a, rest = __rest(_a, ["priority", "group", "path", "props"]);
+        this.setMessages = (value, opts = {}) => {
+            let { priority = 0, group = 3, path = [], props = undefined } = opts, rest = __rest(opts, ["priority", "group", "path", "props"]);
             const msgPath = '@/messages/' + priority + '/texts/' + group;
             if (value === null) {
                 this.switch([path, msgPath], [], rest);
@@ -228,7 +228,14 @@ class FFormStateAPI extends FFormStateManager {
                 });
             }
         };
-        this.reset = (opts = {}) => opts.status ? this.set(stateLib_1.normalizePath(opts.path || '/'), react_ts_utils_1.isUndefined(opts.value) ? stateLib_1.SymReset : opts.value, { [stateLib_1.SymData]: ['status', opts.status], macros: 'switch' }) : this.setValue(stateLib_1.SymReset, opts);
+        this.reset = (opts = {}) => {
+            if (opts.status)
+                this.set(stateLib_1.normalizePath(opts.path || '/'), react_ts_utils_1.isUndefined(opts.value) ? stateLib_1.SymReset : opts.value, { [stateLib_1.SymData]: ['status', opts.status], macros: 'switch' });
+            else {
+                this.setValue(stateLib_1.SymReset, opts);
+                this.setMessages(opts);
+            }
+        };
         this.clear = (opts = {}) => this.setValue(stateLib_1.SymClear, opts);
         this.arrayAdd = (path, value = 1, opts = {}) => this._setExecution(Object.assign({ path, value: value, macros: 'array' }, opts), opts);
         this.arrayItemOps = (path, value, opts = {}) => this._setExecution(Object.assign({ path, op: value, macros: 'arrayItem' }, opts), opts);
@@ -347,44 +354,22 @@ const anUpdateState = 'FFROM_UPDATE_STATE';
 /////////////////////////////////////////////
 //  Reducer
 /////////////////////////////////////////////
-let formReducerValue = 'fforms';
-function getFRVal() {
-    return formReducerValue;
-}
-exports.getFRVal = getFRVal;
-function formReducer(name) {
-    if (name)
-        formReducerValue = name;
-    const reducersFunction = {};
-    function replaceFormState(storageState, name, formState) {
-        if (storageState[name] !== formState) {
-            let resultState = Object.assign({}, storageState);
-            resultState[name] = formState;
-            return resultState;
-        }
-        return storageState;
-    }
-    reducersFunction[anSetState] = (state, action) => {
-        if (action.api.props.store)
-            return replaceFormState(state, action.api.name, action.state);
-        return action.state;
-    };
-    return (state = {}, action) => {
-        let reduce = reducersFunction[action.type];
-        return reduce ? reduce(state, action) : state;
-    };
-}
-exports.formReducer = formReducer;
 /////////////////////////////////////////////
 //  Schema compile functions
 /////////////////////////////////////////////
 const compileSchema = (schema, elements) => isCompiled(schema) ? schema : getCompiledSchema(elements, schema);
 exports.compileSchema = compileSchema;
-const getCompiledSchema = react_ts_utils_1.memoize((elements, schema) => schemaCompiler(elements, schema));
+const getCompiledSchema = react_ts_utils_1.memoize((elements, schema) => {
+    let $id = fform_1.schemaRegister(schema);
+    let res = schemaCompiler($id, elements, schema);
+    res._elements = elements;
+    res._schema = schema;
+    return res;
+});
 const val2obj = (obj) => {
     return react_ts_utils_1.isObject(obj) ? obj : react_ts_utils_1.toArray(obj);
 };
-function schemaCompiler(elements = {}, schema, track = []) {
+function schemaCompiler($id, elements = {}, schema, track = []) {
     if (isCompiled(schema))
         return schema;
     const result = react_ts_utils_1.isArray(schema) ? [] : { _compiled: true };
@@ -402,6 +387,12 @@ function schemaCompiler(elements = {}, schema, track = []) {
         if (key.substr(0, 1) == '_')
             return result[key] = key !== '_presets' && stateLib_1.isElemRef(rest[key]) ? convRef(elements, rest[key], track) : rest[key];
         switch (key) {
+            case '$ref':
+                if (rest[key][0] === '#')
+                    result[key] = $id + rest[key];
+                else
+                    result[key] = rest[key];
+                break;
             case 'default':
             case 'enum':
                 result[key] = rest[key];
@@ -415,13 +406,13 @@ function schemaCompiler(elements = {}, schema, track = []) {
                 if (react_ts_utils_1.isArray(obj))
                     res = obj; // "dependencies" may be of string[] type
                 else
-                    react_ts_utils_1.objKeys(obj).forEach((k) => (res[k] = schemaCompiler(elements, obj[k], track.concat(key, k))));
+                    react_ts_utils_1.objKeys(obj).forEach((k) => (res[k] = schemaCompiler($id, elements, obj[k], track.concat(key, k))));
                 result[key] = res;
                 //result[key] = objMap(rest[key], schemaCompiler.bind(null, elements));
                 break;
             default:
                 if (react_ts_utils_1.isMergeable(rest[key]))
-                    result[key] = schemaCompiler(elements, rest[key], track.concat(key));
+                    result[key] = schemaCompiler($id, elements, rest[key], track.concat(key));
                 else
                     result[key] = rest[key];
                 break;

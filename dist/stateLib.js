@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const react_ts_utils_1 = require("react-ts-utils");
 const react_ts_utils_2 = require("react-ts-utils");
 const api_1 = require("./api");
+const fform_1 = require("./fform");
 /////////////////////////////////////////////
 //  Symbols
 /////////////////////////////////////////////
@@ -295,7 +296,8 @@ const additionalItemsSchema = react_ts_utils_1.memoize(function (items) {
         }, { noStrictArrayResult: true })
     };
 });
-function getSchemaPart(schema, path, value_or_getOneOf, fullOneOf) {
+function getSchemaPart(schema, path, value_or_getOneOf, opts = {}) {
+    let { fullOneOf } = opts;
     function getArrayItemSchemaPart(index, schemaPart) {
         let items = [];
         if (schemaPart.items) {
@@ -317,10 +319,13 @@ function getSchemaPart(schema, path, value_or_getOneOf, fullOneOf) {
         throw new Error(errorText + path.join('/'));
     }
     function getSchemaByRef(schema, $ref) {
-        const path = string2path($ref);
-        if ($ref[0] == '#')
-            return react_ts_utils_1.getIn(schema, path); // Extract and use the referenced definition if we have it.
-        throw new Error(`Can only ref to #`); // No matching definition found, that's an error (bogus schema?)
+        let [$id, path] = $ref.split('#');
+        if (fform_1._SCHEMAS[$id]) {
+            let refSchema = api_1.compileSchema(fform_1._SCHEMAS[$id], schema._elements);
+            return react_ts_utils_1.getIn(refSchema, string2path(path));
+        }
+        else
+            throw new Error(`Schema with ${$id} not registered.`); // No matching definition found, that's an error (bogus schema?)
     }
     function deref(schema, schemaPart) {
         while (schemaPart.$ref)
@@ -517,7 +522,7 @@ function makeStateBranch(schema, getNSetOneOf, path = [], value) {
     const dataMapObjects = [];
     let defaultValues;
     let currentOneOf = (getNSetOneOf(path) || {}).oneOf;
-    const schemaPartsOneOf = react_ts_utils_1.toArray(getSchemaPart(schema, path, getNSetOneOf, true));
+    const schemaPartsOneOf = react_ts_utils_1.toArray(getSchemaPart(schema, path, getNSetOneOf, { fullOneOf: true }));
     if (react_ts_utils_2.isUndefined(currentOneOf)) {
         const _oneOfSelector = schemaPartsOneOf[currentOneOf || 0]._oneOfSelector;
         if (_oneOfSelector) {
@@ -960,7 +965,7 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
     // }
     if (!react_ts_utils_2.isUndefined(setOneOf) || oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
         // setOneOf =
-        const parts = getSchemaPart(schema, track, oneOfFromState(state), true);
+        const parts = getSchemaPart(schema, track, oneOfFromState(state), { fullOneOf: true });
         let currentOneOf = branch[SymData].oneOf;
         if (oneOfSelector) {
             //const field = makeSynthField(UPDATABLE.api, path2string(track));

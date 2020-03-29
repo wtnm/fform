@@ -13,17 +13,55 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = require("react");
-//const React = require('preact');
 const react_ts_utils_1 = require("react-ts-utils");
 const stateLib_1 = require("./stateLib");
 const api_1 = require("./api");
-exports.formReducer = api_1.formReducer;
 const _$cxSym = Symbol('_$cx');
 exports._CORES = new WeakMap();
+exports._SCHEMAS = new WeakMap();
+const _schemasId = new WeakMap();
 function fformCores(nameOrProps) {
     return react_ts_utils_1.isString(nameOrProps) ? exports._CORES[nameOrProps] : new api_1.FFormStateAPI(nameOrProps);
 }
 exports.fformCores = fformCores;
+function schemaRegister(schema) {
+    let $id = schema.$id || _schemasId.get(schema);
+    if (!$id) {
+        _schemasId.set(schema, stateLib_1.getUniqKey());
+        $id = _schemasId.get(schema);
+    }
+    exports._SCHEMAS[$id] = schema._schema || schema;
+    return $id;
+}
+exports.schemaRegister = schemaRegister;
+let formReducerValue = 'fforms';
+function getFRVal() {
+    return formReducerValue;
+}
+exports.getFRVal = getFRVal;
+function formReducer(name) {
+    if (name)
+        formReducerValue = name;
+    const reducersFunction = {};
+    function replaceFormState(storageState, name, formState) {
+        if (storageState[name] !== formState) {
+            let resultState = Object.assign({}, storageState);
+            resultState[name] = formState;
+            return resultState;
+        }
+        return storageState;
+    }
+    reducersFunction[api_1.anSetState] = (state, action) => {
+        if (action.api.props.store)
+            return replaceFormState(state, action.api.name, action.state);
+        return action.state;
+    };
+    return (state = {}, action) => {
+        let reduce = reducersFunction[action.type];
+        return reduce ? reduce(state, action) : state;
+    };
+}
+exports.formReducer = formReducer;
 class FFormEvent {
     constructor(event, params = {}) {
         const self = this;
@@ -757,44 +795,6 @@ class GenericWidget extends FRefsGeneric {
         return (react_1.createElement(UseTag, Object.assign({ children: self._mapped, className: _$cx ? _$cx(className) : className }, rest)));
     }
 }
-function extendSingleProps(key, base, extend = {}, args = [], opts = {}) {
-    let { _$cx, $baseClass, $rootKey } = opts;
-    if (react_1.isValidElement(extend))
-        return extend;
-    if (react_ts_utils_1.isFunction(extend))
-        return extend(base, key, ...react_ts_utils_1.toArray(args));
-    let { tagName = '_$tag', defaultTag: Tag = 'div', } = opts;
-    let rest = base ? Object.assign(Object.assign({ key, 'data-key': key }, base), extend) : Object.assign({ key, 'data-key': key }, extend);
-    if (rest[tagName]) {
-        Tag = rest[tagName];
-        delete rest[tagName];
-    }
-    if (rest.className)
-        rest.className = _$cx(rest.className);
-    if ($baseClass)
-        rest.className = _$cx(rest.className || '', `${$baseClass}${key !== $rootKey ? '__' + key : ''}`);
-    return react_1.createElement(Tag, rest);
-}
-function propsExtender(base = {}, extend = {}, args, opts = {}) {
-    let { onlyKeys, skipKeys } = opts, rest = __rest(opts, ["onlyKeys", "skipKeys"]);
-    let keys, baseKeys, res = {};
-    if (onlyKeys)
-        baseKeys = keys = onlyKeys;
-    else {
-        keys = react_ts_utils_1.objKeys(extend || {});
-        baseKeys = react_ts_utils_1.objKeys(base || {});
-    }
-    keys.forEach((k) => {
-        if (!skipKeys || !~skipKeys.indexOf(k))
-            res[k] = extendSingleProps(k, base[k], extend[k], args, rest);
-        baseKeys.splice(baseKeys.indexOf(k), 1);
-    });
-    baseKeys.forEach((k) => {
-        if (!skipKeys || !~skipKeys.indexOf(k))
-            res[k] = extendSingleProps(k, base[k], extend[k], args, rest);
-    });
-    return res;
-}
 function isEmpty(value) {
     return react_ts_utils_1.isMergeable(value) ? react_ts_utils_1.objKeys(value).length === 0 : value === undefined || value === null || value === "";
 }
@@ -916,7 +916,7 @@ const Checkbox = react_1.forwardRef((_a, ref) => {
         'label': { _$tag: 'span', children: [label] }
     };
     let args = [this];
-    let childrenRes = propsExtender(baseProps, $extend, args, { skipKeys: ['checkbox'], _$cx, $baseClass });
+    let childrenRes = react_ts_utils_1.propsExtender(baseProps, $extend, args, { skipKeys: ['checkbox'], _$cx, $baseClass });
     let { input: inputTag, label: labelTag } = childrenRes, restChildren = __rest(childrenRes, ["input", "label"]);
     className = _$cx(className);
     if (rest.checked)
@@ -928,7 +928,7 @@ const Checkbox = react_1.forwardRef((_a, ref) => {
             children: [inputTag, labelTag, ...(react_ts_utils_1.objKeys(restChildren).map(k => restChildren[k])), ...react_ts_utils_1.toArray(children)]
         }
     };
-    return propsExtender(rootProps, $extend, args, { onlyKeys: ['checkbox'], _$cx, $baseClass, $rootKey: 'checkbox' }).checkbox;
+    return react_ts_utils_1.propsExtender(rootProps, $extend, args, { onlyKeys: ['checkbox'], _$cx, $baseClass, $rootKey: 'checkbox' }).checkbox;
 });
 exports.Checkbox = Checkbox;
 const CheckboxNull = react_1.forwardRef((props, ref) => {
@@ -959,7 +959,7 @@ class Checkboxes extends react_1.PureComponent {
                 baseProps.$baseClass = $baseClass + '-item';
             if ($enumExten[val])
                 Object.assign(baseProps, react_ts_utils_1.isString($enumExten[val]) ? { label: $enumExten[val] } : $enumExten[val]);
-            return extendSingleProps(val, baseProps, $extend[val], [this], { _$cx });
+            return react_ts_utils_1.extendSingleProps(val, baseProps, $extend[val], [this], { _$cx });
         });
         className = _$cx ? _$cx(className) : className;
         if ($baseClass)
