@@ -28,7 +28,6 @@ See [fform-constructor](https://wtnm.github.io/fform-constructor/index.html) for
 - built-in viewer
 - fully customizable
 - SSR support
-- Zero dependencies (React as external)
 
 
 ## Installation & Usage

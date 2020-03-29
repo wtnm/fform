@@ -815,6 +815,40 @@ describe('FForm api tests', function () {
   // });
 });
 
+describe('test $ref with $id', function () {
+  const secSchema = {
+    $id: "secSchema",
+    definition: {
+      val: {
+        allOf: [{$ref: 'primSchema#/definition/prim'}, {type: 'string'}]
+      }
+    },
+    allOf: [{$ref: '#/definition/val'}, {title: "value"}]
+  };
+  const schema = {
+    $id: 'primSchema',
+    definition: {
+      prim: {
+        "_placeholder": "placeholder"
+      }
+    },
+    type: 'object',
+    properties: {
+      refValue: {
+        allOf: [{$ref: 'secSchema#'}, {default: 'some default value'}]
+      }
+    }
+  };
+  fform.schemaRegister(secSchema);
+  fform.schemaRegister(schema);
+  const refCore = fform.fformCores({name: 'refCore', schema});
+  let state = refCore.getState();
+  expect(state[SymData].current).to.be.eql({"refValue": "some default value"});
+  expect(state.refValue[SymData].fData.type).to.be.eql("string");
+  expect(state.refValue[SymData].fData.title).to.be.eql("value");
+  expect(state.refValue[SymData].fData.placeholder).to.be.eql("placeholder");
+});
+
 describe('test removeNotAllowedProperties', function () {
   let schema = {
     "oneOf": [
