@@ -16,7 +16,9 @@ import {
   merge,
   objKeys,
   memoize, isNumber, setIn, push2array,
-  MergeStateOptionsArgument
+  MergeStateOptionsArgument,
+  propsExtender,
+  extendSingleProps
 } from "react-ts-utils";
 
 import {
@@ -923,42 +925,6 @@ class GenericWidget extends FRefsGeneric {
   }
 }
 
-function extendSingleProps(key: string, base: any, extend: any = {}, args: any = [], opts: any = {}) {
-  let {_$cx, $baseClass, $rootKey} = opts;
-  if (isValidElement(extend)) return extend;
-  if (isFunction(extend)) return extend(base, key, ...toArray(args));
-  let {tagName = '_$tag', defaultTag: Tag = 'div',} = opts;
-  let rest = base ? {key, 'data-key': key, ...base, ...extend} : {key, 'data-key': key, ...extend};
-  if (rest[tagName]) {
-    Tag = rest[tagName];
-    delete rest[tagName];
-  }
-  if (rest.className)
-    rest.className = _$cx(rest.className);
-  if ($baseClass)
-    rest.className = _$cx(rest.className || '', `${$baseClass}${key !== $rootKey ? '__' + key : ''}`);
-  return h(Tag, rest);
-}
-
-function propsExtender(base: anyObject = {}, extend: anyObject = {}, args: any, opts: any = {}) {
-  let {onlyKeys, skipKeys, ...rest} = opts;
-  let keys: string[], baseKeys: string[], res: anyObject = {};
-  if (onlyKeys) baseKeys = keys = onlyKeys;
-  else {
-    keys = objKeys(extend || {});
-    baseKeys = objKeys(base || {});
-  }
-  keys.forEach((k: string) => {
-    if (!skipKeys || !~skipKeys.indexOf(k))
-      res[k] = extendSingleProps(k, base[k], extend[k], args, rest);
-    baseKeys.splice(baseKeys.indexOf(k), 1);
-  });
-  baseKeys.forEach((k: string) => {
-    if (!skipKeys || !~skipKeys.indexOf(k))
-      res[k] = extendSingleProps(k, base[k], extend[k], args, rest);
-  });
-  return res;
-}
 
 function isEmpty(value: any) {
   return isMergeable(value) ? objKeys(value).length === 0 : value === undefined || value === null || value === "";
