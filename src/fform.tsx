@@ -1364,27 +1364,27 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_ref: '^/sets/simple',
       Main: {
         type: 'number',
-        onChange: {$: '^/fn/eventValue|parseNumber|setValue', args: ['${0}', true, '']},
+        onChange: {$: '^/fn/eventValue|parse|preventEmptyLiveUpd|setValue'},
         onBlur: "^/fn/setZeroIfEmpty|blur"
       }
     },
     integerNull: {
       $_ref: '^/sets/integer',
       Main: {
-        onChange: {args: {2: null}},
+        onChange: {$: '^/fn/eventValue|parse|empty2null|setValue'},
         onBlur: "^/fn/blur",
         $_maps: {
-          value: {$: '^/fn/iif', args: [{$: '^/fn/equal', args: ['@value', null]}, '', '@value']}
+          value: {$: '^/fn/null2empty', args: ['@value']}
         }
       }
     },
     number: {
       $_ref: '^/sets/integer',
-      Main: {onChange: {args: {1: false}}, step: 'any'}
+      Main: {step: 'any'}
     },
     numberNull: {
       $_ref: '^/sets/integerNull',
-      Main: {onChange: {args: {1: false, 2: null}}, step: 'any'}
+      Main: {step: 'any'}
     },
     'null': {$_ref: '^/sets/simple', Main: false},
     boolean: {
@@ -1552,9 +1552,15 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     },
     eventMultiple: (event: any, ...args: any[]) =>
       [Array.from(event.target.options).filter((o: any) => o.selected).map((v: any) => v.value), ...args],
-    parseNumber(value: any, int: boolean = false, empty: number | null = null, ...args: any[]) {
-      this._preventLiveUpd = (value === '' && empty !== null);
-      return [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...args]
+    null2empty(value: any, ...args: any[]) {
+      return [value == null ? '' : value, ...args]
+    },
+    empty2null(value: any, ...args: any[]) {
+      return [value === '' ? null : value, ...args]
+    },
+    preventEmptyLiveUpd(...args: any[]) {
+      this._preventLiveUpd = (args[0] === '');
+      return args
     },
     setZeroIfEmpty(event: any, ...args: any[]) {
       if (event.target.value === "") this.api.setValue(0);
