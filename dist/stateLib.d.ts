@@ -6,7 +6,7 @@ declare const SymDelete: undefined;
 declare const types: any;
 declare function branchKeys(branch: StateType): string[];
 declare function oneOfFromState(state: StateType | Function): (path: Path) => oneOfStructureType;
-declare function getSchemaPart(schema: jsJsonSchema, path: Path, value_or_getOneOf: ((path: Path) => oneOfStructureType) | any, fullOneOf?: boolean): jsJsonSchema;
+declare function getSchemaPart(schema: jsJsonSchema, path: Path, value_or_getOneOf: ((path: Path) => oneOfStructureType) | any, opts?: any): jsJsonSchema;
 declare const arrayStart: (...args: any[]) => any;
 declare function getUniqKey(): string;
 declare function isSelfManaged(state: StateType, ...paths: any[]): boolean;

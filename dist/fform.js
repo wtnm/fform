@@ -1214,27 +1214,27 @@ let elementsBase = {
             $_ref: '^/sets/simple',
             Main: {
                 type: 'number',
-                onChange: { $: '^/fn/eventValue|parseNumber|setValue', args: ['${0}', true, ''] },
+                onChange: { $: '^/fn/eventValue|parse|preventEmptyLiveUpd|setValue' },
                 onBlur: "^/fn/setZeroIfEmpty|blur"
             }
         },
         integerNull: {
             $_ref: '^/sets/integer',
             Main: {
-                onChange: { args: { 2: null } },
+                onChange: { $: '^/fn/eventValue|parse|empty2null|setValue' },
                 onBlur: "^/fn/blur",
                 $_maps: {
-                    value: { $: '^/fn/iif', args: [{ $: '^/fn/equal', args: ['@value', null] }, '', '@value'] }
+                    value: { $: '^/fn/null2empty', args: ['@value'] }
                 }
             }
         },
         number: {
             $_ref: '^/sets/integer',
-            Main: { onChange: { args: { 1: false } }, step: 'any' }
+            Main: { step: 'any' }
         },
         numberNull: {
             $_ref: '^/sets/integerNull',
-            Main: { onChange: { args: { 1: false, 2: null } }, step: 'any' }
+            Main: { step: 'any' }
         },
         'null': { $_ref: '^/sets/simple', Main: false },
         boolean: {
@@ -1400,9 +1400,15 @@ let elementsBase = {
             return [value, ...args];
         },
         eventMultiple: (event, ...args) => [Array.from(event.target.options).filter((o) => o.selected).map((v) => v.value), ...args],
-        parseNumber(value, int = false, empty = null, ...args) {
-            this._preventLiveUpd = (value === '' && empty !== null);
-            return [value === '' ? empty : (int ? parseInt : parseFloat)(value), ...args];
+        null2empty(value, ...args) {
+            return [value == null ? '' : value, ...args];
+        },
+        empty2null(value, ...args) {
+            return [value === '' ? null : value, ...args];
+        },
+        preventEmptyLiveUpd(...args) {
+            this._preventLiveUpd = (args[0] === '');
+            return args;
         },
         setZeroIfEmpty(event, ...args) {
             if (event.target.value === "")

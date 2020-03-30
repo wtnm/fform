@@ -63,7 +63,7 @@ declare class FFormStateAPI extends FFormStateManager {
         setOneOf?: number | undefined;
         macros?: string | undefined;
     }) => any;
-    setMessages: (value: anyObject | null, opts: APIOptsType & {
+    setMessages: (value: anyObject | null, opts?: APIOptsType & {
         priority?: number | undefined;
         group?: number | undefined;
         path?: string | Path | undefined;
@@ -73,12 +73,12 @@ declare class FFormStateAPI extends FFormStateManager {
         path?: string | Path | undefined;
         status?: string | undefined;
         value?: any;
-    }) => any;
+    }) => void;
     clear: (opts?: APIOptsType & {
         path?: string | Path | undefined;
     }) => any;
     arrayAdd: (path: string | Path, value?: number | any[], opts?: APIOptsType) => any;
-    arrayItemOps: (path: string | Path, value: "up" | "down" | "first" | "last" | "del" | "move" | "shift", opts?: APIOptsType & {
+    arrayItemOps: (path: string | Path, value: "del" | "up" | "down" | "move" | "first" | "last" | "shift", opts?: APIOptsType & {
         value?: number | undefined;
     }) => any;
     setHidden: (path: string | Path, value?: boolean, opts?: APIOptsType) => any;
@@ -86,10 +86,8 @@ declare class FFormStateAPI extends FFormStateManager {
     getSchemaPart: (path?: string | Path) => jsJsonSchema;
 }
 declare const anSetState = "FFROM_SET_STATE";
-declare function getFRVal(): string;
-declare function formReducer(name?: string): any;
 declare const compileSchema: (schema: any, elements: any) => any;
 declare function objectDerefer(_elements: any, obj2deref: any, track?: string[]): any;
 declare function skipKey(key: string, obj?: any): number | true;
 declare function objectResolver(_elements: any, obj2resolve: any, track?: string[]): any;
-export { anSetState, getFRVal, FFormStateAPI, compileSchema, formReducer, objectDerefer, objectResolver, skipKey };
+export { anSetState, FFormStateAPI, compileSchema, objectDerefer, objectResolver, skipKey };

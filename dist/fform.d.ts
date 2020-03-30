@@ -1,9 +1,12 @@
 /** @jsx h */
 import { Component, PureComponent } from 'react';
 import { MergeStateOptionsArgument } from "react-ts-utils";
-import { formReducer } from './api';
 export declare const _CORES: WeakMap<object, any>;
+export declare const _SCHEMAS: WeakMap<object, any>;
 declare function fformCores(nameOrProps: string | FFormApiProps): any;
+declare function schemaRegister(schema: JsonSchema | jsJsonSchema): any;
+declare function getFRVal(): string;
+declare function formReducer(name?: string): any;
 declare class FForm extends Component<FFormProps> {
     static params: string[];
     private _unsubscribe;
@@ -105,6 +108,6 @@ declare function classNames(...styles: any[]): string;
 declare let elementsBase: elementsType & {
     extend: (elements: any[], opts?: MergeStateOptionsArgument) => any;
 };
-export { elementsBase as elements, formReducer, FForm, FField, fformCores };
+export { elementsBase as elements, formReducer, getFRVal, FForm, FField, fformCores, schemaRegister };
 export { extractMaps, normalizeMaps, updateProps, classNames, comparePropsFn, getExten };
 export { Checkboxes, Checkbox };
