@@ -340,13 +340,6 @@ class FForm extends Component<FFormProps> {
 class FRefsGeneric extends Component<any, any> {
   $refs: any = {};
 
-  constructor(props: any, context: any) {
-    super(props, context);
-    const self = this;
-    self._setRef = self._setRef.bind(self);
-    // self._refProcess = self._refProcess.bind(self);
-  }
-
   getRef(path: Path) {
     const self = this;
     if (!path.length) return self;
@@ -354,15 +347,14 @@ class FRefsGeneric extends Component<any, any> {
     return self.$refs[path[0]] && self.$refs[path[0]].getRef && self.$refs[path[0]].getRef(path.slice(1));
   }
 
-  protected _setRef(name: string) {
-    const self = this;
-    return (v: any) => self.$refs[name] = v
-  }
+  protected _setRef = (name: string | string[]) => {
+    return (v: any) => setIn(this.$refs, v, isString(name) ? name.split('/') : name)
+  };
 
   protected _refProcess(defaultName: string, $reactRef: any) {
     const self = this;
     if ($reactRef === true) return self._setRef(defaultName);
-    else if (isString($reactRef)) return self._setRef($reactRef);
+    else if (isString($reactRef) || isArray($reactRef)) return self._setRef($reactRef);
     else if (isMergeable($reactRef))
       return objMap($reactRef, self._refProcess.bind(self, defaultName));
     return $reactRef;
@@ -379,8 +371,6 @@ class FField extends FRefsGeneric {
   private _rebuild = true;
   private _cached?: { value: any, opts: any };
   private _cachedTimeout?: any;
-  // private _enumOptions: any;
-  // private _isNotSelfManaged: boolean | undefined;
   private _blocks: string[] = [];
   private _widgets: object;
   private _components: object;
@@ -433,7 +423,6 @@ class FField extends FRefsGeneric {
     } catch (e) {
       throw self._addErrPath(e)
     }
-    //return result[SymData] ? merge(result, self._bind2self(result[SymData])) : result;
   }
 
   _addErrPath(e: any) {
@@ -451,10 +440,6 @@ class FField extends FRefsGeneric {
       }
       const api = stateApi.wrapper({
         get path() {return self.path},
-        // wrapOpts: (rest: any) => {
-        //   if (isUndefined(rest.noValidation)) rest.noValidation = !self.liveValidate;
-        //   return rest
-        // }
       });
       api._set = api.set;
       api._setValue = api.setValue;
@@ -475,7 +460,6 @@ class FField extends FRefsGeneric {
   }
 
   _cacheValue(path: any, value: any, fn: string = 'set', opts: any = {}): boolean | undefined {
-    //if (path === null) return;
     const self = this;
     let fieldCache = self.pFForm.props.fieldCache;
     if (isUndefined(fieldCache) || fieldCache === true) fieldCache = isNumber(this.liveUpdate) ? this.liveUpdate : 40;
@@ -486,7 +470,6 @@ class FField extends FRefsGeneric {
       path = '#/' + path2string(normalizePath(path, self.path)) + (fn === 'setValue' ? '/@/value' : '');
       valueSet = (path == fPath + '/@/value') || (path == '#/@/current/' + fPath.slice(2));
     }
-    // console.log(valueSet, 'setValue=', setValue,'path=',path)
     if (valueSet) {
       let prevData = self.getData();
       self._cached = {value, opts};
@@ -522,7 +505,6 @@ class FField extends FRefsGeneric {
     const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
     self.schemaPart = schemaPart;
 
-    // self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
     if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart._presets)
       throw new Error('schema._presets should be defined explicitly for multi type');
 
@@ -537,14 +519,14 @@ class FField extends FRefsGeneric {
     self._components = components;
     self._blocks = objKeys(components).filter(key => components[key]);
     self._blocks.forEach((block: string) => {
-      const {_$widget, $_reactRef, _$skipKeys, ...staticProps} = components[block];
+      const {_$widget, $_reactRef, $setRef, _$skipKeys, ...staticProps} = components[block];
       if (!_$widget) throw new Error('_$widget for "' + block + '" is empty');
       self._widgets[block] = _$widget;
       if ($_reactRef) { // $_reactRef - prop for react ref-function
         const $ref = self._refProcess('@' + block, $_reactRef);
         staticProps[isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
       }
-
+      if ($setRef) staticProps[$setRef === true ? '$setRef' : $setRef] = self._setRef;
       self._mappedData[block] = staticProps;  // properties, without reserved names
     });
     self._setMappedData(undefined, self.getData(), 'build');
@@ -596,21 +578,15 @@ class FField extends FRefsGeneric {
     return updateComponent
   }
 
-
   render() {
     const self = this;
-    //try {
     if (isUndefined(self.state.branch)) return null;
     if (getIn(self.getData(), 'params', 'norender')) return false;
     if (self._rebuild) this._build();
     return self._widgets['Builder'] ? h(self._widgets['Builder'], self._mappedData['Builder'], self._mappedData) : null;
-    // } catch (e) {
-    //   throw self._addErrPath(e)
-    // }
   }
 }
 
-//enumOptions={self._enumOptions}
 
 /////////////////////////////////////////////
 //  Section class
@@ -646,8 +622,6 @@ class FSection extends FRefsGeneric {
   private _mappedData: { [key: string]: any } = {};
   private _$widget: any;
   private _isArray: boolean = false;
-  //private _setRef: any;
-  //$refs: { [key: string]: any } = {};
 
   constructor(props: any, context: any) {
     super(props, context);
@@ -1102,7 +1076,7 @@ const CheckboxNull = forwardRef((props: any, ref: any) => {
 
 class Checkboxes extends PureComponent<any, any> {
   render() {
-    let {$enum = [], $enumExten = {}, $baseClass, $extend = {}, type = "radio", className = "", value = [], name, _$cx, staticProps, ...rest} = this.props;
+    let {$enum = [], $enumExten = {}, $setRef, $prefixRefName = '', $baseClass, $extend = {}, type = "radio", className = "", value = [], name, _$cx, staticProps, ...rest} = this.props;
     value = toArray(value);
     if (name) name = type === 'radio' ? name : name + '[]';
     let children = $enum.map((val: any) => {
@@ -1114,6 +1088,7 @@ class Checkboxes extends PureComponent<any, any> {
       baseProps.label = val;
       baseProps._$tag = baseProps._$tag || Checkbox;
       baseProps._$cx = baseProps._$cx || _$cx;
+      if ($setRef) baseProps.ref = $setRef($prefixRefName + name);
       if ($baseClass) baseProps.$baseClass = $baseClass + '-item';
       if ($enumExten[val]) Object.assign(baseProps, isString($enumExten[val]) ? {label: $enumExten[val]} : $enumExten[val]);
       return extendSingleProps(val, baseProps, $extend[val], [this], {_$cx})
@@ -1474,6 +1449,8 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         $_ref: '^/parts/RadioSelector',
         $_reactRef: true,
+        $_setRef: '$setRef',
+        $prefixRefName: '@enum/',
         $_viewerProps: {$_ref: '^/sets/simple/Main/$_viewerProps'},
         staticProps: {onChange: {args: ['${0}']}},
         $_maps: {

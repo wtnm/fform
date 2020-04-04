@@ -272,12 +272,12 @@ class FForm extends react_1.Component {
 exports.FForm = FForm;
 FForm.params = ['readonly', 'disabled', 'viewer', 'liveValidate', 'liveUpdate'];
 class FRefsGeneric extends react_1.Component {
-    constructor(props, context) {
-        super(props, context);
+    constructor() {
+        super(...arguments);
         this.$refs = {};
-        const self = this;
-        self._setRef = self._setRef.bind(self);
-        // self._refProcess = self._refProcess.bind(self);
+        this._setRef = (name) => {
+            return (v) => react_ts_utils_1.setIn(this.$refs, v, react_ts_utils_1.isString(name) ? name.split('/') : name);
+        };
     }
     getRef(path) {
         const self = this;
@@ -287,15 +287,11 @@ class FRefsGeneric extends react_1.Component {
             return self.$refs[path[0]];
         return self.$refs[path[0]] && self.$refs[path[0]].getRef && self.$refs[path[0]].getRef(path.slice(1));
     }
-    _setRef(name) {
-        const self = this;
-        return (v) => self.$refs[name] = v;
-    }
     _refProcess(defaultName, $reactRef) {
         const self = this;
         if ($reactRef === true)
             return self._setRef(defaultName);
-        else if (react_ts_utils_1.isString($reactRef))
+        else if (react_ts_utils_1.isString($reactRef) || react_ts_utils_1.isArray($reactRef))
             return self._setRef($reactRef);
         else if (react_ts_utils_1.isMergeable($reactRef))
             return stateLib_1.objMap($reactRef, self._refProcess.bind(self, defaultName));
@@ -311,8 +307,6 @@ class FField extends FRefsGeneric {
         this._mappedData = {};
         this._builderData = {};
         this._rebuild = true;
-        // private _enumOptions: any;
-        // private _isNotSelfManaged: boolean | undefined;
         this._blocks = [];
         this._maps = {};
         this._forceLiveUpd = false;
@@ -350,7 +344,6 @@ class FField extends FRefsGeneric {
         catch (e) {
             throw self._addErrPath(e);
         }
-        //return result[SymData] ? merge(result, self._bind2self(result[SymData])) : result;
     }
     _addErrPath(e) {
         e.message = e.message + ', in form \'' + (this.pFForm.props.name || '') + '\', path: \'' + this.path + '\'';
@@ -383,7 +376,6 @@ class FField extends FRefsGeneric {
         }
     }
     _cacheValue(path, value, fn = 'set', opts = {}) {
-        //if (path === null) return;
         const self = this;
         let fieldCache = self.pFForm.props.fieldCache;
         if (react_ts_utils_1.isUndefined(fieldCache) || fieldCache === true)
@@ -394,7 +386,6 @@ class FField extends FRefsGeneric {
             path = '#/' + stateLib_1.path2string(stateLib_1.normalizePath(path, self.path)) + (fn === 'setValue' ? '/@/value' : '');
             valueSet = (path == fPath + '/@/value') || (path == '#/@/current/' + fPath.slice(2));
         }
-        // console.log(valueSet, 'setValue=', setValue,'path=',path)
         if (valueSet) {
             let prevData = self.getData();
             self._cached = { value, opts };
@@ -429,7 +420,6 @@ class FField extends FRefsGeneric {
         self.$branch = self.state.branch;
         const schemaPart = self.api.getSchemaPart(self.path);
         self.schemaPart = schemaPart;
-        // self._isNotSelfManaged = !isSelfManaged(self.state.branch) || undefined;
         if ((react_ts_utils_1.isArray(schemaPart.type) || react_ts_utils_1.isUndefined(schemaPart.type)) && !schemaPart._presets)
             throw new Error('schema._presets should be defined explicitly for multi type');
         self._layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart._layout));
@@ -441,7 +431,7 @@ class FField extends FRefsGeneric {
         self._components = components;
         self._blocks = react_ts_utils_1.objKeys(components).filter(key => components[key]);
         self._blocks.forEach((block) => {
-            const _a = components[block], { _$widget, $_reactRef, _$skipKeys } = _a, staticProps = __rest(_a, ["_$widget", "$_reactRef", "_$skipKeys"]);
+            const _a = components[block], { _$widget, $_reactRef, $setRef, _$skipKeys } = _a, staticProps = __rest(_a, ["_$widget", "$_reactRef", "$setRef", "_$skipKeys"]);
             if (!_$widget)
                 throw new Error('_$widget for "' + block + '" is empty');
             self._widgets[block] = _$widget;
@@ -449,6 +439,8 @@ class FField extends FRefsGeneric {
                 const $ref = self._refProcess('@' + block, $_reactRef);
                 staticProps[react_ts_utils_1.isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
             }
+            if ($setRef)
+                staticProps[$setRef === true ? '$setRef' : $setRef] = self._setRef;
             self._mappedData[block] = staticProps; // properties, without reserved names
         });
         self._setMappedData(undefined, self.getData(), 'build');
@@ -498,7 +490,6 @@ class FField extends FRefsGeneric {
     }
     render() {
         const self = this;
-        //try {
         if (react_ts_utils_1.isUndefined(self.state.branch))
             return null;
         if (react_ts_utils_1.getIn(self.getData(), 'params', 'norender'))
@@ -506,13 +497,9 @@ class FField extends FRefsGeneric {
         if (self._rebuild)
             this._build();
         return self._widgets['Builder'] ? react_1.createElement(self._widgets['Builder'], self._mappedData['Builder'], self._mappedData) : null;
-        // } catch (e) {
-        //   throw self._addErrPath(e)
-        // }
     }
 }
 exports.FField = FField;
-//enumOptions={self._enumOptions}
 /////////////////////////////////////////////
 //  Section class
 /////////////////////////////////////////////
@@ -534,8 +521,6 @@ class FSectionWidget extends react_1.Component {
     }
 }
 class FSection extends FRefsGeneric {
-    //private _setRef: any;
-    //$refs: { [key: string]: any } = {};
     constructor(props, context) {
         super(props, context);
         this._arrayStart = 0;
@@ -942,7 +927,7 @@ const CheckboxNull = react_1.forwardRef((props, ref) => {
 });
 class Checkboxes extends react_1.PureComponent {
     render() {
-        let _a = this.props, { $enum = [], $enumExten = {}, $baseClass, $extend = {}, type = "radio", className = "", value = [], name, _$cx, staticProps } = _a, rest = __rest(_a, ["$enum", "$enumExten", "$baseClass", "$extend", "type", "className", "value", "name", "_$cx", "staticProps"]);
+        let _a = this.props, { $enum = [], $enumExten = {}, $setRef, $prefixRefName = '', $baseClass, $extend = {}, type = "radio", className = "", value = [], name, _$cx, staticProps } = _a, rest = __rest(_a, ["$enum", "$enumExten", "$setRef", "$prefixRefName", "$baseClass", "$extend", "type", "className", "value", "name", "_$cx", "staticProps"]);
         value = react_ts_utils_1.toArray(value);
         if (name)
             name = type === 'radio' ? name : name + '[]';
@@ -955,6 +940,8 @@ class Checkboxes extends react_1.PureComponent {
             baseProps.label = val;
             baseProps._$tag = baseProps._$tag || Checkbox;
             baseProps._$cx = baseProps._$cx || _$cx;
+            if ($setRef)
+                baseProps.ref = $setRef($prefixRefName + name);
             if ($baseClass)
                 baseProps.$baseClass = $baseClass + '-item';
             if ($enumExten[val])
@@ -1325,6 +1312,8 @@ let elementsBase = {
             Main: {
                 $_ref: '^/parts/RadioSelector',
                 $_reactRef: true,
+                $_setRef: '$setRef',
+                $prefixRefName: '@enum/',
                 $_viewerProps: { $_ref: '^/sets/simple/Main/$_viewerProps' },
                 staticProps: { onChange: { args: ['${0}'] } },
                 $_maps: {

@@ -42,9 +42,8 @@ declare class FForm extends Component<FFormProps> {
 }
 declare class FRefsGeneric extends Component<any, any> {
     $refs: any;
-    constructor(props: any, context: any);
     getRef(path: Path): any;
-    protected _setRef(name: string): (v: any) => any;
+    protected _setRef: (name: string | string[]) => (v: any) => any;
     protected _refProcess(defaultName: string, $reactRef: any): any;
 }
 declare class FField extends FRefsGeneric {
