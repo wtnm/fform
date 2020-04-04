@@ -431,7 +431,7 @@ class FField extends FRefsGeneric {
         self._components = components;
         self._blocks = react_ts_utils_1.objKeys(components).filter(key => components[key]);
         self._blocks.forEach((block) => {
-            const _a = components[block], { _$widget, $_reactRef, $setRef, _$skipKeys } = _a, staticProps = __rest(_a, ["_$widget", "$_reactRef", "$setRef", "_$skipKeys"]);
+            const _a = components[block], { _$widget, $_reactRef, $_setRef, _$skipKeys } = _a, staticProps = __rest(_a, ["_$widget", "$_reactRef", "$_setRef", "_$skipKeys"]);
             if (!_$widget)
                 throw new Error('_$widget for "' + block + '" is empty');
             self._widgets[block] = _$widget;
@@ -439,8 +439,8 @@ class FField extends FRefsGeneric {
                 const $ref = self._refProcess('@' + block, $_reactRef);
                 staticProps[react_ts_utils_1.isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
             }
-            if ($setRef)
-                staticProps[$setRef === true ? '$setRef' : $setRef] = self._setRef;
+            if ($_setRef)
+                staticProps[$_setRef === true ? '$_setRef' : $_setRef] = self._setRef;
             self._mappedData[block] = staticProps; // properties, without reserved names
         });
         self._setMappedData(undefined, self.getData(), 'build');

@@ -519,14 +519,14 @@ class FField extends FRefsGeneric {
     self._components = components;
     self._blocks = objKeys(components).filter(key => components[key]);
     self._blocks.forEach((block: string) => {
-      const {_$widget, $_reactRef, $setRef, _$skipKeys, ...staticProps} = components[block];
+      const {_$widget, $_reactRef, $_setRef, _$skipKeys, ...staticProps} = components[block];
       if (!_$widget) throw new Error('_$widget for "' + block + '" is empty');
       self._widgets[block] = _$widget;
       if ($_reactRef) { // $_reactRef - prop for react ref-function
         const $ref = self._refProcess('@' + block, $_reactRef);
         staticProps[isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
       }
-      if ($setRef) staticProps[$setRef === true ? '$setRef' : $setRef] = self._setRef;
+      if ($_setRef) staticProps[$_setRef === true ? '$_setRef' : $_setRef] = self._setRef;
       self._mappedData[block] = staticProps;  // properties, without reserved names
     });
     self._setMappedData(undefined, self.getData(), 'build');
