@@ -1045,8 +1045,7 @@ const Checkbox = forwardRef(({
     'input': {_$tag: 'input', ref, type, ...rest},
     'label': {_$tag: 'span', children: [label]}
   };
-  let args: any[] = [this];
-  let childrenRes = propsExtender(baseProps, $extend, args, {skipKeys: ['checkbox'], _$cx, $baseClass});
+  let childrenRes = propsExtender(baseProps, $extend, {skipKeys: ['checkbox'], _$cx, $baseClass});
   let {input: inputTag, label: labelTag, ...restChildren} = childrenRes;
   className = _$cx(className);
   if (rest.checked) className = _$cx(className || '', '_checked');
@@ -1057,7 +1056,7 @@ const Checkbox = forwardRef(({
       children: [inputTag, labelTag, ...(objKeys(restChildren).map(k => restChildren[k])), ...toArray(children)]
     }
   };
-  return propsExtender(rootProps, $extend, args, {onlyKeys: ['checkbox'], _$cx, $baseClass, $rootKey: 'checkbox'}).checkbox;
+  return propsExtender(rootProps, $extend, {onlyKeys: ['checkbox'], _$cx, $baseClass, $rootKey: 'checkbox'}).checkbox;
 });
 
 const CheckboxNull = forwardRef((props: any, ref: any) => {
@@ -1076,10 +1075,15 @@ const CheckboxNull = forwardRef((props: any, ref: any) => {
 
 class Checkboxes extends PureComponent<any, any> {
   render() {
-    let {$enum = [], $enumExten = {}, $setRef, $prefixRefName = '', $baseClass, $extend = {}, type = "radio", className = "", value = [], name, _$cx, staticProps, ...rest} = this.props;
+    let {
+      $enum = [], $enumExten = {}, $setRef, $prefixRefName = '', $baseClass, $extend = {},
+      _$tag = 'div', type = "radio", className = "", value = [], name, _$cx, staticProps, ...rest
+    } = this.props;
     value = toArray(value);
     if (name) name = type === 'radio' ? name : name + '[]';
-    let children = $enum.map((val: any) => {
+    let opts = {$args: [this], _$cx};
+    let enumRes = {};
+    $enum.map((val: any) => {
       let baseProps = {...staticProps};
       baseProps.checked = !!~value.indexOf(val);
       baseProps.type = type;
@@ -1091,11 +1095,21 @@ class Checkboxes extends PureComponent<any, any> {
       if ($setRef) baseProps.ref = $setRef($prefixRefName + name);
       if ($baseClass) baseProps.$baseClass = $baseClass + '-item';
       if ($enumExten[val]) Object.assign(baseProps, isString($enumExten[val]) ? {label: $enumExten[val]} : $enumExten[val]);
-      return extendSingleProps(val, baseProps, $extend[val], [this], {_$cx})
+      enumRes[val] = baseProps;
     });
-    className = _$cx ? _$cx(className) : className;
+    enumRes = propsExtender(enumRes, $extend, opts);
+    let children = $enum.map((val: any) => {
+      let res = enumRes[val];
+      delete enumRes[val];
+      return res;
+    });
+    let restRes = objKeys(enumRes).map(val => enumRes[val]).filter(Boolean);
+    push2array(children, restRes);
+
+    (rest as any).className = _$cx ? _$cx(className) : className;
     if ($baseClass) className = ((className || '') + ' ' + $baseClass).trim();
-    return <div className={className} {...rest}>{children}</div>
+
+    return h(_$tag, rest, children);
   }
 };
 

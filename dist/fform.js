@@ -900,8 +900,7 @@ const Checkbox = react_1.forwardRef((_a, ref) => {
         'input': Object.assign({ _$tag: 'input', ref, type }, rest),
         'label': { _$tag: 'span', children: [label] }
     };
-    let args = [this];
-    let childrenRes = react_ts_utils_1.propsExtender(baseProps, $extend, args, { skipKeys: ['checkbox'], _$cx, $baseClass });
+    let childrenRes = react_ts_utils_1.propsExtender(baseProps, $extend, { skipKeys: ['checkbox'], _$cx, $baseClass });
     let { input: inputTag, label: labelTag } = childrenRes, restChildren = __rest(childrenRes, ["input", "label"]);
     className = _$cx(className);
     if (rest.checked)
@@ -913,7 +912,7 @@ const Checkbox = react_1.forwardRef((_a, ref) => {
             children: [inputTag, labelTag, ...(react_ts_utils_1.objKeys(restChildren).map(k => restChildren[k])), ...react_ts_utils_1.toArray(children)]
         }
     };
-    return react_ts_utils_1.propsExtender(rootProps, $extend, args, { onlyKeys: ['checkbox'], _$cx, $baseClass, $rootKey: 'checkbox' }).checkbox;
+    return react_ts_utils_1.propsExtender(rootProps, $extend, { onlyKeys: ['checkbox'], _$cx, $baseClass, $rootKey: 'checkbox' }).checkbox;
 });
 exports.Checkbox = Checkbox;
 const CheckboxNull = react_1.forwardRef((props, ref) => {
@@ -927,11 +926,13 @@ const CheckboxNull = react_1.forwardRef((props, ref) => {
 });
 class Checkboxes extends react_1.PureComponent {
     render() {
-        let _a = this.props, { $enum = [], $enumExten = {}, $setRef, $prefixRefName = '', $baseClass, $extend = {}, type = "radio", className = "", value = [], name, _$cx, staticProps } = _a, rest = __rest(_a, ["$enum", "$enumExten", "$setRef", "$prefixRefName", "$baseClass", "$extend", "type", "className", "value", "name", "_$cx", "staticProps"]);
+        let _a = this.props, { $enum = [], $enumExten = {}, $setRef, $prefixRefName = '', $baseClass, $extend = {}, _$tag = 'div', type = "radio", className = "", value = [], name, _$cx, staticProps } = _a, rest = __rest(_a, ["$enum", "$enumExten", "$setRef", "$prefixRefName", "$baseClass", "$extend", "_$tag", "type", "className", "value", "name", "_$cx", "staticProps"]);
         value = react_ts_utils_1.toArray(value);
         if (name)
             name = type === 'radio' ? name : name + '[]';
-        let children = $enum.map((val) => {
+        let opts = { $args: [this], _$cx };
+        let enumRes = {};
+        $enum.map((val) => {
             let baseProps = Object.assign({}, staticProps);
             baseProps.checked = !!~value.indexOf(val);
             baseProps.type = type;
@@ -946,12 +947,20 @@ class Checkboxes extends react_1.PureComponent {
                 baseProps.$baseClass = $baseClass + '-item';
             if ($enumExten[val])
                 Object.assign(baseProps, react_ts_utils_1.isString($enumExten[val]) ? { label: $enumExten[val] } : $enumExten[val]);
-            return react_ts_utils_1.extendSingleProps(val, baseProps, $extend[val], [this], { _$cx });
+            enumRes[val] = baseProps;
         });
-        className = _$cx ? _$cx(className) : className;
+        enumRes = react_ts_utils_1.propsExtender(enumRes, $extend, opts);
+        let children = $enum.map((val) => {
+            let res = enumRes[val];
+            delete enumRes[val];
+            return res;
+        });
+        let restRes = react_ts_utils_1.objKeys(enumRes).map(val => enumRes[val]).filter(Boolean);
+        react_ts_utils_1.push2array(children, restRes);
+        rest.className = _$cx ? _$cx(className) : className;
         if ($baseClass)
             className = ((className || '') + ' ' + $baseClass).trim();
-        return react_1.createElement("div", Object.assign({ className: className }, rest), children);
+        return react_1.createElement(_$tag, rest, children);
     }
 }
 exports.Checkboxes = Checkboxes;

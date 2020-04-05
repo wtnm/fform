@@ -26,8 +26,8 @@
   ],
   "dependencies": {},
   "peerDependencies": {
-    "react": "^16.9.0",
-    "react-ts-utils": "^1.1.0"
+    "react": "^16.13.1",
+    "react-ts-utils": "^1.1.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
@@ -75,11 +75,11 @@
     "preact-compat-enzyme": "^0.2.5",
     "preact-render-to-string": "^4.1.0",
     "preact-test-utils": "^0.1.4",
-    "react": "^16.9.0",
+    "react": "^16.13.1",
     "react-addons-test-utils": "^15.6.2",
     "react-dom": "^16.9.0",
     "react-hot-loader": "^4.12.14",
-    "react-ts-utils": "^1.1.0",
+    "react-ts-utils": "^1.1.1",
     "reactstrap": "^8.0.1",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",
