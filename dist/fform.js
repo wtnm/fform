@@ -82,6 +82,17 @@ class FForm extends react_1.Component {
         super(props, ...args);
         this._methods = { onSubmit: null, onChange: null, onStateChange: null };
         this.wrapFns = bindProcessorToThis;
+        this.applyCache = () => {
+            const self = this;
+            let active = self.api.get('/@active');
+            if (active) {
+                let activeField = self.getRef(active + '@');
+                if (activeField) {
+                    activeField._updateCachedValue(true);
+                    self.api.execute();
+                }
+            }
+        };
         const self = this;
         self.api = self._coreFromParams(props.core);
         Object.defineProperty(self, "elements", { get: () => self.api.props.elements });
@@ -168,14 +179,7 @@ class FForm extends react_1.Component {
     }
     _submit(event) {
         const self = this;
-        let active = self.api.get('/@active');
-        if (active) {
-            let activeField = self.getRef(active + '@');
-            if (activeField) {
-                activeField._updateCachedValue(true);
-                self.api.execute();
-            }
-        }
+        self.applyCache();
         const setPending = (val) => self.api.set([], val, { [stateLib_1.SymData]: ['status', 'pending'] });
         const setMessagesFromSubmit = (messages = []) => {
             if (react_ts_utils_1.isUndefined(messages))
@@ -1384,6 +1388,18 @@ let elementsBase = {
         and: (...args) => [args.every(Boolean)],
         getArrayStart(...args) { return [stateLib_1.arrayStart(this.schemaPart), ...args]; },
         getProp(key, ...args) { return [react_ts_utils_1.getIn(this, stateLib_1.normalizePath(key)), ...args]; },
+        formPropExec(e, fnName) {
+            if (react_ts_utils_1.isObject(e)) {
+                this.pFForm.applyCache();
+                e.fform = this.pFForm;
+                e.value = this.pFForm.api.getValue();
+            }
+            let fn = react_ts_utils_1.getIn(this.pFForm, 'props', fnName);
+            if (react_ts_utils_1.isFunction(fn))
+                fn.call(this, e);
+            else
+                throw new Error(`Prop '${fnName}' is not a function.`);
+        },
         eventValue: (event, ...args) => [
             event.target.value, ...args
         ],
@@ -1591,6 +1607,9 @@ let elementsBase = {
     },
     _$cx: classNames,
     [_$cxSym]: classNames,
+    $form: (elems, rest) => {
+        return { $: "^/fn/formPropExec", args: ["${0}", ...rest] };
+    },
     $: (elems, path) => {
         let pathVal = path.map((v) => {
             v = elems['_$shorts'][v] || v;

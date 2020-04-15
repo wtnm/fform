@@ -28,6 +28,7 @@ declare class FForm extends Component<FFormProps> {
     private _updateValues;
     private _handleStateUpdate;
     private _extendEvent;
+    applyCache: () => void;
     private _submit;
     shouldComponentUpdate(nextProps: FFormProps): boolean;
     componentWillUnmount(): void;

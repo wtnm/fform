@@ -72,9 +72,6 @@ const elemExtend = {
       if (!target) return alert('No target field');
       if (!target.focus) return alert('Target field has no focus');
       target.focus();
-    },
-    clearMessages() {
-      this.api.setMessages(null);
     }
   }
 };
@@ -122,6 +119,7 @@ class CssSelector extends React.Component<any, any> {
       <h3>FForm sample</h3>
       <div>
         <FForm value={{autowidth: 1, select: 'not in enum', array: ['v', 'a', ['val', false], [1, 2]]}} id="sampleForm" ref={(r: any) => window['main'] = r}
+               $clearMessages={(e: any) => {e.fform.api.setMessages(null);}}
                onSubmit={submit} touched core={self.cores[self.state.css]}/>
       </div>
       <br/><br/>

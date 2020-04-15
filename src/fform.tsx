@@ -220,7 +220,7 @@ class FForm extends Component<FFormProps> {
     return event;
   }
 
-  private _submit(event: any) {
+  applyCache = () => {
     const self = this;
     let active = self.api.get('/@active');
     if (active) {
@@ -230,6 +230,11 @@ class FForm extends Component<FFormProps> {
         self.api.execute();
       }
     }
+  };
+
+  private _submit(event: any) {
+    const self = this;
+    self.applyCache();
 
     const setPending = (val: any) => self.api.set([], val, {[SymData]: ['status', 'pending']});
 
@@ -1528,7 +1533,16 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 
     getArrayStart(...args: any[]) {return [arrayStart(this.schemaPart), ...args]},
     getProp(key: string, ...args: any[]) {return [getIn(this, normalizePath(key)), ...args]},
-
+    formPropExec(e: any, fnName: string) {
+      if (isObject(e)) {
+        this.pFForm.applyCache();
+        e.fform = this.pFForm;
+        e.value = this.pFForm.api.getValue();
+      }
+      let fn = getIn(this.pFForm, 'props', fnName);
+      if (isFunction(fn)) fn.call(this, e);
+      else throw new Error(`Prop '${fnName}' is not a function.`)
+    },
     eventValue: (event: any, ...args: any[]) => [
       event.target.value, ...args],
     eventChecked: (event: any, ...args: any[]) => [event.target.checked, ...args],
@@ -1728,6 +1742,9 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
   },
   _$cx: classNames,
   [_$cxSym]: classNames,
+  $form: (elems: any, rest: any[]) => {
+    return {$: "^/fn/formPropExec", args: ["${0}", ...rest]}
+  },
   $: (elems: any, path: Path) => {
     let pathVal = path.map((v) => {
       v = elems['_$shorts'][v] || v;
