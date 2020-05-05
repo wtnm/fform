@@ -15,6 +15,11 @@ const SymClear: any = Symbol.for('FFormClear');
 const SymDelete = undefined; // Symbol.for('FFormDelete'); //
 // const SymBranch: any = Symbol.for('FFormBranch');
 
+const STATUS_REV = {
+  'untouched': 'touched',
+  'dirty': 'pristine',
+  'unsubmited': 'submited'
+};
 
 /////////////////////////////////////////////
 //  JSON types detector
@@ -177,7 +182,7 @@ Macros.setStatus = (state: StateType, schema: jsJsonSchema, UPDATABLE: PROCEDURE
   let prevVal = getUpdValue([UPDATABLE.update, state], item.path, SymData, keyPath);
   const selfManaged = isSelfManaged(state, item.path);
 
-  if (op == 'untouched' && prevVal == 0 && !selfManaged) return state;  // stick "untouched" to zero for elements and arrays
+  if ((op == 'untouched' || op == 'unsubmited') && prevVal == 0 && !selfManaged) return state;  // stick "untouched" and "unsubmited" to zero for elements and arrays
   let value = prevVal + item.value;
   if (selfManaged && value > 1) value = 1;
   if (value < 0) value = 0;
@@ -218,7 +223,7 @@ function recursivelyUpdate(state: StateType, schema: jsJsonSchema, UPDATABLE: PR
   const keys = branchKeys(branch);
   if (item.value == SymReset && item[SymData][0] == 'status') {
     let i = {...item};
-    i.value = item[SymData][1] == 'untouched' ? isSelfManaged(branch) ? 1 : keys.length : 0;
+    i.value = (item[SymData][1] == 'untouched' || item[SymData][1] == 'unsubmited') ? (isSelfManaged(branch) ? 1 : keys.length) : 0;
     state = updatePROC(state, UPDATABLE, i);
   } else state = updatePROC(state, UPDATABLE, item);
   keys.forEach(key => state = recursivelyUpdate(state, schema, UPDATABLE, merge(item, {path: item.path.concat(key)})));
@@ -407,7 +412,7 @@ const arrayStart = memoize(function (schemaPart: jsJsonSchema) {
   }
 );
 
-const basicStatus = {invalid: 0, dirty: 0, untouched: 1, pending: 0, valid: true, touched: false, pristine: true};
+const basicStatus = {invalid: 0, dirty: 0, unsubmited: 1, untouched: 1, pending: 0, valid: true, submited: false, touched: false, pristine: true};
 
 const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: number, type: string, value: any = schemaPart.default) {
   // const x = schemaPart.x || ({} as FFSchemaExtensionType);
@@ -472,7 +477,7 @@ const makeDataStorage = memoize(function (schemaPart: jsJsonSchema, oneOf: numbe
     result.fData.canAdd = isArrayCanAdd(schemaPart, result.length);
     untouched = result.length;
   } else if (type == 'object') untouched = objKeys(schemaPart.properties || {}).length;
-  if (untouched != 1) result.status = {...result.status, untouched};
+  if (untouched != 1) result.status = {...result.status, untouched, unsubmited: untouched};
 
   if (schemaPart._data$) {
     let res: any[] = [];
@@ -704,7 +709,7 @@ function makeValidation(state: StateType, dispatch: any, action: any) {
     if (!type) return state;
     if (type == 'object' || type == 'array')
       modifiedValues && objKeys(modifiedValues).forEach(key => clearDefaultMessagesInnerPROCEDURE(state, modifiedValues[key], track.concat(key)));
-    setUPDATABLE(UPDATABLE, {}, true, track, SymData, 'messages', '0', 'texts')
+    setUPDATABLE(UPDATABLE, {}, true, track, SymData, 'messages', '0', 'texts');
     return state;
     //return updateMessagesPROC(state, UPDATABLE, track); // sets empty array for 0-level messages
   }
@@ -869,7 +874,10 @@ function updateState(dispatch: any) {
   }
 
   if (force) state = makeValidation(state, dispatch, {force, api, opts, promises});
-
+  else {
+    promises.resolve();
+    promises.vAsync.resolve();
+  }
   dispatch({type: anSetState, state, api});
 
   return promises;
@@ -1117,19 +1125,22 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
         if (!isUndefined(item.setOneOf)) oneOfStateFn(elemPath, {oneOf: item.setOneOf});
         let {state: branch, dataMap = [], defaultValues} = makeStateBranch(schema, oneOfStateFn, elemPath);
         const untouched = getUpdValue([state, UPDATABLE.update], path, SymData, 'status', 'untouched');
+        const unsubmited = getUpdValue([state, UPDATABLE.update], path, SymData, 'status', 'unsubmited');
         const mergeBranch: any = {[SymData]: {params: {uniqKey: getUniqKey()}}};
         keys[i] = mergeBranch[SymData].params.uniqKey;
         if (!untouched) setIn(mergeBranch[SymData], {untouched: 0, touched: true}, 'status');
+        if (!unsubmited) setIn(mergeBranch[SymData], {unsubmited: 0, submited: true}, 'status');
         branch = merge(branch, mergeBranch);
         state = merge(state, setIn({}, branch, elemPath), {replace: setIn({}, true, elemPath)});
         state = updatePROC(state, UPDATABLE, makeNUpdate([], push2array(['current'], elemPath), defaultValues, true));
         push2array(maps2enable, dataMap);
         if (untouched) state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 1));
+        if (unsubmited) state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'unsubmited'], 1));
       }
       for (let i = end; i < start; i++) {
         let elemPath = path.concat(i);
         push2array(maps2disable, getIn(state, elemPath, SymDataMapTree, SymData) || []);
-        ['invalid', 'dirty', 'untouched', 'pending'].forEach(key => {
+        ['invalid', 'dirty', 'unsubmited', 'untouched', 'pending'].forEach(key => {
           let statusValue = getUpdValue([update, state], elemPath, SymData, 'status', key);
           if (statusValue) state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', key], -1));
         });
@@ -1155,9 +1166,9 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
       if (keyStatus == 'invalid' || keyStatus == 'pending') {
         value = getUpdValue([update, state], path, SymData, 'status', 'pending') ? null : !getUpdValue([update, state], path, SymData, 'status', 'invalid');
         newKey = 'valid';
-      } else if (keyStatus == 'untouched' || keyStatus == 'dirty') {
+      } else if (keyStatus == 'untouched' || keyStatus == 'dirty' || keyStatus === 'unsubmited') {
         value = !getUpdValue([update, state], path, SymData, 'status', keyStatus);
-        newKey = keyStatus == 'untouched' ? 'touched' : 'pristine';
+        newKey = STATUS_REV[keyStatus];
       }
       if (!isUndefined(newKey))
         state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['status', newKey], value));
@@ -1189,15 +1200,18 @@ function updatePROC(state: StateType, UPDATABLE: PROCEDURE_UPDATABLE_Type, item:
           arrayOfRequired = isArray(arrayOfRequired) && arrayOfRequired.length && arrayOfRequired;
           if (arrayOfRequired && (~arrayOfRequired.indexOf(field))) branch = merge(branch, {[SymData]: {fData: {required: true}}});
         }
+        ['untouched', 'unsubmited'].forEach(statusKey => {
+          if (getIn(oldBranch, SymData, 'status', statusKey) == 0)
+            branch = merge(branch, {[SymData]: {status: {[statusKey]: 0, [STATUS_REV[statusKey]]: true}}});// stick untouched and unsubmited to zero
+          state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});
+          state = updatePROC(state, UPDATABLE, makeNUpdate([], push2array(['current'], path), defaultValues, true));
+          state = setDataMapInState(state, UPDATABLE, maps2enable);
+          if (getIn(branch, SymData, 'status', statusKey) == 0) {
+            state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', statusKey], 0));
+            state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', STATUS_REV[statusKey]], true));
+          }
+        })
 
-        if (getIn(oldBranch, SymData, 'status', 'untouched') == 0) branch = merge(branch, {[SymData]: {status: {untouched: 0, touched: true}}});// stick untouched to zero
-        state = merge(state, setIn({}, branch, path), {replace: setIn({}, true, path)});
-        state = updatePROC(state, UPDATABLE, makeNUpdate([], push2array(['current'], path), defaultValues, true));
-        state = setDataMapInState(state, UPDATABLE, maps2enable);
-        if (getIn(branch, SymData, 'status', 'untouched') == 0) {
-          state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 0));
-          state = Macros.switch(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'touched'], true));
-        }
       }
     }
   }

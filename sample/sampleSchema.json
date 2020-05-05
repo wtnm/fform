@@ -429,10 +429,7 @@
     },
     "number": {
       "type": "number",
-      "_presets": "number",
-      "_params": {
-        "liveUpdate": true
-      }
+      "_presets": "number"
     },
     "password": {
       "type": "string",

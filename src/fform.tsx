@@ -236,7 +236,7 @@ class FForm extends Component<FFormProps> {
     const self = this;
     self.applyCache();
 
-    const setPending = (val: any) => self.api.set([], val, {[SymData]: ['status', 'pending']});
+    const setSubmitting = (val: any) => self.api.set([], val, {[SymData]: ['status', 'submitting']});
 
     const setMessagesFromSubmit = (messages: any = []) => {
       if (isUndefined(messages)) return;
@@ -248,18 +248,19 @@ class FForm extends Component<FFormProps> {
     };
 
     self.api.set([], 0, {[SymData]: ['status', 'untouched'], execute: true, macros: 'switch'});
+    self.api.set([], 0, {[SymData]: ['status', 'unsubmited'], execute: true, macros: 'switch'});
 
     if (self._methods.onSubmit) {
       self.api.setMessages(null, {execute: true});
 
       let result = self._methods.onSubmit(self._extendEvent(event));
       if (result && result.then && typeof result.then === 'function') { //Promise
-        setPending(1);
+        setSubmitting(1);
         result.then((messages: any) => {
-          setPending(0);
+          setSubmitting(0);
           setMessagesFromSubmit(messages)
         }, (reason: any) => {
-          setPending(0);
+          setSubmitting(0);
           setMessagesFromSubmit(reason)
         })
       } else setMessagesFromSubmit(result)
@@ -458,9 +459,16 @@ class FField extends FRefsGeneric {
     const self = this;
     self._cachedTimeout = undefined;
     if (update && self._cached) {
-      self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate && !self._forceLiveUpd, path: self.path, ...self._cached.opts});
+      let prevData = self.getData();
+      let stateUpd = self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate && !self._forceLiveUpd, path: self.path, ...self._cached.opts});
       self._forceLiveUpd = false;
       self._cached = undefined;
+      (async () => {
+        await stateUpd;
+        let data = self.getData();
+        console.log('data', data);
+        self._setMappedData(prevData, data, true);
+      })()
     }
   }
 
@@ -1052,8 +1060,12 @@ const Checkbox = forwardRef(({
   };
   let childrenRes = propsExtender(baseProps, $extend, {skipKeys: ['checkbox'], _$cx, $baseClass});
   let {input: inputTag, label: labelTag, ...restChildren} = childrenRes;
-  className = _$cx(className);
-  if (rest.checked) className = _$cx(className || '', '_checked');
+  let classMods: string[] = [];
+  objKeys(rest).forEach(key => {
+    if (key[0] !== '$' && (rest[key] === true || rest[key] === 'true'))
+      classMods.push('_' + key);
+  });
+  className = _$cx(className, classMods);
   const rootProps = {
     'checkbox': {
       _$tag: 'label',
@@ -1252,6 +1264,9 @@ function classNames(...styles: any[]) {
 //  elements
 /////////////////////////////////////////////
 
+let digitRegex = /(?<=^| )\d+(\.\d+)?(?=$| )|(?<=^| )\.\d+(?=$| )/;
+
+
 let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOptionsArgument) => any } = {
   extend(elements: any[], opts?: MergeStateOptionsArgument) {
     let res = merge.all(this, elements, opts);
@@ -1358,14 +1373,14 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_ref: '^/sets/simple',
       Main: {
         type: 'number',
-        onChange: {$: '^/fn/eventValue|parse|preventEmptyLiveUpd|setValue'},
+        onChange: {$: '^/fn/eventValue|prepareNumber|parse|preventEmptyLiveUpd|setValue'},
         onBlur: "^/fn/setZeroIfEmpty|blur"
       }
     },
     integerNull: {
       $_ref: '^/sets/integer',
       Main: {
-        onChange: {$: '^/fn/eventValue|parse|empty2null|setValue'},
+        onChange: {$: '^/fn/eventValue|prepareNumber|parse|empty2null|setValue'},
         onBlur: "^/fn/blur",
         $_maps: {
           value: {$: '^/fn/null2empty', args: ['@value']}
@@ -1547,6 +1562,14 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       event.target.value, ...args],
     eventChecked: (event: any, ...args: any[]) => [event.target.checked, ...args],
     parseTristate: (value: any, ...args: any[]) => [value === "" ? null : value, ...args],
+    prepareNumber(value: string, ...args: any[]) {
+      if (isString(value)) {
+        value = value.replace(/^(-?)0*/, "$1");
+        value = value.replace("-.", "-0.")
+          .replace(/^\./, "0.");
+      }
+      return [value, ...args]
+    },
     parse(value: string | string[], ...args: any[]) {
       try {
         value = isArray(value) ? value.map(v => JSON.parse(v)) : JSON.parse(value)
