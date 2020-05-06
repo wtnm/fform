@@ -1,5 +1,14 @@
 "use strict";
 /** @jsx h */
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
@@ -180,7 +189,7 @@ class FForm extends react_1.Component {
     _submit(event) {
         const self = this;
         self.applyCache();
-        const setPending = (val) => self.api.set([], val, { [stateLib_1.SymData]: ['status', 'pending'] });
+        const setSubmitting = (val) => self.api.set([], val, { [stateLib_1.SymData]: ['status', 'submitting'] });
         const setMessagesFromSubmit = (messages = []) => {
             if (react_ts_utils_1.isUndefined(messages))
                 return;
@@ -192,16 +201,17 @@ class FForm extends react_1.Component {
             });
         };
         self.api.set([], 0, { [stateLib_1.SymData]: ['status', 'untouched'], execute: true, macros: 'switch' });
+        self.api.set([], 0, { [stateLib_1.SymData]: ['status', 'unsubmited'], execute: true, macros: 'switch' });
         if (self._methods.onSubmit) {
             self.api.setMessages(null, { execute: true });
             let result = self._methods.onSubmit(self._extendEvent(event));
             if (result && result.then && typeof result.then === 'function') { //Promise
-                setPending(1);
+                setSubmitting(1);
                 result.then((messages) => {
-                    setPending(0);
+                    setSubmitting(0);
                     setMessagesFromSubmit(messages);
                 }, (reason) => {
-                    setPending(0);
+                    setSubmitting(0);
                     setMessagesFromSubmit(reason);
                 });
             }
@@ -374,9 +384,16 @@ class FField extends FRefsGeneric {
         const self = this;
         self._cachedTimeout = undefined;
         if (update && self._cached) {
-            self.stateApi.setValue(self._cached.value, Object.assign({ noValidation: !self.liveValidate && !self._forceLiveUpd, path: self.path }, self._cached.opts));
+            let prevData = self.getData();
+            let stateUpd = self.stateApi.setValue(self._cached.value, Object.assign({ noValidation: !self.liveValidate && !self._forceLiveUpd, path: self.path }, self._cached.opts));
             self._forceLiveUpd = false;
             self._cached = undefined;
+            (() => __awaiter(this, void 0, void 0, function* () {
+                yield stateUpd;
+                let data = self.getData();
+                console.log('data', data);
+                self._setMappedData(prevData, data, true);
+            }))();
         }
     }
     _cacheValue(path, value, fn = 'set', opts = {}) {
@@ -906,9 +923,12 @@ const Checkbox = react_1.forwardRef((_a, ref) => {
     };
     let childrenRes = react_ts_utils_1.propsExtender(baseProps, $extend, { skipKeys: ['checkbox'], _$cx, $baseClass });
     let { input: inputTag, label: labelTag } = childrenRes, restChildren = __rest(childrenRes, ["input", "label"]);
-    className = _$cx(className);
-    if (rest.checked)
-        className = _$cx(className || '', '_checked');
+    let classMods = [];
+    react_ts_utils_1.objKeys(rest).forEach(key => {
+        if (key[0] !== '$' && (rest[key] === true || rest[key] === 'true'))
+            classMods.push('_' + key);
+    });
+    className = _$cx(className, classMods);
     const rootProps = {
         'checkbox': {
             _$tag: 'label',
@@ -1108,6 +1128,7 @@ exports.classNames = classNames;
 /////////////////////////////////////////////
 //  elements
 /////////////////////////////////////////////
+let digitRegex = /(?<=^| )\d+(\.\d+)?(?=$| )|(?<=^| )\.\d+(?=$| )/;
 let elementsBase = {
     extend(elements, opts) {
         let res = react_ts_utils_1.merge.all(this, elements, opts);
@@ -1214,14 +1235,14 @@ let elementsBase = {
             $_ref: '^/sets/simple',
             Main: {
                 type: 'number',
-                onChange: { $: '^/fn/eventValue|parse|preventEmptyLiveUpd|setValue' },
+                onChange: { $: '^/fn/eventValue|prepareNumber|parse|preventEmptyLiveUpd|setValue' },
                 onBlur: "^/fn/setZeroIfEmpty|blur"
             }
         },
         integerNull: {
             $_ref: '^/sets/integer',
             Main: {
-                onChange: { $: '^/fn/eventValue|parse|empty2null|setValue' },
+                onChange: { $: '^/fn/eventValue|prepareNumber|parse|empty2null|setValue' },
                 onBlur: "^/fn/blur",
                 $_maps: {
                     value: { $: '^/fn/null2empty', args: ['@value'] }
@@ -1405,6 +1426,14 @@ let elementsBase = {
         ],
         eventChecked: (event, ...args) => [event.target.checked, ...args],
         parseTristate: (value, ...args) => [value === "" ? null : value, ...args],
+        prepareNumber(value, ...args) {
+            if (react_ts_utils_1.isString(value)) {
+                value = value.replace(/^(-?)0*/, "$1");
+                value = value.replace("-.", "-0.")
+                    .replace(/^\./, "0.");
+            }
+            return [value, ...args];
+        },
         parse(value, ...args) {
             try {
                 value = react_ts_utils_1.isArray(value) ? value.map(v => JSON.parse(v)) : JSON.parse(value);
