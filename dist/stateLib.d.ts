@@ -30,11 +30,9 @@ declare function isNPath(path: any): boolean;
 declare function normalizePath(path: string | Path, base?: string | Path): Path;
 declare function path2string(path: any): string;
 declare function string2path(path: string): Path;
-declare const isElemRef: (val: any) => boolean;
 declare function object2PathValues(vals: {
     [key: string]: any;
 }, options?: object2PathValuesOptions, track?: Path): PathValueType[];
-declare const objMap: (object: any, fn: (item: any, track: string[]) => any, track?: string[]) => {};
 declare const isMapFn: (arg: any) => any;
 declare function normalizeArgs(args: any, wrapFn?: any): {
     dataRequest: boolean;
@@ -49,6 +47,6 @@ declare function normalizeFn(fn: any, opts?: any): {
 declare function processProp(nextData: any, arg: any): any;
 declare function processFn(map: any, ...rest: any[]): any;
 declare function makeSlice(...pathValues: any[]): StateType;
-export { object2PathValues, string2path, relativePath, getSchemaPart, oneOfFromState, path2string, normalizePath, branchKeys, getFromState, arrayStart, mergeUPD_PROC, isSelfManaged, isSchemaSelfManaged, normalizeUpdate, setIfNotDeeper, objMap, setUPDATABLE, isNPath, multiplePath, normalizeArgs, normalizeFn, processFn, isMapFn, types, updateState, initState, rehydrateState, processProp, isElemRef };
+export { object2PathValues, string2path, relativePath, getSchemaPart, oneOfFromState, path2string, normalizePath, branchKeys, getFromState, arrayStart, mergeUPD_PROC, isSelfManaged, isSchemaSelfManaged, normalizeUpdate, setIfNotDeeper, setUPDATABLE, isNPath, multiplePath, normalizeArgs, normalizeFn, processFn, isMapFn, types, updateState, initState, rehydrateState, processProp };
 export { SymData, SymReset, SymClear, SymDelete, SymDataMap };
 export { makeNUpdate, updatePROC, string2NUpdate, getUniqKey, makeSlice };

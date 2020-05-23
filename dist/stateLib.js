@@ -1574,8 +1574,6 @@ exports.string2path = string2path;
 /////////////////////////////////////////////
 //      common utils
 /////////////////////////////////////////////
-const isElemRef = (val) => react_ts_utils_2.isString(val) && val.trim().substr(0, 2) == '^/';
-exports.isElemRef = isElemRef;
 function object2PathValues(vals, options = {}, track = []) {
     const fn = options.symbol ? react_ts_utils_1.objKeysNSymb : react_ts_utils_1.objKeys;
     const check = options.arrayAsValue ? react_ts_utils_2.isObject : react_ts_utils_2.isMergeable;
@@ -1596,8 +1594,6 @@ function object2PathValues(vals, options = {}, track = []) {
     return result;
 }
 exports.object2PathValues = object2PathValues;
-const objMap = (object, fn, track = []) => react_ts_utils_1.objKeys(object).reduce((result, key) => ((result[key] = fn(object[key], track.concat(key))) || true) && result, react_ts_utils_2.isArray(object) ? [] : {});
-exports.objMap = objMap;
 const isMapFn = (arg) => react_ts_utils_2.isObject(arg) && arg.$ || react_ts_utils_2.isFunction(arg) && arg._map;
 exports.isMapFn = isMapFn;
 function normalizeArgs(args, wrapFn) {

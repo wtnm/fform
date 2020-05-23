@@ -140,7 +140,7 @@ class FForm extends react_1.Component {
             if (prevProps[key] !== nextProps[key])
                 newMethods[key] = nextProps[key];
         });
-        Object.assign(self._methods, self.wrapFns(api_1.objectResolver(self.elements, newMethods), { noStrictArrayResult: true }));
+        Object.assign(self._methods, self.wrapFns(react_ts_utils_1.objectResolver(self.elements, newMethods), { noStrictArrayResult: true }));
     }
     _setRootRef(FField) {
         this._root = FField;
@@ -308,7 +308,7 @@ class FRefsGeneric extends react_1.Component {
         else if (react_ts_utils_1.isString($reactRef) || react_ts_utils_1.isArray($reactRef))
             return self._setRef($reactRef);
         else if (react_ts_utils_1.isMergeable($reactRef))
-            return stateLib_1.objMap($reactRef, self._refProcess.bind(self, defaultName));
+            return react_ts_utils_1.objMap($reactRef, self._refProcess.bind(self, defaultName));
         return $reactRef;
     }
 }
@@ -353,7 +353,7 @@ class FField extends FRefsGeneric {
     _resolver(value) {
         const self = this;
         try {
-            return api_1.objectResolver(self.pFForm.elements, value);
+            return react_ts_utils_1.objectResolver(self.pFForm.elements, value);
         }
         catch (e) {
             throw self._addErrPath(e);
@@ -391,7 +391,7 @@ class FField extends FRefsGeneric {
             (() => __awaiter(this, void 0, void 0, function* () {
                 yield stateUpd;
                 let data = self.getData();
-                console.log('data', data);
+                //console.log('data', data);
                 self._setMappedData(prevData, data, true);
             }))();
         }
@@ -785,7 +785,7 @@ class GenericWidget extends FRefsGeneric {
         if (!_$elements)
             return rest;
         let elms = { '^': _$elements };
-        react_ts_utils_1.objKeys(rest).forEach(k => stateLib_1.isElemRef(rest[k]) && (rest[k] = react_ts_utils_1.getIn(elms, stateLib_1.string2path(rest[k]))));
+        react_ts_utils_1.objKeys(rest).forEach(k => react_ts_utils_1.isElemRef(rest[k]) && (rest[k] = react_ts_utils_1.getIn(elms, stateLib_1.string2path(rest[k]))));
         return rest;
     }
     render() {
@@ -1005,7 +1005,7 @@ function bindProcessorToThis(val, opts = {}) {
     }
     else if (react_ts_utils_1.isMergeable(val)) {
         const result = react_ts_utils_1.isArray(val) ? [] : {};
-        react_ts_utils_1.objKeys(val).forEach(key => result[key] = !api_1.skipKey(key, val) ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
+        react_ts_utils_1.objKeys(val).forEach(key => result[key] = !react_ts_utils_1.skipKey(key, val) ? bindedFn(val[key], opts) : val[key]); //!~ignore.indexOf(key) &&
         return result;
     }
     return val;
@@ -1020,7 +1020,7 @@ const resolveComponents = react_ts_utils_1.memoize((elements, customizeFields = 
             .join(':') + ':' + (customizeFields.$_ref || '');
         customizeFields = react_ts_utils_1.merge(customizeFields, { $_ref });
     }
-    return api_1.objectResolver(elements, customizeFields);
+    return react_ts_utils_1.objectResolver(elements, customizeFields);
 });
 function extractMaps(obj, skip = []) {
     let { $_maps } = obj, rest2extract = __rest(obj, ["$_maps"]);
@@ -1128,7 +1128,6 @@ exports.classNames = classNames;
 /////////////////////////////////////////////
 //  elements
 /////////////////////////////////////////////
-let digitRegex = /(?<=^| )\d+(\.\d+)?(?=$| )|(?<=^| )\.\d+(?=$| )/;
 let elementsBase = {
     extend(elements, opts) {
         let res = react_ts_utils_1.merge.all(this, elements, opts);
@@ -1510,7 +1509,7 @@ let elementsBase = {
                     const _a = messages[priority], { norender, texts, className = {} } = _a, rest = __rest(_a, ["norender", "texts", "className"]);
                     const children = [];
                     react_ts_utils_1.objKeys(texts).forEach((key) => react_ts_utils_1.toArray(texts[key]).forEach((v, i, arr) => {
-                        if (stateLib_1.isElemRef(v))
+                        if (react_ts_utils_1.isElemRef(v))
                             v = this._resolver(v);
                         (react_ts_utils_1.isString(v) && react_ts_utils_1.isString(children[children.length - 1])) ? children.push({ _$widget: 'br' }, v) : children.push(v);
                     }));

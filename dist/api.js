@@ -376,16 +376,16 @@ function schemaCompiler($id, elements = {}, schema, track = []) {
     let _a = schema, { _validators, _data$, _stateMaps, _oneOfSelector } = _a, rest = __rest(_a, ["_validators", "_data$", "_stateMaps", "_oneOfSelector"]);
     const nFnOpts = { noStrictArrayResult: true };
     if (_validators)
-        result._validators = stateLib_1.objMap(val2obj(objectResolver(elements, _validators, track)), (f) => stateLib_1.normalizeFn(f, nFnOpts));
+        result._validators = dist_1.objMap(val2obj(dist_1.objectResolver(elements, _validators, track)), (f) => stateLib_1.normalizeFn(f, nFnOpts));
     if (_data$)
-        result._data$ = stateLib_1.objMap(val2obj(objectResolver(elements, _data$, track)), (f) => stateLib_1.normalizeFn(f));
+        result._data$ = dist_1.objMap(val2obj(dist_1.objectResolver(elements, _data$, track)), (f) => stateLib_1.normalizeFn(f));
     if (_stateMaps)
-        result._stateMaps = objectResolver(elements, _stateMaps, track);
+        result._stateMaps = dist_1.objectResolver(elements, _stateMaps, track);
     if (_oneOfSelector)
-        result._oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(_oneOfSelector, nFnOpts), track);
+        result._oneOfSelector = dist_1.objectResolver(elements, stateLib_1.normalizeFn(_oneOfSelector, nFnOpts), track);
     react_ts_utils_1.objKeys(rest).forEach(key => {
         if (key.substr(0, 1) == '_')
-            return result[key] = key !== '_presets' && stateLib_1.isElemRef(rest[key]) ? convRef(elements, rest[key], track) : rest[key];
+            return result[key] = key !== '_presets' && dist_1.isElemRef(rest[key]) ? dist_1.convRef(elements, rest[key], track) : rest[key];
         switch (key) {
             case '$ref':
                 if (rest[key][0] === '#')
@@ -423,107 +423,4 @@ function schemaCompiler($id, elements = {}, schema, track = []) {
 function isCompiled(schema) {
     return react_ts_utils_1.getIn(schema, '_compiled');
 }
-function testRef(refRes, $_ref, track) {
-    if (react_ts_utils_1.isUndefined(refRes))
-        throw new Error('Reference "' + $_ref + '" leads to undefined object\'s property in path: ' + stateLib_1.path2string(track));
-    return true;
-}
-function getInWithCheck(refRes, path) {
-    let elems = refRes['^'];
-    let whileBreak = false;
-    while (!whileBreak) {
-        whileBreak = true;
-        for (let j = 0; j < path.length; j++) {
-            refRes = react_ts_utils_1.getIn(refRes, path[j]);
-            if (stateLib_1.isElemRef(refRes)) {
-                path = stateLib_1.string2path(refRes).concat(path.slice(j + 1));
-                refRes = { '^': elems };
-                whileBreak = false;
-                break;
-            }
-            if (react_ts_utils_1.isFunction(refRes) && j + 1 !== path.length) { // check if there is a function
-                refRes = refRes(elems, path.slice(j + 1));
-                break;
-            }
-            if (react_ts_utils_1.isUndefined(refRes))
-                break;
-        }
-    }
-    return refRes;
-}
-function objectDerefer(_elements, obj2deref, track = []) {
-    if (!react_ts_utils_1.isMergeable(obj2deref))
-        return obj2deref;
-    let { $_ref = '' } = obj2deref, restObj = __rest(obj2deref, ["$_ref"]);
-    $_ref = $_ref.split(':');
-    const objs2merge = [];
-    for (let i = 0; i < $_ref.length; i++) {
-        if (!$_ref[i])
-            continue;
-        let path = stateLib_1.string2path($_ref[i]);
-        if (path[0] !== '^')
-            throw new Error('Can reffer only to ^');
-        let refRes = getInWithCheck({ '^': _elements }, path);
-        testRef(refRes, $_ref[i], track.concat('@' + i));
-        if (react_ts_utils_1.isMergeable(refRes))
-            refRes = objectDerefer(_elements, refRes, track.concat('@' + i));
-        objs2merge.push(refRes);
-    }
-    let result = react_ts_utils_1.isArray(obj2deref) ? [] : {};
-    for (let i = 0; i < objs2merge.length; i++)
-        result = react_ts_utils_1.merge(result, objs2merge[i]);
-    return react_ts_utils_1.merge(result, stateLib_1.objMap(restObj, objectDerefer.bind(null, _elements), track));
-    //objKeys(restObj).forEach(key => result[key] = isMergeable(restObj[key]) ? objectDerefer(_objects, restObj[key]) : restObj[key]);
-}
-exports.objectDerefer = objectDerefer;
-function skipKey(key, obj) {
-    return key.substr(0, 2) == '_$' || obj['_$skipKeys'] && ~obj['_$skipKeys'].indexOf(key);
-}
-exports.skipKey = skipKey;
-const convRef = (_elements, refs, track = [], prefix = '') => {
-    const _objs = { '^': _elements };
-    return react_ts_utils_1.deArray(refs.split('|').map((ref, i) => {
-        ref = ref.trim();
-        if (stateLib_1.isElemRef(ref))
-            prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
-        else
-            ref = prefix + ref;
-        ref = ref.split(':');
-        let result;
-        for (let i = 0; i < ref.length; i++) {
-            let r = ref[i];
-            if (!r)
-                continue;
-            if (!stateLib_1.isElemRef(r))
-                r = prefix + r;
-            let refRes = getInWithCheck(_objs, stateLib_1.string2path(r));
-            testRef(refRes, r, track.concat('@' + i));
-            result = result ? react_ts_utils_1.merge(result, refRes) : refRes;
-        }
-        return result;
-    }));
-};
-function objectResolver(_elements, obj2resolve, track = []) {
-    if (stateLib_1.isElemRef(obj2resolve))
-        return convRef(_elements, obj2resolve, track);
-    if (!react_ts_utils_1.isMergeable(obj2resolve))
-        return obj2resolve;
-    const _objs = { '^': _elements };
-    const result = objectDerefer(_elements, obj2resolve);
-    const retResult = react_ts_utils_1.isArray(result) ? [] : {};
-    react_ts_utils_1.objKeys(result).forEach((key) => {
-        let value = result[key];
-        if (stateLib_1.isElemRef(value)) {
-            value = convRef(_elements, value, track);
-            if (key !== '$' && !skipKey(key, result) && (react_ts_utils_1.isFunction(value) || react_ts_utils_1.isArray(value) && value.every(react_ts_utils_1.isFunction)))
-                value = { $: value };
-        }
-        if (!skipKey(key, result))
-            retResult[key] = objectResolver(_elements, value, track.concat(key));
-        else
-            retResult[key] = value;
-    });
-    return retResult;
-}
-exports.objectResolver = objectResolver;
 //# sourceMappingURL=api.js.map

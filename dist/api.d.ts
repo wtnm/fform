@@ -87,7 +87,4 @@ declare class FFormStateAPI extends FFormStateManager {
 }
 declare const anSetState = "FFROM_SET_STATE";
 declare const compileSchema: (schema: any, elements: any) => any;
-declare function objectDerefer(_elements: any, obj2deref: any, track?: string[]): any;
-declare function skipKey(key: string, obj?: any): number | true;
-declare function objectResolver(_elements: any, obj2resolve: any, track?: string[]): any;
-export { anSetState, FFormStateAPI, compileSchema, objectDerefer, objectResolver, skipKey };
+export { anSetState, FFormStateAPI, compileSchema };
