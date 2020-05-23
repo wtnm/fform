@@ -18,6 +18,10 @@ import {
   memoize, isNumber, setIn, push2array,
   MergeStateOptionsArgument,
   propsExtender,
+  isElemRef,
+  objMap,
+  objectResolver,
+  skipKey,
   extendSingleProps
 } from "react-ts-utils";
 
@@ -28,7 +32,6 @@ import {
   string2path,
   SymData,
   normalizePath,
-  objMap,
   setUPDATABLE,
   mergeUPD_PROC,
   branchKeys,
@@ -39,10 +42,10 @@ import {
   normalizeFn,
   normalizeArgs,
   processProp,
-  isElemRef, SymReset, getUniqKey
+   SymReset, getUniqKey
 } from './stateLib'
 
-import {FFormStateAPI, objectResolver, skipKey, anSetState} from './api'
+import {FFormStateAPI, anSetState} from './api'
 
 
 const _$cxSym = Symbol('_$cx');
@@ -466,7 +469,7 @@ class FField extends FRefsGeneric {
       (async () => {
         await stateUpd;
         let data = self.getData();
-        console.log('data', data);
+        //console.log('data', data);
         self._setMappedData(prevData, data, true);
       })()
     }
@@ -1264,8 +1267,6 @@ function classNames(...styles: any[]) {
 //  elements
 /////////////////////////////////////////////
 
-let digitRegex = /(?<=^| )\d+(\.\d+)?(?=$| )|(?<=^| )\.\d+(?=$| )/;
-
 
 let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOptionsArgument) => any } = {
   extend(elements: any[], opts?: MergeStateOptionsArgument) {
@@ -1635,7 +1636,6 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       if (this.api.getValue() === value) this.api.setValue(nullValue);
       return args;
     },
-
     messages(messages: any, staticProps: anyObject = {}) {
       const {className: cnSP = {}, ...restSP} = staticProps;
       return [objKeys(messages || []).map(priority => {

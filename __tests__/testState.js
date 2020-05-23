@@ -664,51 +664,6 @@ describe('FForm state functions tests', function () {
 describe('FForm api tests', function () {
   const components = require('../src/fform.tsx');
 
-  const objects = {
-    preset: {first: {one: 'one value'}, second: {two: 'two value'}},
-    funcs: {
-      one: function (...a) {return a},
-      two: function (...a) {return a},
-      not: function (a) {return !a},
-    },
-    parts: {
-      first: {
-        $_ref: '^/preset',
-        f1: '^/funcs/one',
-        'f1.bind': [2]
-      },
-      second: {
-        $_ref: '^/parts/first',
-        'f1.bind': [4],
-        f2: '^/funcs/two',
-        'f2.bind': [6, 10],
-      }
-    }
-  };
-  let exampleObj = {
-    func: '^/funcs/two',
-    part: {
-      $_ref: '^/parts/second',
-      'f1.bind': [1],
-      first: {
-        three: 'three value',
-        $_maps: {
-          isArray: [{$: '^/funcs/two', args: ['@/fData/type', 'array']}],
-          arrayStart: {$: '^/funcs/two', args: [], update: 'build'},
-          FFormApi: {$: '^/funcs/one', args: 'props/pFForm/api', update: 'build'},
-          $layout: {$: '^/funcs/one', args: 'ff_layout', update: 'data'},
-          $branch: {$: '^/funcs/one', args: 'state/branch', update: 'every'},
-        }
-      },
-      _some: '^/funcs/two',
-      _more: {
-        f3: '^/funcs/three',
-        $_maps: {value: '@/value'}
-      },
-      $fields: [{$_maps: {length: '@/length'}}],
-      $_maps: {value: '@/value'}
-    }
-  };
 
   let obj2SymData, $_maps, NMaps;
 
@@ -721,16 +676,7 @@ describe('FForm api tests', function () {
     expect(res).not.to.be.equal(res3);
   });
 
-  it('test api.objectDerefer', function () {
-    let obj = apiLib.objectDerefer(objects, exampleObj);
-    expect(obj.func).to.be.equal('^/funcs/two');
-    expect(obj.part.f1).to.be.equal('^/funcs/one');
-    expect(obj.part['f1.bind']).to.be.eql([1]);
-    expect(obj.part.f2).to.be.equal('^/funcs/two');
-    expect(obj.part['f2.bind']).to.be.eql([6, 10]);
-    expect(obj.part.first.one).to.be.equal('one value');
-    expect(obj.part.first.three).to.be.equal('three value');
-  });
+
 
   it('test SRR dehydrate stateRehydrate', async function () {
 
@@ -744,28 +690,6 @@ describe('FForm api tests', function () {
   })
 
 
-  // it('test api.objectResolver', function () {
-  //
-  //   let obj = apiLib.objectResolver(elements, exampleObj);
-  //   expect(obj.func).to.be.equal(elements.funcs.two);
-  //   expect(obj.part.f1).to.be.equal(elements.funcs.one);
-  //   expect(obj.part['f1.bind']).to.be.eql([1]);
-  //   expect(obj.part.f2).to.be.equal(elements.funcs.two);
-  //   expect(obj.part['f2.bind']).to.be.eql([6, 10]);
-  //   expect(obj.part._some).to.be.equal(elements.funcs.two);
-  //   expect(obj.part._more.f3).to.be.equal('^/funcs/three');
-  //
-  //   obj2SymData = apiLib.objectResolver(elements, exampleObj);
-  //   expect(obj2SymData.func).to.be.equal(elements.funcs.two);
-  //   expect(obj2SymData.part.f1).to.be.equal(elements.funcs.one);
-  //   expect(obj2SymData.part['f1.bind']).to.be.eql([1]);
-  //   expect(obj2SymData.part.f2).to.be.equal(elements.funcs.two);
-  //   expect(obj2SymData.part['f2.bind']).to.be.eql([6, 10]);
-  //   expect(obj2SymData.part.first.one).to.be.equal('one value');
-  //   expect(obj2SymData.part.first.three).to.be.equal('three value');
-  //   expect(obj2SymData.part._some).to.be.equal(elements.funcs.two);
-  //   expect(obj2SymData.part._more.f3).to.be.equal('^/funcs/three');
-  // });
   //
   // it('test components.extractMaps', function () {
   //   let mObj = commonLib.merge(obj2SymData, obj2SymData[SymData]);

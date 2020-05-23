@@ -1538,7 +1538,7 @@ function string2path(path: string) {
 //      common utils
 /////////////////////////////////////////////
 
-const isElemRef = (val: any) => isString(val) && val.trim().substr(0, 2) == '^/';
+
 
 function object2PathValues(vals: { [key: string]: any }, options: object2PathValuesOptions = {}, track: Path = []): PathValueType[] {
   const fn = options.symbol ? objKeysNSymb : objKeys;
@@ -1556,9 +1556,6 @@ function object2PathValues(vals: { [key: string]: any }, options: object2PathVal
   if (!result.length) return [push2array(track.slice(), {})]; // empty object
   return result
 }
-
-const objMap = (object: any, fn: (item: any, track: string[]) => any, track: string[] = []) =>
-  objKeys(object).reduce((result, key) => ((result[key] = fn(object[key], track.concat(key))) || true) && result, isArray(object) ? [] : {});
 
 const isMapFn = (arg: any) => isObject(arg) && arg.$ || isFunction(arg) && arg._map;
 
@@ -1704,7 +1701,6 @@ export {
   isSchemaSelfManaged,
   normalizeUpdate,
   setIfNotDeeper,
-  objMap,
   setUPDATABLE,
   isNPath,
   multiplePath,
@@ -1716,8 +1712,7 @@ export {
   updateState,
   initState,
   rehydrateState,
-  processProp,
-  isElemRef
+  processProp
 };
 export {SymData, SymReset, SymClear, SymDelete, SymDataMap}
 export {makeNUpdate, updatePROC, string2NUpdate, getUniqKey, makeSlice};
