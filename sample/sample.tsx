@@ -2,9 +2,12 @@ import * as React from 'react';
 
 import {FForm, elements} from '../src/fform';
 import sampleSchema from './sampleSchema.json'
-import basicStyling from '../addons/styling/basic.json'
-import bootstrapStyling from '../addons/styling/bootstrap.json'
+// import basicStyling from '../addons/styling/basic.json'
+// import bootstrapStyling from '../addons/styling/bootstrap.json'
 import {FViewer} from '../src/fviewer'
+
+let basicStyling = {};
+let bootstrapStyling = {};
 
 const {render} = require('react-dom');
 
@@ -39,7 +42,7 @@ async function submit(event: any) {
 const cssSelectSchema = {
   "type": "string",
   "title": "Switch css framework:",
-  "_presets": "radio:$inlineItems:$inlineTitle",
+  "_presets": "radio:$inlineItems",
   "enum": [
     "tacit",
     "bootstrap"
@@ -59,7 +62,7 @@ const viewerData = {
 const viewerSelectSchema = {
   "type": "string",
   "title": "Switch data for viewer:",
-  "_presets": "radio:$inlineItems:$inlineTitle",
+  "_presets": "radio:$inlineItems",
   "enum": objKeys(viewerData),
 };
 

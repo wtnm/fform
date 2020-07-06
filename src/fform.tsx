@@ -42,7 +42,7 @@ import {
   normalizeFn,
   normalizeArgs,
   processProp,
-   SymReset, getUniqKey
+  SymReset, getUniqKey
 } from './stateLib'
 
 import {FFormStateAPI, anSetState} from './api'
@@ -360,12 +360,13 @@ class FRefsGeneric extends Component<any, any> {
     return (v: any) => setIn(this.$refs, v, isString(name) ? name.split('/') : name)
   };
 
-  protected _refProcess(defaultName: string, $reactRef: any) {
+  protected _refProcess($reactRef: any) {
     const self = this;
-    if ($reactRef === true) return self._setRef(defaultName);
-    else if (isString($reactRef) || isArray($reactRef)) return self._setRef($reactRef);
+    // if ($reactRef === true) return self._setRef(defaultName);
+    // else
+    if (isString($reactRef) || isArray($reactRef)) return self._setRef($reactRef);
     else if (isMergeable($reactRef))
-      return objMap($reactRef, self._refProcess.bind(self, defaultName));
+      return objMap($reactRef, self._refProcess.bind(self));
     return $reactRef;
   }
 }
@@ -382,6 +383,10 @@ class FField extends FRefsGeneric {
   private _cachedTimeout?: any;
   private _blocks: string[] = [];
   private _widgets: object;
+  private _arrayKey2field: { [key: string]: number } = {};
+  private _layouts: any[] = [];
+  private _arrayLayouts: any[] = [];
+  private _$wrapper: any = 'div';
   private _components: object;
   private _maps: NPM4WidgetsType = {};
   private _$_parse: any;
@@ -390,14 +395,17 @@ class FField extends FRefsGeneric {
   _forceUpd: boolean = false;
 
   get: Function | null = null;
-  _layout: FFLayoutGeneric<jsFFCustomizeType>;
+  // _layout: FFLayoutGeneric<jsFFCustomizeType>;
+  restFields: any[];
   $branch: any;
   schemaPart: jsJsonSchema;
+  arrayStart: any;
 
   liveValidate: boolean;
   liveUpdate: boolean;
   path: any;
   api: any;
+  _$cx: any;
   pFForm: any;
   stateApi: any;
   wrapFns = bindProcessorToThis;
@@ -411,12 +419,15 @@ class FField extends FRefsGeneric {
     Object.defineProperty(self, "liveUpdate", {get: () => getIn(self.getData(), 'params', 'liveUpdate')});
     Object.defineProperty(self, "value", {get: () => self.props.pFForm.getValue(self.state.branch, self)});
     Object.defineProperty(self, "stateApi", {get: () => self.props.pFForm.api});
+    Object.defineProperty(self, "_$cx", {get: () => self.props.pFForm.elements._$cx});
     self.state = {branch: self.pFForm.getBranch(self.path)};
     self.$branch = self.state.branch;
     self._updateStateApi(props.pFForm.api);
   }
 
-  getRef(path: Path | string) {
+  _setWidRef = (key: number | string) => (item: any) => this._widgets[key] = item;
+
+  getRef(path: Path | string) { // todo: rework
     path = normalizePath(path);
     const self = this;
     if (!path.length) return self.$refs['@Main'];
@@ -514,38 +525,143 @@ class FField extends FRefsGeneric {
 
 
   _build() {
+    function makeLayouts_INNER_PROCEDURE(UPDATABLE: { counter: number, keys: string[], blocks: string[] },
+                                         fields: Array<string | FFLayoutGeneric<jsFFCustomizeType>>, opts: any, layout: any[] = []) {
+      objKeys(fields).forEach(key => {
+        let fieldOrLayout = fields[key];
+
+        if (isString(fieldOrLayout) && fieldOrLayout[0] === '%') {
+          if (fieldOrLayout[1] === '%') {
+            let blockName = fieldOrLayout.substr(2);
+            let idx = UPDATABLE.blocks.indexOf(blockName);
+            if (~idx) {
+              fieldOrLayout = restComponents[blockName];
+              UPDATABLE.blocks.splice(idx, 1);
+            }
+          } else {// if field is string then _makeFField
+            let fieldName = fieldOrLayout.substr(1);
+            let idx = UPDATABLE.keys.indexOf(fieldName);
+            if (~idx) {
+              layout.push(self._makeFField(fieldName));
+              UPDATABLE.keys.splice(idx, 1);
+            }
+            return
+          }
+        }
+
+        if (isString(fieldOrLayout)) {
+          layout.push(fieldOrLayout);
+        } else if (isArray(fieldOrLayout)) {
+          makeLayouts_INNER_PROCEDURE(UPDATABLE, fieldOrLayout, opts, layout);
+        } else if (isObject(fieldOrLayout)) { // layout
+          const counter = UPDATABLE.counter++;
+          let {_$widget, $_fields, opts: newOpts} = normalizeLayout(counter, fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>, opts);
+          layout.push(<FSectionWidget _$widget={_$widget} _$cx={self._$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
+                                      getMappedData={self._getMappedData(counter)}>{$_fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields, newOpts)}</FSectionWidget>)
+        }
+      });
+      return layout
+    }
+
+    function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>, opts: any = {}) {
+      let {$_maps, rest} = extractMaps(layout, ['$_fields']);
+      //let {$defaultWidget, $baseLayoutClass} = opts;
+      // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
+      let {children: $_fields, $_reactRef, _$skipKeys, _$widget, $_setReactRef, className, $defaultWidget, $baseLayoutClass, ...staticProps} = rest;
+      $baseLayoutClass = $baseLayoutClass || opts.$baseLayoutClass || {};
+      if (isString($baseLayoutClass) && $baseLayoutClass) $baseLayoutClass = {[$baseLayoutClass]: true};
+      $defaultWidget = $defaultWidget || opts.$defaultWidget || 'div';
+      _$widget = _$widget || $defaultWidget;
+      if ($_fields) className = merge($baseLayoutClass, className);
+      staticProps.className = className;
+      let refObject = self._refProcess($_reactRef) || {};
+      if (isFunction(refObject)) refObject = {'ref': refObject};
+      Object.assign(staticProps, refObject);
+      let maps = normalizeMaps($_maps, counter.toString());
+      mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
+      if ($_setReactRef) staticProps[$_setReactRef === true ? '$_setReactRef' : $_setReactRef] = self._setRef;
+      self._mappedData[counter] = staticProps;
+      return {_$widget, $_fields, opts: {$defaultWidget, $baseLayoutClass}}
+    }
+
     const self = this;
-    self.state = {branch: self.pFForm.getBranch(self.path)};
-    self.$branch = self.state.branch;
+    let $branch = self.pFForm.getBranch(self.path);
+    self.state = {branch: $branch};
+
+    const data = self.getData();
+    const {fData} = data;
 
     const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
     self.schemaPart = schemaPart;
+    self.arrayStart = arrayStart(schemaPart);
 
     if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart._presets)
       throw new Error('schema._presets should be defined explicitly for multi type');
 
-    self._layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart._layout));
+    let $layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart._layout));
 
     let resolvedComponents = resolveComponents(self.pFForm.elements, schemaPart._custom, schemaPart._presets || schemaPart.type);
     resolvedComponents = self.wrapFns(resolvedComponents);
-    let {$_maps, rest: components} = extractMaps(resolvedComponents);
 
-    self._maps = normalizeMaps($_maps);
+    const mapsKeys = ['build', 'data', 'every'];
+    mapsKeys.forEach(k => self._maps[k] = []);
+    self.$refs = {};
     self._widgets = {};
-    self._components = components;
-    self._blocks = objKeys(components).filter(key => components[key]);
-    self._blocks.forEach((block: string) => {
-      const {_$widget, $_reactRef, $_setRef, _$skipKeys, ...staticProps} = components[block];
-      if (!_$widget) throw new Error('_$widget for "' + block + '" is empty');
-      self._widgets[block] = _$widget;
-      if ($_reactRef) { // $_reactRef - prop for react ref-function
-        const $ref = self._refProcess('@' + block, $_reactRef);
-        staticProps[isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
-      }
-      if ($_setRef) staticProps[$_setRef === true ? '$_setRef' : $_setRef] = self._setRef;
-      self._mappedData[block] = staticProps;  // properties, without reserved names
-    });
-    self._setMappedData(undefined, self.getData(), 'build');
+    self._mappedData = {};
+    self._layouts = [];
+    self.restFields = [];
+
+
+    // self._focusField = focusField || UPDATABLE.keys[0] || '';
+
+    let {Layout, ...restComponents} = resolvedComponents;
+
+    const UPDATABLE = {keys: branchKeys($branch), blocks: objKeys(restComponents), counter: 1};
+
+    Layout = merge(Layout, isArray($layout) ? {$_fields: $layout} : $layout);
+
+    let {_$widget, $_fields, opts} = normalizeLayout(0, Layout);
+    self._$wrapper = _$widget;
+
+    if ($_fields)// make initial _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys
+      self._layouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields, opts);
+    let restBlocks: any = {};
+    let blocks = [...UPDATABLE.blocks];
+    let builtBlocks = makeLayouts_INNER_PROCEDURE(UPDATABLE, UPDATABLE.blocks.map(bl => '%%' + bl), opts);
+    blocks.forEach((nm, i) => restBlocks[nm] = builtBlocks[i]);
+    if (restBlocks.Title) {
+      self._layouts = [restBlocks.Title, ...self._layouts];
+      delete restBlocks.Title;
+    }
+    if (restBlocks.Main) {
+      self._layouts.push(restBlocks.Main);
+      delete restBlocks.Main;
+    }
+    objKeys(restBlocks).forEach(nm => self._layouts.push(restBlocks[nm]));
+
+    if (fData.strictLayout !== true)// and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
+      UPDATABLE.keys.forEach(fieldName => self.restFields.push(self._makeFField(fieldName)));
+
+    // let {$_maps, rest: components} = extractMaps(resolvedComponents);
+
+    // self._maps = normalizeMaps($_maps);
+    // self._widgets = {};
+    // self._components = components;
+    // self._blocks = objKeys(components).filter(key => components[key]);
+    // self._blocks.forEach((block: string) => {
+    //   const {_$widget, $_reactRef, $_setReactRef, _$skipKeys, ...staticProps} = components[block];
+    //   if (!_$widget) throw new Error('_$widget for "' + block + '" is empty');
+    //   self._widgets[block] = _$widget;
+    //   if ($_reactRef) { // $_reactRef - prop for react ref-function
+    //     const $ref = self._refProcess('@' + block, $_reactRef);
+    //     staticProps[isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
+    //   }
+    //   if ($_setReactRef) staticProps[$_setReactRef === true ? '$_setReactRef' : $_setReactRef] = self._setRef;
+    //   self._mappedData[block] = staticProps;  // properties, without reserved names
+    // });
+
+    self._setMappedData(undefined, data, 'build');
+
     self._rebuild = false;
   }
 
@@ -562,11 +678,80 @@ class FField extends FRefsGeneric {
     return false
   }
 
+  _getMappedData = (key: number) => {
+    return () => {
+      // console.log(key);
+      // console.log(this._mappedData[key]);
+      return this._mappedData[key]
+    }
+  };
+
+  _makeFField(fieldName: string, arrayKey?: string) {
+    const self = this;
+    return <FField ref={self._setRef(arrayKey || fieldName)} key={arrayKey || fieldName}
+                   pFForm={self.pFForm} FFormApi={self.props.FFormApi}
+                   id={self.props.id ? self.props.id + '/' + (arrayKey || fieldName) : undefined}
+                   name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '${idx}_' + (arrayKey || fieldName) : fieldName) + ']' : undefined}
+                   getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
+  }
+
+  _arrayIndex2key = ($branch: any) => {
+    return this.props.uniqKey ? getIn(this.getData($branch), string2path(this.props.uniqKey)) : undefined;
+  };
+
+  _getObjectKeys = ($branch: StateType) => {
+    const self = this;
+    let keys: string[] = [];
+    if (self.props.isArray) for (let i = 0; i < self.props.arrayStart; i++) keys.push(i.toString());
+    else keys = branchKeys($branch);
+    return keys;
+  };
+
+  _getObjectPath(field: string) {
+    return this.path + '/' + field;
+  }
+
+  _getArrayPath(key: string) {
+    return this.path + '/' + this._arrayKey2field[key];
+  }
+
+  _getArrayField(key: any) {
+    const self = this;
+    return self._arrayLayouts[key - self.props.arrayStart]
+  }
+
+  _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType, props: any) {
+    const self = this;
+    const updatedArray = [];
+    let doUpdate = false;
+    for (let i = props.arrayStart; i < props.length; i++) {
+      let arrayKey = self._arrayIndex2key(nextBranch[i]);
+      if (isUndefined(arrayKey)) throw new Error('no unique key provided for array item');
+      if (self.$refs[arrayKey]) self.$refs[arrayKey].setState({branch: nextBranch[i]});
+      let prevIndex = self._arrayKey2field[arrayKey];
+      if (self._arrayKey2field[arrayKey] !== i) {
+        self._arrayKey2field[arrayKey] = i;
+        doUpdate = true
+      }
+      updatedArray.push(!isUndefined(prevIndex) ? self._getArrayField(prevIndex) : self._makeFField(i.toString(), arrayKey));
+    }
+    if (self._arrayLayouts.length !== updatedArray.length) doUpdate = true;
+    if (doUpdate) self._arrayLayouts = updatedArray;
+    return doUpdate;
+  }
+
   getData(branch?: any) {
     const self = this;
     const data = self.pFForm.getDataObject(branch || getIn(self, 'state', 'branch'), self);
     return self._cached ? merge(data, {value: self._cached.value}, {replace: {value: self._cached.opts.replace}}) : data;
   }
+
+  // getRef(path: Path) {
+  //   const self = this;
+  //   if (!self.props.isArray || isNaN(parseInt(path[0])) || path[0] < self.props.arrayStart) return super.getRef(path);
+  //   let field = self._getArrayField(path[0]);
+  //   return field && self.$refs[field.key].getRef(path.slice(1))
+  // }
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
     const self = this;
@@ -596,10 +781,45 @@ class FField extends FRefsGeneric {
 
   render() {
     const self = this;
-    if (isUndefined(self.state.branch)) return null;
+    let {state, props} = self;
+    if (isUndefined(state.branch)) return null;
     if (getIn(self.getData(), 'params', 'norender')) return false;
     if (self._rebuild) this._build();
-    return self._widgets['Builder'] ? h(self._widgets['Builder'], self._mappedData['Builder'], self._mappedData) : null;
+
+    // if (props.viewer) {
+    //   let {_$widget = UniversalViewer, ...rest} = props.$_viewerProps || {};
+    //   rest.inputProps = props;
+    //   rest.value = props.$FField.value;
+    //   return h(_$widget, rest)
+    // }
+    // if (isSelfManaged(props.$branch)) return null;
+    // if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
+    return <FSectionWidget _$widget={self._$wrapper} _$cx={self._$cx} key={'widget_0'} ref={self._setWidRef(0)}
+                           getMappedData={self._getMappedData(0)}>{self._layouts}</FSectionWidget>
+
+
+    // return self._widgets['Builder'] ? h(self._widgets['Builder'], self._mappedData['Builder'], self._mappedData) : null;
+    // let data = self.getData();
+    // let {length, oneOf, branchKeys, fData} = data;
+    // let {type, strictLayout} = fData;
+    // let {$branch, id, name} = self.props;
+    // return h(FSection, {
+    //   length, oneOf, branchKeys, type, isArray: type === 'array', strictLayout, $branch, id, name, $blocks: self._widgets,
+    //   $FField: self, FFormApi: self.stateApi, $layout: self._layout, arrayStart: arrayStart(self.schemaPart)
+    // })
+
+    //           length: '@/length',
+    //           oneOf: '@/oneOf',
+    //           branchKeys: '@/branchKeys',
+    //           strictLayout: '@/fData/strictLayout',
+    //           isArray: {$: '^/fn/equal', args: ['@/fData/type', 'array']},
+    //           $branch: {$: '^/fn/getProp', args: '$branch', update: 'every'},
+    //           arrayStart: {$: '^/fn/getArrayStart', args: [], update: 'build'},
+    //           $FField: {$: '^/fn/getProp', args: [], update: 'build'},
+    //           FFormApi: {$: '^/fn/getProp', args: 'props/pFForm/api', update: 'build'},
+    //           id: {$: '^/fn/getProp', args: 'props/id', update: 'build'},
+    //           name: {$: '^/fn/getProp', args: 'props/name', update: 'build'},
+    //           $layout: {$: '^/fn/getProp', args: '_layout', update: 'build'}
   }
 }
 
@@ -607,14 +827,18 @@ class FField extends FRefsGeneric {
 /////////////////////////////////////////////
 //  Section class
 /////////////////////////////////////////////
+function RestWidget({children}: any) {
+  return children;
+}
+
 class FSectionWidget extends Component<any, any> { // need to be class, as we use it's forceUpdate() method
   refs: any;
 
   _cn(props: any) {
     if (!props) return props;
-    if (this.props._$cx && props.className && !isString(props.className)) {
-      if (passCx(this.props._$widget)) return {_$cx: this.props._$cx, ...props};
-      else return {...props, className: this.props._$cx(props.className)};
+    if (props.className && !isString(props.className)) {
+      // if (passCx(this.props._$widget)) return {_$cx: this.props._$cx, ...props};
+      return {...props, className: this.props._$cx(props.className)};
     }
     return props;
   }
@@ -625,295 +849,296 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
   }
 }
 
-class FSection extends FRefsGeneric {
-  private _arrayStart: number = 0;
-  private _rebuild = true;
-  private _focusField: string = '';
-  private _arrayKey2field: { [key: string]: number } = {};
-  private _widgets: { [key: string]: any } = {};
-  private _objectLayouts: any[] = [];
-  private _arrayLayouts: any[] = [];
-  private _setWidRef: any;
-  private _maps: NPM4WidgetsType = {};
-  private _mappedData: { [key: string]: any } = {};
-  private _$widget: any;
-  private _isArray: boolean = false;
-
-  constructor(props: any, context: any) {
-    super(props, context);
-    const self = this;
-    self._setWidRef = (key: number | string) => (item: any) => self._widgets[key] = item;
-  }
-
-  _getMappedData(key: number) {
-    const self = this;
-    return () => self._mappedData[key]
-  }
-
-
-  _build(props: any) {
-
-    function makeLayouts_INNER_PROCEDURE(UPDATABLE: { counter: number, keys: string[] }, fields: Array<string | FFLayoutGeneric<jsFFCustomizeType>>) {
-      const layout: any[] = [];
-      objKeys(fields).forEach(key => {
-        let fieldOrLayout = fields[key];
-        const {keys, counter} = UPDATABLE;
-        if (isString(fieldOrLayout)) { // if field is string then _makeFField
-          let idx = UPDATABLE.keys.indexOf(fieldOrLayout);
-          if (~idx) {
-            layout.push(self._makeFField(fieldOrLayout));
-            UPDATABLE.keys.splice(idx, 1);
-          }
-        } else if (isObject(fieldOrLayout)) { // layout
-          const counter = UPDATABLE.counter++;
-          let {_$widget, $_fields} = normalizeLayout(counter, fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>);
-          layout.push(<FSectionWidget _$widget={_$widget} _$cx={_$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
-                                      getMappedData={self._getMappedData(counter)}>{$_fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields)}</FSectionWidget>)
-        }
-      });
-      return layout
-    }
-
-    function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
-      let {$_maps, rest} = extractMaps(layout, ['$_fields']);
-      // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
-      let {$_fields, $_reactRef, _$skipKeys, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
-      if ($_fields || !counter) className = merge(LayoutDefaultClass, className);
-      staticProps.className = className;
-      let refObject = self._refProcess('@widget_' + counter, $_reactRef) || {};
-      if (isFunction(refObject)) refObject = {'ref': refObject};
-      Object.assign(staticProps, refObject);
-      let maps = normalizeMaps($_maps, counter.toString());
-      mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
-      self._mappedData[counter] = staticProps;
-      return {_$widget, $_fields}
-    }
-
-    const self = this;
-
-    const {$branch, $layout, _$cx, arrayStart, strictLayout, LayoutDefaultWidget = 'div', LayoutDefaultClass = {}, uniqKey, focusField} = props;
-
-    const mapsKeys = ['build', 'data', 'every'];
-    mapsKeys.forEach(k => self._maps[k] = []);
-    self.$refs = {};
-    self._widgets = {};
-    self._mappedData = {};
-    self._objectLayouts = [];
-
-    const UPDATABLE = {keys: self._getObjectKeys($branch), counter: 1};
-    self._focusField = focusField || UPDATABLE.keys[0] || '';
-
-    let {_$widget, $_fields} = normalizeLayout(0, isArray($layout) ? {$_fields: $layout} : $layout);
-    self._$widget = _$widget;
-
-    if ($_fields)// we make inital _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys
-      self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields);
-    if (strictLayout !== true)// and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
-      UPDATABLE.keys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));
-
-    self._arrayLayouts = [];
-    self._arrayKey2field = {};
-    if (self.props.isArray) {  // _makeArrayLayouts
-      for (let i = arrayStart; i < self.props.length; i++) {
-        let arrayKey = self._arrayIndex2key($branch[i]);
-        self._arrayLayouts.push(self._makeFField(i.toString(), arrayKey));
-        arrayKey && (self._arrayKey2field[arrayKey] = i);
-      }
-    }
-    self._mappedData = self._updateMappedData(undefined, self._getData($branch), 'build');
-    self._rebuild = false;
-  }
-
-  _makeFField(fieldName: string, arrayKey?: string) {
-    const self = this;
-    return <FField ref={self._setRef(arrayKey || fieldName)} key={arrayKey || fieldName} pFForm={self.props.$FField.pFForm} FFormApi={self.props.FFormApi}
-                   id={self.props.id ? self.props.id + '/' + (arrayKey || fieldName) : undefined}
-                   name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '${idx}_' + (arrayKey || fieldName) : fieldName) + ']' : undefined}
-                   getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
-  }
-
-  _arrayIndex2key($branch: any) {
-    return this.props.uniqKey ? getIn(this._getData($branch), string2path(this.props.uniqKey)) : undefined;
-  }
-
-  _getObjectKeys($branch: StateType) {
-    const self = this;
-    let keys: string[] = [];
-    if (self.props.isArray) for (let i = 0; i < self.props.arrayStart; i++) keys.push(i.toString());
-    else keys = branchKeys($branch);
-    return keys;
-  }
-
-  _getObjectPath(field: string) {
-    return this.props.$FField.path + '/' + field;
-  }
-
-  _getArrayPath(key: string) {
-    return this.props.$FField.path + '/' + this._arrayKey2field[key];
-  }
-
-  _getArrayField(key: any) {
-    const self = this;
-    return self._arrayLayouts[key - self.props.arrayStart]
-  }
-
-  _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType, props: any) {
-    const self = this;
-    const updatedArray = [];
-    let doUpdate = false;
-    for (let i = props.arrayStart; i < props.length; i++) {
-      let arrayKey = self._arrayIndex2key(nextBranch[i]);
-      if (isUndefined(arrayKey)) throw new Error('no unique key provided for array item');
-      if (self.$refs[arrayKey]) self.$refs[arrayKey].setState({branch: nextBranch[i]});
-      let prevIndex = self._arrayKey2field[arrayKey];
-      if (self._arrayKey2field[arrayKey] !== i) {
-        self._arrayKey2field[arrayKey] = i;
-        doUpdate = true
-      }
-      updatedArray.push(!isUndefined(prevIndex) ? self._getArrayField(prevIndex) : self._makeFField(i.toString(), arrayKey));
-    }
-    if (self._arrayLayouts.length !== updatedArray.length) doUpdate = true;
-    if (doUpdate) self._arrayLayouts = updatedArray;
-    return doUpdate;
-  }
-
-  _updateMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build' = prevData !== nextData) {
-    const self = this;
-    return updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
-  }
-
-  _getData(branch = this.props.$branch) {
-    return this.props.$FField.getData(branch)
-  }
-
-  shouldComponentUpdate(nextProps: any) {
-    const self = this;
-    if (['FFormApi', 'oneOf', 'branchKeys'].some(comparePropsFn(self.props, nextProps)))
-      return self._rebuild = true;
-
-    let doUpdate = !isEqual(nextProps, self.props, {skipKeys: ['$branch']});
-
-    let prevBranch = self.props.$branch;
-    let nextBranch = nextProps.$branch;
-
-    if (prevBranch != nextBranch) {
-      let newMapped: any;
-      try {
-        newMapped = self._updateMappedData(self._getData(prevBranch), self._getData(nextBranch));
-      } catch (e) {
-        throw self.props.$FField._addErrPath(e)
-      }
-
-      if (newMapped != self._mappedData) { // update self._widgets
-        const oldMapped = self._mappedData;
-        self._mappedData = newMapped;
-        objKeys(newMapped).forEach(key => self._widgets[key] && newMapped[key] != oldMapped[key] && self._widgets[key]['forceUpdate']());
-      }
-      // update object elements or if it _isArray elements that lower than self.props.arrayStart
-      self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self.$refs[field] && self.$refs[field].setState({branch: nextBranch[field]}));
-
-      if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch, nextProps) || doUpdate; // updates and reorders elements greater/equal than self.props.arrayStart
-
-    }
-
-    return doUpdate; //|| !isEqual(self.props, nextProps, {skipKeys: ['$branch']});
-  }
-
-  getRef(path: Path) {
-    const self = this;
-    if (!self.props.isArray || isNaN(parseInt(path[0])) || path[0] < self.props.arrayStart) return super.getRef(path);
-    let field = self._getArrayField(path[0]);
-    return field && self.$refs[field.key].getRef(path.slice(1))
-  }
-
-  render() {
-    const self = this;
-    let props = self.props;
-    // try {
-    if (props.viewer) {
-      let {_$widget = UniversalViewer, ...rest} = props.$_viewerProps || {};
-      rest.inputProps = props;
-      rest.value = props.$FField.value;
-      return h(_$widget, rest)
-    }
-    // if (isSelfManaged(props.$branch)) return null;
-    if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-    return <FSectionWidget _$widget={self._$widget} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
-                           getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
-    // } catch (e) {
-    //   throw self.props.$FField._addErrPath(e)
-    // }
-  }
-}
+// class FSection extends FRefsGeneric {
+//   private _arrayStart: number = 0;
+//   private _rebuild = true;
+//   private _focusField: string = '';
+//   private _arrayKey2field: { [key: string]: number } = {};
+//   private _widgets: { [key: string]: any } = {};
+//   private _objectLayouts: any[] = [];
+//   private _arrayLayouts: any[] = [];
+//   private _setWidRef: any;
+//   private _maps: NPM4WidgetsType = {};
+//   private _mappedData: { [key: string]: any } = {};
+//   private _$widget: any;
+//   private _isArray: boolean = false;
+//
+//   constructor(props: any, context: any) {
+//     super(props, context);
+//     const self = this;
+//     self._setWidRef = (key: number | string) => (item: any) => self._widgets[key] = item;
+//   }
+//
+//   _getMappedData(key: number) {
+//     const self = this;
+//     return () => self._mappedData[key]
+//   }
+//
+//
+//   _build(props: any) {
+//
+//     function makeLayouts_INNER_PROCEDURE(UPDATABLE: { counter: number, keys: string[] }, fields: Array<string | FFLayoutGeneric<jsFFCustomizeType>>, layout: any[] = []) {
+//       objKeys(fields).forEach(key => {
+//         let fieldOrLayout = fields[key];
+//         const {keys, counter} = UPDATABLE;
+//         if (isString(fieldOrLayout)) { // if field is string then _makeFField
+//           let idx = UPDATABLE.keys.indexOf(fieldOrLayout);
+//           if (~idx) {
+//             layout.push(self._makeFField(fieldOrLayout));
+//             UPDATABLE.keys.splice(idx, 1);
+//           }
+//         } else if (isArray(fieldOrLayout)) {
+//           makeLayouts_INNER_PROCEDURE(UPDATABLE, fieldOrLayout, layout);
+//         } else if (isObject(fieldOrLayout)) { // layout
+//           const counter = UPDATABLE.counter++;
+//           let {_$widget, $_fields} = normalizeLayout(counter, fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>);
+//           layout.push(<FSectionWidget _$widget={_$widget} _$cx={_$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
+//                                       getMappedData={self._getMappedData(counter)}>{$_fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields)}</FSectionWidget>)
+//         }
+//       });
+//       return layout
+//     }
+//
+//     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
+//       let {$_maps, rest} = extractMaps(layout, ['$_fields']);
+//       // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
+//       let {$_fields, $_reactRef, _$skipKeys, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
+//       if ($_fields || !counter) className = merge(LayoutDefaultClass, className);
+//       staticProps.className = className;
+//       let refObject = self._refProcess($_reactRef) || {};
+//       if (isFunction(refObject)) refObject = {'ref': refObject};
+//       Object.assign(staticProps, refObject);
+//       let maps = normalizeMaps($_maps, counter.toString());
+//       mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
+//       self._mappedData[counter] = staticProps;
+//       return {_$widget, $_fields}
+//     }
+//
+//     const self = this;
+//
+//     const {$branch, $layout, _$cx, arrayStart, strictLayout, LayoutDefaultWidget = 'div', LayoutDefaultClass = {}, uniqKey, focusField} = props;
+//
+//     const mapsKeys = ['build', 'data', 'every'];
+//     mapsKeys.forEach(k => self._maps[k] = []);
+//     self.$refs = {};
+//     self._widgets = {};
+//     self._mappedData = {};
+//     self._objectLayouts = [];
+//
+//     const UPDATABLE = {keys: self._getObjectKeys($branch), counter: 1};
+//     self._focusField = focusField || UPDATABLE.keys[0] || '';
+//
+//     let {_$widget, $_fields} = normalizeLayout(0, isArray($layout) ? {$_fields: $layout} : $layout);
+//     self._$widget = _$widget;
+//
+//     if ($_fields)// make initial _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys
+//       self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields);
+//     if (strictLayout !== true)// and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
+//       UPDATABLE.keys.forEach(fieldName => self._objectLayouts.push(self._makeFField(fieldName)));
+//
+//     self._arrayLayouts = [];
+//     self._arrayKey2field = {};
+//     if (self.props.isArray) {  // _makeArrayLayouts
+//       for (let i = arrayStart; i < self.props.length; i++) {
+//         let arrayKey = self._arrayIndex2key($branch[i]);
+//         self._arrayLayouts.push(self._makeFField(i.toString(), arrayKey));
+//         arrayKey && (self._arrayKey2field[arrayKey] = i);
+//       }
+//     }
+//     self._mappedData = self._updateMappedData(undefined, self._getData($branch), 'build');
+//     self._rebuild = false;
+//   }
+//
+//   _makeFField(fieldName: string, arrayKey?: string) {
+//     const self = this;
+//     return <FField ref={self._setRef(arrayKey || fieldName)} key={arrayKey || fieldName} pFForm={self.props.$FField.pFForm} FFormApi={self.props.FFormApi}
+//                    id={self.props.id ? self.props.id + '/' + (arrayKey || fieldName) : undefined}
+//                    name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '${idx}_' + (arrayKey || fieldName) : fieldName) + ']' : undefined}
+//                    getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
+//   }
+//
+//   _arrayIndex2key($branch: any) {
+//     return this.props.uniqKey ? getIn(this._getData($branch), string2path(this.props.uniqKey)) : undefined;
+//   }
+//
+//   _getObjectKeys($branch: StateType) {
+//     const self = this;
+//     let keys: string[] = [];
+//     if (self.props.isArray) for (let i = 0; i < self.props.arrayStart; i++) keys.push(i.toString());
+//     else keys = branchKeys($branch);
+//     return keys;
+//   }
+//
+//   _getObjectPath(field: string) {
+//     return this.props.$FField.path + '/' + field;
+//   }
+//
+//   _getArrayPath(key: string) {
+//     return this.props.$FField.path + '/' + this._arrayKey2field[key];
+//   }
+//
+//   _getArrayField(key: any) {
+//     const self = this;
+//     return self._arrayLayouts[key - self.props.arrayStart]
+//   }
+//
+//   _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType, props: any) {
+//     const self = this;
+//     const updatedArray = [];
+//     let doUpdate = false;
+//     for (let i = props.arrayStart; i < props.length; i++) {
+//       let arrayKey = self._arrayIndex2key(nextBranch[i]);
+//       if (isUndefined(arrayKey)) throw new Error('no unique key provided for array item');
+//       if (self.$refs[arrayKey]) self.$refs[arrayKey].setState({branch: nextBranch[i]});
+//       let prevIndex = self._arrayKey2field[arrayKey];
+//       if (self._arrayKey2field[arrayKey] !== i) {
+//         self._arrayKey2field[arrayKey] = i;
+//         doUpdate = true
+//       }
+//       updatedArray.push(!isUndefined(prevIndex) ? self._getArrayField(prevIndex) : self._makeFField(i.toString(), arrayKey));
+//     }
+//     if (self._arrayLayouts.length !== updatedArray.length) doUpdate = true;
+//     if (doUpdate) self._arrayLayouts = updatedArray;
+//     return doUpdate;
+//   }
+//
+//   _updateMappedData(prevData: any, nextData: any, fullUpdate: boolean | 'build' = prevData !== nextData) {
+//     const self = this;
+//     return updateProps(self._mappedData, prevData, nextData, fullUpdate == 'build' && self._maps.build, fullUpdate && self._maps.data, self._maps.every);
+//   }
+//
+//   _getData(branch = this.props.$branch) {
+//     return this.props.$FField.getData(branch)
+//   }
+//
+//   shouldComponentUpdate(nextProps: any) {
+//     const self = this;
+//     if (['FFormApi', 'oneOf', 'branchKeys'].some(comparePropsFn(self.props, nextProps)))
+//       return self._rebuild = true;
+//
+//     let doUpdate = !isEqual(nextProps, self.props, {skipKeys: ['$branch']});
+//
+//     let prevBranch = self.props.$branch;
+//     let nextBranch = nextProps.$branch;
+//
+//     if (prevBranch != nextBranch) {
+//       let newMapped: any;
+//       try {
+//         newMapped = self._updateMappedData(self._getData(prevBranch), self._getData(nextBranch));
+//       } catch (e) {
+//         throw self.props.$FField._addErrPath(e)
+//       }
+//
+//       if (newMapped != self._mappedData) { // update self._widgets
+//         const oldMapped = self._mappedData;
+//         self._mappedData = newMapped;
+//         objKeys(newMapped).forEach(key => self._widgets[key] && newMapped[key] != oldMapped[key] && self._widgets[key]['forceUpdate']());
+//       }
+//       // update object elements or if it _isArray elements that lower than self.props.arrayStart
+//       self._getObjectKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self.$refs[field] && self.$refs[field].setState({branch: nextBranch[field]}));
+//
+//       if (self.props.isArray) doUpdate = self._reorderArrayLayout(prevBranch, nextBranch, nextProps) || doUpdate; // updates and reorders elements greater/equal than self.props.arrayStart
+//
+//     }
+//
+//     return doUpdate; //|| !isEqual(self.props, nextProps, {skipKeys: ['$branch']});
+//   }
+//
+//   getRef(path: Path) {
+//     const self = this;
+//     if (!self.props.isArray || isNaN(parseInt(path[0])) || path[0] < self.props.arrayStart) return super.getRef(path);
+//     let field = self._getArrayField(path[0]);
+//     return field && self.$refs[field.key].getRef(path.slice(1))
+//   }
+//
+//   render() {
+//     const self = this;
+//     let props = self.props;
+//     // try {
+//     if (props.viewer) {
+//       let {_$widget = UniversalViewer, ...rest} = props.$_viewerProps || {};
+//       rest.inputProps = props;
+//       rest.value = props.$FField.value;
+//       return h(_$widget, rest)
+//     }
+//     // if (isSelfManaged(props.$branch)) return null;
+//     if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
+//     return <FSectionWidget _$widget={self._$widget} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
+//                            getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
+//     // } catch (e) {
+//     //   throw self.props.$FField._addErrPath(e)
+//     // }
+//   }
+// }
 
 
 /////////////////////////////////////////////
 //  Basic components
 /////////////////////////////////////////////
 
-class GenericWidget extends FRefsGeneric {
-  private _children: any;
-  private _reactRef: any;
-  protected _mapped: any[];
-
-  constructor(props: any, context: any) {
-    super(props, context);
-  }
-
-  private _newWidget(key: any, obj: any, passedReactRef: anyObject = {}) {
-    const {_$widget: Widget = GenericWidget, className, $_reactRef, ...rest} = obj;
-    const self = this;
-    let refObject = self._refProcess(key, $_reactRef) || {};
-    if (isFunction(refObject)) refObject = {ref: refObject};
-    if (isFunction(passedReactRef)) refObject.ref = passedReactRef;
-    else Object.assign(refObject, passedReactRef);
-    // console.log('className', className);
-    if (typeof className == "string") debugger;
-    return <Widget key={key}
-                   className={(!passCx(Widget) && this.props._$cx) ? this.props._$cx(className) : className}
-                   _$cx={passCx(Widget) ? this.props._$cx : undefined} {...rest} {...refObject}/>
-  }
-
-  protected _mapChildren(children: any, $_reactRef: anyObject) {
-    const self = this;
-    if (children !== self._children || self._reactRef !== $_reactRef) {
-      const prev = self._children && toArray(self._children);
-      const next = children && toArray(children);
-      self._mapped = next && next.map((ch: any, i: number) => (!isObject(ch) || ch.$$typeof) ? ch :
-        ((!self._mapped ||
-          !getIn(self._mapped, i) ||
-          prev[i] !== next[i] ||
-          getIn(self._reactRef, i) !== getIn($_reactRef, i)) ? self._newWidget(i, ch, getIn($_reactRef, i)) :
-          self._mapped[i]));
-      self._children = children;
-      self._reactRef = $_reactRef
-    }
-  }
-
-  protected setRef2rest(rest: anyObject, $_reactRef: anyObject) {
-    if (!$_reactRef) return rest;
-    objKeys($_reactRef).filter(v => isNaN(+v)).forEach(k => rest[k] = $_reactRef[k]); // assing all except numeric keys, as then assigned at _mapChildren
-    return rest;
-  }
-
-  protected setElements2rest(rest: anyObject, _$elements: any) {
-    if (!_$elements) return rest;
-    let elms = {'^': _$elements};
-    objKeys(rest).forEach(k => isElemRef(rest[k]) && (rest[k] = getIn(elms, string2path(rest[k]))));
-    return rest
-  }
-
-  render(): any {
-    const self = this;
-    if (self.props.norender) return null;
-    let {_$useTag: UseTag = 'div', _$cx, _$elements, className, $_reactRef, children, ...rest} = self.props;
-    self._mapChildren(children, $_reactRef);
-    self.setRef2rest(rest, $_reactRef);
-    self.setElements2rest(rest, _$elements);
-    if (!_$cx && _$elements) _$cx = _$elements._$cx;
-    return (<UseTag children={self._mapped} className={_$cx ? _$cx(className) : className} {...rest} />)
-  }
-}
+// class GenericWidget extends FRefsGeneric {
+//   private _children: any;
+//   private _reactRef: any;
+//   protected _mapped: any[];
+//
+//   constructor(props: any, context: any) {
+//     super(props, context);
+//   }
+//
+//   private _newWidget(key: any, obj: any, passedReactRef: anyObject = {}) {
+//     const {_$widget: Widget = GenericWidget, className, $_reactRef, ...rest} = obj;
+//     const self = this;
+//     let refObject = self._refProcess($_reactRef) || {};
+//     if (isFunction(refObject)) refObject = {ref: refObject};
+//     if (isFunction(passedReactRef)) refObject.ref = passedReactRef;
+//     else Object.assign(refObject, passedReactRef);
+//     // console.log('className', className);
+//     if (typeof className == "string") debugger;
+//     return <Widget key={key}
+//                    className={(!passCx(Widget) && this.props._$cx) ? this.props._$cx(className) : className}
+//                    _$cx={passCx(Widget) ? this.props._$cx : undefined} {...rest} {...refObject}/>
+//   }
+//
+//   protected _mapChildren(children: any, $_reactRef: anyObject) {
+//     const self = this;
+//     if (children !== self._children || self._reactRef !== $_reactRef) {
+//       const prev = self._children && toArray(self._children);
+//       const next = children && toArray(children);
+//       self._mapped = next && next.map((ch: any, i: number) => (!isObject(ch) || ch.$$typeof) ? ch :
+//         ((!self._mapped ||
+//           !getIn(self._mapped, i) ||
+//           prev[i] !== next[i] ||
+//           getIn(self._reactRef, i) !== getIn($_reactRef, i)) ? self._newWidget(i, ch, getIn($_reactRef, i)) :
+//           self._mapped[i]));
+//       self._children = children;
+//       self._reactRef = $_reactRef
+//     }
+//   }
+//
+//   protected setRef2rest(rest: anyObject, $_reactRef: anyObject) {
+//     if (!$_reactRef) return rest;
+//     objKeys($_reactRef).filter(v => isNaN(+v)).forEach(k => rest[k] = $_reactRef[k]); // assing all except numeric keys, as then assigned at _mapChildren
+//     return rest;
+//   }
+//
+//   protected setElements2rest(rest: anyObject, _$elements: any) {
+//     if (!_$elements) return rest;
+//     let elms = {'^': _$elements};
+//     objKeys(rest).forEach(k => isElemRef(rest[k]) && (rest[k] = getIn(elms, string2path(rest[k]))));
+//     return rest
+//   }
+//
+//   render(): any {
+//     const self = this;
+//     if (self.props.norender) return null;
+//     let {_$useTag: UseTag = 'div', _$cx, _$elements, className, $_reactRef, children, ...rest} = self.props;
+//     self._mapChildren(children, $_reactRef);
+//     self.setRef2rest(rest, $_reactRef);
+//     self.setElements2rest(rest, _$elements);
+//     if (!_$cx && _$elements) _$cx = _$elements._$cx;
+//     return (<UseTag children={self._mapped} className={_$cx ? _$cx(className) : className} {...rest} />)
+//   }
+// }
 
 
 function isEmpty(value: any) {
@@ -935,11 +1160,8 @@ function UniversalViewer(props: any) {
   return h(UseTag, rest, toString(emptyMock, enumExten, value))
 }
 
-
-class UniversalInput extends GenericWidget {
-  render() {
-    const self = this;
-    const props: any = self.props;
+const UniversalInput = forwardRef(
+  function (props: any, ref: any) {
     if (props.viewer) {
       let {_$widget = UniversalViewer, ...rest} = props.$_viewerProps || {};
       rest.inputProps = props;
@@ -947,27 +1169,25 @@ class UniversalInput extends GenericWidget {
       return h(_$widget, rest)
     }
 
-    let {_$useTag: UseTag, type, $_reactRef, _$cx, _$passCx, _$elements, viewer, $_viewerProps, children, ...rest} = props;
+    let {_$useTag, type, viewer, $_viewerProps, ...rest} = props;
 
-    self._mapChildren(children, $_reactRef);
-    self.setRef2rest(rest, $_reactRef);
-    self.setElements2rest(rest, _$elements);
-    if (!_$cx && _$elements) _$cx = _$elements._$cx;
 
-    if (UseTag) {
+    // if (!_$cx && _$elements) _$cx = _$elements._$cx;
+    rest.ref = ref;
+    if (_$useTag) {
       rest.type = type;
     } else {
-      if (type == 'textarea' || type == 'select') UseTag = type;
+      if (type == 'textarea' || type == 'select') _$useTag = type;
       else {
-        UseTag = 'input';
+        _$useTag = 'input';
         rest.type = type;
       }
     }
-    if (_$passCx) rest._$cx = _$cx;
-    if (rest.className && _$cx) rest.className = _$cx(rest.className);
-    return h(UseTag, rest, self._mapped)
+    // if (_$passCx) rest._$cx = _$cx;
+    // if (rest.className && _$cx) rest.className = _$cx(rest.className);
+    return h(_$useTag, rest)
   }
-}
+);
 
 
 class Autowidth extends Component<any, any> {
@@ -1155,9 +1375,9 @@ function bindProcessorToThis(val: any, opts: anyObject = {}) {
   return val
 }
 
-function passCx(Widget: any) {
-  return Widget instanceof GenericWidget
-}
+// function passCx(Widget: any) {
+//   return Widget instanceof GenericWidget
+// }
 
 const resolveComponents = memoize((elements: elementsType, customizeFields: FFCustomizeType = {}, sets?: string): jsFFCustomizeType => {
   if (sets) {
@@ -1277,12 +1497,13 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
   },
   // types: ['string', 'integer', 'number', 'object', 'array', 'boolean', 'null'],
   widgets: {
-    Section: FSection,
-    Generic: GenericWidget,
+    // Section: FSection,
+    // Generic: GenericWidget,
+    // Builder: FBuilder,
+    // Wrapper,
     Input: UniversalInput,
-    Builder: FBuilder,
+    Rest: RestWidget,
     Autowidth,
-    Wrapper,
     ItemMenu,
     Checkbox,
     CheckboxNull,
@@ -1290,30 +1511,42 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
   },
   sets: {
     'base': {
-      Wrapper: {
-        _$widget: '^/widgets/Wrapper',
-        ArrayItemMenu: {
-          $_ref: '^/parts/ArrayItemMenu'
-        },
-        _$cx: '^/_$cx',
+      Title: {
+        _$widget: 'label',
+        children: [],
         $_maps: {
-          'className/fform-hidden': '@/params/hidden',
-          'arrayItem': '@/arrayItem'
+          'className/fform-required': '@/fData/required',
+          'children/0': '@/fData/title',
+          'className/fform-hidden': {$: '^/fn/not', args: '@/fData/title'},
+          htmlFor: {$: '^/fn/getProp', args: ['props/id'], update: 'build'},
+          'className/fform-title-viewer': '@/params/viewer'
         }
       },
-      Builder: {
-        _$widget: '^/widgets/Builder',
-        _$cx: '^/_$cx',
-        $_maps: {
-          widgets: {$: '^/fn/getProp', args: ['_widgets'], update: 'build'},
-        },
-      },
-      //Title: {},
-      Body: {
-        _$widget: '^/widgets/Generic',
-        _$cx: '^/_$cx',
-        className: 'fform-body',
-      },
+      Layout: {},
+      // Wrapper: {
+      //   _$widget: '^/widgets/Wrapper',
+      //   ArrayItemMenu: {
+      //     $_ref: '^/parts/ArrayItemMenu'
+      //   },
+      //   _$cx: '^/_$cx',
+      //   $_maps: {
+      //     'className/fform-hidden': '@/params/hidden',
+      //     'arrayItem': '@/arrayItem'
+      //   }
+      // },
+      // Builder: {
+      //   _$widget: '^/widgets/Builder',
+      //   _$cx: '^/_$cx',
+      //   $_maps: {
+      //     widgets: {$: '^/fn/getProp', args: ['_widgets'], update: 'build'},
+      //   },
+      // },
+      // //Title: {},
+      // Body: {
+      //   _$widget: '^/widgets/Generic',
+      //   _$cx: '^/_$cx',
+      //   className: 'fform-body',
+      // },
       //Main: {},
       Message: {$_ref: '^/parts/Message'}
     },
@@ -1322,7 +1555,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         _$widget: '^/widgets/Input',
         _$cx: '^/_$cx',
-        $_reactRef: {ref: true},
+        $_reactRef: '%Main',
         $_viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {'fform-viewer': true}},
         onChange: {$: '^/fn/eventValue|setValue'},
         onBlur: {$: '^/fn/blur'},
@@ -1341,19 +1574,6 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
           id: {$: '^/fn/getProp', args: 'props/id', update: 'build'},
           name: {$: '^/fn/getProp', args: 'props/name', update: 'build'},
           'className/fform-input-priority': {$: '^/fn/setInputPriority', args: '@/status/priority'}
-        }
-      },
-      Title: {
-        _$widget: '^/widgets/Generic',
-        _$cx: '^/_$cx',
-        _$useTag: 'label',
-        children: [],
-        $_maps: {
-          'className/fform-required': '@/fData/required',
-          'children/0': '@/fData/title',
-          'className/fform-hidden': {$: '^/fn/not', args: '@/fData/title'},
-          htmlFor: {$: '^/fn/getProp', args: ['id'], update: 'build'},
-          'className/fform-title-viewer': '@/params/viewer'
         }
       },
     },
@@ -1402,7 +1622,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         type: 'checkbox',
         _$useTag: "^/widgets/Checkbox",
-        _$passCx: true,
+        _$cx: '^/_$cx',
         onChange: {$: '^/fn/eventChecked|setValue|liveUpdate'},
         $_maps: {
           placeholder: false,
@@ -1424,39 +1644,42 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     object: {
       $_ref: '^/sets/base',
       Main: {
-        _$widget: '^/widgets/Section',
-        _$cx: '^/_$cx',
-        $_reactRef: true,
-        uniqKey: 'params/uniqKey',
-        LayoutDefaultClass: 'layout',
-        LayoutDefaultWidget: 'div',
-        $_viewerProps: {$_ref: '^/sets/simple/Main/$_viewerProps'},
+        _$widget: '^/widgets/Rest',
         $_maps: {
-          length: '@/length',
-          oneOf: '@/oneOf',
-          branchKeys: '@/branchKeys',
-          strictLayout: '@/fData/strictLayout',
-          isArray: {$: '^/fn/equal', args: ['@/fData/type', 'array']},
-          $branch: {$: '^/fn/getProp', args: '$branch', update: 'every'},
-          arrayStart: {$: '^/fn/getArrayStart', args: [], update: 'build'},
-          $FField: {$: '^/fn/getProp', args: [], update: 'build'},
-          FFormApi: {$: '^/fn/getProp', args: 'props/pFForm/api', update: 'build'},
-          id: {$: '^/fn/getProp', args: 'props/id', update: 'build'},
-          name: {$: '^/fn/getProp', args: 'props/name', update: 'build'},
-          $layout: {$: '^/fn/getProp', args: '_layout', update: 'build'}
+          children: {$: '^/fn/getProp', args: 'restFields', update: 'every'}
         }
+        // _$cx: '^/_$cx',
+        // $_reactRef: '%Main',
+        // uniqKey: 'params/uniqKey',
+        // LayoutDefaultClass: 'layout',
+        // LayoutDefaultWidget: 'div',
+        // $_viewerProps: {$_ref: '^/sets/simple/Main/$_viewerProps'},
+        // $_maps: {
+        //   length: '@/length',
+        //   oneOf: '@/oneOf',
+        //   branchKeys: '@/branchKeys',
+        //   strictLayout: '@/fData/strictLayout',
+        //   isArray: {$: '^/fn/equal', args: ['@/fData/type', 'array']},
+        //   $branch: {$: '^/fn/getProp', args: '$branch', update: 'every'},
+        //   arrayStart: {$: '^/fn/getArrayStart', args: [], update: 'build'},
+        //   $FField: {$: '^/fn/getProp', args: [], update: 'build'},
+        //   FFormApi: {$: '^/fn/getProp', args: 'props/pFForm/api', update: 'build'},
+        //   id: {$: '^/fn/getProp', args: 'props/id', update: 'build'},
+        //   name: {$: '^/fn/getProp', args: 'props/name', update: 'build'},
+        //   $layout: {$: '^/fn/getProp', args: '_layout', update: 'build'}
+        // }
       },
-      Title: {
-        _$widget: '^/widgets/Generic',
-        _$cx: '^/_$cx',
-        _$useTag: 'legend',
-        children: [
-          {$_ref: '^/sets/simple/Title', _$useTag: 'span'},
-          {$_ref: '^/parts/ArrayAddButton'},
-          {$_ref: '^/parts/ArrayDelButton'},
-          {$_ref: '^/parts/ArrayEmpty'}],
-      },
-      Wrapper: {_$useTag: 'fieldset'},
+      // Title: {
+      //   _$widget: '^/widgets/Generic',
+      //   _$cx: '^/_$cx',
+      //   _$useTag: 'legend',
+      //   children: [
+      //     {$_ref: '^/sets/simple/Title', _$useTag: 'span'},
+      //     {$_ref: '^/parts/ArrayAddButton'},
+      //     {$_ref: '^/parts/ArrayDelButton'},
+      //     {$_ref: '^/parts/ArrayEmpty'}],
+      // },
+      // Wrapper: {_$useTag: 'fieldset'},
     },
     array: {$_ref: '^/sets/object'},
     select: {
@@ -1480,11 +1703,10 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     },
     radio: {
       $_ref: '^/sets/base',
-      Title: {$_ref: '^/sets/simple/Title'},
       Main: {
         $_ref: '^/parts/RadioSelector',
-        $_reactRef: true,
-        $_setRef: '$setRef',
+        $_reactRef: '%Main',
+        $_setReactRef: '$setRef',
         $prefixRefName: '@enum/',
         $_viewerProps: {$_ref: '^/sets/simple/Main/$_viewerProps'},
         staticProps: {onChange: {args: ['${0}']}},
@@ -1517,14 +1739,12 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Autowidth: {$_ref: '^/parts/Autowidth'},
       Wrapper: {className: {'fform-shrink': true}},
     },
-    $noArrayControls: {Wrapper: {$_maps: {'arrayItem': false}}},
-    $noArrayButtons: {Title: {$_ref: '^/sets/simple/Title'}},
     $inlineItems: {Main: {className: {'fform-inline': true}}},
-    $inlineTitle: {Wrapper: {wrapperClassName: {'fform-inline': true}}},
-    $inlineLayout: {Main: {LayoutDefaultClass: {'fform-inline': true}}},
-    $inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'fform-inline': true}}}},
-    $arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
-    $arrayControlsDelOnly: {Wrapper: {ArrayItemMenu: {buttons: ['del'],}}},
+    // $inlineTitle: {Wrapper: {wrapperClassName: {'fform-inline': true}}},
+    // $inlineLayout: {Main: {LayoutDefaultClass: {'fform-inline': true}}},
+    // $inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'fform-inline': true}}}},
+    // $arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
+    // $arrayControlsDelOnly: {Wrapper: {ArrayItemMenu: {buttons: ['del'],}}},
     $noTitle: {Title: false},
     $noMessage: {Message: false},
     $shrink: {Wrapper: {className: {'fform-shrink': true}}},
@@ -1663,8 +1883,8 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
   },
   parts: {
     Message: {
-      _$widget: '^/widgets/Generic',
-      _$cx: '^/_$cx',
+      // _$widget: '^/widgets/Generic',
+      // _$cx: '^/_$cx',
       children: [],
       $_maps: {
         children: {$: '^/fn/messages', args: ['@/messages', {}]},
@@ -1675,7 +1895,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       _$widget: '^/widgets/Input',
       _$useTag: '^/widgets/Checkboxes',
       _$cx: '^/_$cx',
-      _$passCx: true,
+      // _$passCx: true,
       staticProps: {
         type: 'radio',
         onChange: {$: '^/fn/eventValue|setValue|liveUpdate', args: ['${0}', {path: './@/selector/value'}]},
@@ -1714,7 +1934,10 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     Submit: {
       $_ref: '^/parts/Button',
       type: 'submit',
-      children: ['Submit']
+      children: ['Submit'],
+      $_maps: {
+        disabled: {$: '^/fn/or', args: ['@/status/submitting', '@/params/disabled']},
+      }
     },
     Reset: {
       $_ref: '^/parts/Button',
@@ -1802,6 +2025,19 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     style.unshift(path.pop());
     push2array(path, 'style', style);
     return elems.$(elems, path)
+  },
+  $selector: (elems: any, path: Path) => {
+    let nm = path[0];
+    return {
+      staticProps: {
+        onChange: {args: ['${0}', {path: `@/${nm}/value`}]},
+      },
+      $_maps: {
+        value: `@/${nm}/value`,
+        $enum: `@/${nm}/enum`,
+        $enumExten: `@/${nm}/enumExten`
+      }
+    }
   },
   _$shorts: {
     'W': 'Wrapper',
