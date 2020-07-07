@@ -473,6 +473,7 @@ class FField extends FRefsGeneric {
     const self = this;
     self._cachedTimeout = undefined;
     if (update && self._cached) {
+      console.log('update', self._cached);
       let prevData = self.getData();
       let stateUpd = self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate && !self._forceLiveUpd, path: self.path, ...self._cached.opts});
       self._forceLiveUpd = false;
@@ -498,22 +499,24 @@ class FField extends FRefsGeneric {
       valueSet = (path == fPath + '/@/value') || (path == '#/@/current/' + fPath.slice(2));
     }
     if (valueSet) {
+      console.log('valueSet', valueSet);
       let prevData = self.getData();
       self._cached = {value, opts};
       if (fieldCache && !self._forceUpd) {
         if (self._cachedTimeout) clearTimeout(self._cachedTimeout);
         self._cachedTimeout = setTimeout(self._updateCachedValue.bind(self), fieldCache);
         const data = self.getData();
-        const mappedData = self._mappedData;
+        const oldMappedData = self._mappedData;
 
         self.get = (...paths: any[]) => {
           let path = normalizePath(paths, self.path);
           if (isEqual(path, normalizePath('./@value', self.path))) return data.value;
           return self.stateApi.get(path)
         };
-        self._setMappedData(prevData, data, true);
+        self._mappedData = self._setMappedData(prevData, data, true);
         self.get = null;
-        if (mappedData != self._mappedData) self.forceUpdate();
+        if (oldMappedData != self._mappedData)
+          self._updateWidgets(oldMappedData, self._mappedData);
       } else {
         self._forceUpd = false;
         self._updateCachedValue();
@@ -564,7 +567,7 @@ class FField extends FRefsGeneric {
     }
 
     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>, opts: any = {}) {
-      let {$_maps, rest} = extractMaps(layout, ['$_fields']);
+      let {$_maps, rest} = extractMaps(layout, ['children']);
       //let {$defaultWidget, $baseLayoutClass} = opts;
       // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
       let {children: $_fields, $_reactRef, _$skipKeys, _$widget, $_setReactRef, className, $defaultWidget, $baseLayoutClass, ...staticProps} = rest;
@@ -574,6 +577,7 @@ class FField extends FRefsGeneric {
       _$widget = _$widget || $defaultWidget;
       if ($_fields) className = merge($baseLayoutClass, className);
       staticProps.className = className;
+      // if ($_fields) staticProps.children = [];
       let refObject = self._refProcess($_reactRef) || {};
       if (isFunction(refObject)) refObject = {'ref': refObject};
       Object.assign(staticProps, refObject);
@@ -660,7 +664,7 @@ class FField extends FRefsGeneric {
     //   self._mappedData[block] = staticProps;  // properties, without reserved names
     // });
 
-    self._setMappedData(undefined, data, 'build');
+    self._mappedData = self._setMappedData(undefined, data, 'build');
 
     self._rebuild = false;
   }
@@ -671,6 +675,7 @@ class FField extends FRefsGeneric {
     self.getData = () => nextData;
     const _mappedData = updateProps(self._mappedData, prevData, nextData, updateStage == 'build' && self._maps.build, updateStage && self._maps.data, self._maps.every);
     self.getData = _gData;
+    return _mappedData;
     if (self._mappedData != _mappedData) {
       self._mappedData = _mappedData;
       return true
@@ -755,6 +760,7 @@ class FField extends FRefsGeneric {
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
     const self = this;
+    console.log('nextProps', nextProps);
     if (nextProps.FFormApi !== self.props.FFormApi) {
       self._updateStateApi(nextProps.FFormApi);
       return (self._rebuild = true);
@@ -762,21 +768,37 @@ class FField extends FRefsGeneric {
     if (!isEqual(nextProps, self.props)) return (self._rebuild = true);
 
     if (isUndefined(nextState.branch)) return true;
-    self.$branch = nextState.branch;
-    let updateComponent = false;
+    // self.$branch = nextState.branch;
+    let prevBranch = self.state.branch;
+    let nextBranch = nextState.branch;
 
     const prevData = self.getData();
     const nextData = self.getData(getIn(nextState, 'branch'));
     if (getIn(nextData, 'oneOf') !== getIn(prevData, 'oneOf')) return (self._rebuild = true);
 
-    try {
-      updateComponent = self._setMappedData(prevData, nextData, nextData !== prevData) || updateComponent;
-      updateComponent = updateComponent || getIn(nextData, 'params', 'norender') !== getIn(prevData, 'params', 'norender');
-    } catch (e) {
-      throw self._addErrPath(e)
+    let newMapped = self._setMappedData(prevData, nextData, nextData !== prevData);
+    if (newMapped != self._mappedData) { // update self._widgets
+      const oldMapped = self._mappedData;
+      self._updateWidgets(oldMapped, self._mappedData = newMapped)
     }
+    // update object elements or if it _isArray elements that lower than self.props.arrayStart
+    branchKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self.$refs[field] && self.$refs[field].setState({branch: nextBranch[field]}));
 
-    return updateComponent
+    // try {
+    //   updateComponent = self._setMappedData(prevData, nextData, nextData !== prevData) || updateComponent;
+    //   updateComponent = updateComponent || getIn(nextData, 'params', 'norender') !== getIn(prevData, 'params', 'norender');
+    // } catch (e) {
+    //   throw self._addErrPath(e)
+    // }
+
+    return false
+  }
+
+  _updateWidgets = (oldMapped: any, newMapped: any) => {
+    const self = this;
+
+    objKeys(newMapped).forEach(key => self._widgets[key] && newMapped[key] != oldMapped[key] && self._widgets[key]['forceUpdate']());
+
   }
 
   render() {
@@ -828,8 +850,19 @@ class FField extends FRefsGeneric {
 //  Section class
 /////////////////////////////////////////////
 function RestWidget({children}: any) {
-  return children;
+  return children || null;
 }
+
+const obj2react = memoize((props: any, _$cx: any) => {
+  if (isUndefined(props)) return null;
+  if (!isObject(props) || isValidElement(props)) return props;
+  let {_$widget = 'div', children, ...rest} = props;
+  if (props.className)
+    props.className = _$cx(props.className);
+  if (children)
+    children = children.map((v: any) => obj2react(v, _$cx));
+  return h(_$widget, props, children);
+});
 
 class FSectionWidget extends Component<any, any> { // need to be class, as we use it's forceUpdate() method
   refs: any;
@@ -845,7 +878,19 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
 
   render() {
     const props = this._cn(this.props.getMappedData());
-    return h(this.props._$widget, props, this.props.children || props.children);
+    let {children, _$cx} = this.props as any;
+    if (props.children) {
+      children = [...(children || [])];
+      objKeys(props.children).forEach(k => {
+        if (!isValidElement(children[k])) {
+          if (isMergeable(props.children[k]))
+            children[k] = merge(children[k], props.children[k]);
+          else children[k] = props.children[k]
+        }
+      })
+    }
+    // let children = this.props.children && (this.props.children as any).length ? this.props.children : undefined
+    return h(this.props._$widget, props, children && children.map((v: any) => obj2react(v, _$cx)));
   }
 }
 
@@ -1211,6 +1256,7 @@ class Autowidth extends Component<any, any> {
     const value = (isUndefined(props.value) || props.value === null ? '' : props.value.toString()) || props.placeholder || '';
     return (<div style={Autowidth.sizerStyle as any} ref={(elem) => {
       (self._elem = elem) &&
+      props.$FField &&
       props.$FField.$refs['@Main'] &&
       props.$FField.$refs['@Main'].style &&
       (props.$FField.$refs['@Main'].style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
@@ -1219,20 +1265,20 @@ class Autowidth extends Component<any, any> {
 }
 
 
-function FBuilder(props: any) {
-  let {children: mapped, widgets} = props;
-  const {Title, Body, Main, Message, Wrapper, Autowidth} = widgets;
-
-  mapped = deArray(mapped);
-  return Wrapper ? h(Wrapper, mapped['Wrapper'],
-    Title ? h(Title, mapped['Title']) : '',
-    Body ? h(Body, mapped['Body'],
-      Main ? h(Main, mapped['Main']) : '',
-      Message ? h(Message, mapped['Message']) : '',
-      Autowidth ? h(Autowidth, mapped['Autowidth']) : ''
-    ) : ''
-  ) : ''
-}
+// function FBuilder(props: any) {
+//   let {children: mapped, widgets} = props;
+//   const {Title, Body, Main, Message, Wrapper, Autowidth} = widgets;
+//
+//   mapped = deArray(mapped);
+//   return Wrapper ? h(Wrapper, mapped['Wrapper'],
+//     Title ? h(Title, mapped['Title']) : '',
+//     Body ? h(Body, mapped['Body'],
+//       Main ? h(Main, mapped['Main']) : '',
+//       Message ? h(Message, mapped['Message']) : '',
+//       Autowidth ? h(Autowidth, mapped['Autowidth']) : ''
+//     ) : ''
+//   ) : ''
+// }
 
 
 function Wrapper(props: any) {
@@ -1554,8 +1600,8 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_ref: '^/sets/base',
       Main: {
         _$widget: '^/widgets/Input',
-        _$cx: '^/_$cx',
         $_reactRef: '%Main',
+        _$cx: '^/_$cx',
         $_viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {'fform-viewer': true}},
         onChange: {$: '^/fn/eventValue|setValue'},
         onBlur: {$: '^/fn/blur'},
@@ -1820,6 +1866,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       return [value, ...args];
     },
     setValue(value: any, opts: any = {}, ...args: any[]) {
+      console.log('value', value);
       this.api.setValue(value, opts);
       return args;
     },
