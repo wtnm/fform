@@ -383,9 +383,11 @@ class FField extends FRefsGeneric {
   private _cachedTimeout?: any;
   private _blocks: string[] = [];
   private _widgets: object;
-  private _arrayKey2field: { [key: string]: number } = {};
+  private _uniqKey2key: { [key: string]: number | string } = {};
+  private _uniqKey2field: { [key: string]: any } = {};
   private _layouts: any[] = [];
-  private _arrayLayouts: any[] = [];
+  private _layoutKeys: any; // fields that were used in layout
+  // private _arrayLayouts: any[] = [];
   private _$wrapper: any = 'div';
   private _components: object;
   private _maps: NPM4WidgetsType = {};
@@ -546,6 +548,7 @@ class FField extends FRefsGeneric {
             let idx = UPDATABLE.keys.indexOf(fieldName);
             if (~idx) {
               layout.push(self._makeFField(fieldName));
+              self._layoutKeys.add(fieldName);
               UPDATABLE.keys.splice(idx, 1);
             }
             return
@@ -613,8 +616,10 @@ class FField extends FRefsGeneric {
     self._widgets = {};
     self._mappedData = {};
     self._layouts = [];
+    self._layoutKeys = new Set();
+    self._uniqKey2key = {};
+    self._uniqKey2field = {};
     self.restFields = [];
-
 
     // self._focusField = focusField || UPDATABLE.keys[0] || '';
 
@@ -646,24 +651,6 @@ class FField extends FRefsGeneric {
     if (fData.strictLayout !== true)// and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
       UPDATABLE.keys.forEach(fieldName => self.restFields.push(self._makeFField(fieldName)));
 
-    // let {$_maps, rest: components} = extractMaps(resolvedComponents);
-
-    // self._maps = normalizeMaps($_maps);
-    // self._widgets = {};
-    // self._components = components;
-    // self._blocks = objKeys(components).filter(key => components[key]);
-    // self._blocks.forEach((block: string) => {
-    //   const {_$widget, $_reactRef, $_setReactRef, _$skipKeys, ...staticProps} = components[block];
-    //   if (!_$widget) throw new Error('_$widget for "' + block + '" is empty');
-    //   self._widgets[block] = _$widget;
-    //   if ($_reactRef) { // $_reactRef - prop for react ref-function
-    //     const $ref = self._refProcess('@' + block, $_reactRef);
-    //     staticProps[isFunction($ref) ? 'ref' : '$_reactRef'] = $ref;
-    //   }
-    //   if ($_setReactRef) staticProps[$_setReactRef === true ? '$_setReactRef' : $_setReactRef] = self._setRef;
-    //   self._mappedData[block] = staticProps;  // properties, without reserved names
-    // });
-
     self._mappedData = self._setMappedData(undefined, data, 'build');
 
     self._rebuild = false;
@@ -673,14 +660,10 @@ class FField extends FRefsGeneric {
     const self = this;
     let _gData = self.getData;
     self.getData = () => nextData;
-    const _mappedData = updateProps(self._mappedData, prevData, nextData, updateStage == 'build' && self._maps.build, updateStage && self._maps.data, self._maps.every);
+    const _mappedData = updateProps(self._mappedData, prevData, nextData,
+      updateStage == 'build' && self._maps.build, updateStage && self._maps.data, self._maps.every);
     self.getData = _gData;
     return _mappedData;
-    if (self._mappedData != _mappedData) {
-      self._mappedData = _mappedData;
-      return true
-    }
-    return false
   }
 
   _getMappedData = (key: number) => {
@@ -691,58 +674,26 @@ class FField extends FRefsGeneric {
     }
   };
 
-  _makeFField(fieldName: string, arrayKey?: string) {
+  _getUniqKey = (key: string, branch = this.state.branch) => getIn(branch, key, SymData, 'params', 'uniqKey');
+
+  _makeFField(fieldName: string) {
     const self = this;
-    return <FField ref={self._setRef(arrayKey || fieldName)} key={arrayKey || fieldName}
-                   pFForm={self.pFForm} FFormApi={self.props.FFormApi}
-                   id={self.props.id ? self.props.id + '/' + (arrayKey || fieldName) : undefined}
-                   name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '${idx}_' + (arrayKey || fieldName) : fieldName) + ']' : undefined}
-                   getPath={arrayKey ? self._getArrayPath.bind(self, arrayKey) : self._getObjectPath.bind(self, fieldName)}/>;
-  }
+    let uniqKey = self._getUniqKey(fieldName);
 
-  _arrayIndex2key = ($branch: any) => {
-    return this.props.uniqKey ? getIn(this.getData($branch), string2path(this.props.uniqKey)) : undefined;
-  };
-
-  _getObjectKeys = ($branch: StateType) => {
-    const self = this;
-    let keys: string[] = [];
-    if (self.props.isArray) for (let i = 0; i < self.props.arrayStart; i++) keys.push(i.toString());
-    else keys = branchKeys($branch);
-    return keys;
-  };
-
-  _getObjectPath(field: string) {
-    return this.path + '/' + field;
-  }
-
-  _getArrayPath(key: string) {
-    return this.path + '/' + this._arrayKey2field[key];
-  }
-
-  _getArrayField(key: any) {
-    const self = this;
-    return self._arrayLayouts[key - self.props.arrayStart]
-  }
-
-  _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType, props: any) {
-    const self = this;
-    const updatedArray = [];
-    let doUpdate = false;
-    for (let i = props.arrayStart; i < props.length; i++) {
-      let arrayKey = self._arrayIndex2key(nextBranch[i]);
-      if (isUndefined(arrayKey)) throw new Error('no unique key provided for array item');
-      if (self.$refs[arrayKey]) self.$refs[arrayKey].setState({branch: nextBranch[i]});
-      let prevIndex = self._arrayKey2field[arrayKey];
-      if (self._arrayKey2field[arrayKey] !== i) {
-        self._arrayKey2field[arrayKey] = i;
-        doUpdate = true
-      }
-      updatedArray.push(!isUndefined(prevIndex) ? self._getArrayField(prevIndex) : self._makeFField(i.toString(), arrayKey));
+    let field = <FField ref={self._setRef(uniqKey || fieldName)} key={uniqKey || fieldName}
+                        pFForm={self.pFForm} FFormApi={self.props.FFormApi}
+                        id={self.props.id ? self.props.id + '/' + (uniqKey || fieldName) : undefined}
+                        name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '${idx}_' + (uniqKey || fieldName) : fieldName) + ']' : undefined}
+                        getPath={self._getPath.bind(self, uniqKey || fieldName)}/>;
+    if (uniqKey) {
+      this._uniqKey2key[uniqKey] = fieldName;
+      this._uniqKey2field[uniqKey] = field;
     }
-    if (self._arrayLayouts.length !== updatedArray.length) doUpdate = true;
-    if (doUpdate) self._arrayLayouts = updatedArray;
-    return doUpdate;
+    return field
+  }
+
+  _getPath(key: string) {
+    return this.path + '/' + (this._uniqKey2key[key] || key);
   }
 
   getData(branch?: any) {
@@ -751,6 +702,47 @@ class FField extends FRefsGeneric {
     return self._cached ? merge(data, {value: self._cached.value}, {replace: {value: self._cached.opts.replace}}) : data;
   }
 
+  // _arrayIndex2key = ($branch: any) => {
+  //   return this.props.uniqKey ? getIn(this.getData($branch), string2path(this.props.uniqKey)) : undefined;
+  // };
+  //
+  // _getObjectKeys = ($branch: StateType) => {
+  //   const self = this;
+  //   let keys: string[] = [];
+  //   if (self.props.isArray) for (let i = 0; i < self.props.arrayStart; i++) keys.push(i.toString());
+  //   else keys = branchKeys($branch);
+  //   return keys;
+  // };
+  //
+  // _getObjectPath(field: string) {
+  //   return this.path + '/' + field;
+  // }
+  //
+  // _getArrayField(key: any) {
+  //   const self = this;
+  //   return self._arrayLayouts[key - self.props.arrayStart]
+  // }
+  //
+  // _reorderArrayLayout(prevBranch: StateType, nextBranch: StateType, props: any) {
+  //   const self = this;
+  //   const updatedArray = [];
+  //   let doUpdate = false;
+  //   for (let i = props.arrayStart; i < props.length; i++) {
+  //     let arrayKey = self._arrayIndex2key(nextBranch[i]);
+  //     if (isUndefined(arrayKey)) throw new Error('no unique key provided for array item');
+  //     if (self.$refs[arrayKey]) self.$refs[arrayKey].setState({branch: nextBranch[i]});
+  //     let prevIndex = self._arrayKey2field[arrayKey];
+  //     if (self._arrayKey2field[arrayKey] !== i) {
+  //       self._arrayKey2field[arrayKey] = i;
+  //       doUpdate = true
+  //     }
+  //     updatedArray.push(!isUndefined(prevIndex) ? self._getArrayField(prevIndex) : self._makeFField(i.toString(), arrayKey));
+  //   }
+  //   if (self._arrayLayouts.length !== updatedArray.length) doUpdate = true;
+  //   if (doUpdate) self._arrayLayouts = updatedArray;
+  //   return doUpdate;
+  // }
+  //
   // getRef(path: Path) {
   //   const self = this;
   //   if (!self.props.isArray || isNaN(parseInt(path[0])) || path[0] < self.props.arrayStart) return super.getRef(path);
@@ -760,7 +752,7 @@ class FField extends FRefsGeneric {
 
   shouldComponentUpdate(nextProps: any, nextState: any) {
     const self = this;
-    console.log('nextProps', nextProps);
+    // console.log('nextProps', nextProps);
     if (nextProps.FFormApi !== self.props.FFormApi) {
       self._updateStateApi(nextProps.FFormApi);
       return (self._rebuild = true);
@@ -776,13 +768,41 @@ class FField extends FRefsGeneric {
     const nextData = self.getData(getIn(nextState, 'branch'));
     if (getIn(nextData, 'oneOf') !== getIn(prevData, 'oneOf')) return (self._rebuild = true);
 
+    if (prevData.keys !== nextData.keys) {
+      let oldUniq2field = this._uniqKey2field;
+      self._uniqKey2key = {};
+      self._uniqKey2field = {};
+      branchKeys(nextBranch).forEach(fieldName => {
+        let uniqKey = self._getUniqKey(fieldName, nextBranch);
+        if (!uniqKey) return;
+        if (self._uniqKey2field[uniqKey]) {
+          self._uniqKey2key[uniqKey] = fieldName;
+          self._uniqKey2field[uniqKey] = oldUniq2field[uniqKey];
+        } else
+          self._uniqKey2field[uniqKey] = self._makeFField(fieldName);
+      });
+      let restFields: any[] = [];
+      nextData.keys.forEach((uniqKey: string) => {
+        if (!self._layoutKeys.has(self._uniqKey2key[uniqKey]))
+          restFields.push(self._uniqKey2field[uniqKey])
+      });
+      if (!isEqual(self.restFields, restFields))
+        self.restFields = restFields
+    }
+
     let newMapped = self._setMappedData(prevData, nextData, nextData !== prevData);
     if (newMapped != self._mappedData) { // update self._widgets
       const oldMapped = self._mappedData;
       self._updateWidgets(oldMapped, self._mappedData = newMapped)
     }
     // update object elements or if it _isArray elements that lower than self.props.arrayStart
-    branchKeys(nextBranch).forEach(field => (nextBranch[field] !== prevBranch[field]) && self.$refs[field] && self.$refs[field].setState({branch: nextBranch[field]}));
+    branchKeys(prevBranch).forEach(fieldName => {
+      let uniqKey = self._getUniqKey(fieldName, nextBranch);
+      if (!uniqKey) uniqKey = self._getUniqKey(fieldName, prevBranch);
+      console.log('uniqKey', uniqKey);
+      if ((nextBranch[fieldName] !== prevBranch[fieldName]) && self.$refs[uniqKey || fieldName])
+        self.$refs[uniqKey || fieldName].setState({branch: nextBranch[fieldName]})
+    });
 
     // try {
     //   updateComponent = self._setMappedData(prevData, nextData, nextData !== prevData) || updateComponent;
