@@ -531,18 +531,19 @@ class FField extends FRefsGeneric {
 
   _build() {
     function makeLayouts_INNER_PROCEDURE(UPDATABLE: { counter: number, keys: string[], blocks: string[] },
-                                         fields: Array<string | FFLayoutGeneric<jsFFCustomizeType>>, opts: any, layout: any[] = []) {
+                                         fields: Array<string | FFLayoutGeneric<jsFFCustomizeType>>, opts: any = {}, layout: any[] = []) {
+      fields = toArray(fields);
       objKeys(fields).forEach(key => {
         let fieldOrLayout = fields[key];
-
+        let blockName;
         if (isString(fieldOrLayout) && fieldOrLayout[0] === '%') {
           if (fieldOrLayout[1] === '%') {
-            let blockName = fieldOrLayout.substr(2);
+            blockName = fieldOrLayout.substr(2);
             let idx = UPDATABLE.blocks.indexOf(blockName);
             if (~idx) {
               fieldOrLayout = restComponents[blockName];
               UPDATABLE.blocks.splice(idx, 1);
-            }
+            } else blockName = null;
           } else {// if field is string then _makeFField
             let fieldName = fieldOrLayout.substr(1);
             let idx = UPDATABLE.keys.indexOf(fieldName);
@@ -560,10 +561,17 @@ class FField extends FRefsGeneric {
         } else if (isArray(fieldOrLayout)) {
           makeLayouts_INNER_PROCEDURE(UPDATABLE, fieldOrLayout, opts, layout);
         } else if (isObject(fieldOrLayout)) { // layout
-          const counter = UPDATABLE.counter++;
-          let {_$widget, $_fields, opts: newOpts} = normalizeLayout(counter, fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>, opts);
-          layout.push(<FSectionWidget _$widget={_$widget} _$cx={self._$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
-                                      getMappedData={self._getMappedData(counter)}>{$_fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields, newOpts)}</FSectionWidget>)
+          if (isValidElement(fieldOrLayout))
+            layout.push(fieldOrLayout);
+          else {
+            const counter = UPDATABLE.counter++;
+            let {_$widget, $_fields, opts: newOpts} = normalizeLayout(counter, fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>, opts);
+            let section = <FSectionWidget _$widget={_$widget} _$cx={self._$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
+                                          getMappedData={self._getMappedData(counter)}>{$_fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields, newOpts)}</FSectionWidget>
+            layout.push(section);
+            if (blockName)
+              restComponents[blockName] = section
+          }
         }
       });
       return layout
@@ -623,30 +631,49 @@ class FField extends FRefsGeneric {
 
     // self._focusField = focusField || UPDATABLE.keys[0] || '';
 
-    let {Layout, ...restComponents} = resolvedComponents;
+    let {Layout, Wrapper, ...restComponents} = resolvedComponents;
 
     const UPDATABLE = {keys: branchKeys($branch), blocks: objKeys(restComponents), counter: 1};
+    if (isObject(Layout))
+      Layout = merge(Layout, isArray($layout) ? {children: $layout} : $layout);
+    else
+      Layout = isMergeable($layout) ? merge(Layout, $layout) : Layout;
 
-    Layout = merge(Layout, isArray($layout) ? {$_fields: $layout} : $layout);
+    // Layout = merge(Layout, isArray($layout) ? {$_fields: $layout} : $layout);
+    // let _$widget, $_fields, opts;
+    // if (isArray($layout)) $_fields = $layout;
+    // else {
+    //   let normLayout = normalizeLayout(0, $layout);
+    //   _$widget = normLayout._$widget;
+    //   $_fields = normLayout.$_fields;
+    //   opts = normLayout.opts;
+    // }
+    // let {_$widget, $_fields, opts} = normalizeLayout(0, Layout);
+    // self._$wrapper = _$widget;
+    //
+    // if ($_fields)// make initial _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys
+    //   _layouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields, opts);
+    // let restBlocks: any = {};
+    // let blocks = [...UPDATABLE.blocks];
 
-    let {_$widget, $_fields, opts} = normalizeLayout(0, Layout);
-    self._$wrapper = _$widget;
+    let _layouts: any = makeLayouts_INNER_PROCEDURE(UPDATABLE, Layout || []);
+    makeLayouts_INNER_PROCEDURE(UPDATABLE, UPDATABLE.blocks.map(bl => '%%' + bl));
+    restComponents['Layout'] = _layouts;
+    UPDATABLE.blocks = objKeys(restComponents);
+    self._$wrapper = deArray(makeLayouts_INNER_PROCEDURE(UPDATABLE, isArray(Wrapper) ? {children: Wrapper} : Wrapper));
 
-    if ($_fields)// make initial _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys
-      self._layouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields, opts);
-    let restBlocks: any = {};
-    let blocks = [...UPDATABLE.blocks];
-    let builtBlocks = makeLayouts_INNER_PROCEDURE(UPDATABLE, UPDATABLE.blocks.map(bl => '%%' + bl), opts);
-    blocks.forEach((nm, i) => restBlocks[nm] = builtBlocks[i]);
-    if (restBlocks.Title) {
-      self._layouts = [restBlocks.Title, ...self._layouts];
-      delete restBlocks.Title;
-    }
-    if (restBlocks.Main) {
-      self._layouts.push(restBlocks.Main);
-      delete restBlocks.Main;
-    }
-    objKeys(restBlocks).forEach(nm => self._layouts.push(restBlocks[nm]));
+    // blocks.forEach((nm, i) => restComponents[nm] = builtBlocks[i]);
+    //
+    // if (restBlocks.Title) {
+    //   _layouts = [restBlocks.Title, ...self._layouts];
+    //   delete restBlocks.Title;
+    // }
+    // if (restBlocks.Main) {
+    //   _layouts.push(restBlocks.Main);
+    //   delete restBlocks.Main;
+    // }
+    //
+    // objKeys(restBlocks).forEach(nm => self._layouts.push(restBlocks[nm]));
 
     if (fData.strictLayout !== true)// and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
       UPDATABLE.keys.forEach(fieldName => self.restFields.push(self._makeFField(fieldName)));
@@ -799,7 +826,7 @@ class FField extends FRefsGeneric {
     branchKeys(prevBranch).forEach(fieldName => {
       let uniqKey = self._getUniqKey(fieldName, nextBranch);
       if (!uniqKey) uniqKey = self._getUniqKey(fieldName, prevBranch);
-      console.log('uniqKey', uniqKey);
+      // console.log('uniqKey', uniqKey);
       if ((nextBranch[fieldName] !== prevBranch[fieldName]) && self.$refs[uniqKey || fieldName])
         self.$refs[uniqKey || fieldName].setState({branch: nextBranch[fieldName]})
     });
@@ -819,7 +846,7 @@ class FField extends FRefsGeneric {
 
     objKeys(newMapped).forEach(key => self._widgets[key] && newMapped[key] != oldMapped[key] && self._widgets[key]['forceUpdate']());
 
-  }
+  };
 
   render() {
     const self = this;
@@ -827,6 +854,7 @@ class FField extends FRefsGeneric {
     if (isUndefined(state.branch)) return null;
     if (getIn(self.getData(), 'params', 'norender')) return false;
     if (self._rebuild) this._build();
+    return self._$wrapper;
 
     // if (props.viewer) {
     //   let {_$widget = UniversalViewer, ...rest} = props.$_viewerProps || {};
@@ -836,8 +864,8 @@ class FField extends FRefsGeneric {
     // }
     // if (isSelfManaged(props.$branch)) return null;
     // if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-    return <FSectionWidget _$widget={self._$wrapper} _$cx={self._$cx} key={'widget_0'} ref={self._setWidRef(0)}
-                           getMappedData={self._getMappedData(0)}>{self._layouts}</FSectionWidget>
+    // return <FSectionWidget _$widget={self._$wrapper} _$cx={self._$cx} key={'widget_0'} ref={self._setWidRef(0)}
+    //                        getMappedData={self._getMappedData(0)}>{self._layouts}</FSectionWidget>
 
 
     // return self._widgets['Builder'] ? h(self._widgets['Builder'], self._mappedData['Builder'], self._mappedData) : null;
@@ -1577,6 +1605,9 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
   },
   sets: {
     'base': {
+      Wrapper: {
+        children: ['%%Title', '%%Layout', '%%Main', '%%Message']
+      },
       Title: {
         _$widget: 'label',
         children: [],
@@ -1589,31 +1620,6 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         }
       },
       Layout: {},
-      // Wrapper: {
-      //   _$widget: '^/widgets/Wrapper',
-      //   ArrayItemMenu: {
-      //     $_ref: '^/parts/ArrayItemMenu'
-      //   },
-      //   _$cx: '^/_$cx',
-      //   $_maps: {
-      //     'className/fform-hidden': '@/params/hidden',
-      //     'arrayItem': '@/arrayItem'
-      //   }
-      // },
-      // Builder: {
-      //   _$widget: '^/widgets/Builder',
-      //   _$cx: '^/_$cx',
-      //   $_maps: {
-      //     widgets: {$: '^/fn/getProp', args: ['_widgets'], update: 'build'},
-      //   },
-      // },
-      // //Title: {},
-      // Body: {
-      //   _$widget: '^/widgets/Generic',
-      //   _$cx: '^/_$cx',
-      //   className: 'fform-body',
-      // },
-      //Main: {},
       Message: {$_ref: '^/parts/Message'}
     },
     simple: {
