@@ -703,9 +703,9 @@ class FField extends FRefsGeneric {
 
   _getUniqKey = (key: string, branch = this.state.branch) => getIn(branch, key, SymData, 'params', 'uniqKey');
 
-  _makeFField(fieldName: string) {
+  _makeFField(fieldName: string, branch?: any) {
     const self = this;
-    let uniqKey = self._getUniqKey(fieldName);
+    let uniqKey = self._getUniqKey(fieldName, branch);
 
     let field = <FField ref={self._setRef(uniqKey || fieldName)} key={uniqKey || fieldName}
                         pFForm={self.pFForm} FFormApi={self.props.FFormApi}
@@ -806,7 +806,7 @@ class FField extends FRefsGeneric {
           self._uniqKey2key[uniqKey] = fieldName;
           self._uniqKey2field[uniqKey] = oldUniq2field[uniqKey];
         } else
-          self._uniqKey2field[uniqKey] = self._makeFField(fieldName);
+          self._uniqKey2field[uniqKey] = self._makeFField(fieldName, nextBranch);
       });
       let restFields: any[] = [];
       nextData.keys.forEach((uniqKey: string) => {
@@ -823,7 +823,9 @@ class FField extends FRefsGeneric {
       self._updateWidgets(oldMapped, self._mappedData = newMapped)
     }
     // update object elements or if it _isArray elements that lower than self.props.arrayStart
-    branchKeys(prevBranch).forEach(fieldName => {
+    // let keys: any = [...branchKeys(prevBranch), ...branchKeys(nextBranch)];
+    // keys = [...(new Map(keys))];
+    objKeys(prevBranch).forEach((fieldName: string) => {
       let uniqKey = self._getUniqKey(fieldName, nextBranch);
       if (!uniqKey) uniqKey = self._getUniqKey(fieldName, prevBranch);
       // console.log('uniqKey', uniqKey);
