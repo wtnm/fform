@@ -548,7 +548,7 @@ class FField extends FRefsGeneric {
             let fieldName = fieldOrLayout.substr(1);
             let idx = UPDATABLE.keys.indexOf(fieldName);
             if (~idx) {
-              layout.push(self._makeFField(fieldName));
+              layout.push(self._makeFField(fieldName, false));
               self._layoutKeys.add(fieldName);
               UPDATABLE.keys.splice(idx, 1);
             }
@@ -705,7 +705,7 @@ class FField extends FRefsGeneric {
 
   _makeFField(fieldName: string, branch?: any) {
     const self = this;
-    let uniqKey = self._getUniqKey(fieldName, branch);
+    let uniqKey = branch !== false ? self._getUniqKey(fieldName, branch) : fieldName;
 
     let field = <FField ref={self._setRef(uniqKey || fieldName)} key={uniqKey || fieldName}
                         pFForm={self.pFForm} FFormApi={self.props.FFormApi}
@@ -780,6 +780,7 @@ class FField extends FRefsGeneric {
   shouldComponentUpdate(nextProps: any, nextState: any) {
     const self = this;
     // console.log('nextProps', nextProps);
+    // console.log('nextState', nextState);
     if (nextProps.FFormApi !== self.props.FFormApi) {
       self._updateStateApi(nextProps.FFormApi);
       return (self._rebuild = true);
@@ -800,6 +801,7 @@ class FField extends FRefsGeneric {
       self._uniqKey2key = {};
       self._uniqKey2field = {};
       branchKeys(nextBranch).forEach(fieldName => {
+        if (self._layoutKeys.has(fieldName)) return;
         let uniqKey = self._getUniqKey(fieldName, nextBranch);
         if (!uniqKey) return;
         if (self._uniqKey2field[uniqKey]) {
@@ -826,9 +828,11 @@ class FField extends FRefsGeneric {
     // let keys: any = [...branchKeys(prevBranch), ...branchKeys(nextBranch)];
     // keys = [...(new Map(keys))];
     objKeys(prevBranch).forEach((fieldName: string) => {
-      let uniqKey = self._getUniqKey(fieldName, nextBranch);
-      if (!uniqKey) uniqKey = self._getUniqKey(fieldName, prevBranch);
-      // console.log('uniqKey', uniqKey);
+      let uniqKey;
+      if (!self._layoutKeys.has(fieldName)) {
+        uniqKey = self._getUniqKey(fieldName, nextBranch);
+        if (!uniqKey) uniqKey = self._getUniqKey(fieldName, prevBranch);
+      }// console.log('uniqKey', uniqKey);
       if ((nextBranch[fieldName] !== prevBranch[fieldName]) && self.$refs[uniqKey || fieldName])
         self.$refs[uniqKey || fieldName].setState({branch: nextBranch[fieldName]})
     });
