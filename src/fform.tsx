@@ -586,7 +586,22 @@ class FField extends FRefsGeneric {
       if (isString($baseLayoutClass) && $baseLayoutClass) $baseLayoutClass = {[$baseLayoutClass]: true};
       $defaultWidget = $defaultWidget || opts.$defaultWidget || 'div';
       _$widget = _$widget || $defaultWidget;
-      if ($_fields) className = merge($baseLayoutClass, className);
+      if ($_fields) {
+        className = merge($baseLayoutClass, className);
+        if (isObject($_fields)) {
+          let {_$order = [], ...restFields} = $_fields;
+          $_fields = [];
+          let restKeys = new Set(objKeys(restFields));
+          _$order.forEach((k: any) => {
+            if (!isUndefined(restFields[k]))
+              $_fields.push(restFields[k]);
+            restKeys.delete(k)
+          });
+          [...restKeys].forEach((k: any) => $_fields.push(restFields[k]));
+        }
+
+      }
+
       staticProps.className = className;
       // if ($_fields) staticProps.children = [];
       let refObject = self._refProcess($_reactRef) || {};
@@ -696,7 +711,10 @@ class FField extends FRefsGeneric {
   _getMappedData = (key: number) => {
     return () => {
       // console.log(key);
-      // console.log(this._mappedData[key]);
+      // let data = this._mappedData[key];
+      // if (data[3])
+      //   debugger;
+      // console.log(this);
       return this._mappedData[key]
     }
   };
@@ -907,15 +925,18 @@ function RestWidget({children}: any) {
   return children || null;
 }
 
-const obj2react = memoize((props: any, _$cx: any) => {
+const obj2react = memoize((props: any, _$cx: any, key: any) => {
   if (isUndefined(props)) return null;
+  // if (props.key == 'option 1')
+  //   debugger
   if (!isObject(props) || isValidElement(props)) return props;
   let {_$widget = 'div', children, ...rest} = props;
   if (props.className)
     props.className = _$cx(props.className);
+  if (isUndefined(rest.key)) rest.key = key;
   if (children)
     children = children.map((v: any) => obj2react(v, _$cx));
-  return h(_$widget, props, children);
+  return h(_$widget, rest, children);
 });
 
 class FSectionWidget extends Component<any, any> { // need to be class, as we use it's forceUpdate() method
@@ -943,8 +964,13 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
         }
       })
     }
+    if (this.props._$widget == 'option')
+      debugger
+    // console.log(this.props._$widget);
+    // console.log('props', props);
+
     // let children = this.props.children && (this.props.children as any).length ? this.props.children : undefined
-    return h(this.props._$widget, props, children && children.map((v: any) => obj2react(v, _$cx)));
+    return h(this.props._$widget, props, children && children.map((v: any, idx: any) => obj2react(v, _$cx, idx)));
   }
 }
 
@@ -1625,7 +1651,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
           'className/fform-title-viewer': '@/params/viewer'
         }
       },
-      Layout: {},
+      Main: {},
       Message: {$_ref: '^/parts/Message'}
     },
     simple: {
@@ -1633,7 +1659,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       Main: {
         _$widget: '^/widgets/Input',
         $_reactRef: '%Main',
-        _$cx: '^/_$cx',
+        // _$cx: '^/_$cx',
         $_viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {'fform-viewer': true}},
         onChange: {$: '^/fn/eventValue|setValue'},
         onBlur: {$: '^/fn/blur'},
