@@ -40,9 +40,9 @@ interface FFieldDataType extends anyObject {
     invalid: number;  // 0 if ALL children 0
     dirty: number;  // 0 if ALL children 0
     untouched: number; // 0 if ALL children 0
-    unsubmited: number; // 0 if ALL children 0
+    unsubmitted: number; // 0 if ALL children 0
     pending: number; // 0 if ALL children 0
-    submited:boolean; // true if ALL children true
+    submitted:boolean; // true if ALL children true
     valid: boolean; // null if pending else !invalid
     pristine: boolean; // !dirty
     touched: boolean; // !untouched
@@ -120,7 +120,7 @@ interface FFormProps {
   core: any;
   state?: any;
   value?: any;
-  inital?: any;
+  initial?: any;
   extData?: { [key: string]: any };
   fieldCache?: boolean | number;
   touched?: boolean;

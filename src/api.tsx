@@ -220,7 +220,7 @@ class FFormStateAPI extends FFormStateManager {
         self = object;
         return wrapped
       },
-      getValue: (opts: any = {}) => wrapped.get(SymData, opts.inital ? 'inital' : 'current', wrapPath(opts.path)),
+      getValue: (opts: any = {}) => wrapped.get(SymData, opts.initial ? 'initial' : 'current', wrapPath(opts.path)),
       getApi: () => api,
     };
     ['setValue', 'setMessages'].forEach(fn =>
@@ -315,10 +315,10 @@ class FFormStateAPI extends FFormStateManager {
     return this._setExecution((update as StateApiUpdateType), opts);
   };
 
-  getValue = (opts: { path?: string | Path, inital?: boolean } = {}): any => this.get(SymData, opts.inital ? 'inital' : 'current', opts.path || []);
+  getValue = (opts: { path?: string | Path, initial?: boolean } = {}): any => this.get(SymData, opts.initial ? 'initial' : 'current', opts.path || []);
 
-  setValue = (value: any, opts: APIOptsType & { path?: string | Path, replace?: any, setOneOf?: number, inital?: boolean } = {}) => {
-    let {path, inital, replace, ...update} = opts;
+  setValue = (value: any, opts: APIOptsType & { path?: string | Path, replace?: any, setOneOf?: number, initial?: boolean } = {}) => {
+    let {path, initial, replace, ...update} = opts;
     if (path === null) return this._setExecution([null], opts);
     path = normalizePath(path || []).slice();
     if (~path.indexOf(SymData as any)) (update as StateApiUpdateType).path = path;
@@ -329,7 +329,7 @@ class FFormStateAPI extends FFormStateManager {
         value = {[nm]: value};
         replace = {[nm]: replace};
       }
-      (update as StateApiUpdateType).path = [inital ? '@inital' : '@current'].concat(path);
+      (update as StateApiUpdateType).path = [initial ? '@initial' : '@current'].concat(path);
     }
     (update as StateApiUpdateType).value = value;
     (update as StateApiUpdateType).replace = replace;

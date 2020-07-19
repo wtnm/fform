@@ -167,7 +167,7 @@ class FForm extends Component<FFormProps> {
     FForm.params.forEach(k => {
       if (!isUndefined(nextProps[k])) nextProps[k] = (v: any) => isUndefined(v) ? props[k] : v
     });
-    if (isUndefined(nextProps['value'])) nextProps['value'] = nextProps['inital'];
+    if (isUndefined(nextProps['value'])) nextProps['value'] = nextProps['initial'];
     self._updateValues(nextProps);
     if (!props.noValidation) self.api.validate(true);
   }
@@ -190,10 +190,10 @@ class FForm extends Component<FFormProps> {
   }
 
   private _updateValues(nextProps: FFormProps, prevProps: any = {}) {
-    const {state, value, inital, extData, noValidation, touched} = nextProps;
+    const {state, value, initial, extData, noValidation, touched} = nextProps;
     const self = this;
     if (state && state !== prevProps.state) self.api.setState(state);
-    if (inital && inital !== prevProps.inital) self.api.setValue(inital, {replace: true, inital: true, noValidation});
+    if (initial && initial !== prevProps.initial) self.api.setValue(initial, {replace: true, initial: true, noValidation});
     if (value && value !== prevProps.value) self.api.setValue(value, {replace: true, noValidation});
     if (extData && extData !== prevProps.extData) objKeys(extData).forEach(key => (self.api.set(key, (extData as any)[key], {replace: true})));
     if (!isUndefined(touched) && touched !== null && touched !== prevProps.touched)
@@ -251,7 +251,7 @@ class FForm extends Component<FFormProps> {
     };
 
     self.api.set([], 0, {[SymData]: ['status', 'untouched'], execute: true, macros: 'switch'});
-    self.api.set([], 0, {[SymData]: ['status', 'unsubmited'], execute: true, macros: 'switch'});
+    self.api.set([], 0, {[SymData]: ['status', 'unsubmitted'], execute: true, macros: 'switch'});
 
     if (self._methods.onSubmit) {
       self.api.setMessages(null, {execute: true});
@@ -288,7 +288,7 @@ class FForm extends Component<FFormProps> {
 
     self._updateMethods(nextProps, self.props);
 
-    return FFrormApiUpdate || !isEqual(self.props, nextProps, {skipKeys: ['core', 'state', 'value', 'inital', 'extData', 'fieldCache', 'flatten', 'noValidate', 'parent', 'onSubmit', 'onChange', 'onStateChange']});
+    return FFrormApiUpdate || !isEqual(self.props, nextProps, {skipKeys: ['core', 'state', 'value', 'initial', 'extData', 'fieldCache', 'flatten', 'noValidate', 'parent', 'onSubmit', 'onChange', 'onStateChange']});
   }
 
   componentWillUnmount() {
@@ -335,7 +335,7 @@ class FForm extends Component<FFormProps> {
 
   render() {
     const self = this;
-    let {core, state, value, inital, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = self.elements.widgets.Form || 'form', ...rest} = self.props;
+    let {core, state, value, initial, extData, fieldCache, touched, parent, onSubmit, onChange, onStateChange, _$useTag: UseTag = self.elements.widgets.Form || 'form', ...rest} = self.props;
     FForm.params.forEach(k => delete (rest as any)[k]);
     objKeys(rest).forEach(k => (k[0] === '_' || k[0] === '$') && delete (rest as any)[k]); // remove props that starts with '_' or '$'
     return (
@@ -385,7 +385,6 @@ class FField extends FRefsGeneric {
   private _widgets: object;
   private _uniqKey2key: { [key: string]: number | string } = {};
   private _uniqKey2field: { [key: string]: any } = {};
-  private _layouts: any[] = [];
   private _layoutKeys: any; // fields that were used in layout
   // private _arrayLayouts: any[] = [];
   private _$wrapper: any = 'div';
@@ -402,6 +401,8 @@ class FField extends FRefsGeneric {
   $branch: any;
   schemaPart: jsJsonSchema;
   arrayStart: any;
+  mainPreset: string;
+  fieldName: string;
 
   liveValidate: boolean;
   liveUpdate: boolean;
@@ -627,10 +628,13 @@ class FField extends FRefsGeneric {
 
     if ((isArray(schemaPart.type) || isUndefined(schemaPart.type)) && !schemaPart._presets)
       throw new Error('schema._presets should be defined explicitly for multi type');
+    let {presets, main: mainPreset} = normailzeSets(schemaPart._presets, schemaPart.type);
+    self.mainPreset = mainPreset;
+    self.fieldName = self.props.fieldName || '';
 
     let $layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart._layout));
 
-    let resolvedComponents = resolveComponents(self.pFForm.elements, schemaPart._custom, schemaPart._presets || schemaPart.type);
+    let resolvedComponents = resolveComponents(self.pFForm.elements, schemaPart._custom, presets);
     resolvedComponents = self.wrapFns(resolvedComponents);
 
     const mapsKeys = ['build', 'data', 'every'];
@@ -638,7 +642,6 @@ class FField extends FRefsGeneric {
     self.$refs = {};
     self._widgets = {};
     self._mappedData = {};
-    self._layouts = [];
     self._layoutKeys = new Set();
     self._uniqKey2key = {};
     self._uniqKey2field = {};
@@ -654,41 +657,11 @@ class FField extends FRefsGeneric {
     else
       Layout = isMergeable($layout) ? merge(Layout, $layout) : Layout;
 
-    // Layout = merge(Layout, isArray($layout) ? {$_fields: $layout} : $layout);
-    // let _$widget, $_fields, opts;
-    // if (isArray($layout)) $_fields = $layout;
-    // else {
-    //   let normLayout = normalizeLayout(0, $layout);
-    //   _$widget = normLayout._$widget;
-    //   $_fields = normLayout.$_fields;
-    //   opts = normLayout.opts;
-    // }
-    // let {_$widget, $_fields, opts} = normalizeLayout(0, Layout);
-    // self._$wrapper = _$widget;
-    //
-    // if ($_fields)// make initial _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys
-    //   _layouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields, opts);
-    // let restBlocks: any = {};
-    // let blocks = [...UPDATABLE.blocks];
-
     let _layouts: any = makeLayouts_INNER_PROCEDURE(UPDATABLE, Layout || []);
     makeLayouts_INNER_PROCEDURE(UPDATABLE, UPDATABLE.blocks.map(bl => '%%' + bl));
     restComponents['Layout'] = _layouts;
     UPDATABLE.blocks = objKeys(restComponents);
     self._$wrapper = deArray(makeLayouts_INNER_PROCEDURE(UPDATABLE, isArray(Wrapper) ? {children: Wrapper} : Wrapper));
-
-    // blocks.forEach((nm, i) => restComponents[nm] = builtBlocks[i]);
-    //
-    // if (restBlocks.Title) {
-    //   _layouts = [restBlocks.Title, ...self._layouts];
-    //   delete restBlocks.Title;
-    // }
-    // if (restBlocks.Main) {
-    //   _layouts.push(restBlocks.Main);
-    //   delete restBlocks.Main;
-    // }
-    //
-    // objKeys(restBlocks).forEach(nm => self._layouts.push(restBlocks[nm]));
 
     if (fData.strictLayout !== true)// and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
       UPDATABLE.keys.forEach(fieldName => self.restFields.push(self._makeFField(fieldName)));
@@ -724,9 +697,9 @@ class FField extends FRefsGeneric {
   _makeFField(fieldName: string, branch?: any) {
     const self = this;
     let uniqKey = branch !== false ? self._getUniqKey(fieldName, branch) : fieldName;
-
+    let type = getIn(self.getData(branch), 'fData', 'type');
     let field = <FField ref={self._setRef(uniqKey || fieldName)} key={uniqKey || fieldName}
-                        pFForm={self.pFForm} FFormApi={self.props.FFormApi}
+                        pFForm={self.pFForm} FFormApi={self.props.FFormApi} fieldName={type === 'object' ? fieldName : undefined}
                         id={self.props.id ? self.props.id + '/' + (uniqKey || fieldName) : undefined}
                         name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '${idx}_' + (uniqKey || fieldName) : fieldName) + ']' : undefined}
                         getPath={self._getPath.bind(self, uniqKey || fieldName)}/>;
@@ -1505,6 +1478,18 @@ function bindProcessorToThis(val: any, opts: anyObject = {}) {
 //   return Widget instanceof GenericWidget
 // }
 
+function normailzeSets(sets: string = '', type: any) {
+  if (!isString(type)) type = '';
+  let presets = sets.split(':');
+  let main = '';
+  let rest = [];
+  for (let i = 0; i < presets.length; i++) {
+    if (presets[i][0] !== '$') main = main || presets[i];
+    else rest.push(presets[i])
+  }
+  return {presets: [main || type].concat(rest).join(':'), main};
+}
+
 const resolveComponents = memoize((elements: elementsType, customizeFields: FFCustomizeType = {}, sets?: string): jsFFCustomizeType => {
   if (sets) {
     let $_ref = sets.split(':')
@@ -1873,6 +1858,12 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 
     getArrayStart(...args: any[]) {return [arrayStart(this.schemaPart), ...args]},
     getProp(key: string, ...args: any[]) {return [getIn(this, normalizePath(key)), ...args]},
+    getClassNameByProp(prefix: string, key: string, ...args: any[]) {
+      let value = getIn(this, normalizePath(key));
+      if (value)
+        return [{[prefix + value]: true}, ...args];
+      else return [{}, ...args];
+    },
     formPropExec(e: any, fnName: string) {
       if (isObject(e)) {
         this.pFForm.applyCache();

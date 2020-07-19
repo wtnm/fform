@@ -867,7 +867,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).to.be.equal(core.getValue({initial: true}));
         let val0 = core.get('0/0/strValue@value');
         let val1 = core.get('0/1/strValue@value');
         core.set('0/0/strValue@value', 'set test 000', {execute: 1});
@@ -876,23 +876,23 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(false);
-        expect(core.getValue()).not.to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).not.to.be.equal(core.getValue({initial: true}));
 
         core.set('0/1/strValue@value', val1, {execute: true});
         expect(core.get('@/status/pristine')).to.be.equal(false);
         expect(core.get('0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).not.to.be.equal(core.getValue({inital: true}));
-        expect(core.getValue()[0][1]).to.be.equal(core.getValue({inital: true})[0][1]);
+        expect(core.getValue()).not.to.be.equal(core.getValue({initial: true}));
+        expect(core.getValue()[0][1]).to.be.equal(core.getValue({initial: true})[0][1]);
 
         core.set('0/0/strValue@value', val0, {execute: true});
         expect(core.get('@/status/pristine')).to.be.equal(true);
         expect(core.get('0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).to.be.equal(core.getValue({inital: true}));
-        expect(core.getValue()[0][0]).to.be.equal(core.getValue({inital: true})[0][0]);
+        expect(core.getValue()).to.be.equal(core.getValue({initial: true}));
+        expect(core.getValue()[0][0]).to.be.equal(core.getValue({initial: true})[0][0]);
       });
 
       it('test api.arrayAdd ' + core.name, async function () {
@@ -901,24 +901,24 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).not.to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).not.to.be.equal(core.getValue({initial: true}));
 
         core.arrayAdd('0', -1, {execute: true});
         expect(core.get('@/status/pristine')).to.be.equal(true);
         expect(core.get('0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).to.be.equal(core.getValue({initial: true}));
       });
 
       it('test api.setValue ' + core.name, async function () {
         core.setValue({}, {execute: true});
-        expect(core.getValue()).to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).to.be.equal(core.getValue({initial: true}));
 
         let newVal = [];
         newVal.length = core.getValue().length;
         core.setValue(newVal, {execute: true});
-        expect(core.getValue()).to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).to.be.equal(core.getValue({initial: true}));
 
         newVal.length++;
         core.setValue(newVal, {execute: true});
@@ -926,12 +926,12 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).not.to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).not.to.be.equal(core.getValue({initial: true}));
 
         newVal.length--;
         core.setValue(newVal, {execute: true});
         expect(core.get('@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).to.be.equal(core.getValue({initial: true}));
       });
 
       it('test api.setValue with non-existing schema property' + core.name, async function () {
@@ -943,7 +943,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).not.to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).not.to.be.equal(core.getValue({initial: true}));
         expect(core.getValue().notExist).to.be.equal(notExist);
 
         let newVal = [];
@@ -954,7 +954,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(false);
-        expect(core.getValue()).not.to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).not.to.be.equal(core.getValue({initial: true}));
         expect(core.get('0/0/strValue@value')).to.be.equal('setValue test 0 0');
         expect(core.get('0/1/strValue@value')).to.be.equal('setValue test 0 1');
         expect(core.getValue().notExist).to.be.equal(notExist);
@@ -965,8 +965,8 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/0/mapArrValue/1@value')).to.be.equal('setValue test 0 0');
         expect(core.getValue().notExist).to.be.equal(notExist);
 
-        let val0 = core.get('@inital/0/0/strValue');
-        let val1 = core.get('@inital/0/1/strValue');
+        let val0 = core.get('@initial/0/0/strValue');
+        let val1 = core.get('@initial/0/1/strValue');
         newVal[0] = [{strValue: val0}, {strValue: val1}];
         core.setValue(newVal);
         core.setValue(undefined, {path: ['notExist'], execute: true});
@@ -977,22 +977,22 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
         expect(core.getValue().notExist).to.be.equal(undefined);
-        expect(core.getValue()).to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).to.be.equal(core.getValue({initial: true}));
       });
 
-      it('test api.setValue to set inital value' + core.name, async function () {
+      it('test api.setValue to set initial value' + core.name, async function () {
 
-        let val0 = core.get('@inital/0/0/strValue');
-        let val1 = core.get('@inital/0/1/strValue');
-        let initNewVal = [{strValue: 'inital setValue test 0 0', mapValue: 'inital setValue test 0 0', mapArrValue: [], arrValue: [], turpleValue: []},
-          {strValue: 'inital setValue test 0 1', mapValue: 'inital setValue test 0 1', mapArrValue: ['inital setValue test 0 1']}];
-        core.setValue(initNewVal, {path: '0', inital: true, execute: true});
+        let val0 = core.get('@initial/0/0/strValue');
+        let val1 = core.get('@initial/0/1/strValue');
+        let initNewVal = [{strValue: 'initial setValue test 0 0', mapValue: 'initial setValue test 0 0', mapArrValue: [], arrValue: [], turpleValue: []},
+          {strValue: 'initial setValue test 0 1', mapValue: 'initial setValue test 0 1', mapArrValue: ['initial setValue test 0 1']}];
+        core.setValue(initNewVal, {path: '0', initial: true, execute: true});
         expect(core.get('@/status/pristine')).to.be.equal(false);
         expect(core.get('0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(false);
         expect(core.get('1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).not.to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).not.to.be.equal(core.getValue({initial: true}));
         expect(core.get('0/0/strValue@value')).to.be.equal(val0);
         expect(core.get('0/1/strValue@value')).to.be.equal(val1);
         expect(core.getValue().notExist).to.be.equal(undefined);
@@ -1003,44 +1003,44 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
 
         let newVal = [];
         newVal.length = 3;
-        newVal[0] = [{strValue: 'inital setValue test 0 0', mapArrValue: [], arrValue: [], turpleValue: []},
-          {strValue: 'inital setValue test 0 1', arrValue: [], turpleValue: []}];
+        newVal[0] = [{strValue: 'initial setValue test 0 0', mapArrValue: [], arrValue: [], turpleValue: []},
+          {strValue: 'initial setValue test 0 1', arrValue: [], turpleValue: []}];
         core.setValue(newVal, {execute: true});
         expect(core.get('@/status/pristine')).to.be.equal(false);
         expect(core.get('0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(false);
-        expect(core.getValue()).not.to.be.equal(core.getValue({inital: true}));
-        expect(core.get('0/0/strValue@value')).to.be.equal('inital setValue test 0 0');
-        expect(core.get('0/1/strValue@value')).to.be.equal('inital setValue test 0 1');
+        expect(core.getValue()).not.to.be.equal(core.getValue({initial: true}));
+        expect(core.get('0/0/strValue@value')).to.be.equal('initial setValue test 0 0');
+        expect(core.get('0/1/strValue@value')).to.be.equal('initial setValue test 0 1');
         expect(core.getValue().notExist).to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/0')).to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/1')).to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/2')).to.be.equal(undefined);
         expect(core.get('0/0/turpleValue/@/messages/0/texts/0/0').length).to.be.ok;
 
-        core.setValue([], {path: '0/1/arrValue', inital: true});
-        core.setValue([], {path: '0/1/turpleValue', inital: true, execute: true});
+        core.setValue([], {path: '0/1/arrValue', initial: true});
+        core.setValue([], {path: '0/1/turpleValue', initial: true, execute: true});
         expect(core.get('@/status/pristine')).to.be.equal(true);
         expect(core.get('0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).to.be.equal(core.getValue({inital: true}));
-        expect(core.get('0/0/strValue@value')).to.be.equal('inital setValue test 0 0');
-        expect(core.get('0/1/strValue@value')).to.be.equal('inital setValue test 0 1');
+        expect(core.getValue()).to.be.equal(core.getValue({initial: true}));
+        expect(core.get('0/0/strValue@value')).to.be.equal('initial setValue test 0 0');
+        expect(core.get('0/1/strValue@value')).to.be.equal('initial setValue test 0 1');
         expect(core.getValue().notExist).to.be.equal(undefined);
 
       });
 
 
-      it('test api.setValue to set non-existing in schema to inital value' + core.name, async function () {
+      it('test api.setValue to set non-existing in schema to initial value' + core.name, async function () {
 
-        core.setValue(notExist, {path: 'notExist', inital: true, execute: true});
+        core.setValue(notExist, {path: 'notExist', initial: true, execute: true});
         expect(core.get('@/status/pristine')).to.be.equal(false);
         expect(core.get('0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).not.to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).not.to.be.equal(core.getValue({initial: true}));
         expect(core.getValue().notExist).to.be.equal(undefined);
 
         core.setValue(notExist, {path: 'notExist', execute: true});
@@ -1048,7 +1048,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).to.be.equal(core.getValue({initial: true}));
         expect(core.getValue().notExist).to.be.equal(notExist);
 
       });
@@ -1059,7 +1059,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(false);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(false);
-        expect(core.getValue()).not.to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).not.to.be.equal(core.getValue({initial: true}));
         expect(commonLib.isEqual(commonLib.merge(core.getDefaultValue(), {notExist}), core.getValue(), {deep: true})).to.be.equal(true);
         expect(core.getValue().notExist).to.be.equal(notExist);
       });
@@ -1070,7 +1070,7 @@ describe('test FFormStateAPI', async function () {  // state.objLevel_1.objLevel
         expect(core.get('0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/0/@/status/pristine')).to.be.equal(true);
         expect(core.get('0/1/@/status/pristine')).to.be.equal(true);
-        expect(core.getValue()).to.be.equal(core.getValue({inital: true}));
+        expect(core.getValue()).to.be.equal(core.getValue({initial: true}));
         expect(core.getValue().notExist).to.be.equal(notExist);
 
       });
