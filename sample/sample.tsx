@@ -4,10 +4,8 @@ import {FForm, elements} from '../src/fform';
 import sampleSchema from './sampleSchema.json'
 // import basicStyling from '../addons/styling/basic.json'
 // import bootstrapStyling from '../addons/styling/bootstrap.json'
+import {fields, blocks, statuses, presets} from '../addons/styling'
 import {FViewer} from '../src/fviewer'
-
-let basicStyling = {};
-let bootstrapStyling = {};
 
 const {render} = require('react-dom');
 
@@ -15,6 +13,10 @@ import imjvWrapper from '../addons/wrappers/imjv';
 
 import * as imjvValidator from '../addons/is-my-json-valid-lite';
 import {objKeys} from "react-ts-utils";
+import {merge} from "react-ts-utils/dist";
+
+let basicStyling = merge.all(blocks(), [fields(), statuses(), presets()]);
+let bootstrapStyling = {};
 
 const JSONValidator = imjvWrapper(imjvValidator);
 
