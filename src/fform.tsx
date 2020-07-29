@@ -622,7 +622,7 @@ class FField extends FRefsGeneric {
     const data = self.getData();
     const {fData} = data;
 
-    console.log('self.props.id', self.props.id);
+    // console.log('self.props.id', self.props.id);
     const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
     self.schemaPart = schemaPart;
     self.arrayStart = arrayStart(schemaPart);
@@ -698,7 +698,7 @@ class FField extends FRefsGeneric {
   _makeFField(fieldName: string, branch?: any) {
     const self = this;
     let uniqKey = self._getUniqKey(fieldName, branch || undefined);
-    let uniqName = branch !== false ? uniqKey : fieldName;
+    let uniqName = branch !== false ? (uniqKey || fieldName) : fieldName;
     let type = getIn(self.getData(branch), 'fData', 'type');
     let field = <FField ref={self._setRef(uniqName)} key={uniqName}
                         pFForm={self.pFForm} FFormApi={self.props.FFormApi} fieldName={type === 'object' ? fieldName : undefined}
@@ -908,9 +908,10 @@ const obj2react = memoize((props: any, _$cx: any, key: any) => {
   let {_$widget = 'div', children, ...rest} = props;
   if (props.className)
     props.className = _$cx(props.className);
-  if (isUndefined(rest.key)) rest.key = key;
+  if (isUndefined(rest.key) || rest.key === '')
+    rest.key = key;
   if (children)
-    children = children.map((v: any) => obj2react(v, _$cx));
+    children = children.map((v: any, idx: any) => obj2react(v, _$cx, idx));
   return h(_$widget, rest, children);
 });
 
