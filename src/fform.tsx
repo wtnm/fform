@@ -1880,8 +1880,8 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     parseTristate: (value: any, ...args: any[]) => [value === "" ? null : value, ...args],
     prepareNumber(value: string, ...args: any[]) {
       if (isString(value)) {
-        value = value.replace(/^(-?)0*/, "$1");
-        value = value.replace("-.", "-0.")
+        value = value.replace(/^(-?)0+(?=\d)/, "$1")
+          .replace("-.", "-0.")
           .replace(/^\./, "0.");
       }
       return [value, ...args]
@@ -2138,7 +2138,6 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
   _$shorts: {
     'W': 'Wrapper',
     'M': 'Main',
-    'B': 'Body',
     'T': 'Title',
     'MSG': 'Message',
     'm': 'margin',
