@@ -17,12 +17,12 @@ import {
   objKeys,
   memoize, isNumber, setIn, push2array,
   MergeStateOptionsArgument,
-  propsExtender,
   isElemRef,
   objMap,
   objectResolver,
   skipKey,
-  extendSingleProps
+  Checkbox,
+  Checkboxes
 } from "react-ts-utils";
 
 import {
@@ -622,6 +622,7 @@ class FField extends FRefsGeneric {
     const data = self.getData();
     const {fData} = data;
 
+    console.log('self.props.id', self.props.id);
     const schemaPart: jsJsonSchema = self.api.getSchemaPart(self.path);
     self.schemaPart = schemaPart;
     self.arrayStart = arrayStart(schemaPart);
@@ -696,16 +697,17 @@ class FField extends FRefsGeneric {
 
   _makeFField(fieldName: string, branch?: any) {
     const self = this;
-    let uniqKey = branch !== false ? self._getUniqKey(fieldName, branch) : fieldName;
+    let uniqKey = self._getUniqKey(fieldName, branch || undefined);
+    let uniqName = branch !== false ? uniqKey : fieldName;
     let type = getIn(self.getData(branch), 'fData', 'type');
-    let field = <FField ref={self._setRef(uniqKey || fieldName)} key={uniqKey || fieldName}
+    let field = <FField ref={self._setRef(uniqName)} key={uniqName}
                         pFForm={self.pFForm} FFormApi={self.props.FFormApi} fieldName={type === 'object' ? fieldName : undefined}
                         id={self.props.id ? self.props.id + '/' + (uniqKey || fieldName) : undefined}
-                        name={self.props.name ? self.props.name + '[' + (self.props.isArray ? '${idx}_' + (uniqKey || fieldName) : fieldName) + ']' : undefined}
-                        getPath={self._getPath.bind(self, uniqKey || fieldName)}/>;
+                        name={self.props.name ? self.props.name + '[' + (type === 'array' ? '${idx}_' + (uniqKey || fieldName) : fieldName) + ']' : undefined}
+                        getPath={self._getPath.bind(self, uniqName)}/>;
     if (uniqKey) {
-      this._uniqKey2key[uniqKey] = fieldName;
-      this._uniqKey2field[uniqKey] = field;
+      this._uniqKey2key[uniqName] = fieldName;
+      this._uniqKey2field[uniqName] = field;
     }
     return field
   }
@@ -1372,32 +1374,6 @@ function ItemMenu(props: any) {
 }
 
 
-const Checkbox = forwardRef(({
-                               $extend = {}, $baseClass, children = [], label,
-                               type = "checkbox", _$cx, className = "", ['data-key']: dataKey, ...rest
-                             }: any, ref) => {
-  const baseProps = {
-    'input': {_$tag: 'input', ref, type, ...rest},
-    'label': {_$tag: 'span', children: [label]}
-  };
-  let childrenRes = propsExtender(baseProps, $extend, {skipKeys: ['checkbox'], _$cx, $baseClass});
-  let {input: inputTag, label: labelTag, ...restChildren} = childrenRes;
-  let classMods: string[] = [];
-  objKeys(rest).forEach(key => {
-    if (key[0] !== '$' && (rest[key] === true || rest[key] === 'true'))
-      classMods.push('_' + key);
-  });
-  className = _$cx(className, classMods);
-  const rootProps = {
-    'checkbox': {
-      _$tag: 'label',
-      className,
-      children: [inputTag, labelTag, ...(objKeys(restChildren).map(k => restChildren[k])), ...toArray(children)]
-    }
-  };
-  return propsExtender(rootProps, $extend, {onlyKeys: ['checkbox'], _$cx, $baseClass, $rootKey: 'checkbox'}).checkbox;
-});
-
 const CheckboxNull = forwardRef((props: any, ref: any) => {
     let {checked, onChange, nullValue = null, type, ...rest} = props;
     return <input type="checkbox" checked={checked === true} {...rest}
@@ -1410,47 +1386,6 @@ const CheckboxNull = forwardRef((props: any, ref: any) => {
                   }}/>
   }
 );
-
-
-class Checkboxes extends PureComponent<any, any> {
-  render() {
-    let {
-      $enum = [], $enumExten = {}, $setRef, $prefixRefName = '', $baseClass, $extend = {},
-      _$tag = 'div', type = "radio", className = "", value = [], name, _$cx, staticProps, ...rest
-    } = this.props;
-    value = toArray(value);
-    if (name) name = type === 'radio' ? name : name + '[]';
-    let opts = {$args: [this], _$cx};
-    let enumRes = {};
-    $enum.map((val: any) => {
-      let baseProps = {...staticProps};
-      baseProps.checked = !!~value.indexOf(val);
-      baseProps.type = type;
-      baseProps.name = name;
-      baseProps.value = val;
-      baseProps.label = val;
-      baseProps._$tag = baseProps._$tag || Checkbox;
-      baseProps._$cx = baseProps._$cx || _$cx;
-      if ($setRef) baseProps.ref = $setRef($prefixRefName + name);
-      if ($baseClass) baseProps.$baseClass = $baseClass + '-item';
-      if ($enumExten[val]) Object.assign(baseProps, isString($enumExten[val]) ? {label: $enumExten[val]} : $enumExten[val]);
-      enumRes[val] = baseProps;
-    });
-    enumRes = propsExtender(enumRes, $extend, opts);
-    let children = $enum.map((val: any) => {
-      let res = enumRes[val];
-      delete enumRes[val];
-      return res;
-    });
-    let restRes = objKeys(enumRes).map(val => enumRes[val]).filter(Boolean);
-    push2array(children, restRes);
-
-    (rest as any).className = _$cx ? _$cx(className) : className;
-    if ($baseClass) className = ((className || '') + ' ' + $baseClass).trim();
-
-    return h(_$tag, rest, children);
-  }
-};
 
 
 ///////////////////////////////
@@ -2167,5 +2102,3 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
 export {elementsBase as elements, formReducer, getFRVal, FForm, FField, fformCores, schemaRegister};
 
 export {extractMaps, normalizeMaps, updateProps, classNames, comparePropsFn, getExten}
-
-export {Checkboxes, Checkbox}
