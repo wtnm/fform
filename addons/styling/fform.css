@@ -1,12 +1,16 @@
 
-.fform-wrapper, .fform-layout, .fform-body, .fform-array-item, .fform-radio, .fform-flex, .fform-viewer {
+.fform-block__wrapper, .fform-preset__radio, .fform-viewer {
     display: flex;
     flex-flow: column;
     flex: 1 1 auto;
-    align-items: stretch;
-    margin: 0;
+    align-items: baseline;
+    /*margin: 0;*/
 }
 
+.fform-layout {
+    display: flex;
+    flex-flow: column;
+}
 
 .fform-hidden {
     display: none !important;;

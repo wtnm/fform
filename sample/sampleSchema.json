@@ -110,7 +110,8 @@
       "%select",
       "%radioSelect",
       "%checkboxSelect",
-      "%autowidth",
+      "%numberlu",
+      "%number",
       "%password",
       "%multiselect",
       "%string",
@@ -414,9 +415,10 @@
         "type": "string"
       }
     },
-    "autowidth": {
+    "numberlu": {
       "type": "number",
-      "_presets": "number:$autowidth",
+      "title": "number",
+      "_presets": "number",
       "_params": {
         "liveUpdate": true
       },
@@ -429,9 +431,10 @@
     },
     "number": {
       "type": "number",
+      "title": "number 2",
       "_presets": "number",
       "_params": {
-        "liveUpdate": true
+        "liveUpdate": false
       }
     },
     "password": {

@@ -1291,36 +1291,36 @@ const UniversalInput = forwardRef(
 );
 
 
-class Autowidth extends Component<any, any> {
-  static readonly sizerStyle: any = {position: 'absolute', top: 0, left: 0, visibility: 'hidden', height: 0, overflow: 'scroll', whiteSpace: 'pre'};
-  private _elem: any;
-
-  componentDidMount() {
-    let style: any;
-    try {
-      style = window && window.getComputedStyle(this.props.$FField.$refs['@Main']);
-    } catch (e) {
-
-    }
-    if (!style || !this._elem) return;
-    ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'letterSpacing'].forEach(key => this._elem.style[key] = style[key]);
-  }
-
-  render() {
-    const self = this;
-    const props = self.props;
-    const value = (isUndefined(props.value) || props.value === null ? '' : props.value.toString()) || props.placeholder || '';
-    return (<div style={Autowidth.sizerStyle as any} ref={(elem) => {
-      (self._elem = elem) &&
-      props.$FField &&
-      props.$FField.$refs['@Main'] &&
-      props.$FField.$refs['@Main'].style &&
-      (props.$FField.$refs['@Main'].style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
-    }}>{value}</div>)
-  }
-}
-
-
+// class Autowidth extends Component<any, any> {
+//   static readonly sizerStyle: any = {position: 'absolute', top: 0, left: 0, visibility: 'hidden', height: 0, overflow: 'scroll', whiteSpace: 'pre'};
+//   private _elem: any;
+//
+//   componentDidMount() {
+//     let style: any;
+//     try {
+//       style = window && window.getComputedStyle(this.props.$FField.$refs['@Main']);
+//     } catch (e) {
+//
+//     }
+//     if (!style || !this._elem) return;
+//     ['fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'letterSpacing'].forEach(key => this._elem.style[key] = style[key]);
+//   }
+//
+//   render() {
+//     const self = this;
+//     const props = self.props;
+//     const value = (isUndefined(props.value) || props.value === null ? '' : props.value.toString()) || props.placeholder || '';
+//     return (<div style={Autowidth.sizerStyle as any} ref={(elem) => {
+//       (self._elem = elem) &&
+//       props.$FField &&
+//       props.$FField.$refs['@Main'] &&
+//       props.$FField.$refs['@Main'].style &&
+//       (props.$FField.$refs['@Main'].style.width = Math.max((elem as any).scrollWidth + (props.addWidth || 45), props.minWidth || 0) + 'px')
+//     }}>{value}</div>)
+//   }
+// }
+//
+//
 // function FBuilder(props: any) {
 //   let {children: mapped, widgets} = props;
 //   const {Title, Body, Main, Message, Wrapper, Autowidth} = widgets;
@@ -1335,25 +1335,25 @@ class Autowidth extends Component<any, any> {
 //     ) : ''
 //   ) : ''
 // }
-
-
-function Wrapper(props: any) {
-  let {_$useTag: WrapperW = 'div', _$cx = classNames, className, wrapperClassName = {}, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
-  let {_$widget: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
-  let {_$widget: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
-  if (!arrayItem) wrapperClassName = [wrapperClassName, className];
-  else IBodyCN = [IBodyCN, className];
-
-  const result = <WrapperW className={_$cx ? _$cx(wrapperClassName) : wrapperClassName} {...rest} />;
-  if (arrayItem) {
-    return (
-      <IBodyW className={_$cx ? _$cx(IBodyCN) : IBodyCN} {...IBodyRest}>
-        {result}
-        <IMenuW className={_$cx && _$cx(IMenuCN)} {...IMenuRest}/>
-      </IBodyW>
-    )
-  } else return result
-}
+//
+//
+// function Wrapper(props: any) {
+//   let {_$useTag: WrapperW = 'div', _$cx = classNames, className, wrapperClassName = {}, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
+//   let {_$widget: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
+//   let {_$widget: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
+//   if (!arrayItem) wrapperClassName = [wrapperClassName, className];
+//   else IBodyCN = [IBodyCN, className];
+//
+//   const result = <WrapperW className={_$cx ? _$cx(wrapperClassName) : wrapperClassName} {...rest} />;
+//   if (arrayItem) {
+//     return (
+//       <IBodyW className={_$cx ? _$cx(IBodyCN) : IBodyCN} {...IBodyRest}>
+//         {result}
+//         <IMenuW className={_$cx && _$cx(IMenuCN)} {...IMenuRest}/>
+//       </IBodyW>
+//     )
+//   } else return result
+// }
 
 
 function ItemMenu(props: any) {
@@ -1426,11 +1426,11 @@ function normailzeSets(sets: string = '', type: any) {
   return {presets: [main || type].concat(rest).join(':'), main};
 }
 
-const resolveComponents = memoize((elements: elementsType, customizeFields: FFCustomizeType = {}, sets?: string): jsFFCustomizeType => {
+const resolveComponents = memoize((elements: elementsType, customizeFields: FFCustomizeType, sets?: string): jsFFCustomizeType => {
   if (sets) {
     let $_ref = sets.split(':')
       .map(v => (v = v.trim()) && (v[0] != '^' ? '^/sets/' + v : v))
-      .join(':') + ':' + (customizeFields.$_ref || '');
+      .join(':') + ':' + ((customizeFields && customizeFields.$_ref) || '');
     customizeFields = merge(customizeFields, {$_ref});
   }
   return objectResolver(elements, customizeFields);
@@ -1550,7 +1550,6 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     // Wrapper,
     Input: UniversalInput,
     Rest: RestWidget,
-    Autowidth,
     ItemMenu,
     Checkbox,
     CheckboxNull,
@@ -1668,6 +1667,9 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     booleanNullLeft: {$_ref: '^/sets/booleanNull'},
     object: {
       $_ref: '^/sets/base',
+      Layout: {
+        $baseLayoutClass: {'fform-layout': true}
+      },
       Main: {
         _$widget: '^/widgets/Rest',
         $_maps: {
@@ -1760,13 +1762,13 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     },
     $radioNull: {Main: {$staticProps: {onClick: '^/fn/eventValue|radioClear|liveUpdate'}}},
     $radioEmpty: {Main: {$staticProps: {onClick: {$: '^/fn/eventValue|radioClear|liveUpdate', args: ['${0}', '']}}}},
-    $autowidth: {
-      Autowidth: {$_ref: '^/parts/Autowidth'},
-      Wrapper: {className: {'fform-shrink': true}},
-    },
+    // $autowidth: {
+    //   Autowidth: {$_ref: '^/parts/Autowidth'},
+    //   Wrapper: {className: {'fform-shrink': true}},
+    // },
     $inlineItems: {Main: {className: {'fform-inline': true}}},
+    $inlineLayout: {Layout: {$baseLayoutClass: {'fform-inline': true}}},
     // $inlineTitle: {Wrapper: {wrapperClassName: {'fform-inline': true}}},
-    // $inlineLayout: {Main: {LayoutDefaultClass: {'fform-inline': true}}},
     // $inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'fform-inline': true}}}},
     // $arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
     // $arrayControlsDelOnly: {Wrapper: {ArrayItemMenu: {buttons: ['del'],}}},
@@ -1944,17 +1946,17 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         "staticProps/disabled": '@/params/disabled',
       }
     },
-    Autowidth: {
-      _$widget: '^/widgets/Autowidth',
-      addWidth: 35,
-      minWidth: 60,
-      $_maps: {
-        value: 'value',
-        placeholder: '@/params/placeholder',
-        'className/fform-hidden': '@/params/hidden',
-        $FField: {$: '^/fn/getProp', args: [], update: 'build'},
-      }
-    },
+    // Autowidth: {
+    //   _$widget: '^/widgets/Autowidth',
+    //   addWidth: 35,
+    //   minWidth: 60,
+    //   $_maps: {
+    //     value: 'value',
+    //     placeholder: '@/params/placeholder',
+    //     'className/fform-hidden': '@/params/hidden',
+    //     $FField: {$: '^/fn/getProp', args: [], update: 'build'},
+    //   }
+    // },
     Button: {
       _$widget: 'button',
       type: 'button',

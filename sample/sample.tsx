@@ -52,8 +52,8 @@ const cssSelectSchema = {
 };
 
 const viewerData = {
-  '0': {value: {autowidth: 123, select: 'option 3'}},
-  '1': {value: {autowidth: 243523, select: 'option 2', radioSelect: 'option 1', booleanNullLeft: null, array: ['val 1', 'val 2']}},
+  '0': {value: {numberlu: 123, select: 'option 3'}},
+  '1': {value: {numberlu: 243523, select: 'option 2', radioSelect: 'option 1', booleanNullLeft: null, array: ['val 1', 'val 2']}},
   '2': {
     value: {select: '3', booleanNullLeft: null, array: ['another', 'else', ['one', 2, false]]},
     customData: {'select': {'fData': {'enum': ['0', '1', '2', '3'], 'enumExten': {'0': {label: 'label 0'}, '1': {label: 'label 1'}, '2': {label: 'label 2'}, '3': {label: 'label 3'}}}}}
@@ -123,7 +123,7 @@ class CssSelector extends React.Component<any, any> {
 
       <h3>FForm sample</h3>
       <div>
-        <FForm value={{autowidth: 1, select: 'not in enum', array: ['v', 'a', ['val', false], [1, 2]]}} id="sampleForm" ref={(r: any) => window['main'] = r}
+        <FForm value={{numberlu: 1, select: 'not in enum', array: ['v', 'a', ['val', false], [1, 2]]}} id="sampleForm" ref={(r: any) => window['main'] = r}
                $clearMessages={(e: any) => {e.fform.api.setMessages(null);}}
                onSubmit={submit} touched core={self.cores[self.state.css]}/>
       </div>
@@ -144,7 +144,7 @@ class CssSelector extends React.Component<any, any> {
 if (typeof window != 'undefined') {
   const container = document.querySelector('#root');
 
-//value={{autowidth: null}}
+//value={{numberlu: null}}
   render(<div style={{margin: '1em'}}>
     <CssSelector/>
 
