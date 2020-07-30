@@ -1,5 +1,5 @@
 /** @jsx h */
-import { Component, PureComponent } from 'react';
+import { Component } from 'react';
 import { MergeStateOptionsArgument } from "react-ts-utils";
 export declare const _CORES: WeakMap<object, any>;
 export declare const _SCHEMAS: WeakMap<object, any>;
@@ -45,7 +45,7 @@ declare class FRefsGeneric extends Component<any, any> {
     $refs: any;
     getRef(path: Path): any;
     protected _setRef: (name: string | string[]) => (v: any) => any;
-    protected _refProcess(defaultName: string, $reactRef: any): any;
+    protected _refProcess($reactRef: any): any;
 }
 declare class FField extends FRefsGeneric {
     private _mappedData;
@@ -55,6 +55,10 @@ declare class FField extends FRefsGeneric {
     private _cachedTimeout?;
     private _blocks;
     private _widgets;
+    private _uniqKey2key;
+    private _uniqKey2field;
+    private _layoutKeys;
+    private _$wrapper;
     private _components;
     private _maps;
     private _$_parse;
@@ -62,17 +66,22 @@ declare class FField extends FRefsGeneric {
     _preventLiveUpd: boolean;
     _forceUpd: boolean;
     get: Function | null;
-    _layout: FFLayoutGeneric<jsFFCustomizeType>;
+    restFields: any[];
     $branch: any;
     schemaPart: jsJsonSchema;
+    arrayStart: any;
+    mainPreset: string;
+    fieldName: string;
     liveValidate: boolean;
     liveUpdate: boolean;
     path: any;
     api: any;
+    _$cx: any;
     pFForm: any;
     stateApi: any;
     wrapFns: typeof bindProcessorToThis;
     constructor(props: any, context: any);
+    _setWidRef: (key: import("csstype").AnimationIterationCountProperty) => (item: any) => any;
     getRef(path: Path | string): any;
     _resolver(value: any): any;
     _addErrPath(e: any): any;
@@ -80,14 +89,15 @@ declare class FField extends FRefsGeneric {
     _updateCachedValue(update?: boolean): void;
     _cacheValue(path: any, value: any, fn?: string, opts?: any): boolean | undefined;
     _build(): void;
-    _setMappedData(prevData: any, nextData: any, updateStage: boolean | 'build'): boolean;
+    _setMappedData(prevData: any, nextData: any, updateStage: boolean | 'build'): StateType;
+    _getMappedData: (key: number) => () => any;
+    _getUniqKey: (key: string, branch?: any) => any;
+    _makeFField(fieldName: string, branch?: any): JSX.Element;
+    _getPath(key: string): string;
     getData(branch?: any): any;
     shouldComponentUpdate(nextProps: any, nextState: any): boolean;
-    render(): false | import("react").DetailedReactHTMLElement<import("react").InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> | null;
-}
-declare const Checkbox: import("react").ForwardRefExoticComponent<Pick<any, string | number | symbol> & import("react").RefAttributes<unknown>>;
-declare class Checkboxes extends PureComponent<any, any> {
-    render(): import("react").DetailedReactHTMLElement<import("react").InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>;
+    _updateWidgets: (oldMapped: any, newMapped: any) => void;
+    render(): any;
 }
 declare function bindProcessorToThis(val: any, opts?: anyObject): any;
 declare function extractMaps(obj: any, skip?: string[]): {
@@ -110,4 +120,3 @@ declare let elementsBase: elementsType & {
 };
 export { elementsBase as elements, formReducer, getFRVal, FForm, FField, fformCores, schemaRegister };
 export { extractMaps, normalizeMaps, updateProps, classNames, comparePropsFn, getExten };
-export { Checkboxes, Checkbox };

@@ -1890,7 +1890,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       if (this.api.getValue() === value) this.api.setValue(nullValue);
       return args;
     },
-    messages(messages: any, staticProps: anyObject = {}) {
+    messages(messages: any, staticProps: anyObject = {}, {_$cx}:any) {
       const {className: cnSP = {}, ...restSP} = staticProps;
       return [objKeys(messages || []).map(priority => {
         const {norender, texts, className = {}, ...rest} = messages[priority];
@@ -1901,7 +1901,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
             (isString(v) && isString(children[children.length - 1])) ? children.push({_$widget: 'br'}, v) : children.push(v)
           }));
         if (norender || !children.length) return null;
-        return {children, ...restSP, className: {['fform-message-priority-' + priority]: true, ...cnSP, ...className}, ...rest}
+        return {children, ...restSP, className: _$cx({['fform-message-priority-' + priority]: true, ...cnSP, ...className}), ...rest}
       })]
     },
     arrayOfEnum(enumVals: any[] = [], enumExten: any = {}, staticProps: any = {}, name?: true | string) {
@@ -1921,7 +1921,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       // _$cx: '^/_$cx',
       children: [],
       $_maps: {
-        children: {$: '^/fn/messages', args: ['@/messages', {}]},
+        children: {$: '^/fn/messages', args: ['@/messages', {}, {_$cx: '^/_$cx'}]},
         'className/fform-hidden': {$: '^/fn/or', args: ['@/params/viewer', '!@/status/touched']},
       }
     },

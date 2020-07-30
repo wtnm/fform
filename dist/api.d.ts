@@ -49,13 +49,13 @@ declare class FFormStateAPI extends FFormStateManager {
     }) => any;
     getValue: (opts?: {
         path?: string | Path | undefined;
-        inital?: boolean | undefined;
+        initial?: boolean | undefined;
     }) => any;
     setValue: (value: any, opts?: APIOptsType & {
         path?: string | Path | undefined;
         replace?: any;
         setOneOf?: number | undefined;
-        inital?: boolean | undefined;
+        initial?: boolean | undefined;
     }) => any;
     getDefaultValue: () => any;
     switch: (path: string | Path | null, value: any, opts?: APIOptsType & {
@@ -78,7 +78,7 @@ declare class FFormStateAPI extends FFormStateManager {
         path?: string | Path | undefined;
     }) => any;
     arrayAdd: (path: string | Path, value?: number | any[], opts?: APIOptsType) => any;
-    arrayItemOps: (path: string | Path, value: "del" | "up" | "down" | "move" | "first" | "last" | "shift", opts?: APIOptsType & {
+    arrayItemOps: (path: string | Path, value: "move" | "first" | "last" | "del" | "up" | "down" | "shift", opts?: APIOptsType & {
         value?: number | undefined;
     }) => any;
     setHidden: (path: string | Path, value?: boolean, opts?: APIOptsType) => any;

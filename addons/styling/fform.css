@@ -3,8 +3,8 @@
     display: flex;
     flex-flow: column;
     flex: 1 1 auto;
-    align-items: baseline;
-    /*margin: 0;*/
+    align-items: stretch;
+    margin: 0;
 }
 
 .fform-layout {

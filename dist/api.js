@@ -188,9 +188,9 @@ class FFormStateAPI extends FFormStateManager {
             update.value = value;
             return this._setExecution(update, opts);
         };
-        this.getValue = (opts = {}) => this.get(stateLib_1.SymData, opts.inital ? 'inital' : 'current', opts.path || []);
+        this.getValue = (opts = {}) => this.get(stateLib_1.SymData, opts.initial ? 'initial' : 'current', opts.path || []);
         this.setValue = (value, opts = {}) => {
-            let { path, inital, replace } = opts, update = __rest(opts, ["path", "inital", "replace"]);
+            let { path, initial, replace } = opts, update = __rest(opts, ["path", "initial", "replace"]);
             if (path === null)
                 return this._setExecution([null], opts);
             path = stateLib_1.normalizePath(path || []).slice();
@@ -203,7 +203,7 @@ class FFormStateAPI extends FFormStateManager {
                     value = { [nm]: value };
                     replace = { [nm]: replace };
                 }
-                update.path = [inital ? '@inital' : '@current'].concat(path);
+                update.path = [initial ? '@initial' : '@current'].concat(path);
             }
             update.value = value;
             update.replace = replace;
@@ -282,7 +282,7 @@ class FFormStateAPI extends FFormStateManager {
                 self = object;
                 return wrapped;
             },
-            getValue: (opts = {}) => wrapped.get(stateLib_1.SymData, opts.inital ? 'inital' : 'current', wrapPath(opts.path)),
+            getValue: (opts = {}) => wrapped.get(stateLib_1.SymData, opts.initial ? 'initial' : 'current', wrapPath(opts.path)),
             getApi: () => api,
         };
         ['setValue', 'setMessages'].forEach(fn => wrapped[fn] = (value, opts = {}, ...args) => wrapApi(fn)(value, wrapOpts(opts), ...args));

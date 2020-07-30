@@ -33,7 +33,7 @@ exports.SymDelete = SymDelete;
 const STATUS_REV = {
     'untouched': 'touched',
     'dirty': 'pristine',
-    'unsubmited': 'submited'
+    'unsubmitted': 'submitted'
 };
 /////////////////////////////////////////////
 //  JSON types detector
@@ -199,8 +199,8 @@ Macros.setStatus = (state, schema, UPDATABLE, item) => {
         throw new Error('Setting "' + op + '" directly is not allowed');
     let prevVal = getUpdValue([UPDATABLE.update, state], item.path, SymData, keyPath);
     const selfManaged = isSelfManaged(state, item.path);
-    if ((op == 'untouched' || op == 'unsubmited') && prevVal == 0 && !selfManaged)
-        return state; // stick "untouched" and "unsubmited" to zero for elements and arrays
+    if ((op == 'untouched' || op == 'unsubmitted') && prevVal == 0 && !selfManaged)
+        return state; // stick "untouched" and "unsubmitted" to zero for elements and arrays
     let value = prevVal + item.value;
     if (selfManaged && value > 1)
         value = 1;
@@ -237,7 +237,7 @@ function recursivelyUpdate(state, schema, UPDATABLE, item) {
     const keys = branchKeys(branch);
     if (item.value == SymReset && item[SymData][0] == 'status') {
         let i = Object.assign({}, item);
-        i.value = (item[SymData][1] == 'untouched' || item[SymData][1] == 'unsubmited') ? (isSelfManaged(branch) ? 1 : keys.length) : 0;
+        i.value = (item[SymData][1] == 'untouched' || item[SymData][1] == 'unsubmitted') ? (isSelfManaged(branch) ? 1 : keys.length) : 0;
         state = updatePROC(state, UPDATABLE, i);
     }
     else
@@ -435,7 +435,7 @@ const arrayStart = react_ts_utils_1.memoize(function (schemaPart) {
     return schemaPart.items.length - 1;
 });
 exports.arrayStart = arrayStart;
-const basicStatus = { invalid: 0, dirty: 0, unsubmited: 1, untouched: 1, pending: 0, valid: true, submited: false, touched: false, pristine: true };
+const basicStatus = { invalid: 0, dirty: 0, unsubmitted: 1, untouched: 1, pending: 0, valid: true, submitted: false, touched: false, pristine: true };
 const makeDataStorage = react_ts_utils_1.memoize(function (schemaPart, oneOf, type, value = schemaPart.default) {
     // const x = schemaPart.x || ({} as FFSchemaExtensionType);
     const { _params = {}, _data = {} } = schemaPart;
@@ -512,7 +512,7 @@ const makeDataStorage = react_ts_utils_1.memoize(function (schemaPart, oneOf, ty
     else if (type == 'object')
         untouched = react_ts_utils_1.objKeys(schemaPart.properties || {}).length;
     if (untouched != 1)
-        result.status = Object.assign(Object.assign({}, result.status), { untouched, unsubmited: untouched });
+        result.status = Object.assign(Object.assign({}, result.status), { untouched, unsubmitted: untouched });
     if (schemaPart._data$) {
         let res = [];
         react_ts_utils_1.objKeys(schemaPart._data$).forEach((k) => react_ts_utils_1.push2array(res, processFn.call({}, schemaPart._data$[k], schemaPart)));
@@ -813,10 +813,10 @@ function makeValidation(state, dispatch, action) {
         promises.vAsync.resolve();
     return state;
 }
-function setDirtyPROC(state, UPDATABLE, inital, current, track = []) {
-    if (react_ts_utils_2.isUndefined(inital))
-        inital = react_ts_utils_1.getIn(state, SymData, 'default', track);
-    if (current === inital)
+function setDirtyPROC(state, UPDATABLE, initial, current, track = []) {
+    if (react_ts_utils_2.isUndefined(initial))
+        initial = react_ts_utils_1.getIn(state, SymData, 'default', track);
+    if (current === initial)
         return state;
     const { schema } = UPDATABLE.api;
     let schemaPart;
@@ -829,12 +829,12 @@ function setDirtyPROC(state, UPDATABLE, inital, current, track = []) {
         state = updatePROC(state, UPDATABLE, makeNUpdate(path, ['status', 'dirty'], 1, false, { macros: 'setStatus' }));
     }
     else {
-        let keys = react_ts_utils_1.objKeys(Object.assign({}, inital, current));
-        keys.forEach(key => state = setDirtyPROC(state, UPDATABLE, react_ts_utils_1.getIn(inital, key), react_ts_utils_1.getIn(current, key), track.concat(key)));
+        let keys = react_ts_utils_1.objKeys(Object.assign({}, initial, current));
+        keys.forEach(key => state = setDirtyPROC(state, UPDATABLE, react_ts_utils_1.getIn(initial, key), react_ts_utils_1.getIn(current, key), track.concat(key)));
     }
     return state;
 }
-function updateDirtyPROC(state, UPDATABLE, inital, currentChanges, track = [], forceDirty = false) {
+function updateDirtyPROC(state, UPDATABLE, initial, currentChanges, track = [], forceDirty = false) {
     const { schema } = UPDATABLE.api;
     let schemaPart;
     try {
@@ -843,9 +843,9 @@ function updateDirtyPROC(state, UPDATABLE, inital, currentChanges, track = [], f
     catch (e) { }
     if (!schemaPart || isSelfManaged(state, track)) { //direct compare
         let current = react_ts_utils_1.getIn(state, SymData, 'current', track);
-        if (react_ts_utils_2.isUndefined(inital))
-            inital = react_ts_utils_1.getIn(state, SymData, 'default', track);
-        let value = forceDirty || current !== inital ? 1 : -1;
+        if (react_ts_utils_2.isUndefined(initial))
+            initial = react_ts_utils_1.getIn(state, SymData, 'default', track);
+        let value = forceDirty || current !== initial ? 1 : -1;
         let path = track;
         let keyPath = ['status', 'dirty'];
         if (!schemaPart) {
@@ -863,20 +863,20 @@ function updateDirtyPROC(state, UPDATABLE, inital, currentChanges, track = [], f
             keys = keys.filter(k => isNaN(parseInt(k)) || ~existKeys.indexOf(k));
         }
         // if (schemaPart.type == 'array' && !~keys.indexOf('length')) keys.push('length');
-        forceDirty = forceDirty || !react_ts_utils_2.isMergeable(inital);
-        keys.forEach(key => state = updateDirtyPROC(state, UPDATABLE, react_ts_utils_1.getIn(inital, key), react_ts_utils_1.getIn(currentChanges, key), track.concat(key), forceDirty));
+        forceDirty = forceDirty || !react_ts_utils_2.isMergeable(initial);
+        keys.forEach(key => state = updateDirtyPROC(state, UPDATABLE, react_ts_utils_1.getIn(initial, key), react_ts_utils_1.getIn(currentChanges, key), track.concat(key), forceDirty));
     }
     return state;
 }
-function setPristinePROC(state, UPDATABLE, inital, track = []) {
+function setPristinePROC(state, UPDATABLE, initial, track = []) {
     if (react_ts_utils_1.getIn(UPDATABLE.update, track, SymData, 'status', 'pristine')) {
-        if (react_ts_utils_2.isMergeable(inital) && react_ts_utils_1.getIn(state, SymData, 'current', track) !== inital) {
-            react_ts_utils_1.setIn(UPDATABLE.update, inital, SymData, 'current', track);
+        if (react_ts_utils_2.isMergeable(initial) && react_ts_utils_1.getIn(state, SymData, 'current', track) !== initial) {
+            react_ts_utils_1.setIn(UPDATABLE.update, initial, SymData, 'current', track);
             react_ts_utils_1.setIn(UPDATABLE.replace, true, SymData, 'current', track);
         }
     }
     else {
-        react_ts_utils_1.objKeys(react_ts_utils_1.getIn(UPDATABLE.update, track)).forEach(key => setPristinePROC(state, UPDATABLE, react_ts_utils_1.getIn(inital, key), track.concat(key)));
+        react_ts_utils_1.objKeys(react_ts_utils_1.getIn(UPDATABLE.update, track)).forEach(key => setPristinePROC(state, UPDATABLE, react_ts_utils_1.getIn(initial, key), track.concat(key)));
     }
     return state;
 }
@@ -894,14 +894,14 @@ function updateState(dispatch) {
         oldCurrent = react_ts_utils_1.merge(oldCurrent, UPDATABLE.forceCheck);
         UPDATABLE.forceCheck = undefined;
     }
-    if (prevState[SymData].inital !== state[SymData].inital) { // check dirty for inital changes
-        let initalChanges = react_ts_utils_1.mergeState(prevState[SymData].inital, state[SymData].inital, { diff: true }).changes;
-        state = updateDirtyPROC(state, UPDATABLE, state[SymData].inital, initalChanges);
+    if (prevState[SymData].initial !== state[SymData].initial) { // check dirty for initial changes
+        let initialChanges = react_ts_utils_1.mergeState(prevState[SymData].initial, state[SymData].initial, { diff: true }).changes;
+        state = updateDirtyPROC(state, UPDATABLE, state[SymData].initial, initialChanges);
     }
     let currentChanges = react_ts_utils_1.mergeState(oldCurrent, react_ts_utils_1.getIn(state, SymData, 'current'), { diff: true }).changes;
     if (currentChanges)
-        state = updateDirtyPROC(state, UPDATABLE, state[SymData].inital, currentChanges); // check dirty only for changes
-    state = setPristinePROC(state, UPDATABLE, state[SymData].inital);
+        state = updateDirtyPROC(state, UPDATABLE, state[SymData].initial, currentChanges); // check dirty only for changes
+    state = setPristinePROC(state, UPDATABLE, state[SymData].initial);
     state = mergeUPD_PROC(state, UPDATABLE);
     let force;
     if (opts.noValidation)
@@ -935,7 +935,7 @@ function initState(UPDATABLE) {
     state = react_ts_utils_1.merge(state, react_ts_utils_1.setIn({}, defaultValues, [SymData, 'current']));
     state = setDataMapInState(state, UPDATABLE, dataMap);
     const current = react_ts_utils_1.getIn(state, SymData, 'current');
-    state = updatePROC(state, UPDATABLE, makeNUpdate([], ['inital'], current));
+    state = updatePROC(state, UPDATABLE, makeNUpdate([], ['initial'], current));
     state = updatePROC(state, UPDATABLE, makeNUpdate([], ['default'], current));
     state = mergeUPD_PROC(state, UPDATABLE);
     return state;
@@ -946,7 +946,7 @@ exports.initState = initState;
 /////////////////////////////////////////////
 function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneOf) {
     if (value === SymReset || react_ts_utils_2.isUndefined(value))
-        value = react_ts_utils_1.getIn(state, SymData, 'inital', track);
+        value = react_ts_utils_1.getIn(state, SymData, 'initial', track);
     if (value === SymClear || react_ts_utils_2.isUndefined(value))
         value = react_ts_utils_1.getIn(state, SymData, 'default', track);
     if (react_ts_utils_1.getIn(state, SymData, 'current', track) === value && !react_ts_utils_1.hasIn(UPDATABLE.update, SymData, 'current', track))
@@ -969,7 +969,7 @@ function updateCurrentPROC(state, UPDATABLE, value, replace, track = [], setOneO
     const oneOfSelector = branch[SymData].fData.oneOfSelector;
     const type = branch[SymData].fData.type;
     // if (isUndefined(value)) {
-    //   value = getIn(state, SymData, 'inital', track);
+    //   value = getIn(state, SymData, 'initial', track);
     //   if (isUndefined(value)) value = branch[SymData].fData.default;
     // }
     if (!react_ts_utils_2.isUndefined(setOneOf) || oneOfSelector || !types[type || 'any'](value)) { // if wrong type for current oneOf index search for proper type in oneOf
@@ -1117,8 +1117,8 @@ function updatePROC(state, UPDATABLE, item) {
     const keyPath = item[SymData];
     if (react_ts_utils_2.isFunction(value))
         value = value(getFromUPD(state, UPDATABLE)(path, SymData, keyPath));
-    if (path.length == 0 && (keyPath[0] == 'inital' || keyPath[0] == 'default')) {
-        // if (keyPath[0] == 'inital')  value = merge(getIn(state, SymData, 'default', keyPath.slice(1)), value);
+    if (path.length == 0 && (keyPath[0] == 'initial' || keyPath[0] == 'default')) {
+        // if (keyPath[0] == 'initial')  value = merge(getIn(state, SymData, 'default', keyPath.slice(1)), value);
         state = react_ts_utils_1.merge(state, makeSlice(SymData, keyPath, value), { replace: makeSlice(SymData, keyPath, replace) });
     }
     else {
@@ -1163,26 +1163,26 @@ function updatePROC(state, UPDATABLE, item) {
                     oneOfStateFn(elemPath, { oneOf: item.setOneOf });
                 let { state: branch, dataMap = [], defaultValues } = makeStateBranch(schema, oneOfStateFn, elemPath);
                 const untouched = getUpdValue([state, UPDATABLE.update], path, SymData, 'status', 'untouched');
-                const unsubmited = getUpdValue([state, UPDATABLE.update], path, SymData, 'status', 'unsubmited');
+                const unsubmitted = getUpdValue([state, UPDATABLE.update], path, SymData, 'status', 'unsubmitted');
                 const mergeBranch = { [SymData]: { params: { uniqKey: getUniqKey() } } };
                 keys[i] = mergeBranch[SymData].params.uniqKey;
                 if (!untouched)
                     react_ts_utils_1.setIn(mergeBranch[SymData], { untouched: 0, touched: true }, 'status');
-                if (!unsubmited)
-                    react_ts_utils_1.setIn(mergeBranch[SymData], { unsubmited: 0, submited: true }, 'status');
+                if (!unsubmitted)
+                    react_ts_utils_1.setIn(mergeBranch[SymData], { unsubmitted: 0, submitted: true }, 'status');
                 branch = react_ts_utils_1.merge(branch, mergeBranch);
                 state = react_ts_utils_1.merge(state, react_ts_utils_1.setIn({}, branch, elemPath), { replace: react_ts_utils_1.setIn({}, true, elemPath) });
                 state = updatePROC(state, UPDATABLE, makeNUpdate([], react_ts_utils_1.push2array(['current'], elemPath), defaultValues, true));
                 react_ts_utils_1.push2array(maps2enable, dataMap);
                 if (untouched)
                     state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'untouched'], 1));
-                if (unsubmited)
-                    state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'unsubmited'], 1));
+                if (unsubmitted)
+                    state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', 'unsubmitted'], 1));
             }
             for (let i = end; i < start; i++) {
                 let elemPath = path.concat(i);
                 react_ts_utils_1.push2array(maps2disable, react_ts_utils_1.getIn(state, elemPath, SymDataMapTree, SymData) || []);
-                ['invalid', 'dirty', 'unsubmited', 'untouched', 'pending'].forEach(key => {
+                ['invalid', 'dirty', 'unsubmitted', 'untouched', 'pending'].forEach(key => {
                     let statusValue = getUpdValue([update, state], elemPath, SymData, 'status', key);
                     if (statusValue)
                         state = Macros.setStatus(state, schema, UPDATABLE, makeNUpdate(path, ['status', key], -1));
@@ -1209,7 +1209,7 @@ function updatePROC(state, UPDATABLE, item) {
                 value = getUpdValue([update, state], path, SymData, 'status', 'pending') ? null : !getUpdValue([update, state], path, SymData, 'status', 'invalid');
                 newKey = 'valid';
             }
-            else if (keyStatus == 'untouched' || keyStatus == 'dirty' || keyStatus === 'unsubmited') {
+            else if (keyStatus == 'untouched' || keyStatus == 'dirty' || keyStatus === 'unsubmitted') {
                 value = !getUpdValue([update, state], path, SymData, 'status', keyStatus);
                 newKey = STATUS_REV[keyStatus];
             }
@@ -1244,9 +1244,9 @@ function updatePROC(state, UPDATABLE, item) {
                     if (arrayOfRequired && (~arrayOfRequired.indexOf(field)))
                         branch = react_ts_utils_1.merge(branch, { [SymData]: { fData: { required: true } } });
                 }
-                ['untouched', 'unsubmited'].forEach(statusKey => {
+                ['untouched', 'unsubmitted'].forEach(statusKey => {
                     if (react_ts_utils_1.getIn(oldBranch, SymData, 'status', statusKey) == 0)
-                        branch = react_ts_utils_1.merge(branch, { [SymData]: { status: { [statusKey]: 0, [STATUS_REV[statusKey]]: true } } }); // stick untouched and unsubmited to zero
+                        branch = react_ts_utils_1.merge(branch, { [SymData]: { status: { [statusKey]: 0, [STATUS_REV[statusKey]]: true } } }); // stick untouched and unsubmitted to zero
                     state = react_ts_utils_1.merge(state, react_ts_utils_1.setIn({}, branch, path), { replace: react_ts_utils_1.setIn({}, true, path) });
                     state = updatePROC(state, UPDATABLE, makeNUpdate([], react_ts_utils_1.push2array(['current'], path), defaultValues, true));
                     state = setDataMapInState(state, UPDATABLE, maps2enable);
@@ -1298,7 +1298,7 @@ function setDataMapInState(state, UPDATABLE, dataMaps, unset = false) {
         let bindMap2emitter = false;
         normalizeUpdate({ path: (dataMap.from[0] == '/' ? '' : emitterPath.join('/')) + '/' + dataMap.from, value: null }, state).forEach(fromItem => {
             let key = fromItem[SymData][0];
-            if (key == 'current' || key == 'inital' || key == 'default' && fromItem.path.length)
+            if (key == 'current' || key == 'initial' || key == 'default' && fromItem.path.length)
                 fromItem = Object.assign(Object.assign({}, fromItem), { path: [], [SymData]: [key, ...fromItem.path, ...fromItem[SymData].slice(1)] });
             normalizeUpdate({ path: emitterPath.join('/') + '/' + dataMap.to, value: null }, state).forEach(toItem => {
                 let relTo = path2string(relativePath(fromItem.path, toItem.path.concat(SymData, ...toItem[SymData])));
