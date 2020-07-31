@@ -547,6 +547,7 @@ class FField extends FRefsGeneric {
         if (isString(fieldOrLayout) && fieldOrLayout[0] === '%') {
           if (fieldOrLayout[1] === '@') {
             blockName = fieldOrLayout.substr(2);
+            fieldOrLayout = null;
             let idx = UPDATABLE.blocks.indexOf(blockName);
             if (~idx) {
               fieldOrLayout = restComponents[blockName];
@@ -587,15 +588,10 @@ class FField extends FRefsGeneric {
 
     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>, opts: any = {}) {
       let {$_maps, rest} = extractMaps(layout, ['children']);
-      //let {$defaultWidget, $baseLayoutClass} = opts;
-      // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
-      let {children: $_fields, $_reactRef, _$skipKeys, _$widget, $_setReactRef, className, $defaultWidget, $baseLayoutClass, ...staticProps} = rest;
-      $baseLayoutClass = $baseLayoutClass || opts.$baseLayoutClass || {};
-      if (isString($baseLayoutClass) && $baseLayoutClass) $baseLayoutClass = {[$baseLayoutClass]: true};
+      let {children: $_fields, $_reactRef, _$skipKeys, _$widget, $_setReactRef, className, $defaultWidget, ...staticProps} = rest;
       $defaultWidget = $defaultWidget || opts.$defaultWidget || 'div';
       _$widget = _$widget || $defaultWidget;
       if ($_fields) {
-        className = merge($baseLayoutClass, className);
         if (isObject($_fields)) {
           let {_$order = [], ...restFields} = $_fields;
           $_fields = [];
@@ -619,7 +615,7 @@ class FField extends FRefsGeneric {
       mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
       if ($_setReactRef) staticProps[$_setReactRef === true ? '$_setReactRef' : $_setReactRef] = self._setRef;
       self._mappedData[counter] = staticProps;
-      return {_$widget, $_fields, opts: {$defaultWidget, $baseLayoutClass}}
+      return {_$widget, $_fields, opts: {$defaultWidget}}
     }
 
     const self = this;
@@ -668,14 +664,14 @@ class FField extends FRefsGeneric {
       Layout = isMergeable($layout) ? merge(Layout, $layout) : Layout;
 
     let _layouts: any = makeLayouts_INNER_PROCEDURE(UPDATABLE, Layout || []);
+    let blocks = ['Layout', ...UPDATABLE.blocks];
     makeLayouts_INNER_PROCEDURE(UPDATABLE, UPDATABLE.blocks.map(bl => '%@' + bl));
     restComponents['Layout'] = _layouts;
-    UPDATABLE.blocks = objKeys(restComponents);
+    UPDATABLE.blocks = blocks;
     self._$wrapper = deArray(makeLayouts_INNER_PROCEDURE(UPDATABLE, isArray(Wrapper) ? {children: Wrapper} : Wrapper));
 
     if (fData.strictLayout !== true)// and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
       UPDATABLE.keys.forEach(fieldName => self.restFields.push(self._makeFField(fieldName)));
-
     self._mappedData = self._setMappedData(undefined, data, 'build');
 
     self._rebuild = false;
@@ -1366,21 +1362,17 @@ const UniversalInput = forwardRef(
 
 
 function ItemMenu(props: any) {
-  const {_$useTag: UseTag = 'div', _$buttonDefaults = {}, _$cx, disabled, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ...rest}: { [key: string]: any } = props;
+  const {_$cx, disabled, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ..._$buttonDefaults}: { [key: string]: any } = props;
   if (!arrayItem) return null;
-  // console.log(arrayItem)
-  buttons.forEach((key: string) => delete rest[key]);
-  return (
-    <UseTag className={_$cx(className)} {...rest}>
-      {buttons.map((key: string) => {
-        let {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key, ...restBut}
-          = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {});
-        if (!restBut.dangerouslySetInnerHTML) restBut.children = children;
-        return (
-          <ButW key={key} type={type} title={title} className={_$cx ? _$cx(ButCN) : ButCN}
-                {...restBut} disabled={disabled || disabledCheck && !arrayItem[disabledCheck]} onClick={() => onClick(key)}/>)
-      })}
-    </UseTag>);
+  return (buttons.map((key: string) => {
+      let {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key, ...restBut}
+        = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {});
+      if (!restBut.dangerouslySetInnerHTML) restBut.children = children;
+      return (
+        <ButW key={key} type={type} title={title} className={_$cx ? _$cx(ButCN) : ButCN}
+              {...restBut} disabled={disabled || disabledCheck && !arrayItem[disabledCheck]} onClick={() => onClick(key)}/>)
+    })
+  );
 }
 
 
@@ -1432,7 +1424,7 @@ function normailzeSets(sets: string = '', type: any) {
     if (presets[i][0] !== '$') main = main || presets[i];
     else rest.push(presets[i])
   }
-  return {presets: [main || type].concat(rest).join(':'), main};
+  return {presets: [main || type].concat(rest).join(':'), main: main || type};
 }
 
 const resolveComponents = memoize((elements: elementsType, customizeFields: FFCustomizeType, sets?: string): jsFFCustomizeType => {
@@ -1687,7 +1679,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     object: {
       $_ref: '^/sets/base',
       Layout: {
-        $baseLayoutClass: {'fform-layout': true}
+        className: {'fform-layout': true}
       },
       Main: {
         _$widget: '^/widgets/Rest',
@@ -1786,7 +1778,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     //   Wrapper: {className: {'fform-shrink': true}},
     // },
     $inlineItems: {Main: {className: {'fform-inline': true}}},
-    $inlineLayout: {Layout: {$baseLayoutClass: {'fform-inline': true}}},
+    $inlineLayout: {Layout: {className: {'fform-inline': true}}},
     // $inlineTitle: {Wrapper: {wrapperClassName: {'fform-inline': true}}},
     // $inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'fform-inline': true}}}},
     // $arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
@@ -2025,7 +2017,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     ArrayItemMenu: {
       _$widget: '^/widgets/ItemMenu',
       _$cx: '^/_$cx',
-      _$buttonDefaults: '^/parts/Button',
+      $_ref: '^/parts/Button',
       buttons: ['first', 'last', 'up', 'down', 'del'],
       onClick: {$: '^/fn/api', args: ['arrayItemOps', './', '${0}']},
       buttonsProps: {
@@ -2035,7 +2027,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         down: {disabledCheck: 'canDown'},
         del: {disabledCheck: 'canDel'},
       },
-      $_maps: {arrayItem: '@/arrayItem', 'className/fform-button-viewer': '@/params/viewer', disabled: '@params/disabled'},
+      $_maps: {arrayItem: '@/arrayItem'},
     },
     Expander: {_$widget: 'div', className: {'fform-expand': true}}
   },

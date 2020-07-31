@@ -251,7 +251,6 @@
                 },
                 {
                   "$_ref": "^/parts/ArrayItemMenu",
-                  "_$useTag": "span",
                   "buttons": [
                     "up",
                     "down",
@@ -273,11 +272,6 @@
                         "x"
                       ]
                     }
-                  },
-                  "style": {
-                    "float": "right",
-                    "marginRight": "1em",
-                    "marginLeft": "1em"
                   }
                 }
               ]
@@ -290,7 +284,22 @@
           },
           "_layout": {
             "children": [
-              "%0"
+              "%0",
+              "%@Main",
+              {
+                "$_ref": "^/parts/ArrayAddButton",
+                "data-key": "add_0",
+                "children": [
+                  "+string"
+                ],
+                "onClick": {
+                  "args": {
+                    "3": {
+                      "setOneOf": 0
+                    }
+                  }
+                }
+              }
             ]
           },
           "items": {
@@ -310,8 +319,7 @@
               },
               {
                 "type": "boolean",
-                "default": false,
-                "_presets": "boolean"
+                "default": false
               }
             ]
           }
@@ -322,7 +330,6 @@
       "type": "boolean",
       "title": "boolean",
       "default": false,
-      "_presets": "boolean",
       "_enumExten": {
         "true": {
           "label": "yes"

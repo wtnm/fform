@@ -82,7 +82,7 @@ declare class FField extends FRefsGeneric {
     stateApi: any;
     wrapFns: typeof bindProcessorToThis;
     constructor(props: any, context: any);
-    _setWidRef: (key: import("csstype").AnimationIterationCountProperty) => (item: any) => any;
+    _setWidRef: (key: string | number) => (item: any) => any;
     getRef(path: Path | string): any;
     _resolver(value: any): any;
     _addErrPath(e: any): any;

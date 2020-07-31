@@ -10,7 +10,7 @@
     },
     "ArrayItemMenu": {
       "className": {
-        "fform-item-menu": true
+        "fform-ac-button": true
       },
       "buttonsProps": {
         "first": {

@@ -472,6 +472,7 @@ class FField extends FRefsGeneric {
                 if (react_ts_utils_1.isString(fieldOrLayout) && fieldOrLayout[0] === '%') {
                     if (fieldOrLayout[1] === '@') {
                         blockName = fieldOrLayout.substr(2);
+                        fieldOrLayout = null;
                         let idx = UPDATABLE.blocks.indexOf(blockName);
                         if (~idx) {
                             fieldOrLayout = restComponents[blockName];
@@ -514,16 +515,10 @@ class FField extends FRefsGeneric {
         }
         function normalizeLayout(counter, layout, opts = {}) {
             let { $_maps, rest } = extractMaps(layout, ['children']);
-            //let {$defaultWidget, $baseLayoutClass} = opts;
-            // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
-            let { children: $_fields, $_reactRef, _$skipKeys, _$widget, $_setReactRef, className, $defaultWidget, $baseLayoutClass } = rest, staticProps = __rest(rest, ["children", "$_reactRef", "_$skipKeys", "_$widget", "$_setReactRef", "className", "$defaultWidget", "$baseLayoutClass"]);
-            $baseLayoutClass = $baseLayoutClass || opts.$baseLayoutClass || {};
-            if (react_ts_utils_1.isString($baseLayoutClass) && $baseLayoutClass)
-                $baseLayoutClass = { [$baseLayoutClass]: true };
+            let { children: $_fields, $_reactRef, _$skipKeys, _$widget, $_setReactRef, className, $defaultWidget } = rest, staticProps = __rest(rest, ["children", "$_reactRef", "_$skipKeys", "_$widget", "$_setReactRef", "className", "$defaultWidget"]);
             $defaultWidget = $defaultWidget || opts.$defaultWidget || 'div';
             _$widget = _$widget || $defaultWidget;
             if ($_fields) {
-                className = react_ts_utils_1.merge($baseLayoutClass, className);
                 if (react_ts_utils_1.isObject($_fields)) {
                     let { _$order = [] } = $_fields, restFields = __rest($_fields, ["_$order"]);
                     $_fields = [];
@@ -547,7 +542,7 @@ class FField extends FRefsGeneric {
             if ($_setReactRef)
                 staticProps[$_setReactRef === true ? '$_setReactRef' : $_setReactRef] = self._setRef;
             self._mappedData[counter] = staticProps;
-            return { _$widget, $_fields, opts: { $defaultWidget, $baseLayoutClass } };
+            return { _$widget, $_fields, opts: { $defaultWidget } };
         }
         const self = this;
         let $branch = self.pFForm.getBranch(self.path);
@@ -584,9 +579,10 @@ class FField extends FRefsGeneric {
         else
             Layout = react_ts_utils_1.isMergeable($layout) ? react_ts_utils_1.merge(Layout, $layout) : Layout;
         let _layouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, Layout || []);
+        let blocks = ['Layout', ...UPDATABLE.blocks];
         makeLayouts_INNER_PROCEDURE(UPDATABLE, UPDATABLE.blocks.map(bl => '%@' + bl));
         restComponents['Layout'] = _layouts;
-        UPDATABLE.blocks = react_ts_utils_1.objKeys(restComponents);
+        UPDATABLE.blocks = blocks;
         self._$wrapper = react_ts_utils_1.deArray(makeLayouts_INNER_PROCEDURE(UPDATABLE, react_ts_utils_1.isArray(Wrapper) ? { children: Wrapper } : Wrapper));
         if (fData.strictLayout !== true) // and here in UPDATABLE.keys we have only keys was not used, we add them to the top layer if strictLayout allows
             UPDATABLE.keys.forEach(fieldName => self.restFields.push(self._makeFField(fieldName)));
@@ -1231,17 +1227,15 @@ const UniversalInput = react_1.forwardRef(function (props, ref) {
 //   } else return result
 // }
 function ItemMenu(props) {
-    const { _$useTag: UseTag = 'div', _$buttonDefaults = {}, _$cx, disabled, className, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick } = props, rest = __rest(props, ["_$useTag", "_$buttonDefaults", "_$cx", "disabled", "className", "buttonsProps", "arrayItem", "buttons", "onClick"]);
+    const { _$cx, disabled, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick } = props, _$buttonDefaults = __rest(props, ["_$cx", "disabled", "buttonsProps", "arrayItem", "buttons", "onClick"]);
     if (!arrayItem)
         return null;
-    // console.log(arrayItem)
-    buttons.forEach((key) => delete rest[key]);
-    return (react_1.createElement(UseTag, Object.assign({ className: _$cx(className) }, rest), buttons.map((key) => {
+    return (buttons.map((key) => {
         let _a = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {}), { _$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key } = _a, restBut = __rest(_a, ["_$widget", "type", "disabledCheck", "className", "onClick", "title", "children"]);
         if (!restBut.dangerouslySetInnerHTML)
             restBut.children = children;
         return (react_1.createElement(ButW, Object.assign({ key: key, type: type, title: title, className: _$cx ? _$cx(ButCN) : ButCN }, restBut, { disabled: disabled || disabledCheck && !arrayItem[disabledCheck], onClick: () => onClick(key) })));
-    })));
+    }));
 }
 const CheckboxNull = react_1.forwardRef((props, ref) => {
     let { checked, onChange, nullValue = null, type } = props, rest = __rest(props, ["checked", "onChange", "nullValue", "type"]);
@@ -1288,7 +1282,7 @@ function normailzeSets(sets = '', type) {
         else
             rest.push(presets[i]);
     }
-    return { presets: [main || type].concat(rest).join(':'), main };
+    return { presets: [main || type].concat(rest).join(':'), main: main || type };
 }
 const resolveComponents = react_ts_utils_1.memoize((elements, customizeFields, sets) => {
     if (sets) {
@@ -1547,7 +1541,7 @@ let elementsBase = {
         object: {
             $_ref: '^/sets/base',
             Layout: {
-                $baseLayoutClass: { 'fform-layout': true }
+                className: { 'fform-layout': true }
             },
             Main: {
                 _$widget: '^/widgets/Rest',
@@ -1635,7 +1629,7 @@ let elementsBase = {
         //   Wrapper: {className: {'fform-shrink': true}},
         // },
         $inlineItems: { Main: { className: { 'fform-inline': true } } },
-        $inlineLayout: { Layout: { $baseLayoutClass: { 'fform-inline': true } } },
+        $inlineLayout: { Layout: { className: { 'fform-inline': true } } },
         // $inlineTitle: {Wrapper: {wrapperClassName: {'fform-inline': true}}},
         // $inlineArrayControls: {Wrapper: {ArrayItemBody: {className: {'fform-inline': true}}}},
         // $arrayControls3but: {Wrapper: {ArrayItemMenu: {buttons: ['up', 'down', 'del'],}}},
@@ -1884,7 +1878,7 @@ let elementsBase = {
         ArrayItemMenu: {
             _$widget: '^/widgets/ItemMenu',
             _$cx: '^/_$cx',
-            _$buttonDefaults: '^/parts/Button',
+            $_ref: '^/parts/Button',
             buttons: ['first', 'last', 'up', 'down', 'del'],
             onClick: { $: '^/fn/api', args: ['arrayItemOps', './', '${0}'] },
             buttonsProps: {
@@ -1894,7 +1888,7 @@ let elementsBase = {
                 down: { disabledCheck: 'canDown' },
                 del: { disabledCheck: 'canDel' },
             },
-            $_maps: { arrayItem: '@/arrayItem', 'className/fform-button-viewer': '@/params/viewer', disabled: '@params/disabled' },
+            $_maps: { arrayItem: '@/arrayItem' },
         },
         Expander: { _$widget: 'div', className: { 'fform-expand': true } }
     },

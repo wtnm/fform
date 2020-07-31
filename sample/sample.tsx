@@ -14,8 +14,9 @@ import imjvWrapper from '../addons/wrappers/imjv';
 import * as imjvValidator from '../addons/is-my-json-valid-lite';
 import {objKeys} from "react-ts-utils";
 import {merge} from "react-ts-utils/dist";
+import basic from '../addons/styling/basic.json'
 
-let basicStyling = merge.all(blocks(), [fields(), statuses(), presets()]);
+let basicStyling = merge.all(basic, [blocks(), fields(), statuses(), presets()]);
 let bootstrapStyling = {};
 
 const JSONValidator = imjvWrapper(imjvValidator);
