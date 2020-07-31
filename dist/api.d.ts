@@ -78,7 +78,7 @@ declare class FFormStateAPI extends FFormStateManager {
         path?: string | Path | undefined;
     }) => any;
     arrayAdd: (path: string | Path, value?: number | any[], opts?: APIOptsType) => any;
-    arrayItemOps: (path: string | Path, value: "del" | "first" | "last" | "up" | "down" | "move" | "shift", opts?: APIOptsType & {
+    arrayItemOps: (path: string | Path, value: "del" | "up" | "down" | "move" | "first" | "last" | "shift", opts?: APIOptsType & {
         value?: number | undefined;
     }) => any;
     setHidden: (path: string | Path, value?: boolean, opts?: APIOptsType) => any;
