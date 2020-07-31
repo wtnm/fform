@@ -72,6 +72,7 @@ declare class FField extends FRefsGeneric {
     arrayStart: any;
     mainPreset: string;
     fieldName: string;
+    simple: string;
     liveValidate: boolean;
     liveUpdate: boolean;
     path: any;

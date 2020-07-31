@@ -82,9 +82,7 @@
                 }
               ]
             },
-            "$_reactRef": {
-              "ref": "!focusInput"
-            },
+            "$_reactRef": "!focusInput",
             "$_maps": {
               "className/fform-hidden": "@/params/viewer",
               "value": "@/focusValue"

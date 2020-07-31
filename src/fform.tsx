@@ -403,6 +403,7 @@ class FField extends FRefsGeneric {
   arrayStart: any;
   mainPreset: string;
   fieldName: string;
+  simple: string;
 
   liveValidate: boolean;
   liveUpdate: boolean;
@@ -434,9 +435,15 @@ class FField extends FRefsGeneric {
     path = normalizePath(path);
     const self = this;
     if (!path.length) return self.$refs['@Main'];
-    if (path.length == 1 && path[0] == SymData) return self;
-    if (path[0][0] == '@') return path.length == 1 ? self.$refs[path[0]] : self.$refs[path[0]].getRef(path.slice(1));
-    return self.$refs['@Main'] && self.$refs['@Main'].getRef && self.$refs['@Main'].getRef(path)
+    let field = self.$refs[self._getUniqKey(path[0])] || self.$refs[path[0]];
+    let restPath = path.slice(1);
+    if (restPath.length === 0) {
+      if (path[0] === SymData) return self;
+      if (field && !(field instanceof FField)) return field
+    }
+    // if (field[0] == '@') return path.length == 1 ? self.$refs[field] : self.$refs[field].getRef(path.slice(1));
+
+    return field && field.getRef && field.getRef(restPath)
   }
 
   _resolver(value: any) {
@@ -538,7 +545,7 @@ class FField extends FRefsGeneric {
         let fieldOrLayout = fields[key];
         let blockName;
         if (isString(fieldOrLayout) && fieldOrLayout[0] === '%') {
-          if (fieldOrLayout[1] === '%') {
+          if (fieldOrLayout[1] === '@') {
             blockName = fieldOrLayout.substr(2);
             let idx = UPDATABLE.blocks.indexOf(blockName);
             if (~idx) {
@@ -617,6 +624,7 @@ class FField extends FRefsGeneric {
 
     const self = this;
     let $branch = self.pFForm.getBranch(self.path);
+
     self.state = {branch: $branch};
 
     const data = self.getData();
@@ -632,6 +640,7 @@ class FField extends FRefsGeneric {
     let {presets, main: mainPreset} = normailzeSets(schemaPart._presets, schemaPart.type);
     self.mainPreset = mainPreset;
     self.fieldName = self.props.fieldName || '';
+    self.simple = isSelfManaged($branch) ? 'simple' : '';
 
     let $layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart._layout));
 
@@ -659,7 +668,7 @@ class FField extends FRefsGeneric {
       Layout = isMergeable($layout) ? merge(Layout, $layout) : Layout;
 
     let _layouts: any = makeLayouts_INNER_PROCEDURE(UPDATABLE, Layout || []);
-    makeLayouts_INNER_PROCEDURE(UPDATABLE, UPDATABLE.blocks.map(bl => '%%' + bl));
+    makeLayouts_INNER_PROCEDURE(UPDATABLE, UPDATABLE.blocks.map(bl => '%@' + bl));
     restComponents['Layout'] = _layouts;
     UPDATABLE.blocks = objKeys(restComponents);
     self._$wrapper = deArray(makeLayouts_INNER_PROCEDURE(UPDATABLE, isArray(Wrapper) ? {children: Wrapper} : Wrapper));
@@ -1533,6 +1542,12 @@ function classNames(...styles: any[]) {
 /////////////////////////////////////////////
 //  elements
 /////////////////////////////////////////////
+const toKebabCase = (str: any) =>
+  str &&
+  str
+    .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+    .map((x: any) => x.toLowerCase())
+    .join('-');
 
 
 let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOptionsArgument) => any } = {
@@ -1558,7 +1573,11 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
   sets: {
     'base': {
       Wrapper: {
-        children: ['%%Title', '%%Layout', '%%Main', '%%Message']
+        children: ['%@Title', '%@Layout', '%@Main', '%@Message'],
+        $_maps: {
+          'className/fform-hidden': '@/params/hidden',
+        },
+        $_reactRef: '@Wrapper',
       },
       Title: {
         _$widget: 'label',
@@ -1578,7 +1597,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_ref: '^/sets/base',
       Main: {
         _$widget: '^/widgets/Input',
-        $_reactRef: '%Main',
+        $_reactRef: '@Main',
         // _$cx: '^/_$cx',
         $_viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {'fform-viewer': true}},
         onChange: {$: '^/fn/eventValue|setValue'},
@@ -1676,7 +1695,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
           children: {$: '^/fn/getProp', args: 'restFields', update: 'every'}
         }
         // _$cx: '^/_$cx',
-        // $_reactRef: '%Main',
+        // $_reactRef: '@Main',
         // uniqKey: 'params/uniqKey',
         // LayoutDefaultClass: 'layout',
         // LayoutDefaultWidget: 'div',
@@ -1732,7 +1751,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       $_ref: '^/sets/base',
       Main: {
         $_ref: '^/parts/RadioSelector',
-        $_reactRef: '%Main',
+        $_reactRef: '@Main',
         $_setReactRef: '$setRef',
         $prefixRefName: '@enum/',
         $_viewerProps: {$_ref: '^/sets/simple/Main/$_viewerProps'},
@@ -1799,7 +1818,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     getClassNameByProp(prefix: string, key: string, ...args: any[]) {
       let value = getIn(this, normalizePath(key));
       if (value)
-        return [{[prefix + value]: true}, ...args];
+        return [{[prefix + toKebabCase(value)]: true}, ...args];
       else return [{}, ...args];
     },
     formPropExec(e: any, fnName: string) {
@@ -1890,7 +1909,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       if (this.api.getValue() === value) this.api.setValue(nullValue);
       return args;
     },
-    messages(messages: any, staticProps: anyObject = {}, {_$cx}:any) {
+    messages(messages: any, staticProps: anyObject = {}, {_$cx}: any) {
       const {className: cnSP = {}, ...restSP} = staticProps;
       return [objKeys(messages || []).map(priority => {
         const {norender, texts, className = {}, ...rest} = messages[priority];

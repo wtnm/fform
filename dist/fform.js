@@ -365,11 +365,16 @@ class FField extends FRefsGeneric {
         const self = this;
         if (!path.length)
             return self.$refs['@Main'];
-        if (path.length == 1 && path[0] == stateLib_1.SymData)
-            return self;
-        if (path[0][0] == '@')
-            return path.length == 1 ? self.$refs[path[0]] : self.$refs[path[0]].getRef(path.slice(1));
-        return self.$refs['@Main'] && self.$refs['@Main'].getRef && self.$refs['@Main'].getRef(path);
+        let field = self.$refs[self._getUniqKey(path[0])] || self.$refs[path[0]];
+        let restPath = path.slice(1);
+        if (restPath.length === 0) {
+            if (path[0] === stateLib_1.SymData)
+                return self;
+            if (field && !(field instanceof FField))
+                return field;
+        }
+        // if (field[0] == '@') return path.length == 1 ? self.$refs[field] : self.$refs[field].getRef(path.slice(1));
+        return field && field.getRef && field.getRef(restPath);
     }
     _resolver(value) {
         const self = this;
@@ -465,7 +470,7 @@ class FField extends FRefsGeneric {
                 let fieldOrLayout = fields[key];
                 let blockName;
                 if (react_ts_utils_1.isString(fieldOrLayout) && fieldOrLayout[0] === '%') {
-                    if (fieldOrLayout[1] === '%') {
+                    if (fieldOrLayout[1] === '@') {
                         blockName = fieldOrLayout.substr(2);
                         let idx = UPDATABLE.blocks.indexOf(blockName);
                         if (~idx) {
@@ -558,6 +563,7 @@ class FField extends FRefsGeneric {
         let { presets, main: mainPreset } = normailzeSets(schemaPart._presets, schemaPart.type);
         self.mainPreset = mainPreset;
         self.fieldName = self.props.fieldName || '';
+        self.simple = stateLib_1.isSelfManaged($branch) ? 'simple' : '';
         let $layout = self.wrapFns(resolveComponents(self.pFForm.elements, schemaPart._layout));
         let resolvedComponents = resolveComponents(self.pFForm.elements, schemaPart._custom, presets);
         resolvedComponents = self.wrapFns(resolvedComponents);
@@ -578,7 +584,7 @@ class FField extends FRefsGeneric {
         else
             Layout = react_ts_utils_1.isMergeable($layout) ? react_ts_utils_1.merge(Layout, $layout) : Layout;
         let _layouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, Layout || []);
-        makeLayouts_INNER_PROCEDURE(UPDATABLE, UPDATABLE.blocks.map(bl => '%%' + bl));
+        makeLayouts_INNER_PROCEDURE(UPDATABLE, UPDATABLE.blocks.map(bl => '%@' + bl));
         restComponents['Layout'] = _layouts;
         UPDATABLE.blocks = react_ts_utils_1.objKeys(restComponents);
         self._$wrapper = react_ts_utils_1.deArray(makeLayouts_INNER_PROCEDURE(UPDATABLE, react_ts_utils_1.isArray(Wrapper) ? { children: Wrapper } : Wrapper));
@@ -1399,6 +1405,11 @@ exports.classNames = classNames;
 /////////////////////////////////////////////
 //  elements
 /////////////////////////////////////////////
+const toKebabCase = (str) => str &&
+    str
+        .match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+        .map((x) => x.toLowerCase())
+        .join('-');
 let elementsBase = {
     extend(elements, opts) {
         let res = react_ts_utils_1.merge.all(this, elements, opts);
@@ -1422,7 +1433,11 @@ let elementsBase = {
     sets: {
         'base': {
             Wrapper: {
-                children: ['%%Title', '%%Layout', '%%Main', '%%Message']
+                children: ['%@Title', '%@Layout', '%@Main', '%@Message'],
+                $_maps: {
+                    'className/fform-hidden': '@/params/hidden',
+                },
+                $_reactRef: '@Wrapper',
             },
             Title: {
                 _$widget: 'label',
@@ -1442,7 +1457,7 @@ let elementsBase = {
             $_ref: '^/sets/base',
             Main: {
                 _$widget: '^/widgets/Input',
-                $_reactRef: '%Main',
+                $_reactRef: '@Main',
                 // _$cx: '^/_$cx',
                 $_viewerProps: { _$cx: '^/_$cx', emptyMock: '(no value)', className: { 'fform-viewer': true } },
                 onChange: { $: '^/fn/eventValue|setValue' },
@@ -1540,7 +1555,7 @@ let elementsBase = {
                     children: { $: '^/fn/getProp', args: 'restFields', update: 'every' }
                 }
                 // _$cx: '^/_$cx',
-                // $_reactRef: '%Main',
+                // $_reactRef: '@Main',
                 // uniqKey: 'params/uniqKey',
                 // LayoutDefaultClass: 'layout',
                 // LayoutDefaultWidget: 'div',
@@ -1585,7 +1600,7 @@ let elementsBase = {
             $_ref: '^/sets/base',
             Main: {
                 $_ref: '^/parts/RadioSelector',
-                $_reactRef: '%Main',
+                $_reactRef: '@Main',
                 $_setReactRef: '$setRef',
                 $prefixRefName: '@enum/',
                 $_viewerProps: { $_ref: '^/sets/simple/Main/$_viewerProps' },
@@ -1650,7 +1665,7 @@ let elementsBase = {
         getClassNameByProp(prefix, key, ...args) {
             let value = react_ts_utils_1.getIn(this, stateLib_1.normalizePath(key));
             if (value)
-                return [{ [prefix + value]: true }, ...args];
+                return [{ [prefix + toKebabCase(value)]: true }, ...args];
             else
                 return [{}, ...args];
         },
