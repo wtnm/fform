@@ -30,7 +30,7 @@ import {
 } from "./stateLib";
 
 import {_CORES, schemaRegister, formReducer, getFRVal} from "./fform";
-import {isEqual, isElemRef, objMap, objectResolver, convRef} from "react-ts-utils/dist";
+import {isEqual, isElemRef, objMap, objectDerefer} from "react-ts-utils";
 
 class exoPromise {
   done: boolean = false;
@@ -405,10 +405,6 @@ const anUpdateState = 'FFROM_UPDATE_STATE';
 /////////////////////////////////////////////
 
 
-
-
-
-
 /////////////////////////////////////////////
 //  Schema compile functions
 /////////////////////////////////////////////
@@ -426,6 +422,45 @@ const val2obj = (obj: any) => {
   return isObject(obj) ? obj : toArray(obj);
 };
 
+
+function refHandler(_elements: any, refs: any, opts: any, track: any, parent: any) {
+  let prefix = '';
+  let {isRef, skipKey} = opts;
+  let {refHandler, ...restOpts} = opts;
+  return deArray(refs.split('|').map((ref: any, i: any) => {
+    ref = ref.trim();
+    if (isRef(ref)) prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
+    else ref = prefix + ref;
+
+    let result = objectDerefer(_elements, ref, restOpts, track, parent);
+    let key = track[track.length - 1];
+    if (!skipKey(key, parent) && key !== '$' && (isFunction(result) || isArray(result) && result.every(isFunction)))
+      result = {$: result};
+    return result;
+  }));
+}
+
+function objectResolver(_elements: any, obj2resolve: any, track: any = []): any {
+  return objectDerefer(_elements, obj2resolve, {refHandler}, track)
+  // if (isElemRef(obj2resolve)) return convRef(_elements, obj2resolve, track);
+  // if (!isMergeable(obj2resolve)) return obj2resolve;
+  // // const _objs = {'^': _elements};
+  // const result = objectDerefer(_elements, obj2resolve);
+  // const retResult = isArray(result) ? [] : {};
+  // objKeys(result).forEach((key) => {
+  //   let value = result[key];
+  //   if (isElemRef(value)) {
+  //     value = convRef(_elements, value, track);
+  //     if (key !== '$' && (isFunction(value) || isArray(value) && value.every(isFunction)))
+  //       value = {$: value}
+  //   }
+  //   if (!skipKey(key, result)) retResult[key] = objectResolver(_elements, value, track.concat(key));
+  //   else retResult[key] = value;
+  // });
+  // return retResult
+}
+
+
 function schemaCompiler($id: string, elements: elementsType = {}, schema: JsonSchema | JsonSchema[], track: Path = []): jsJsonSchema {
   if (isCompiled(schema)) return schema;
 
@@ -435,12 +470,13 @@ function schemaCompiler($id: string, elements: elementsType = {}, schema: JsonSc
   const nFnOpts = {noStrictArrayResult: true};
 
   if (_validators) result._validators = objMap(val2obj(objectResolver(elements, _validators, track)), (f: any) => normalizeFn(f, nFnOpts));
-  if (_data$) result._data$ = objMap(val2obj(objectResolver(elements, _data$, track)), (f: any) => normalizeFn(f));
+  // if (_data$) result._data$ = objMap(val2obj(objectResolver(elements, _data$, track)), (f: any) => normalizeFn(f));
   if (_stateMaps) result._stateMaps = objectResolver(elements, _stateMaps, track);
   if (_oneOfSelector) result._oneOfSelector = objectResolver(elements, normalizeFn(_oneOfSelector, nFnOpts), track);
 
   objKeys(rest).forEach(key => {
-    if (key.substr(0, 1) == '_') return result[key] = key !== '_presets' && isElemRef(rest[key]) ? convRef(elements, rest[key], track) : rest[key];
+    if (key.substr(0, 1) == '_')
+      return result[key] = key !== '_presets' ? objectResolver(elements, rest[key], track) : rest[key];
     switch (key) {
       case '$ref':
         if (rest[key][0] === '#') result[key] = $id + rest[key];
@@ -474,4 +510,4 @@ function isCompiled(schema: any): schema is jsJsonSchema {
   return getIn(schema, '_compiled');
 }
 
-export {anSetState, FFormStateAPI, compileSchema}
+export {anSetState, FFormStateAPI, compileSchema, objectResolver}

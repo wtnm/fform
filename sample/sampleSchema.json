@@ -64,7 +64,7 @@
             }
           },
           {
-            "_$widget": "input",
+            "_$tag": "input",
             "type": "text",
             "className": {
               "form-control": true
@@ -373,7 +373,7 @@
       "type": "string",
       "title": "Select",
       "default": "option 2",
-      "_presets": "select:$C/W/fform-inline",
+      "_presets": "select",
       "_params": {
         "liveUpdate": 1000
       },

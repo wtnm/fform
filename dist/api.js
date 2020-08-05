@@ -17,7 +17,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const react_ts_utils_1 = require("react-ts-utils");
 const stateLib_1 = require("./stateLib");
 const fform_1 = require("./fform");
-const dist_1 = require("react-ts-utils/dist");
+const react_ts_utils_2 = require("react-ts-utils");
 class exoPromise {
     constructor() {
         this.done = false;
@@ -62,7 +62,7 @@ class FFormStateManager {
         this._listeners = [];
         if (fform_1._CORES[props.name]) {
             let core = fform_1._CORES[props.name];
-            if (dist_1.isEqual(core.props, props))
+            if (react_ts_utils_2.isEqual(core.props, props))
                 return core;
         }
         if (((props.getState ? 1 : 0) + (props.setState ? 1 : 0)) == 1)
@@ -369,6 +369,43 @@ const getCompiledSchema = react_ts_utils_1.memoize((elements, schema) => {
 const val2obj = (obj) => {
     return react_ts_utils_1.isObject(obj) ? obj : react_ts_utils_1.toArray(obj);
 };
+function refHandler(_elements, refs, opts, track, parent) {
+    let prefix = '';
+    let { isRef, skipKey } = opts;
+    let { refHandler } = opts, restOpts = __rest(opts, ["refHandler"]);
+    return react_ts_utils_1.deArray(refs.split('|').map((ref, i) => {
+        ref = ref.trim();
+        if (isRef(ref))
+            prefix = ref.substr(0, ref.lastIndexOf('/') + 1);
+        else
+            ref = prefix + ref;
+        let result = react_ts_utils_2.objectDerefer(_elements, ref, restOpts, track, parent);
+        let key = track[track.length - 1];
+        if (!skipKey(key, parent) && key !== '$' && (react_ts_utils_1.isFunction(result) || react_ts_utils_1.isArray(result) && result.every(react_ts_utils_1.isFunction)))
+            result = { $: result };
+        return result;
+    }));
+}
+function objectResolver(_elements, obj2resolve, track = []) {
+    return react_ts_utils_2.objectDerefer(_elements, obj2resolve, { refHandler }, track);
+    // if (isElemRef(obj2resolve)) return convRef(_elements, obj2resolve, track);
+    // if (!isMergeable(obj2resolve)) return obj2resolve;
+    // // const _objs = {'^': _elements};
+    // const result = objectDerefer(_elements, obj2resolve);
+    // const retResult = isArray(result) ? [] : {};
+    // objKeys(result).forEach((key) => {
+    //   let value = result[key];
+    //   if (isElemRef(value)) {
+    //     value = convRef(_elements, value, track);
+    //     if (key !== '$' && (isFunction(value) || isArray(value) && value.every(isFunction)))
+    //       value = {$: value}
+    //   }
+    //   if (!skipKey(key, result)) retResult[key] = objectResolver(_elements, value, track.concat(key));
+    //   else retResult[key] = value;
+    // });
+    // return retResult
+}
+exports.objectResolver = objectResolver;
 function schemaCompiler($id, elements = {}, schema, track = []) {
     if (isCompiled(schema))
         return schema;
@@ -376,16 +413,15 @@ function schemaCompiler($id, elements = {}, schema, track = []) {
     let _a = schema, { _validators, _data$, _stateMaps, _oneOfSelector } = _a, rest = __rest(_a, ["_validators", "_data$", "_stateMaps", "_oneOfSelector"]);
     const nFnOpts = { noStrictArrayResult: true };
     if (_validators)
-        result._validators = dist_1.objMap(val2obj(dist_1.objectResolver(elements, _validators, track)), (f) => stateLib_1.normalizeFn(f, nFnOpts));
-    if (_data$)
-        result._data$ = dist_1.objMap(val2obj(dist_1.objectResolver(elements, _data$, track)), (f) => stateLib_1.normalizeFn(f));
+        result._validators = react_ts_utils_2.objMap(val2obj(objectResolver(elements, _validators, track)), (f) => stateLib_1.normalizeFn(f, nFnOpts));
+    // if (_data$) result._data$ = objMap(val2obj(objectResolver(elements, _data$, track)), (f: any) => normalizeFn(f));
     if (_stateMaps)
-        result._stateMaps = dist_1.objectResolver(elements, _stateMaps, track);
+        result._stateMaps = objectResolver(elements, _stateMaps, track);
     if (_oneOfSelector)
-        result._oneOfSelector = dist_1.objectResolver(elements, stateLib_1.normalizeFn(_oneOfSelector, nFnOpts), track);
+        result._oneOfSelector = objectResolver(elements, stateLib_1.normalizeFn(_oneOfSelector, nFnOpts), track);
     react_ts_utils_1.objKeys(rest).forEach(key => {
         if (key.substr(0, 1) == '_')
-            return result[key] = key !== '_presets' && dist_1.isElemRef(rest[key]) ? dist_1.convRef(elements, rest[key], track) : rest[key];
+            return result[key] = key !== '_presets' ? objectResolver(elements, rest[key], track) : rest[key];
         switch (key) {
             case '$ref':
                 if (rest[key][0] === '#')

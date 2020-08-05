@@ -80,7 +80,7 @@ schema = {
             "login",
             "password",
             {
-                "_$widget": "button",
+                "_$tag": "button",
                 "type": "submit",
                 "children": ["Send"]
              }
@@ -116,12 +116,12 @@ schema = {
             	"className": {"inline": true},
                 "$_fields": [
                     {
-                        "_$widget": "button",
+                        "_$tag": "button",
                         "type": "submit",
                         "children": ["Send"]
                     },
                     {
-                        "_$widget": "button",
+                        "_$tag": "button",
                         "type": "reset",
                         "children": ["Clear"]
                     }
@@ -134,7 +134,7 @@ schema = {
     }
 }:
 ```
-Now at the 3rd position there is an object with the property `$_fields`. `$_widget` is not defined, so by default `div` is used. The `className` property is preprocessed by the `elements._$cx` function before being passed to the `_$widget`. Its work is described in [documentation](https://github.com/wtnm/fform/blob/master/documentation.md#cx). In `$_fields` there are 2 objects (their processing is described in the previous step), which are passed to `_$widget` as childen. As a result, the following HTML code is rendered: `<div class="inline"><button type="submit">Send</button><button type="reset">Clear</button></div>`. 
+Now at the 3rd position there is an object with the property `$_fields`. `$_widget` is not defined, so by default `div` is used. The `className` property is preprocessed by the `elements._$cx` function before being passed to the `_$tag`. Its work is described in [documentation](https://github.com/wtnm/fform/blob/master/documentation.md#cx). In `$_fields` there are 2 objects (their processing is described in the previous step), which are passed to `_$tag` as childen. As a result, the following HTML code is rendered: `<div class="inline"><button type="submit">Send</button><button type="reset">Clear</button></div>`. 
 
 [Current result](https://wtnm.github.io/fform-constructor/index.html#url=tutorial.json&selector=2).
 
@@ -281,7 +281,7 @@ schema = {
             "login",
             "password",
             {
-                "_$widget": "a",
+                "_$tag": "a",
                 "href": "#",
                 "className": {"grayed": true},
                 "onClick": {"$": "^/fn/restorePass"},

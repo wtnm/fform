@@ -87,4 +87,5 @@ declare class FFormStateAPI extends FFormStateManager {
 }
 declare const anSetState = "FFROM_SET_STATE";
 declare const compileSchema: (schema: any, elements: any) => any;
-export { anSetState, FFormStateAPI, compileSchema };
+declare function objectResolver(_elements: any, obj2resolve: any, track?: any): any;
+export { anSetState, FFormStateAPI, compileSchema, objectResolver };

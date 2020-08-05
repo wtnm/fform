@@ -113,7 +113,7 @@ type FFLayoutGeneric<T> = T & {
 }
 
 interface FFCustomizeType {
-  _$widget?: string,
+  _$tag?: string,
   $_maps?: PropsMapGeneric<string>;
   $_ref?: string;
   $_reactRef?: string | boolean;
@@ -122,7 +122,7 @@ interface FFCustomizeType {
 }
 
 interface jsFFCustomizeType {
-  _$widget?: Function,
+  _$tag?: Function,
   $_maps?: PropsMapGeneric<Function>;
   $_reactRef?: string | boolean;
 

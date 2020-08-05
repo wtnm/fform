@@ -1,6 +1,6 @@
 {
   "name": "fform",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0-alpha.2",
   "description": "Flexibile Form",
   "main": "dist/fform.js",
   "scripts": {
@@ -27,7 +27,7 @@
   "dependencies": {},
   "peerDependencies": {
     "react": "^16.13.1",
-    "react-ts-utils": "^1.1.1"
+    "react-ts-utils": "^2.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
@@ -79,7 +79,7 @@
     "react-addons-test-utils": "^15.6.2",
     "react-dom": "^16.9.0",
     "react-hot-loader": "^4.12.14",
-    "react-ts-utils": "^1.6.0",
+    "react-ts-utils": "^2.0.0",
     "reactstrap": "^8.0.1",
     "redux": "^4.0.4",
     "redux-thunk": "^2.3.0",

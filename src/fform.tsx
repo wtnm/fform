@@ -19,7 +19,6 @@ import {
   MergeStateOptionsArgument,
   isElemRef,
   objMap,
-  objectResolver,
   skipKey,
   Checkbox,
   Checkboxes
@@ -45,7 +44,7 @@ import {
   SymReset, getUniqKey
 } from './stateLib'
 
-import {FFormStateAPI, anSetState} from './api'
+import {FFormStateAPI, anSetState, objectResolver} from './api'
 
 
 const _$cxSym = Symbol('_$cx');
@@ -574,8 +573,8 @@ class FField extends FRefsGeneric {
             layout.push(fieldOrLayout);
           else {
             const counter = UPDATABLE.counter++;
-            let {_$widget, $_fields, opts: newOpts} = normalizeLayout(counter, fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>, opts);
-            let section = <FSectionWidget _$widget={_$widget} _$cx={self._$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
+            let {_$tag, $_fields, opts: newOpts} = normalizeLayout(counter, fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>, opts);
+            let section = <FSectionWidget _$tag={_$tag} _$cx={self._$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
                                           getMappedData={self._getMappedData(counter)}>{$_fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields, newOpts)}</FSectionWidget>
             layout.push(section);
             if (blockName)
@@ -588,9 +587,9 @@ class FField extends FRefsGeneric {
 
     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>, opts: any = {}) {
       let {$_maps, rest} = extractMaps(layout, ['children']);
-      let {children: $_fields, $_reactRef, _$skipKeys, _$widget, $_setReactRef, className, $defaultWidget, ...staticProps} = rest;
+      let {children: $_fields, $_reactRef, _$skipKeys, _$tag, $_setReactRef, className, $defaultWidget, ...staticProps} = rest;
       $defaultWidget = $defaultWidget || opts.$defaultWidget || 'div';
-      _$widget = _$widget || $defaultWidget;
+      _$tag = _$tag || $defaultWidget;
       if ($_fields) {
         if (isObject($_fields)) {
           let {_$order = [], ...restFields} = $_fields;
@@ -615,7 +614,7 @@ class FField extends FRefsGeneric {
       mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
       if ($_setReactRef) staticProps[$_setReactRef === true ? '$_setReactRef' : $_setReactRef] = self._setRef;
       self._mappedData[counter] = staticProps;
-      return {_$widget, $_fields, opts: {$defaultWidget}}
+      return {_$tag, $_fields, opts: {$defaultWidget}}
     }
 
     const self = this;
@@ -861,14 +860,14 @@ class FField extends FRefsGeneric {
     return self._$wrapper;
 
     // if (props.viewer) {
-    //   let {_$widget = UniversalViewer, ...rest} = props.$_viewerProps || {};
+    //   let {_$tag = UniversalViewer, ...rest} = props.$_viewerProps || {};
     //   rest.inputProps = props;
     //   rest.value = props.$FField.value;
-    //   return h(_$widget, rest)
+    //   return h(_$tag, rest)
     // }
     // if (isSelfManaged(props.$branch)) return null;
     // if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-    // return <FSectionWidget _$widget={self._$wrapper} _$cx={self._$cx} key={'widget_0'} ref={self._setWidRef(0)}
+    // return <FSectionWidget _$tag={self._$wrapper} _$cx={self._$cx} key={'widget_0'} ref={self._setWidRef(0)}
     //                        getMappedData={self._getMappedData(0)}>{self._layouts}</FSectionWidget>
 
 
@@ -910,14 +909,14 @@ const obj2react = memoize((props: any, _$cx: any, key: any) => {
   // if (props.key == 'option 1')
   //   debugger
   if (!isObject(props) || isValidElement(props)) return props;
-  let {_$widget = 'div', children, ...rest} = props;
+  let {_$tag = 'div', children, ...rest} = props;
   if (props.className)
     props.className = _$cx(props.className);
   if (isUndefined(rest.key) || rest.key === '')
     rest.key = key;
   if (children)
     children = children.map((v: any, idx: any) => obj2react(v, _$cx, idx));
-  return h(_$widget, rest, children);
+  return h(_$tag, rest, children);
 });
 
 class FSectionWidget extends Component<any, any> { // need to be class, as we use it's forceUpdate() method
@@ -926,7 +925,7 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
   _cn(props: any) {
     if (!props) return props;
     if (props.className && !isString(props.className)) {
-      // if (passCx(this.props._$widget)) return {_$cx: this.props._$cx, ...props};
+      // if (passCx(this.props._$tag)) return {_$cx: this.props._$cx, ...props};
       return {...props, className: this.props._$cx(props.className)};
     }
     return props;
@@ -945,13 +944,10 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
         }
       })
     }
-    if (this.props._$widget == 'option')
-      debugger
-    // console.log(this.props._$widget);
+    // console.log(this.props);
     // console.log('props', props);
-
     // let children = this.props.children && (this.props.children as any).length ? this.props.children : undefined
-    return h(this.props._$widget, props, children && children.map((v: any, idx: any) => obj2react(v, _$cx, idx)));
+    return h(this.props._$tag, props, children && children.map((v: any, idx: any) => obj2react(v, _$cx, idx)));
   }
 }
 
@@ -966,7 +962,7 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
 //   private _setWidRef: any;
 //   private _maps: NPM4WidgetsType = {};
 //   private _mappedData: { [key: string]: any } = {};
-//   private _$widget: any;
+//   private _$tag: any;
 //   private _isArray: boolean = false;
 //
 //   constructor(props: any, context: any) {
@@ -997,8 +993,8 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
 //           makeLayouts_INNER_PROCEDURE(UPDATABLE, fieldOrLayout, layout);
 //         } else if (isObject(fieldOrLayout)) { // layout
 //           const counter = UPDATABLE.counter++;
-//           let {_$widget, $_fields} = normalizeLayout(counter, fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>);
-//           layout.push(<FSectionWidget _$widget={_$widget} _$cx={_$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
+//           let {_$tag, $_fields} = normalizeLayout(counter, fieldOrLayout as FFLayoutGeneric<jsFFCustomizeType>);
+//           layout.push(<FSectionWidget _$tag={_$tag} _$cx={_$cx} key={'widget_' + counter} ref={self._setWidRef((counter))}
 //                                       getMappedData={self._getMappedData(counter)}>{$_fields && makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields)}</FSectionWidget>)
 //         }
 //       });
@@ -1008,7 +1004,7 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
 //     function normalizeLayout(counter: number, layout: FFLayoutGeneric<jsFFCustomizeType>) {
 //       let {$_maps, rest} = extractMaps(layout, ['$_fields']);
 //       // rest = self.props.$FField.wrapFns(rest, ['$_maps']);
-//       let {$_fields, $_reactRef, _$skipKeys, _$widget = LayoutDefaultWidget, className, ...staticProps} = rest;
+//       let {$_fields, $_reactRef, _$skipKeys, _$tag = LayoutDefaultWidget, className, ...staticProps} = rest;
 //       if ($_fields || !counter) className = merge(LayoutDefaultClass, className);
 //       staticProps.className = className;
 //       let refObject = self._refProcess($_reactRef) || {};
@@ -1017,7 +1013,7 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
 //       let maps = normalizeMaps($_maps, counter.toString());
 //       mapsKeys.forEach(k => self._maps[k].push(...maps[k]));
 //       self._mappedData[counter] = staticProps;
-//       return {_$widget, $_fields}
+//       return {_$tag, $_fields}
 //     }
 //
 //     const self = this;
@@ -1034,8 +1030,8 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
 //     const UPDATABLE = {keys: self._getObjectKeys($branch), counter: 1};
 //     self._focusField = focusField || UPDATABLE.keys[0] || '';
 //
-//     let {_$widget, $_fields} = normalizeLayout(0, isArray($layout) ? {$_fields: $layout} : $layout);
-//     self._$widget = _$widget;
+//     let {_$tag, $_fields} = normalizeLayout(0, isArray($layout) ? {$_fields: $layout} : $layout);
+//     self._$tag = _$tag;
 //
 //     if ($_fields)// make initial _objectLayouts, every key that was used in makeLayouts call removed from UPDATABLE.keys
 //       self._objectLayouts = makeLayouts_INNER_PROCEDURE(UPDATABLE, $_fields);
@@ -1162,14 +1158,14 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
 //     let props = self.props;
 //     // try {
 //     if (props.viewer) {
-//       let {_$widget = UniversalViewer, ...rest} = props.$_viewerProps || {};
+//       let {_$tag = UniversalViewer, ...rest} = props.$_viewerProps || {};
 //       rest.inputProps = props;
 //       rest.value = props.$FField.value;
-//       return h(_$widget, rest)
+//       return h(_$tag, rest)
 //     }
 //     // if (isSelfManaged(props.$branch)) return null;
 //     if (self._rebuild) self._build(props); // make rebuild here to avoid addComponentAsRefTo Invariant Violation error https://gist.github.com/jimfb/4faa6cbfb1ef476bd105
-//     return <FSectionWidget _$widget={self._$widget} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
+//     return <FSectionWidget _$tag={self._$tag} _$cx={props._$cx} key={'widget_0'} ref={self._setWidRef((0))}
 //                            getMappedData={self._getMappedData(0)}>{self._objectLayouts}{self._arrayLayouts}</FSectionWidget>
 //     // } catch (e) {
 //     //   throw self.props.$FField._addErrPath(e)
@@ -1192,7 +1188,7 @@ class FSectionWidget extends Component<any, any> { // need to be class, as we us
 //   }
 //
 //   private _newWidget(key: any, obj: any, passedReactRef: anyObject = {}) {
-//     const {_$widget: Widget = GenericWidget, className, $_reactRef, ...rest} = obj;
+//     const {_$tag: Widget = GenericWidget, className, $_reactRef, ...rest} = obj;
 //     const self = this;
 //     let refObject = self._refProcess($_reactRef) || {};
 //     if (isFunction(refObject)) refObject = {ref: refObject};
@@ -1269,10 +1265,10 @@ function UniversalViewer(props: any) {
 const UniversalInput = forwardRef(
   function (props: any, ref: any) {
     if (props.viewer) {
-      let {_$widget = UniversalViewer, ...rest} = props.$_viewerProps || {};
+      let {_$tag = UniversalViewer, ...rest} = props.$_viewerProps || {};
       rest.inputProps = props;
       rest.value = props.value;
-      return h(_$widget, rest)
+      return h(_$tag, rest)
     }
 
     let {_$useTag, type, viewer, $_viewerProps, ...rest} = props;
@@ -1344,8 +1340,8 @@ const UniversalInput = forwardRef(
 //
 // function Wrapper(props: any) {
 //   let {_$useTag: WrapperW = 'div', _$cx = classNames, className, wrapperClassName = {}, ArrayItemMenu, ArrayItemBody, arrayItem, ...rest} = props;
-//   let {_$widget: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
-//   let {_$widget: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
+//   let {_$tag: IBodyW = 'div', className: IBodyCN = {}, ...IBodyRest} = ArrayItemBody || {};
+//   let {_$tag: IMenuW = 'div', className: IMenuCN = {}, ...IMenuRest} = ArrayItemMenu || {};
 //   if (!arrayItem) wrapperClassName = [wrapperClassName, className];
 //   else IBodyCN = [IBodyCN, className];
 //
@@ -1365,7 +1361,7 @@ function ItemMenu(props: any) {
   const {_$cx, disabled, buttonsProps = {}, arrayItem, buttons = [], onClick: defaultOnClick, ..._$buttonDefaults}: { [key: string]: any } = props;
   if (!arrayItem) return null;
   return (buttons.map((key: string) => {
-      let {_$widget: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key, ...restBut}
+      let {_$tag: ButW = 'button', type = 'button', disabledCheck = '', className: ButCN = {}, onClick = defaultOnClick, title = key, children = key, ...restBut}
         = Object.assign({}, _$buttonDefaults, buttonsProps[key] || {});
       if (!restBut.dangerouslySetInnerHTML) restBut.children = children;
       return (
@@ -1572,7 +1568,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         $_reactRef: '@Wrapper',
       },
       Title: {
-        _$widget: 'label',
+        _$tag: 'label',
         children: [],
         $_maps: {
           'className/fform-required': '@/fData/required',
@@ -1588,7 +1584,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     simple: {
       $_ref: '^/sets/base',
       Main: {
-        _$widget: '^/widgets/Input',
+        _$tag: '^/widgets/Input',
         $_reactRef: '@Main',
         // _$cx: '^/_$cx',
         $_viewerProps: {_$cx: '^/_$cx', emptyMock: '(no value)', className: {'fform-viewer': true}},
@@ -1670,7 +1666,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     booleanNull: {
       $_ref: '^/sets/boolean',
       Main: {
-        $extend: {'input': {"_$tag": '^/widgets/CheckboxNull'}},
+        $extend: {'input': {"_$useTag": '^/widgets/CheckboxNull'}},
         onChange: {$: '^/fn/parseTristate|setValue|liveUpdate', args: ['${0}']},
       },
     },
@@ -1682,7 +1678,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         className: {'fform-layout': true}
       },
       Main: {
-        _$widget: '^/widgets/Rest',
+        _$tag: '^/widgets/Rest',
         $_maps: {
           children: {$: '^/fn/getProp', args: 'restFields', update: 'every'}
         }
@@ -1708,7 +1704,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         // }
       },
       // Title: {
-      //   _$widget: '^/widgets/Generic',
+      //   _$tag: '^/widgets/Generic',
       //   _$cx: '^/_$cx',
       //   _$useTag: 'legend',
       //   children: [
@@ -1727,7 +1723,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         children: [],
         onChange: {$: '^/fn/eventValue|setValue|liveUpdate'},
         $_maps: {
-          'children': {$: '^/fn/arrayOfEnum', args: ['@/fData/enum', '@/fData/enumExten', {_$widget: 'option'}], replace: false},
+          'children': {$: '^/fn/arrayOfEnum', args: ['@/fData/enum', '@/fData/enumExten', {_$tag: 'option'}], replace: false},
           'label': false
         }
       }
@@ -1909,7 +1905,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         objKeys(texts).forEach((key: string) =>
           toArray(texts[key]).forEach((v, i, arr) => {
             if (isElemRef(v)) v = this._resolver(v);
-            (isString(v) && isString(children[children.length - 1])) ? children.push({_$widget: 'br'}, v) : children.push(v)
+            (isString(v) && isString(children[children.length - 1])) ? children.push({_$tag: 'br'}, v) : children.push(v)
           }));
         if (norender || !children.length) return null;
         return {children, ...restSP, className: _$cx({['fform-message-priority-' + priority]: true, ...cnSP, ...className}), ...rest}
@@ -1928,7 +1924,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
   },
   parts: {
     Message: {
-      // _$widget: '^/widgets/Generic',
+      // _$tag: '^/widgets/Generic',
       // _$cx: '^/_$cx',
       children: [],
       $_maps: {
@@ -1937,7 +1933,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       }
     },
     RadioSelector: {
-      _$widget: '^/widgets/Input',
+      _$tag: '^/widgets/Input',
       _$useTag: '^/widgets/Checkboxes',
       _$cx: '^/_$cx',
       // _$passCx: true,
@@ -1946,7 +1942,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
         onChange: {$: '^/fn/eventValue|setValue|liveUpdate', args: ['${0}', {path: './@/selector/value'}]},
         onBlur: '^/sets/simple/Main/onBlur',
         onFocus: '^/sets/simple/Main/onFocus',
-        _$tag: '^/widgets/Checkbox',
+        _$useTag: '^/widgets/Checkbox',
       },
       $_maps: {
         value: '@/selector/value',
@@ -1958,7 +1954,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       }
     },
     // Autowidth: {
-    //   _$widget: '^/widgets/Autowidth',
+    //   _$tag: '^/widgets/Autowidth',
     //   addWidth: 35,
     //   minWidth: 60,
     //   $_maps: {
@@ -1969,7 +1965,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     //   }
     // },
     Button: {
-      _$widget: 'button',
+      _$tag: 'button',
       type: 'button',
       $_maps: {
         'className/fform-hidden': '@/params/viewer',
@@ -2011,11 +2007,11 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
     },
     ArrayEmpty: {
       children: '(array is empty)',
-      _$widget: 'span',
+      _$tag: 'span',
       $_maps: {'className/fform-hidden': {$: '^/fn/equal | ^/fn/not', args: ['@/length', 0]}}
     },
     ArrayItemMenu: {
-      _$widget: '^/widgets/ItemMenu',
+      _$tag: '^/widgets/ItemMenu',
       _$cx: '^/_$cx',
       $_ref: '^/parts/Button',
       buttons: ['first', 'last', 'up', 'down', 'del'],
@@ -2029,7 +2025,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       },
       $_maps: {arrayItem: '@/arrayItem'},
     },
-    Expander: {_$widget: 'div', className: {'fform-expand': true}}
+    Expander: {_$tag: 'div', className: {'fform-expand': true}}
   },
   _$cx: classNames,
   [_$cxSym]: classNames,
