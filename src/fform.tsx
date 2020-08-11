@@ -482,7 +482,7 @@ class FField extends FRefsGeneric {
     const self = this;
     self._cachedTimeout = undefined;
     if (update && self._cached) {
-      console.log('update', self._cached);
+      // console.log('update', self._cached);
       let prevData = self.getData();
       let stateUpd = self.stateApi.setValue(self._cached.value, {noValidation: !self.liveValidate && !self._forceLiveUpd, path: self.path, ...self._cached.opts});
       self._forceLiveUpd = false;
@@ -508,7 +508,7 @@ class FField extends FRefsGeneric {
       valueSet = (path == fPath + '/@/value') || (path == '#/@/current/' + fPath.slice(2));
     }
     if (valueSet) {
-      console.log('valueSet', valueSet);
+      // console.log('valueSet', valueSet);
       let prevData = self.getData();
       self._cached = {value, opts};
       if (fieldCache && !self._forceUpd) {
@@ -600,9 +600,8 @@ class FField extends FRefsGeneric {
               $_fields.push(restFields[k]);
             restKeys.delete(k)
           });
-          [...restKeys].forEach((k: any) => $_fields.push(restFields[k]));
+          restKeys.forEach((k: any) => $_fields.push(restFields[k]));
         }
-
       }
 
       staticProps.className = className;
@@ -1860,7 +1859,7 @@ let elementsBase: elementsType & { extend: (elements: any[], opts?: MergeStateOp
       return [value, ...args];
     },
     setValue(value: any, opts: any = {}, ...args: any[]) {
-      console.log('value', value);
+      // console.log('value', value);
       this.api.setValue(value, opts);
       return args;
     },

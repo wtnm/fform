@@ -1,5 +1,5 @@
 import {getSetIn, setIn, hasIn, getIn, objKeys, moveArrayElems, memoize, merge, objKeysNSymb, push2array, toArray, deArray, mergeState} from "react-ts-utils";
-import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction} from "react-ts-utils";
+import {isMergeable, isUndefined, isNumber, isInteger, isString, isArray, isObject, isFunction, resolvePath} from "react-ts-utils";
 import {anSetState, compileSchema} from './api';
 import {_SCHEMAS} from './fform'
 
@@ -1478,15 +1478,6 @@ function relativePath(base: Path, destination: Path) {
   // return result;
 }
 
-function resolvePath(path: Path, base?: Path) {
-  const result: Path = (base && (path[0] === '.' || path[0] == '..')) ? base.slice() : [];
-  for (let i = 0; i < path.length; i++) {
-    let val = path[i];
-    if (val === '..') result.pop();
-    else if (val !== '' && val !== '.') result.push(val);
-  }
-  return result;
-}
 
 function setIfNotDeeper(state: any, value: any, ...paths: any[]) {
   if (state === value) return state;
