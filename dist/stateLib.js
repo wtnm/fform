@@ -1509,17 +1509,6 @@ function relativePath(base, destination) {
     // return result;
 }
 exports.relativePath = relativePath;
-function resolvePath(path, base) {
-    const result = (base && (path[0] === '.' || path[0] == '..')) ? base.slice() : [];
-    for (let i = 0; i < path.length; i++) {
-        let val = path[i];
-        if (val === '..')
-            result.pop();
-        else if (val !== '' && val !== '.')
-            result.push(val);
-    }
-    return result;
-}
 function setIfNotDeeper(state, value, ...paths) {
     if (state === value)
         return state;
@@ -1554,7 +1543,7 @@ function isNPath(path) {
 }
 exports.isNPath = isNPath;
 function normalizePath(path, base = []) {
-    let result = resolvePath(flattenPath(path), base.length ? flattenPath(base) : []);
+    let result = react_ts_utils_2.resolvePath(flattenPath(path), base.length ? flattenPath(base) : []);
     result[SymData] = 'nPath';
     return result;
 }
